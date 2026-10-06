@@ -1,0 +1,1872 @@
+//! Native, typed effect hooks. Even a conditional hook returning no modifier
+//! participates in reference event ordering and tie RNG consumption.
+use super::*;
+
+#[derive(Clone, Copy)]
+pub(super) enum BoostCause {
+    Move { secondary: bool },
+    Ability(Ability),
+    /// Held-item sourced boosts (terrain seeds).
+    Item,
+}
+
+#[derive(Clone, Copy)]
+pub(super) enum ModifierEvent {
+    BasePower,
+    Attack,
+    SpecialAttack,
+    Defense,
+    SpecialDefense,
+    Damage,
+}
+
+/// Result of a reference `Pokemon#takeItem` call. `Refused` is the
+/// `onTakeItem` false branch, `Empty` the no-item branch; item-swap moves
+/// distinguish the two while Knock Off-style removers do not.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(super) enum TakeOutcome {
+    Taken(Id),
+    Refused,
+    Empty,
+}
+
+/// Shared event-handler list: reference priority, cached speed and modifier.
+pub(super) type HookList = SmallVec<[(Priority, u32); 8]>;
+
+#[derive(Clone, Copy)]
+pub(super) struct MoveContext<'a> {
+    pub actor: Entity,
+    pub target: Entity,
+    pub move_data: &'a ActiveMove<'a>,
+    pub effectiveness: i8,
+    pub critical: bool,
+}
+
+impl BattleState {
+    /// Sap Sipper onAllyTryHitSide exists for every side move, even when
+    /// predicates fail. Unlike TryHit, this event sorts speed ties with RNG.
+    pub(super) fn ally_try_hit_side(
+        &mut self,
+        dex: &Dex,
+        actor: Entity,
+        target: Entity,
+        move_type: Id,
+    ) -> Result<()> {
+        let mut handlers: SmallVec<[(Entity, Priority); 4]> = self
+            .active_entities(false)
+            .into_iter()
+            .filter(|&e| {
+                e.side == target.side
+                    && self.mon(e).hp > 0
+                    && dex.effects.abilities[self.mon(e).ability as usize] == Ability::SapSipper
+            })
+            .map(|e| {
+                (
+                    e,
+                    Priority {
+                        speed: self.mon(e).cached_speed,
+                        sub_order: 7,
+                        ..Default::default()
+                    },
+                )
+            })
+            .collect();
+        speed_sort(&mut handlers, &mut self.rng, |(_, priority)| *priority);
+        for (holder, _) in handlers {
+            if actor != holder
+                && target.side == actor.side
+                && move_type == dex.effects.grass
+                && self.mon(holder).boosts[0] < 6
+            {
+                // This side hook has no immunity message when its boost is
+                // capped, so a failed boost must not reveal a hidden ability.
+                self.reveal_ability(holder)?;
+                self.boost(
+                    dex,
+                    holder,
+                    actor,
+                    [1, 0, 0, 0, 0, 0, 0],
+                    BoostCause::Ability(Ability::SapSipper),
+                )?;
+            }
+        }
+        Ok(())
+    }
+    /// Non-redirection TryHit absorbers. Return true for reference null, even
+    /// when healing fails at full HP or a boost is already capped.
+    pub(super) fn absorb_try_hit(
+        &mut self,
+        dex: &Dex,
+        target: Entity,
+        source: Entity,
+        m: &ActiveMove<'_>,
+        action_accuracy: &mut Option<u16>,
+    ) -> Result<bool> {
+        if target == source {
+            return Ok(false);
+        }
+        let ability = dex.effects.abilities[self.mon(target).ability as usize];
+        // `abilities:goodasgold.onTryHit`: any status move from another source
+        // is refused outright. The public immunity message reveals the ability.
+        if ability == Ability::Goodasgold && m.category == Category::Status {
+            self.reveal_ability(target)?;
+            return Ok(true);
+        }
+        // `abilities:soundproof.onTryHit`: sound-flagged moves are refused.
+        if ability == Ability::Soundproof && m.sound {
+            self.reveal_ability(target)?;
+            return Ok(true);
+        }
+        // `abilities:bulletproof.onTryHit`: bullet-flagged moves are refused.
+        if ability == Ability::Bulletproof && m.bullet {
+            self.reveal_ability(target)?;
+            return Ok(true);
+        }
+        // `abilities:telepathy.onTryHit`: an ally's damaging move is refused.
+        if ability == Ability::Telepathy
+            && target.side == source.side
+            && m.category != Category::Status
+        {
+            self.reveal_ability(target)?;
+            return Ok(true);
+        }
+        // `abilities:sturdy.onTryHit`: one-hit KO moves are refused.
+        if ability == Ability::Sturdy && m.ohko.is_some() {
+            self.reveal_ability(target)?;
+            return Ok(true);
+        }
+        let move_type = m.move_type;
+        if ability == Ability::FlashFire && move_type == dex.effects.fire {
+            *action_accuracy = None;
+            if self.mon(target).hp > 0
+                && !self
+                    .mon(target)
+                    .volatiles
+                    .contains_key(&dex.effects.flash_fire)
+            {
+                let order = self.allocate_effect_order()?;
+                self.mon_mut(target).volatiles.insert(
+                    dex.effects.flash_fire,
+                    EffectState {
+                        id: dex.effects.flash_fire,
+                        effect_order: order,
+                        effect_order_assigned: true,
+                        source: Some((
+                            if source.side == 0 {
+                                SideId::P1
+                            } else {
+                                SideId::P2
+                            },
+                            source.roster,
+                        )),
+                        ..Default::default()
+                    },
+                );
+                self.reveal_ability(target)?;
+                self.emit(
+                    EventKind::EffectStart,
+                    target,
+                    Some(source),
+                    EffectRef::Condition(dex.effects.flash_fire),
+                    0,
+                    false,
+                )?;
+            } else {
+                self.reveal_ability(target)?;
+            }
+            return Ok(true);
+        }
+        let matches_type = match ability {
+            Ability::DrySkin | Ability::WaterAbsorb | Ability::StormDrain => {
+                move_type == dex.effects.water
+            }
+            Ability::VoltAbsorb | Ability::MotorDrive | Ability::LightningRod => {
+                move_type == dex.effects.electric
+            }
+            Ability::EarthEater => move_type == dex.effects.ground,
+            Ability::SapSipper => move_type == dex.effects.grass,
+            _ => false,
+        };
+        if !matches_type {
+            return Ok(false);
+        }
+        if matches!(
+            ability,
+            Ability::SapSipper | Ability::MotorDrive | Ability::LightningRod | Ability::StormDrain
+        ) {
+            self.reveal_ability(target)?;
+            let mut changes = [0; 7];
+            changes[match ability {
+                Ability::SapSipper => 0,
+                Ability::MotorDrive => 4,
+                _ => 2,
+            }] = 1;
+            self.boost(dex, target, source, changes, BoostCause::Ability(ability))?;
+        } else {
+            self.absorption_heal(target)?;
+        }
+        Ok(true)
+    }
+    /// Common quarter-HP absorption heal. Full HP still blocks
+    /// the move and reveals the ability through the reference immunity message.
+    pub(super) fn absorption_heal(&mut self, target: Entity) -> Result<()> {
+        self.reveal_ability(target)?;
+        let p = self.mon(target);
+        if p.hp > 0 && !p.fainted && p.active_slot.is_some() && p.hp < p.stats[0] {
+            let amount = (p.stats[0] / 4).max(1).min(p.stats[0] - p.hp);
+            self.mon_mut(target).hp += amount;
+            self.emit(
+                EventKind::Heal,
+                target,
+                None,
+                EffectRef::Ability(self.mon(target).ability),
+                i32::from(amount),
+                true,
+            )?;
+        }
+        Ok(())
+    }
+    /// ModifyAccuracy precedes accuracy/evasion stages. Numeric accuracy only;
+    /// always-hit moves retain their sentinel and never acquire an RNG draw.
+    pub(super) fn modify_accuracy(
+        &self,
+        dex: &Dex,
+        actor: Entity,
+        target: Entity,
+        accuracy: Option<u16>,
+    ) -> Option<u16> {
+        let accuracy = accuracy?;
+        let attacker = dex.effects.abilities[self.mon(actor).ability as usize];
+        let defender = dex.effects.abilities[self.mon(target).ability as usize];
+        let mut modifier = 4096;
+        // Sand Veil / Snow Cloak are defender-owned ModifyAccuracy handlers;
+        // Compound Eyes is source-owned. Every `chainModify` contribution
+        // accumulates into one modifier that is truncated once, so fold order
+        // does not change the result. Conditional no-op handlers participate
+        // without consuming a tie draw.
+        if matches!(defender, Ability::SandVeil | Ability::SnowCloak) {
+            let weather = self.effective_weather(dex);
+            let active = (defender == Ability::SandVeil && weather == dex.effects.sand)
+                || (defender == Ability::SnowCloak && weather == dex.effects.snow);
+            if active {
+                modifier = damage::chain_modifiers(modifier, 3277);
+            }
+        }
+        if attacker == Ability::Compoundeyes {
+            modifier = damage::chain_modifiers(modifier, 5325);
+        }
+        if modifier == 4096 {
+            return Some(accuracy);
+        }
+        Some(stats::modify(u32::from(accuracy), modifier) as u16)
+    }
+
+    pub(super) fn start_side_condition(
+        &mut self,
+        dex: &Dex,
+        actor: Entity,
+        id: Id,
+    ) -> Result<bool> {
+        let side = actor.side as usize;
+        if self.sides[side].conditions.contains_key(&id) {
+            return Ok(false);
+        }
+        let duration = if id == dex.effects.tailwind {
+            4
+        } else if id == dex.effects.reflect
+            || id == dex.effects.light_screen
+            || id == dex.effects.aurora_veil
+        {
+            if dex.effects.items[self.mon(actor).item as usize] == Item::LightClay {
+                8
+            } else {
+                5
+            }
+        } else {
+            return Err(EngineError::Unsupported(format!("side condition {id}")));
+        };
+        let order = self.allocate_effect_order()?;
+        self.sides[side].conditions.insert(
+            id,
+            EffectState {
+                id,
+                effect_order: order,
+                effect_order_assigned: true,
+                duration: Some(duration),
+                source: Some((
+                    if side == 0 { SideId::P1 } else { SideId::P2 },
+                    actor.roster,
+                )),
+                ..Default::default()
+            },
+        );
+        self.emit(
+            EventKind::SideEffectStart,
+            actor,
+            None,
+            EffectRef::Condition(id),
+            i32::from(duration),
+            false,
+        )?;
+        Ok(true)
+    }
+    /// Drain's TryHeal handlers run even at full HP and before faint messages.
+    /// Big Root chains a modifier, which is applied only after all handlers;
+    /// Liquid Ooze cancels healing and deals the unmodified amount instead.
+    pub(super) fn drain_heal(
+        &mut self,
+        dex: &Dex,
+        actor: Entity,
+        target: Entity,
+        amount: u32,
+    ) -> Result<()> {
+        if dex.effects.abilities[self.mon(target).ability as usize] == Ability::LiquidOoze
+            && !self.mon(target).fainted
+        {
+            if self.mon(actor).hp > 0 {
+                self.reveal_ability(target)?;
+                self.indirect_damage(
+                    dex,
+                    actor,
+                    target,
+                    amount,
+                    EffectRef::Ability(self.mon(target).ability),
+                )?;
+            }
+            return Ok(());
+        }
+        let amount = if dex.effects.items[self.mon(actor).item as usize] == Item::BigRoot {
+            stats::modify(amount, 5324)
+        } else {
+            amount
+        };
+        let p = self.mon(actor);
+        if p.hp == 0 || p.hp == p.stats[0] || amount == 0 {
+            return Ok(());
+        }
+        let actual = amount.min(u32::from(p.stats[0] - p.hp)) as u16;
+        self.mon_mut(actor).hp += actual;
+        self.emit(
+            EventKind::Heal,
+            actor,
+            Some(target),
+            EffectRef::Condition(dex.effects.drain),
+            i32::from(actual),
+            true,
+        )
+    }
+
+    pub(super) fn indirect_damage(
+        &mut self,
+        dex: &Dex,
+        target: Entity,
+        source: Entity,
+        amount: u32,
+        effect: EffectRef,
+    ) -> Result<()> {
+        // `abilities:magicguard.onDamage` refuses every source that is not a
+        // move. An ability-sourced refusal names the source's ability.
+        if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Magicguard
+            && !matches!(effect, EffectRef::Move(_))
+        {
+            if let EffectRef::Ability(id) = effect
+                && id as usize != self.mon(target).ability as usize
+            {
+                self.reveal_ability(source)?;
+            }
+            return Ok(());
+        }
+        if self.mon(target).hp == 0 || amount == 0 {
+            return Ok(());
+        }
+        let actual = amount.min(u32::from(self.mon(target).hp)) as u16;
+        self.mon_mut(target).hp -= actual;
+        if self.mon(target).hp == 0 {
+            self.faint_queue.push(target);
+        }
+        self.emit(
+            EventKind::Damage,
+            target,
+            Some(source),
+            effect,
+            -i32::from(actual),
+            true,
+        )
+    }
+
+    pub(super) fn consume_item(&mut self, dex: &Dex, e: Entity) -> Result<Id> {
+        let item = self.mon(e).item;
+        self.mon_mut(e).item = 0;
+        self.mon_mut(e).item_effect_order = None;
+        self.mon_mut(e).previous_item = item;
+        self.emit(EventKind::EndItem, e, None, EffectRef::Item(item), 0, false)?;
+        self.activate_unburden(dex, e)?;
+        Ok(item)
+    }
+
+    /// `abilities:unburden.onAfterUseItem` / `onTakeItem`: losing the held item
+    /// grants the sourced `unburden` volatile. The reference condition has no
+    /// Start/End callback, so neither transition emits a public message.
+    pub(super) fn activate_unburden(&mut self, dex: &Dex, e: Entity) -> Result<()> {
+        if dex.effects.abilities[self.mon(e).ability as usize] != Ability::Unburden {
+            return Ok(());
+        }
+        if self.mon(e).volatiles.contains_key(&dex.effects.unburden) {
+            return Ok(());
+        }
+        let order = self.allocate_effect_order()?;
+        self.mon_mut(e).volatiles.insert(
+            dex.effects.unburden,
+            EffectState {
+                id: dex.effects.unburden,
+                effect_order: order,
+                effect_order_assigned: true,
+                ..Default::default()
+            },
+        );
+        Ok(())
+    }
+
+    /// Reference `Pokemon#takeItem` without any message: runs the holder's
+    /// `onTakeItem` refusal (Mega Stones on their own base form) and clears the
+    /// slot. The reference logs the removal in the calling move, so this
+    /// primitive stays silent; `take_item` adds the public End event for
+    /// removal moves such as Knock Off.
+    pub(super) fn take_item_checked(
+        &mut self,
+        dex: &Dex,
+        target: Entity,
+    ) -> Result<TakeOutcome> {
+        let item = self.mon(target).item;
+        if item == 0 {
+            return Ok(TakeOutcome::Empty);
+        }
+        if dex.item_take_refused(item, self.mon(target).base_species) {
+            return Ok(TakeOutcome::Refused);
+        }
+        self.mon_mut(target).item = 0;
+        self.mon_mut(target).item_effect_order = None;
+        self.activate_unburden(dex, target)?;
+        Ok(TakeOutcome::Taken(item))
+    }
+
+    /// Silent take plus the public item End event, used by removal moves.
+    /// The reference never records a taken item in `lastItem`; only
+    /// `useItem`/`eatItem` set that provenance.
+    pub(super) fn take_item(&mut self, dex: &Dex, target: Entity, source: Entity) -> Result<Id> {
+        let TakeOutcome::Taken(item) = self.take_item_checked(dex, target)? else {
+            return Ok(0);
+        };
+        // Reference `Pokemon.takeItem` clears the slot without recording
+        // `lastItem`; only `useItem`/`eatItem` set that provenance.
+        self.emit(
+            EventKind::EndItem,
+            target,
+            Some(source),
+            EffectRef::Item(item),
+            0,
+            false,
+        )?;
+        Ok(item)
+    }
+
+    /// Reference failed-swap restore: the raw `pokemon.item = id` assignment
+    /// used when Trick/Switcheroo cannot complete. It re-registers the item
+    /// without a public `-item` message, without re-running the item's Start
+    /// event, and leaves `lastItem` untouched.
+    pub(super) fn restore_item(&mut self, e: Entity, item: Id) -> Result<()> {
+        if item == 0 {
+            return Ok(());
+        }
+        let order = self.allocate_effect_order()?;
+        self.mon_mut(e).item = item;
+        self.mon_mut(e).item_effect_order = Some(order);
+        Ok(())
+    }
+
+    pub(super) fn item_heal(
+        &mut self,
+        dex: &Dex,
+        e: Entity,
+        amount: u16,
+        consume: bool,
+    ) -> Result<()> {
+        let p = self.mon(e);
+        if p.hp == 0 || p.hp == p.stats[0] {
+            return Ok(());
+        }
+        let amount = amount.max(1).min(p.stats[0] - p.hp);
+        let item = if consume {
+            self.consume_item(dex, e)?
+        } else {
+            let item = self.mon(e).item;
+            self.emit(EventKind::Item, e, None, EffectRef::Item(item), 0, false)?;
+            item
+        };
+        self.mon_mut(e).hp += amount;
+        self.emit(
+            EventKind::Heal,
+            e,
+            None,
+            EffectRef::Item(item),
+            i32::from(amount),
+            true,
+        )
+    }
+
+    pub(super) fn item_update(&mut self, dex: &Dex, e: Entity) -> Result<()> {
+        let p = self.mon(e);
+        if p.hp == 0 {
+            return Ok(());
+        }
+        match dex.effects.items[p.item as usize] {
+            Item::SitrusBerry if u32::from(p.hp) * 2 <= u32::from(p.stats[0]) => {
+                if !self.unnerve_blocks_eat(dex, e) {
+                    self.item_heal(dex, e, p.stats[0] / 4, true)?
+                }
+            }
+            Item::OranBerry if u32::from(p.hp) * 2 <= u32::from(p.stats[0]) => {
+                if !self.unnerve_blocks_eat(dex, e) {
+                    self.item_heal(dex, e, 10, true)?
+                }
+            }
+            Item::LumBerry if p.status != 0 => {
+                if !self.unnerve_blocks_eat(dex, e) {
+                    self.consume_item(dex, e)?;
+                    self.cure_status(e)?;
+                }
+            }
+            _ => (),
+        }
+        super::item_ports::update(self, dex, e)
+    }
+
+    /// `abilities:unnerve.onFoeTryEatItem`: any active opposing Unnerve holder
+    /// refuses the eater's item consumption. Only berry paths run through the
+    /// reference `eatItem`; seeds, herbs and Focus Sash use `useItem` and are
+    /// not blocked.
+    pub(super) fn unnerve_blocks_eat(&self, dex: &Dex, eater: Entity) -> bool {
+        self.active_entities(false).into_iter().any(|other| {
+            other.side != eater.side
+                && dex.effects.abilities[self.mon(other).ability as usize] == Ability::Unnerve
+        })
+    }
+
+    /// Reference `getImmunity('powder', pokemon)`: Grass types and Overcoat
+    /// holders are powder-immune. Safety Goggles remains an unported item and
+    /// therefore an explicit operational error rather than an approximation.
+    pub(super) fn powder_immune(&self, dex: &Dex, e: Entity) -> bool {
+        self.mon(e).types.contains(&dex.effects.grass)
+            || dex.effects.abilities[self.mon(e).ability as usize] == Ability::Overcoat
+    }
+
+    /// Ported `onSetStatus` refusals. The caller decides whether the public
+    /// immunity message is emitted (the reference only prints it when the
+    /// source effect carries a `status` field).
+    pub(super) fn status_immune_ability(
+        &self,
+        dex: &Dex,
+        target: Entity,
+        status: Id,
+    ) -> Option<Ability> {
+        let ability = dex.effects.abilities[self.mon(target).ability as usize];
+        let refused = match ability {
+            Ability::Limber => status == dex.effects.paralysis,
+            Ability::Immunity => status == dex.effects.poison || status == dex.effects.toxic,
+            Ability::Insomnia => status == dex.effects.sleep,
+            Ability::Waterbubble | Ability::Thermalexchange => status == dex.effects.burn,
+            Ability::Purifyingsalt => true,
+            _ => false,
+        };
+        refused.then_some(ability)
+    }
+
+    /// Ported `onUpdate` cures: a status the holder is immune to is removed at
+    /// the next Update boundary even when it arrived from another effect.
+    pub(super) fn update_cured_status(&self, dex: &Dex, e: Entity) -> bool {
+        let ability = dex.effects.abilities[self.mon(e).ability as usize];
+        let status = self.mon(e).status;
+        match ability {
+            Ability::Limber => status == dex.effects.paralysis,
+            Ability::Immunity => status == dex.effects.poison || status == dex.effects.toxic,
+            Ability::Insomnia => status == dex.effects.sleep,
+            Ability::Magmaarmor => status == dex.effects.freeze,
+            Ability::Waterbubble | Ability::Thermalexchange => status == dex.effects.burn,
+            _ => false,
+        }
+    }
+
+    /// `abilities:superluck.onModifyCritRatio` adds one stage before the
+    /// gen9 clamp to 4.
+    pub(super) fn crit_ratio(&self, dex: &Dex, actor: Entity, base: u8) -> u8 {
+        let bonus = u8::from(
+            dex.effects.abilities[self.mon(actor).ability as usize] == Ability::Superluck,
+        );
+        (base + bonus).min(4)
+    }
+
+    pub(super) fn damage_item(&mut self, dex: &Dex, target: Entity, damage: u16) -> Result<u16> {
+        let p = self.mon(target);
+        if dex.effects.items[p.item as usize] == Item::FocusSash
+            && p.hp > 0
+            && p.hp == p.stats[0]
+            && damage >= p.hp
+        {
+            let damage = p.hp - 1;
+            self.consume_item(dex, target)?;
+            return Ok(damage);
+        }
+        Ok(damage)
+    }
+
+    /// `abilities:sturdy.onDamage` (default priority 0, before Focus Sash's
+    /// -40): a full-HP holder survives a hit that would otherwise KO it.
+    pub(super) fn sturdy_clamp(
+        &mut self,
+        dex: &Dex,
+        target: Entity,
+        damage: u16,
+    ) -> Result<u16> {
+        let (hp, max_hp) = {
+            let p = self.mon(target);
+            (p.hp, p.stats[0])
+        };
+        if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Sturdy
+            && hp > 0
+            && hp == max_hp
+            && damage >= hp
+        {
+            self.reveal_ability(target)?;
+            return Ok(hp - 1);
+        }
+        Ok(damage)
+    }
+
+    pub(super) fn item_damage(
+        &mut self,
+        dex: &Dex,
+        target: Entity,
+        holder: Entity,
+        amount: u16,
+    ) -> Result<()> {
+        // Item-sourced damage is refused by Magic Guard.
+        if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Magicguard {
+            return Ok(());
+        }
+        if self.mon(target).hp == 0 {
+            return Ok(());
+        }
+        let actual = amount.max(1).min(self.mon(target).hp);
+        let item = self.mon(holder).item;
+        self.emit(
+            EventKind::Item,
+            holder,
+            None,
+            EffectRef::Item(item),
+            0,
+            false,
+        )?;
+        self.mon_mut(target).hp -= actual;
+        if self.mon(target).hp == 0 {
+            self.faint_queue.push(target);
+        }
+        self.emit(
+            EventKind::Damage,
+            target,
+            Some(holder),
+            EffectRef::Item(item),
+            -i32::from(actual),
+            true,
+        )
+    }
+
+    pub(super) fn damaging_hit(
+        &mut self,
+        dex: &Dex,
+        actor: Entity,
+        targets: &[Entity],
+        m: &ActiveMove<'_>,
+    ) -> Result<()> {
+        if m.category == Category::Status {
+            return Ok(());
+        }
+        let mut handlers = SmallVec::<[(Entity, u8, Priority, usize); 8]>::new();
+        for (index, &target) in targets.iter().enumerate() {
+            if self.mon(target).status == dex.effects.freeze {
+                handlers.push((
+                    target,
+                    0,
+                    Priority {
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
+            if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Static {
+                handlers.push((
+                    target,
+                    2,
+                    Priority {
+                        sub_order: 7,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
+            // Contact-triggered abilities. `RoughSkin` carries reference
+            // `onDamagingHitOrder: 1`, which sorts before Rocky Helmet's order
+            // 2; the others use the default order and keep insertion order
+            // within a target. All of them run under `compare_left_to_right`,
+            // so only order, priority and target index participate.
+            if dex.effects.abilities[self.mon(target).ability as usize] == Ability::RoughSkin {
+                handlers.push((
+                    target,
+                    5,
+                    Priority {
+                        order: 1,
+                        sub_order: 7,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
+            if dex.effects.abilities[self.mon(target).ability as usize] == Ability::FlameBody {
+                handlers.push((
+                    target,
+                    3,
+                    Priority {
+                        sub_order: 7,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
+            if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Stamina {
+                handlers.push((
+                    target,
+                    6,
+                    Priority {
+                        sub_order: 7,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
+            // Additional default-priority `onDamagingHit` abilities. A Pokémon
+            // has a single ability, so these never compete inside one target
+            // bucket; the reference comparator still orders them by target
+            // index across a spread.
+            if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Justified {
+                handlers.push((
+                    target,
+                    7,
+                    Priority {
+                        sub_order: 7,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
+            if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Weakarmor {
+                handlers.push((
+                    target,
+                    8,
+                    Priority {
+                        sub_order: 7,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
+            if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Gooey {
+                handlers.push((
+                    target,
+                    9,
+                    Priority {
+                        sub_order: 7,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
+            if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Effectspore {
+                handlers.push((
+                    target,
+                    10,
+                    Priority {
+                        sub_order: 7,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
+            if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Thermalexchange
+            {
+                handlers.push((
+                    target,
+                    11,
+                    Priority {
+                        sub_order: 7,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
+            if dex.effects.items[self.mon(target).item as usize] == Item::RockyHelmet {
+                handlers.push((
+                    target,
+                    1,
+                    Priority {
+                        order: 2,
+                        sub_order: 8,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
+            // `onSourceDamagingHit` handlers are appended after that target's
+            // own handlers by the reference and inherit its index, so Poison
+            // Touch runs once per damaged target after everything else there.
+            if dex.effects.abilities[self.mon(actor).ability as usize] == Ability::PoisonTouch {
+                handlers.push((
+                    target,
+                    4,
+                    Priority {
+                        sub_order: 7,
+                        speed: self.mon(actor).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
+        }
+        handlers.sort_by(|a, b| a.2.compare_left_to_right(a.3, &b.2, b.3));
+        for (target, kind, _, _) in handlers {
+            if kind == 1 {
+                if m.contact {
+                    self.item_damage(dex, actor, target, self.mon(actor).stats[0] / 6)?;
+                }
+            } else if kind == 2 {
+                // DamagingHit is stable target order, never a speed-tie shuffle.
+                // Contact always draws even if status will fail or either HP is
+                // zero while the holder is still awaiting faint processing.
+                if m.contact && self.rng.chance(3, 10) {
+                    let effect = crate::effects::HitEffect {
+                        status: dex.effects.paralysis,
+                        ..Default::default()
+                    };
+                    self.hit_effect_with_ability(dex, actor, target, &effect, false, Some(target))?;
+                }
+            } else if kind == 3 {
+                // Flame Body: exact 3/10 burn roll on contact, with the ability
+                // holder as the status source and the reveal before any heal.
+                if m.contact && self.rng.chance(3, 10) {
+                    let effect = crate::effects::HitEffect {
+                        status: dex.effects.burn,
+                        ..Default::default()
+                    };
+                    self.hit_effect_with_ability(dex, actor, target, &effect, false, Some(target))?;
+                }
+            } else if kind == 4 {
+                // Poison Touch is the attacker's ability; the damaged target
+                // receives the status with the attacker as its source.
+                if m.contact && self.rng.chance(3, 10) {
+                    let effect = crate::effects::HitEffect {
+                        status: dex.effects.poison,
+                        ..Default::default()
+                    };
+                    self.hit_effect_with_ability(dex, target, actor, &effect, false, Some(actor))?;
+                }
+            } else if kind == 5 {
+                // Rough Skin: 1/8 of the attacker's maximum HP, attributed to
+                // the holder's ability and applied before faint processing.
+                if m.contact {
+                    self.reveal_ability(target)?;
+                    let amount = u32::from(self.mon(actor).stats[0]) / 8;
+                    self.indirect_damage(
+                        dex,
+                        actor,
+                        target,
+                        amount,
+                        EffectRef::Ability(self.mon(target).ability),
+                    )?;
+                }
+            } else if kind == 6 {
+                self.boost(
+                    dex,
+                    target,
+                    actor,
+                    [0, 1, 0, 0, 0, 0, 0],
+                    BoostCause::Ability(Ability::Stamina),
+                )?;
+            } else if kind == 7 {
+                // Justified: a Dark-type hit raises Attack by one. The boost
+                // defaults to the ability holder as target and the attacker as
+                // source, exactly like `this.boost({atk: 1})`.
+                if m.move_type == dex.effects.dark {
+                    self.boost(
+                        dex,
+                        target,
+                        actor,
+                        [1, 0, 0, 0, 0, 0, 0],
+                        BoostCause::Ability(Ability::Justified),
+                    )?;
+                }
+            } else if kind == 8 {
+                // Weak Armor: physical hits drop Defense by one and raise
+                // Speed by two, applied as a self-boost (`target, target`).
+                if m.category == Category::Physical {
+                    self.boost(
+                        dex,
+                        target,
+                        target,
+                        [0, -1, 0, 0, 2, 0, 0],
+                        BoostCause::Ability(Ability::Weakarmor),
+                    )?;
+                }
+            } else if kind == 9 {
+                // Gooey: contact drops the attacker's Speed by one. The ability
+                // is revealed before the boost is attempted.
+                if m.contact {
+                    self.reveal_ability(target)?;
+                    self.boost(
+                        dex,
+                        actor,
+                        target,
+                        [0, 0, 0, 0, -1, 0, 0],
+                        BoostCause::Ability(Ability::Gooey),
+                    )?;
+                }
+            } else if kind == 10 {
+                // Effect Spore: an exact 0..99 draw selects the sleep (<11),
+                // paralysis (<21) or poison (<30) bracket. Powder-immune
+                // attackers neither roll nor receive a status.
+                if m.contact && !self.powder_immune(dex, actor) {
+                    let roll = self.rng.below(100);
+                    let status = if roll < 11 {
+                        Some(dex.effects.sleep)
+                    } else if roll < 21 {
+                        Some(dex.effects.paralysis)
+                    } else if roll < 30 {
+                        Some(dex.effects.poison)
+                    } else {
+                        None
+                    };
+                    if let Some(status) = status {
+                        let effect = crate::effects::HitEffect {
+                            status,
+                            ..Default::default()
+                        };
+                        self.hit_effect_with_ability(
+                            dex,
+                            actor,
+                            target,
+                            &effect,
+                            false,
+                            Some(target),
+                        )?;
+                    }
+                }
+            } else if kind == 11 {
+                // Thermal Exchange: Fire-type hits raise Attack by one.
+                if m.move_type == dex.effects.fire {
+                    self.boost(
+                        dex,
+                        target,
+                        actor,
+                        [1, 0, 0, 0, 0, 0, 0],
+                        BoostCause::Ability(Ability::Thermalexchange),
+                    )?;
+                }
+            } else if m.move_type == dex.effects.fire {
+                self.cure_status(target)?;
+            }
+        }
+        Ok(())
+    }
+
+    pub(super) fn reveal_ability(&mut self, e: Entity) -> Result<()> {
+        self.emit(
+            EventKind::Ability,
+            e,
+            None,
+            EffectRef::Ability(self.mon(e).ability),
+            0,
+            false,
+        )
+    }
+
+    pub(super) fn ability_switch_in(&mut self, dex: &Dex, e: Entity) -> Result<()> {
+        if self.mon(e).hp > 0
+            && matches!(
+                dex.effects.abilities[self.mon(e).ability as usize],
+                Ability::CloudNine | Ability::AirLock
+            )
+        {
+            self.reveal_ability(e)?;
+        }
+        self.ability_start(dex, e)
+    }
+
+    pub(super) fn ability_start(&mut self, dex: &Dex, e: Entity) -> Result<()> {
+        if self.mon(e).hp == 0 {
+            return Ok(());
+        }
+        if matches!(
+            dex.effects.abilities[self.mon(e).ability as usize],
+            Ability::CloudNine | Ability::AirLock
+        ) {
+            self.mon_mut(e).ability_ending = false;
+            self.field_change_order();
+        }
+        let weather = match dex.effects.abilities[self.mon(e).ability as usize] {
+            Ability::Drizzle => dex.effects.rain,
+            Ability::Drought => dex.effects.sun,
+            Ability::SandStream => dex.effects.sand,
+            Ability::SnowWarning => dex.effects.snow,
+            _ => 0,
+        };
+        let terrain = match dex.effects.abilities[self.mon(e).ability as usize] {
+            Ability::ElectricSurge => dex.effects.electric_terrain,
+            Ability::GrassySurge => dex.effects.grassy_terrain,
+            Ability::MistySurge => dex.effects.misty_terrain,
+            Ability::PsychicSurge => dex.effects.psychic_terrain,
+            _ => 0,
+        };
+        if terrain != 0 {
+            self.start_terrain(dex, e, terrain, true)?;
+        }
+        if weather != 0 {
+            self.start_weather(dex, e, weather, true)?;
+        }
+        // `abilities:hospitality.onStart`: heal each adjacent ally by
+        // `baseMaxhp / 4`. In doubles the only adjacent ally is the partner;
+        // `Battle#heal` skips fainted, inactive and full-HP allies.
+        if dex.effects.abilities[self.mon(e).ability as usize] == Ability::Hospitality {
+            let partners: SmallVec<[Entity; 1]> = self
+                .active_entities(false)
+                .into_iter()
+                .filter(|p| p.side == e.side && *p != e)
+                .collect();
+            for ally in partners {
+                let p = self.mon(ally);
+                if p.hp == 0 || p.hp >= p.stats[0] {
+                    continue;
+                }
+                let amount = (p.stats[0] / 4).max(1).min(p.stats[0] - p.hp);
+                self.reveal_ability(e)?;
+                self.mon_mut(ally).hp += amount;
+                self.emit(
+                    EventKind::Heal,
+                    ally,
+                    Some(e),
+                    EffectRef::Ability(self.mon(e).ability),
+                    i32::from(amount),
+                    true,
+                )?;
+            }
+        }
+        if dex.effects.abilities[self.mon(e).ability as usize] == Ability::Intimidate {
+            let foes: SmallVec<[Entity; 4]> = self
+                .active_entities(false)
+                .into_iter()
+                .filter(|p| p.side != e.side && self.mon(*p).hp > 0)
+                .collect();
+            if !foes.is_empty() {
+                self.reveal_ability(e)?;
+            }
+            for target in foes {
+                self.boost(
+                    dex,
+                    target,
+                    e,
+                    [-1, 0, 0, 0, 0, 0, 0],
+                    BoostCause::Ability(Ability::Intimidate),
+                )?;
+            }
+        }
+        Ok(())
+    }
+
+    pub(super) fn ability_switch_out(&mut self, dex: &Dex, e: Entity) -> Result<()> {
+        match dex.effects.abilities[self.mon(e).ability as usize] {
+            Ability::Regenerator => {
+                let p = self.mon(e);
+                let amount = (p.stats[0] / 3).min(p.stats[0] - p.hp);
+                if amount > 0 {
+                    self.mon_mut(e).hp += amount;
+                    self.reveal_ability(e)?;
+                    self.emit(
+                        EventKind::Heal,
+                        e,
+                        None,
+                        EffectRef::Ability(self.mon(e).ability),
+                        i32::from(amount),
+                        true,
+                    )?;
+                }
+            }
+            Ability::NaturalCure if self.mon(e).status != 0 => {
+                self.reveal_ability(e)?;
+                self.cure_status(e)?;
+            }
+            _ => (),
+        }
+        Ok(())
+    }
+
+    pub(super) fn boost(
+        &mut self,
+        dex: &Dex,
+        target: Entity,
+        source: Entity,
+        mut changes: [i8; 7],
+        cause: BoostCause,
+    ) -> Result<bool> {
+        if self.mon(target).hp == 0
+            || self.mon(target).active_slot.is_none()
+            || !self.sides[(1 - target.side) as usize]
+                .pokemon
+                .iter()
+                .any(|p| p.selected && !p.fainted)
+        {
+            return Ok(false);
+        }
+        let ability = dex.effects.abilities[self.mon(target).ability as usize];
+        // `abilities:contrary.onChangeBoost` runs before the boost table is
+        // capped; every incoming entry is inverted.
+        if ability == Ability::Contrary {
+            for change in changes.iter_mut() {
+                *change = change.saturating_neg();
+            }
+        }
+        // The reference caps the entire incoming boost table before TryBoost.
+        for (i, change) in changes.iter_mut().enumerate() {
+            let old = self.mon(target).boosts[i];
+            *change = (old + *change).clamp(-6, 6) - old;
+        }
+        let intimidate = matches!(cause, BoostCause::Ability(Ability::Intimidate));
+        let mut blocked = false;
+        for (stat, change) in changes.iter_mut().enumerate() {
+            if (source != target
+                && *change < 0
+                && (ability == Ability::ClearBody || ability == Ability::HyperCutter && stat == 0))
+                || (intimidate
+                    && stat == 0
+                    && *change != 0
+                    && matches!(
+                        ability,
+                        Ability::InnerFocus
+                            | Ability::OwnTempo
+                            | Ability::Oblivious
+                            | Ability::Scrappy
+                    ))
+            {
+                *change = 0;
+                blocked = true;
+            }
+        }
+        // `abilities:mirrorarmor.onTryBoost`: negative boosts from another
+        // Pokémon are removed from the incoming table and applied back to the
+        // source. The reference skips its own reflected boosts, and stats
+        // already at -6 have a zero clamped delta so they never arrive here.
+        if ability == Ability::Mirrorarmor
+            && source != target
+            && !matches!(cause, BoostCause::Ability(Ability::Mirrorarmor))
+        {
+            let mut mirrored = false;
+            for (stat, change) in changes.iter_mut().enumerate() {
+                if *change < 0 {
+                    let delta = *change;
+                    *change = 0;
+                    mirrored = true;
+                    if self.mon(source).hp > 0 {
+                        self.reveal_ability(target)?;
+                        let mut reflected = [0i8; 7];
+                        reflected[stat] = delta;
+                        self.boost(
+                            dex,
+                            source,
+                            target,
+                            reflected,
+                            BoostCause::Ability(Ability::Mirrorarmor),
+                        )?;
+                    }
+                }
+            }
+            let _ = mirrored;
+        }
+        // `abilities:flowerveil.onAllyTryBoost`: an adjacent Flower Veil holder
+        // refuses every negative boost aimed at a Grass-type ally (or itself)
+        // from another Pokémon.
+        if source != target && self.mon(target).types.contains(&dex.effects.grass) {
+            let holders: SmallVec<[Entity; 2]> = self
+                .active_entities(false)
+                .into_iter()
+                .filter(|h| {
+                    h.side == target.side
+                        && dex.effects.abilities[self.mon(*h).ability as usize]
+                            == Ability::Flowerveil
+                })
+                .collect();
+            if !holders.is_empty() {
+                let mut removed = false;
+                for change in changes.iter_mut() {
+                    if *change < 0 {
+                        *change = 0;
+                        removed = true;
+                    }
+                }
+                if removed && !matches!(cause, BoostCause::Move { secondary: true }) {
+                    for holder in holders {
+                        self.reveal_ability(holder)?;
+                    }
+                }
+            }
+        }
+        if blocked
+            && !matches!(
+                cause,
+                BoostCause::Move { secondary: true } | BoostCause::Item
+            )
+        {
+            self.reveal_ability(target)?;
+        }
+        let mut changed = false;
+        for (stat, change) in changes.into_iter().enumerate() {
+            let old = self.mon(target).boosts[stat];
+            let new = (old + change).clamp(-6, 6);
+            if new == old {
+                continue;
+            }
+            self.mon_mut(target).boosts[stat] = new;
+            self.emit(
+                EventKind::Boost,
+                target,
+                Some(source),
+                EffectRef::Stat(stat as Id),
+                i32::from(new - old),
+                false,
+            )?;
+            changed = true;
+            // AfterEachBoost triggers once per lowered stat, including multiple
+            // stats in one move. Ally/self reductions do not trigger these abilities.
+            if new < old
+                && source.side != target.side
+                && matches!(ability, Ability::Defiant | Ability::Competitive)
+            {
+                self.reveal_ability(target)?;
+                let mut response = [0; 7];
+                response[if ability == Ability::Defiant { 0 } else { 2 }] = 2;
+                self.boost(dex, target, target, response, BoostCause::Ability(ability))?;
+            }
+        }
+        Ok(changed)
+    }
+
+    fn modifiers(
+        &mut self,
+        dex: &Dex,
+        event: ModifierEvent,
+        context: MoveContext<'_>,
+        value: u32,
+    ) -> Result<u32> {
+        Ok(self.modifiers_with_participation(dex, event, context, value)?.0)
+    }
+
+    /// Returns the folded modifier together with whether any handler
+    /// participated. The reference truncates a fractional relay value
+    /// (`modify(value, 4096)`) exactly when at least one handler ran, which
+    /// matters for `move.basePower * hp / maxhp` style callbacks.
+    pub(super) fn modifiers_with_participation(
+        &mut self,
+        dex: &Dex,
+        event: ModifierEvent,
+        context: MoveContext<'_>,
+        value: u32,
+    ) -> Result<(u32, bool)> {
+        let MoveContext {
+            actor,
+            target,
+            move_data: m,
+            effectiveness,
+            critical,
+        } = context;
+        let a = self.mon(actor);
+        let d = self.mon(target);
+        let attacking = dex.effects.abilities[a.ability as usize];
+        let defending = dex.effects.abilities[d.ability as usize];
+        let mut hooks = HookList::new();
+        let mut add = |e: Entity, priority: i32, modifier: u32| {
+            hooks.push((
+                Priority {
+                    priority: priority * 10000,
+                    speed: self.mon(e).cached_speed,
+                    sub_order: 7,
+                    ..Default::default()
+                },
+                modifier,
+            ));
+        };
+        match event {
+            ModifierEvent::BasePower => {
+                match attacking {
+                Ability::SandForce => add(
+                    actor,
+                    21,
+                    if self.effective_weather(dex) == dex.effects.sand
+                        && [dex.effects.rock, dex.effects.ground, dex.effects.steel]
+                            .contains(&m.move_type)
+                    {
+                        5325
+                    } else {
+                        4096
+                    },
+                ),
+                Ability::Pixilate
+                | Ability::Aerilate
+                | Ability::Refrigerate
+                | Ability::Galvanize
+                | Ability::Normalize
+                | Ability::Dragonize => add(
+                    actor,
+                    23,
+                    if m.type_changer_boosted == Some(attacking) {
+                        4915
+                    } else {
+                        4096
+                    },
+                ),
+                Ability::Technician => add(actor, 30, if value <= 60 { 6144 } else { 4096 }),
+                Ability::ToughClaws => add(actor, 21, if m.contact { 5325 } else { 4096 }),
+                Ability::IronFist => add(actor, 23, if m.punch { 4915 } else { 4096 }),
+                Ability::MegaLauncher => add(actor, 19, if m.pulse { 6144 } else { 4096 }),
+                Ability::Sharpness => add(actor, 19, if m.slicing { 6144 } else { 4096 }),
+                Ability::StrongJaw => add(actor, 19, if m.bite { 6144 } else { 4096 }),
+                Ability::Reckless => add(actor, 23, if m.recoil.is_some() { 4915 } else { 4096 }),
+                Ability::Sheerforce => add(
+                    actor,
+                    21,
+                    if m.sheer_force || m.sheer_force_boosted {
+                        5325
+                    } else {
+                        4096
+                    },
+                ),
+                Ability::Punkrock => add(actor, 7, if m.sound { 5325 } else { 4096 }),
+                _ => (),
+                }
+                // `moves:knockoff.onBasePower`: the 1.5x boost only applies
+                // when the target's item passes the TakeItem check, so a Mega
+                // Stone on its own base form neither boosts nor is removed.
+                if m.hooks & crate::effects::hook::KNOCK_OFF != 0
+                    && d.item != 0
+                    && !dex.item_take_refused(d.item, d.base_species)
+                {
+                    add(actor, 0, 6144);
+                }
+            }
+            ModifierEvent::Attack | ModifierEvent::SpecialAttack => {
+                if matches!(
+                    attacking,
+                    Ability::Blaze | Ability::Torrent | Ability::Overgrow | Ability::Swarm
+                ) {
+                    let same_type = match attacking {
+                        Ability::Blaze => m.move_type == dex.effects.fire,
+                        Ability::Torrent => m.move_type == dex.effects.water,
+                        Ability::Overgrow => m.move_type == dex.effects.grass,
+                        Ability::Swarm => m.move_type == dex.effects.bug,
+                        _ => unreachable!(),
+                    };
+                    add(
+                        actor,
+                        5,
+                        if u32::from(a.hp) * 3 <= u32::from(a.stats[0]) && same_type {
+                            6144
+                        } else {
+                            4096
+                        },
+                    );
+                }
+                if matches!(event, ModifierEvent::Attack) && attacking == Ability::HugePower {
+                    add(actor, 5, 8192);
+                }
+                if matches!(event, ModifierEvent::SpecialAttack) && attacking == Ability::SolarPower
+                {
+                    // The handler exists outside sun too. Keep the no-op entry
+                    // for exact priority ties/RNG against defensive handlers.
+                    add(
+                        actor,
+                        5,
+                        if self.effective_weather(dex) == dex.effects.sun {
+                            6144
+                        } else {
+                            4096
+                        },
+                    );
+                }
+                // `abilities:guts.onModifyAtk` (priority 5) boosts the holder's
+                // Attack while it has any major status.
+                if matches!(event, ModifierEvent::Attack) && attacking == Ability::Guts {
+                    add(
+                        actor,
+                        5,
+                        if a.status != 0 { 6144 } else { 4096 },
+                    );
+                }
+                // `abilities:waterbubble.onModifyAtk/SpA` doubles the holder's
+                // Water attacks (default priority 0).
+                if attacking == Ability::Waterbubble {
+                    add(
+                        actor,
+                        0,
+                        if m.move_type == dex.effects.water {
+                            8192
+                        } else {
+                            4096
+                        },
+                    );
+                }
+                // Defender-owned `onSourceModifyAtk/SpA` weakeners. Heatproof
+                // and Purifying Salt carry priorities 6/5; Water Bubble uses
+                // 5/5.
+                match defending {
+                    Ability::Heatproof => add(
+                        target,
+                        if matches!(event, ModifierEvent::Attack) {
+                            6
+                        } else {
+                            5
+                        },
+                        if m.move_type == dex.effects.fire {
+                            2048
+                        } else {
+                            4096
+                        },
+                    ),
+                    Ability::Purifyingsalt => add(
+                        target,
+                        if matches!(event, ModifierEvent::Attack) {
+                            6
+                        } else {
+                            5
+                        },
+                        if m.move_type == dex.effects.ghost {
+                            2048
+                        } else {
+                            4096
+                        },
+                    ),
+                    Ability::Waterbubble => add(
+                        target,
+                        5,
+                        if m.move_type == dex.effects.fire {
+                            2048
+                        } else {
+                            4096
+                        },
+                    ),
+                    _ => (),
+                }
+                if defending == Ability::ThickFat {
+                    add(
+                        target,
+                        if matches!(event, ModifierEvent::Attack) {
+                            6
+                        } else {
+                            5
+                        },
+                        if m.move_type == dex.effects.ice || m.move_type == dex.effects.fire {
+                            2048
+                        } else {
+                            4096
+                        },
+                    );
+                }
+            }
+            ModifierEvent::Damage => {
+                match defending {
+                    Ability::Filter => {
+                        add(target, 0, if effectiveness > 0 { 3072 } else { 4096 })
+                    }
+                    Ability::Multiscale => {
+                        add(target, 0, if d.hp == d.stats[0] { 2048 } else { 4096 })
+                    }
+                    // `abilities:fluffy.onSourceModifyDamage`: Fire doubles,
+                    // contact halves, applied in that order on one ratio.
+                    Ability::Fluffy => {
+                        let modifier = match (m.move_type == dex.effects.fire, m.contact) {
+                            (true, true) => 4096,
+                            (true, false) => 8192,
+                            (false, true) => 2048,
+                            (false, false) => 4096,
+                        };
+                        add(target, 0, modifier)
+                    }
+                    // `abilities:punkrock.onSourceModifyDamage`.
+                    Ability::Punkrock => add(target, 0, if m.sound { 2048 } else { 4096 }),
+                    _ => (),
+                }
+                // `abilities:sniper.onModifyDamage` is attacker-owned: the
+                // holder's own critical hits deal 1.5x.
+                if attacking == Ability::Sniper {
+                    add(actor, 0, if critical { 6144 } else { 4096 });
+                }
+            }
+            // `abilities:furcoat|marvelscale|grasspelt.onModifyDef` all carry
+            // priority 6 and chain with the holder's item modifiers.
+            ModifierEvent::Defense => {
+                if defending == Ability::Furcoat {
+                    add(target, 6, 8192);
+                }
+                if defending == Ability::Marvelscale {
+                    add(target, 6, if d.status != 0 { 6144 } else { 4096 });
+                }
+                if defending == Ability::Grasspelt {
+                    add(
+                        target,
+                        6,
+                        if self.terrain_id(dex) == dex.effects.grassy_terrain {
+                            6144
+                        } else {
+                            4096
+                        },
+                    );
+                }
+            }
+            ModifierEvent::SpecialDefense => {}
+        }
+        if matches!(event, ModifierEvent::BasePower) && defending == Ability::DrySkin {
+            // SourceBasePower is a defender-owned hook. Retain the no-op
+            // outside Fire for exact handler priority/speed ordering.
+            add(
+                target,
+                17,
+                if m.move_type == dex.effects.fire {
+                    5120
+                } else {
+                    4096
+                },
+            );
+        }
+        // `helpinghand` condition (priority 10, condition sub-order 2): the
+        // stored multiplier chains into the holder's BasePower.
+        if matches!(event, ModifierEvent::BasePower)
+            && let Some(state) = a.volatiles.get(&dex.effects.helping_hand)
+        {
+            hooks.push((
+                Priority {
+                    priority: 10 * 10000,
+                    speed: self.mon(actor).cached_speed,
+                    sub_order: 2,
+                    ..Default::default()
+                },
+                state.values.first().copied().unwrap_or(6144) as u32,
+            ));
+        }
+        let terrain = self.terrain_id(dex);
+        if matches!(event, ModifierEvent::BasePower) && terrain != 0 {
+            hooks.push((
+                Priority {
+                    priority: 60000,
+                    sub_order: 5,
+                    ..Default::default()
+                },
+                self.terrain_power_modifier(dex, context),
+            ));
+        }
+        // `moves:expandingforce.onBasePower` (priority 0): 1.5x for a grounded
+        // user in Psychic Terrain. It chains after the terrain's own 1.3x
+        // boost, mirroring the reference's handler priority order.
+        if matches!(event, ModifierEvent::BasePower)
+            && m.hooks & crate::effects::hook::EXPANDING_FORCE != 0
+            && terrain == dex.effects.psychic_terrain
+            && self.grounded(dex, actor)
+        {
+            hooks.push((
+                Priority {
+                    speed: self.mon(actor).cached_speed,
+                    ..Default::default()
+                },
+                6144,
+            ));
+        }
+        if matches!(event, ModifierEvent::Damage) {
+            // onAny screen hooks exist on both sides, even when their predicate
+            // returns no modifier. Side handlers have no Pokémon speed.
+            for (side, state) in self.sides.iter().enumerate() {
+                for &id in state.conditions.keys() {
+                    let matches_category = (id == dex.effects.reflect
+                        && m.category == Category::Physical)
+                        || (id == dex.effects.light_screen && m.category == Category::Special);
+                    if id == dex.effects.reflect || id == dex.effects.light_screen {
+                        hooks.push((
+                            Priority {
+                                sub_order: 4,
+                                ..Default::default()
+                            },
+                            if target != actor
+                                && target.side as usize == side
+                                && matches_category
+                                && !critical
+                                && attacking != Ability::Infiltrator
+                            {
+                                2732
+                            } else {
+                                4096
+                            },
+                        ));
+                    } else if id == dex.effects.aurora_veil {
+                        // The veil halves both categories but never stacks with
+                        // the matching screen (that screen's own handler wins).
+                        let screen_takes_over = (m.category == Category::Physical
+                            && state.conditions.contains_key(&dex.effects.reflect))
+                            || (m.category == Category::Special
+                                && state
+                                    .conditions
+                                    .contains_key(&dex.effects.light_screen));
+                        hooks.push((
+                            Priority {
+                                sub_order: 4,
+                                ..Default::default()
+                            },
+                            if target != actor
+                                && target.side as usize == side
+                                && !screen_takes_over
+                                && !critical
+                                && attacking != Ability::Infiltrator
+                            {
+                                2732
+                            } else {
+                                4096
+                            },
+                        ));
+                    }
+                }
+            }
+        }
+        if matches!(event, ModifierEvent::Damage) {
+            let item = dex.effects.items[self.mon(actor).item as usize];
+            if matches!(item, Item::LifeOrb | Item::ExpertBelt) {
+                hooks.push((
+                    Priority {
+                        speed: self.mon(actor).cached_speed,
+                        sub_order: 8,
+                        ..Default::default()
+                    },
+                    if item == Item::LifeOrb {
+                        5324
+                    } else if effectiveness > 0 {
+                        4915
+                    } else {
+                        4096
+                    },
+                ));
+            }
+        }
+        // `abilities:friendguard.onAnyModifyDamage`: every active holder of the
+        // ability registers a handler for any damage event (including the
+        // target's own, which returns no modifier); the conditional no-op still
+        // participates in speed-tie ordering.
+        if matches!(event, ModifierEvent::Damage) {
+            for holder in self.active_entities(false) {
+                if dex.effects.abilities[self.mon(holder).ability as usize]
+                    != Ability::Friendguard
+                {
+                    continue;
+                }
+                let modifier = if holder != target && holder.side == target.side {
+                    3072
+                } else {
+                    4096
+                };
+                hooks.push((
+                    Priority {
+                        speed: self.mon(holder).cached_speed,
+                        sub_order: 7,
+                        ..Default::default()
+                    },
+                    modifier,
+                ));
+            }
+        }
+        if matches!(event, ModifierEvent::Attack | ModifierEvent::SpecialAttack)
+            && self
+                .mon(actor)
+                .volatiles
+                .contains_key(&dex.effects.flash_fire)
+        {
+            hooks.push((
+                Priority {
+                    priority: 5 * 10000,
+                    speed: self.mon(actor).cached_speed,
+                    sub_order: 2,
+                    ..Default::default()
+                },
+                if attacking == Ability::FlashFire && m.move_type == dex.effects.fire {
+                    6144
+                } else {
+                    4096
+                },
+            ));
+        }
+        super::item_ports::collect_hooks(self, dex, event, context, &mut hooks)?;
+        let participated = !hooks.is_empty();
+        speed_sort(&mut hooks, &mut self.rng, |h| h.0);
+        let folded = hooks
+            .into_iter()
+            .fold(4096, |combined, (_, modifier)| {
+                damage::chain_modifiers(combined, modifier)
+            });
+        Ok((folded, participated))
+    }
+
+    pub(super) fn modify_value(
+        &mut self,
+        dex: &Dex,
+        event: ModifierEvent,
+        context: MoveContext<'_>,
+        value: u32,
+    ) -> Result<u32> {
+        let modifier = self.modifiers(dex, event, context, value)?;
+        Ok(stats::modify(value, modifier))
+    }
+
+    pub(super) fn damage_modifier(
+        &mut self,
+        dex: &Dex,
+        context: MoveContext<'_>,
+    ) -> Result<u32> {
+        self.modifiers(dex, ModifierEvent::Damage, context, 0)
+    }
+}
+
+impl Ability {
+    /// Native port gate. An ability is only executable when every reference
+    /// callback it declares has a native port; anything else stays an explicit
+    /// operational error rather than a silent no-op. Flipping a variant here is
+    /// the *only* way to enable it, so the classifier cannot drift from the
+    /// implementation.
+    pub fn is_ported(self) -> bool {
+        !matches!(
+            self,
+            Ability::Unimplemented
+            | Ability::Aftermath
+            | Ability::Analytic
+            | Ability::Angerpoint
+            | Ability::Anticipation
+            | Ability::Aromaveil
+            | Ability::Auraguard
+            | Ability::Battlebond
+            | Ability::Berserk
+            | Ability::Bigpecks
+            | Ability::Cheekpouch
+            | Ability::Corrosion
+            | Ability::Cudchew
+            | Ability::Curiousmedicine
+            | Ability::Cursedbody
+            | Ability::Cutecharm
+            | Ability::Disguise
+            | Ability::Earlybird
+            | Ability::Eelevate
+            | Ability::Electromorphosis
+            | Ability::Embodyaspectcornerstone
+            | Ability::Embodyaspecthearthflame
+            | Ability::Embodyaspectteal
+            | Ability::Embodyaspectwellspring
+            | Ability::Emergencyexit
+            | Ability::Fairyaura
+            | Ability::Firemane
+            | Ability::Forecast
+            | Ability::Forewarn
+            | Ability::Frisk
+            | Ability::Gluttony
+            | Ability::Guarddog
+            | Ability::Gulpmissile
+            | Ability::Harvest
+            | Ability::Healer
+            | Ability::Heavymetal
+            | Ability::Hungerswitch
+            | Ability::Hustle
+            | Ability::Iceface
+            | Ability::Illuminate
+            | Ability::Illusion
+            | Ability::Imposter
+            | Ability::Innardsout
+            | Ability::Keeneye
+            | Ability::Klutz
+            | Ability::Leafguard
+            | Ability::Libero
+            | Ability::Lightmetal
+            | Ability::Longreach
+            | Ability::Magicbounce
+            | Ability::Magician
+            | Ability::Megasol
+            | Ability::Merciless
+            | Ability::Mimicry
+            | Ability::Minus
+            | Ability::Moldbreaker
+            | Ability::Moody
+            | Ability::Moxie
+            | Ability::Mummy
+            | Ability::Noguard
+            | Ability::Opportunist
+            | Ability::Parentalbond
+            | Ability::Pickpocket
+            | Ability::Pickup
+            | Ability::Piercingdrill
+            | Ability::Plus
+            | Ability::Poisonpoint
+            | Ability::Pressure
+            | Ability::Protean
+            | Ability::Quickdraw
+            | Ability::Rattled
+            | Ability::Receiver
+            | Ability::Ripen
+            | Ability::Rivalry
+            | Ability::Runaway
+            | Ability::Sandspit
+            | Ability::Screencleaner
+            | Ability::Seedsower
+            | Ability::Shadowtag
+            | Ability::Shedskin
+            | Ability::Shielddust
+            | Ability::Shieldsdown
+            | Ability::Skilllink
+            | Ability::Spicyspray
+            | Ability::Stakeout
+            | Ability::Stall
+            | Ability::Stalwart
+            | Ability::Stancechange
+            | Ability::Steadfast
+            | Ability::Steelyspirit
+            | Ability::Stench
+            | Ability::Stickyhold
+            | Ability::Suctioncups
+            | Ability::Supersweetsyrup
+            | Ability::Supremeoverlord
+            | Ability::Surgesurfer
+            | Ability::Sweetveil
+            | Ability::Symbiosis
+            | Ability::Tangledfeet
+            | Ability::Toxicdebris
+            | Ability::Trace
+            | Ability::Unseenfist
+            | Ability::Vitalspirit
+            | Ability::Wanderingspirit
+            | Ability::Whitesmoke
+            | Ability::Zerotohero
+        )
+    }
+}

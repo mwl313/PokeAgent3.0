@@ -1,0 +1,1282 @@
+//! The JSON adapter runs once when a shared immutable Dex is loaded. Battles
+//! use compact numeric indices and native structs, not JSON or name lookups.
+use crate::{
+    EngineError, Result,
+    stats::{Nature, STAT_NAMES},
+};
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use sha2::{Digest, Sha256};
+use std::{collections::BTreeMap, path::Path};
+
+pub type Id = u16;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Species {
+    pub id: Id,
+    pub base_stats: [u16; 6],
+    pub types: Vec<Id>,
+    pub abilities: Vec<Id>,
+    pub fixed_gender: Option<u8>,
+    pub max_hp: Option<u16>,
+    pub weight_hg: u32,
+    pub base_species: Id,
+    pub is_mega: bool,
+    /// Reference `nfe`: the species has an evolution (Eviolite predicate).
+    pub nfe: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Category {
+    Physical,
+    Special,
+    Status,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Target {
+    Normal,
+    AdjacentFoe,
+    AdjacentAlly,
+    AdjacentAllyOrSelf,
+    Any,
+    RandomNormal,
+    SelfOnly,
+    AllAdjacent,
+    AllAdjacentFoes,
+    All,
+    AllySide,
+    FoeSide,
+    AllyTeam,
+    Allies,
+    Scripted,
+}
+
+impl Target {
+    pub fn parse(s: &str) -> Result<Self> {
+        Ok(match s {
+            "normal" => Self::Normal,
+            "adjacentFoe" => Self::AdjacentFoe,
+            "adjacentAlly" => Self::AdjacentAlly,
+            "adjacentAllyOrSelf" => Self::AdjacentAllyOrSelf,
+            "any" => Self::Any,
+            "randomNormal" => Self::RandomNormal,
+            "self" => Self::SelfOnly,
+            "allAdjacent" => Self::AllAdjacent,
+            "allAdjacentFoes" => Self::AllAdjacentFoes,
+            "all" => Self::All,
+            "allySide" => Self::AllySide,
+            "foeSide" => Self::FoeSide,
+            "allyTeam" => Self::AllyTeam,
+            "allies" => Self::Allies,
+            "scripted" => Self::Scripted,
+            _ => return Err(EngineError::AssetMismatch(format!("unknown target {s}"))),
+        })
+    }
+
+    pub fn chooses_target(self) -> bool {
+        matches!(
+            self,
+            Self::Normal
+                | Self::AdjacentFoe
+                | Self::AdjacentAlly
+                | Self::AdjacentAllyOrSelf
+                | Self::Any
+        )
+    }
+
+    pub fn valid_location(self, own_slot: u8, loc: i8) -> bool {
+        if loc == 0 {
+            return !self.chooses_target();
+        }
+        if !self.chooses_target() || own_slot > 1 || !(-2..=2).contains(&loc) {
+            return false;
+        }
+        let is_self = loc == -(own_slot as i8 + 1);
+        match self {
+            Self::Normal | Self::Any => !is_self,
+            Self::AdjacentFoe => loc > 0,
+            Self::AdjacentAlly => loc < 0 && !is_self,
+            Self::AdjacentAllyOrSelf => loc < 0,
+            _ => false,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Move {
+    pub id: Id,
+    pub move_type: Id,
+    pub category: Category,
+    pub target: Target,
+    pub power: u16,
+    pub accuracy: Option<u8>,
+    pub pp: u8,
+    pub priority: i8,
+    pub contact: bool,
+    pub protect: bool,
+    pub sound: bool,
+    pub bullet: bool,
+    pub powder: bool,
+    pub pulse: bool,
+    pub punch: bool,
+    pub slicing: bool,
+    pub bite: bool,
+    pub no_pp_boosts: bool,
+    pub crit_ratio: u8,
+    pub hit: crate::effects::HitEffect,
+    pub self_effect: Option<crate::effects::HitEffect>,
+    pub secondaries: Vec<crate::effects::SecondaryEffect>,
+    pub ignore_immunity: bool,
+    /// Cold reference metadata; action callbacks must never mutate shared Dex.
+    pub tracks_target: bool,
+    pub conversion_excluded: bool,
+    pub normalize_excluded: bool,
+    pub is_z: bool,
+    pub is_max: bool,
+    pub smart_target: bool,
+    pub pledge_combo: bool,
+    pub defrost: bool,
+    pub thaws_target: bool,
+    /// Protect-family contact punishment, executed by the blocking volatile.
+    pub protect_punish: crate::effects::ProtectPunish,
+    pub recoil: Option<[u16; 2]>,
+    pub drain: Option<[u16; 2]>,
+    pub side_condition: Id,
+    pub weather: Id,
+    pub terrain: Id,
+    /// `willCrit: true` moves always land a critical hit without a crit draw.
+    pub will_crit: bool,
+    /// `ignoreDefensive` moves treat the defender's defense stages as zero.
+    pub ignore_defensive: bool,
+    /// Some moves carry a permanent Sheer Force marker without declaring
+    /// secondaries (Electro Shot in the pinned data).
+    pub sheer_force_boosted: bool,
+    /// `ignoreEvasion` moves treat the target's evasion stages as zero.
+    pub ignore_evasion: bool,
+    /// One-hit KO moves. `Some(0)` is plain `ohko: true`; `Some(type)` is a
+    /// typed OHKO such as Sheer Cold's `ohko: 'Ice'`.
+    pub ohko: Option<Id>,
+    /// Fixed damage sources resolved exactly as the reference does.
+    pub fixed_damage: Option<FixedDamage>,
+    /// Reference `selfdestruct` lifecycle.
+    pub self_destruct: SelfDestructMode,
+    /// Ported `basePowerCallback` formula, if any.
+    pub bp_callback: Option<crate::effects::BasePowerKind>,
+    /// Ported action-local callbacks (see `crate::effects::hook`).
+    pub hooks: u16,
+    /// `overrideOffensiveStat` / `overrideDefensiveStat` as `stats` indices.
+    pub override_offensive_stat: Option<u8>,
+    pub override_defensive_stat: Option<u8>,
+    /// `overrideOffensivePokemon: 'target'` uses the defender's Attack.
+    pub override_offensive_target: bool,
+    /// `selfBoost` applied as a self-targeted hit after a successful move.
+    pub self_boost: Option<crate::effects::HitEffect>,
+    /// `breaksProtect` removes protection from every surviving target.
+    pub breaks_protect: bool,
+    /// `multihit` hit range. A fixed count is `[n, n]`.
+    pub multihit: Option<[u8; 2]>,
+    /// Reference `selfSwitch`: the user leaves the field after the move.
+    pub self_switch: SelfSwitch,
+    /// Reference `forceSwitch`: the target is dragged out at the end of the
+    /// action (`roar`, `whirlwind`, `dragontail`, `circlethrow`).
+    pub force_switch: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SelfDestructMode {
+    None,
+    /// The user faints before any target resolution (`explosion`).
+    Always,
+    /// The user faints after hitting at least one target (`finalgambit`).
+    IfHit,
+}
+
+/// Reference `selfSwitch`. `CopyVolatile` (Baton Pass) and `ShedTail` carry
+/// their own volatile-transfer payload and stay explicit operational errors
+/// until that payload is ported.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SelfSwitch {
+    None,
+    /// Plain pivot (`uturn`, `voltswitch`, `flipturn`, `partingshot`,
+    /// `teleport`, `chillyreception`).
+    Switch,
+    /// `selfSwitch: 'copyvolatile'` (Baton Pass).
+    CopyVolatile,
+    /// `selfSwitch: 'shedtail'` (Shed Tail).
+    ShedTail,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum FixedDamage {
+    /// `damage: 'level'` (Night Shade, Seismic Toss).
+    Level,
+    /// `damage: <number>` (Dragon Rage, Sonic Boom).
+    Flat(u16),
+    /// Super Fang: `max(1, floor(target hp / 2))`.
+    HalfTargetHp,
+    /// Endeavor: `target hp - user hp`.
+    Endeavor,
+    /// Final Gambit: the user's current HP, fainting the user immediately.
+    UserHp,
+}
+
+#[derive(Debug, Clone)]
+pub struct Dex {
+    pub species: Vec<Species>,
+    pub moves: Vec<Move>,
+    pub natures: Vec<Nature>,
+    pub names: BTreeMap<String, Vec<String>>,
+    pub ids: BTreeMap<String, BTreeMap<String, Id>>,
+    pub asset_digest: String,
+    pub type_chart: Vec<Vec<i8>>,
+    pub legal_starting_species: Vec<bool>,
+    pub legal_items: Vec<bool>,
+    pub legal_moves_by_species: Vec<Vec<Id>>,
+    pub legal_abilities_by_species: Vec<Vec<Id>>,
+    pub effects: crate::effects::NativeEffects,
+}
+
+fn to_id(s: &str) -> String {
+    s.chars()
+        .filter(char::is_ascii_alphanumeric)
+        .flat_map(char::to_lowercase)
+        .collect()
+}
+
+/// True when the encoded reference data anywhere contains a native-port
+/// placeholder. `encode` replaces every JavaScript function with
+/// `{"callback": "<owner>"}`, so a recursive scan finds nested handlers too.
+fn collect_callback_keys(value: &Value, out: &mut Vec<String>) {
+    match value {
+        Value::Object(map) => {
+            if let Some(owner) = map.get("callback").and_then(|v| v.as_str()) {
+                out.push(owner.to_string());
+            }
+            for nested in map.values() {
+                collect_callback_keys(nested, out);
+            }
+        }
+        Value::Array(items) => items.iter().for_each(|v| collect_callback_keys(v, out)),
+        _ => {}
+    }
+}
+
+/// Declarative move fields the native generic executor handles exactly.
+const HANDLED_MOVE_FIELDS: &[&str] = &[
+    // Cold catalogue metadata, never read as behaviour during a battle.
+    "id",
+    "name",
+    "fullname",
+    "num",
+    "gen",
+    "effectType",
+    "exists",
+    "isNonstandard",
+    // Client/AI-facing classification only; carries no battle behaviour.
+    "tags",
+    "sourceEffect",
+    "shortDesc",
+    "desc",
+    "rating",
+    "isViable",
+    "contestType",
+    "realMove",
+    "zMove",
+    "maxMove",
+    "zMovePower",
+    "isMax",
+    "isZ",
+    "noCopy",
+    "noSketch",
+    "spreadHit",
+    "affectsFainted",
+    "hasSheerForceBoost",
+    // Executed primitive data.
+    "type",
+    "baseMoveType",
+    "category",
+    "basePower",
+    "accuracy",
+    "pp",
+    "priority",
+    "target",
+    "flags",
+    "critRatio",
+    "ignoreAbility",
+    "ignoreDefensive",
+    "ignoreImmunity",
+    "ignoreNegativeOffensive",
+    "ignoreOffensive",
+    "ignorePositiveDefensive",
+    "forceSTAB",
+    "noPPBoosts",
+    "secondary",
+    "secondaries",
+    "self",
+    "boosts",
+    "heal",
+    "status",
+    "volatileStatus",
+    "drain",
+    "recoil",
+    "thawsTarget",
+    "willCrit",
+    "basePowerCallback",
+    "ignoreDefensive",
+    "ignoreEvasion",
+    "ohko",
+    "selfdestruct",
+    "damage",
+    "damageCallback",
+    // Fields whose behaviour is a ported per-move callback. The callback keys
+    // below gate which exact implementations are accepted.
+    "onTry",
+    "onDisableMove",
+    "onTryHit",
+    "onModifyMove",
+    "onModifyPriority",
+    "onEffectiveness",
+    // Move-owned callbacks with a ported native implementation. The callback
+    // keys in `PORTED_MOVE_CALLBACK_KEYS` gate which exact handlers are legal.
+    "onBasePower",
+    "onAfterHit",
+    "onTryImmunity",
+    "onHit",
+    "overrideOffensiveStat",
+    "overrideDefensiveStat",
+    "overrideOffensivePokemon",
+    "selfBoost",
+    "breaksProtect",
+    "multihit",
+    "selfSwitch",
+    "forceSwitch",
+    // Embedded condition declaration (e.g. `throatchop`). The condition's own
+    // callbacks are still gated by `PORTED_MOVE_CALLBACK_KEYS`.
+    "condition",
+];
+
+/// Reference callback keys with a native port. A move is only classified as
+/// executable when every callback it declares appears here.
+const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
+    "moves:superfang.damageCallback",
+    "moves:endeavor.damageCallback",
+    "moves:finalgambit.damageCallback",
+    "moves:acrobatics.basePowerCallback",
+    "moves:electroball.basePowerCallback",
+    "moves:eruption.basePowerCallback",
+    "moves:flail.basePowerCallback",
+    "moves:grassknot.basePowerCallback",
+    "moves:gyroball.basePowerCallback",
+    "moves:hardpress.basePowerCallback",
+    "moves:heatcrash.basePowerCallback",
+    "moves:heavyslam.basePowerCallback",
+    "moves:hex.basePowerCallback",
+    "moves:infernalparade.basePowerCallback",
+    "moves:lastrespects.basePowerCallback",
+    "moves:lowkick.basePowerCallback",
+    "moves:powertrip.basePowerCallback",
+    "moves:reversal.basePowerCallback",
+    "moves:risingvoltage.basePowerCallback",
+    "moves:storedpower.basePowerCallback",
+    "moves:waterspout.basePowerCallback",
+    // Pure Dynamax guards. The pinned Champions format has no Dynamax and no
+    // Max move state, so `target.volatiles['dynamax']` can never be set; the
+    // reference callback is unreachable and natively a no-op.
+    "moves:grassknot.onTryHit",
+    "moves:heatcrash.onTryHit",
+    "moves:heavyslam.onTryHit",
+    "moves:lowkick.onTryHit",
+    // Ported action-local callbacks. Each key is unique to one move, so the
+    // classifier still rejects any move whose declared behaviour differs.
+    "moves:fakeout.onTry",
+    "moves:fakeout.onDisableMove",
+    "moves:suckerpunch.onTry",
+    "moves:hurricane.onModifyMove",
+    "moves:thunder.onModifyMove",
+    "moves:blizzard.onModifyMove",
+    "moves:grassyglide.onModifyPriority",
+    "moves:freezedry.onEffectiveness",
+    // Ported action-local callbacks of the `selfSwitch` pivot family.
+    "moves:teleport.onTry",
+    "moves:partingshot.onHit",
+    // Item removal: the boost is gated on the same TakeItem check as the
+    // removal itself, so both halves are one ported family.
+    "moves:knockoff.onBasePower",
+    "moves:knockoff.onAfterHit",
+    // Item swap: immunity precedes accuracy; the swap itself is native.
+    "moves:trick.onTryImmunity",
+    "moves:trick.onHit",
+    "moves:switcheroo.onTryImmunity",
+    "moves:switcheroo.onHit",
+    // Dire Claw's Champions secondary samples one of three major statuses and
+    // applies it with `trySetStatus`; the 30% chance stays declarative.
+    "moves:direclaw.secondary.onHit",
+    "moves:direclaw.secondaries.0.onHit",
+    // Throat Chop's 100% secondary adds the two-turn sound-lock volatile.
+    "moves:throatchop.secondary.onHit",
+    "moves:throatchop.secondaries.0.onHit",
+    // The embedded `throatchop` condition: start/end messages, request-level
+    // sound-move disabling and the priority-6 BeforeMove refusal.
+    "moves:throatchop.condition.onStart",
+    "moves:throatchop.condition.onEnd",
+    "moves:throatchop.condition.onDisableMove",
+    "moves:throatchop.condition.onBeforeMove",
+    "moves:throatchop.condition.onModifyMove",
+    // Expanding Force's Psychic Terrain spread conversion and 1.5x boost.
+    "moves:expandingforce.onModifyMove",
+    "moves:expandingforce.onBasePower",
+    // Aurora Veil's snow-only Try gate plus its side condition: Light Clay
+    // duration callback, the shared screen damage modifier, and the public
+    // side start/end messages.
+    "moves:auroraveil.onTry",
+    "moves:auroraveil.condition.durationCallback",
+    "moves:auroraveil.condition.onAnyModifyDamage",
+    "moves:auroraveil.condition.onSideStart",
+    "moves:auroraveil.condition.onSideEnd",
+];
+
+/// Ported action-local callbacks, keyed by move id. Every entry must have its
+/// reference callbacks listed in `PORTED_MOVE_CALLBACK_KEYS` so the classifier
+/// rejects any move whose declared behaviour differs from the native port.
+/// Reference move flags whose behaviour the native engine implements, or that
+/// can only matter through an effect that is itself still an explicit
+/// operational error. A move carrying any other flag (for example
+/// `cantusetwice`, whose request-level disable is not ported) stays
+/// `Unimplemented` instead of silently behaving as a plain attack.
+const HANDLED_MOVE_FLAGS: &[&str] = &[
+    // Implemented flag-driven behaviour.
+    "contact",
+    "protect",
+    "powder",
+    "punch",
+    "bite",
+    "slicing",
+    "pulse",
+    "defrost",
+    // NOTE: `recharge` stays unhandled until the locked "Recharge" request
+    // entry exists natively; the volatile alone would let a recharging Pokémon
+    // act again, which is a silent approximation.
+    // Cold / AI-facing flags.
+    "allyanim",
+    "distance",
+    "failcopycat",
+    "failencore",
+    "failinstruct",
+    "failmefirst",
+    "failmimic",
+    "futuremove",
+    "metronome",
+    "mirror",
+    "noassist",
+    "nosketch",
+    "nosleeptalk",
+    "reflectable",
+    "snatch",
+    "sound",
+    // Flags whose only consumers (Bulletproof, Dancer, Wind Rider, Gravity,
+    // Heal Block, Substitute, Minimize, Knock Off's item gate) remain explicit
+    // errors, so they cannot change an implemented mechanic yet.
+    "bullet",
+    "bypasssub",
+    "dance",
+    "gravity",
+    "heal",
+    "minimize",
+    "nonsky",
+    "noparentalbond",
+    "wind",
+];
+
+fn move_hooks(id: &str) -> u16 {
+    use crate::effects::hook;
+    match id {
+        "fakeout" => hook::FAKE_OUT_FIRST_TURN,
+        "suckerpunch" => hook::SUCKER_PUNCH,
+        "hurricane" | "thunder" => hook::ACCURACY_RAIN_SUN,
+        "blizzard" => hook::ACCURACY_SNOW,
+        "grassyglide" => hook::PRIORITY_GRASSY_GLIDE,
+        "freezedry" => hook::FREEZE_DRY,
+        "knockoff" => hook::KNOCK_OFF,
+        "teleport" => hook::TELEPORT,
+        "partingshot" => hook::PARTING_SHOT,
+        "direclaw" => hook::DIRE_CLAW,
+        "throatchop" => hook::THROAT_CHOP,
+        "expandingforce" => hook::EXPANDING_FORCE,
+        "auroraveil" => hook::AURORA_VEIL,
+        _ => 0,
+    }
+}
+
+/// `overrideOffensiveStat`/`overrideDefensiveStat` names resolved to the
+/// engine's `stats` indices. Only the five non-HP stats are legal here.
+fn stat_index(name: Option<&str>) -> Option<u8> {
+    Some(match name? {
+        "atk" => 1,
+        "def" => 2,
+        "spa" => 3,
+        "spd" => 4,
+        "spe" => 5,
+        _ => return None,
+    })
+}
+
+const HANDLED_STATUSES: &[&str] = &["brn", "par", "slp", "frz", "psn", "tox"];
+const HANDLED_VOLATILES: &[&str] = &["flinch", "confusion", "mustrecharge"];
+
+/// Status/volatile payloads of every declared effect must already have native
+/// behaviour; otherwise the whole move stays an explicit operational error.
+fn effect_payload_handled(effect: &Value) -> bool {
+    let Some(fields) = effect.as_object() else {
+        return true;
+    };
+    for (key, value) in fields {
+        if key == "self" {
+            if !effect_payload_handled(value) {
+                return false;
+            }
+            continue;
+        }
+        if !matches!(
+            key.as_str(),
+            "chance" | "boosts" | "status" | "volatileStatus" | "onHit"
+        ) {
+            return false;
+        }
+        if key == "status" && !value.as_str().is_some_and(|s| HANDLED_STATUSES.contains(&s)) {
+            return false;
+        }
+        if key == "volatileStatus"
+            && !value
+                .as_str()
+                .is_some_and(|s| HANDLED_VOLATILES.contains(&s))
+        {
+            return false;
+        }
+    }
+    true
+}
+
+fn move_effects_handled(data: &Value) -> bool {
+    for key in ["secondary", "self"] {
+        if data.get(key).is_some_and(|v| !v.is_null()) && !effect_payload_handled(&data[key]) {
+            return false;
+        }
+    }
+    if let Some(list) = data["secondaries"].as_array()
+        && !list.iter().all(effect_payload_handled)
+    {
+        return false;
+    }
+    for key in ["status", "volatileStatus"] {
+        if let Some(value) = data[key].as_str() {
+            let handled = if key == "status" {
+                HANDLED_STATUSES.contains(&value)
+            } else {
+                HANDLED_VOLATILES.contains(&value)
+            };
+            if !handled {
+                return false;
+            }
+        }
+    }
+    true
+}
+
+/// Cold-path classification for callback-free moves. A move only becomes
+/// executable when every declared field is natively handled; anything else
+/// remains `Unimplemented` (an explicit operational error), never an
+/// approximation.
+pub(crate) fn classify_move(id: &str, data: &Value) -> crate::effects::MoveBehavior {
+    use crate::effects::MoveBehavior as Behavior;
+    let explicit = Behavior::compile(id);
+    if explicit != Behavior::Unimplemented {
+        return explicit;
+    }
+    // `selfSwitch: 'copyvolatile' | 'shedtail'` moves transfer their volatile
+    // set (and, for Shed Tail, their substitute HP) to the incoming Pokémon.
+    // That payload is not ported, so these stay explicit operational errors.
+    if data["selfSwitch"].as_str().is_some() {
+        return Behavior::Unimplemented;
+    }
+    let mut callbacks = Vec::new();
+    collect_callback_keys(data, &mut callbacks);
+    if callbacks
+        .iter()
+        .any(|key| !PORTED_MOVE_CALLBACK_KEYS.contains(&key.as_str()))
+    {
+        return Behavior::Unimplemented;
+    }
+    if data["flags"].as_object().is_some_and(|flags| {
+        flags.iter().any(|(key, value)| {
+            let on = value.as_u64().unwrap_or(0) != 0 || value.as_bool() == Some(true);
+            on && !HANDLED_MOVE_FLAGS.contains(&key.as_str())
+        })
+    }) {
+        return Behavior::Unimplemented;
+    }
+    if !move_effects_handled(data) {
+        return Behavior::Unimplemented;
+    }
+    let Some(fields) = data.as_object() else {
+        return Behavior::Unimplemented;
+    };
+    if fields
+        .keys()
+        .any(|key| !HANDLED_MOVE_FIELDS.contains(&key.as_str()))
+    {
+        return Behavior::Unimplemented;
+    }
+    if data["category"].as_str() == Some("Status") {
+        Behavior::Effect
+    } else {
+        Behavior::Damage
+    }
+}
+
+/// Cold development diagnostic: the exact reasons `classify_move` refuses a
+/// move. Never called from a battle. Reason strings are stable enough to group
+/// work items by cause:
+///
+/// * `callback:<reference key>` — declared reference callback with no port.
+/// * `field:<json key>` — declarative field the generic executor cannot run.
+/// * `effect:status=<x>` / `effect:volatile=<x>` / `effect:key=<x>` — embedded
+///   status/volatile payload with no native lifecycle.
+pub fn move_block_reasons(id: &str, data: &Value) -> Vec<String> {
+    if crate::effects::MoveBehavior::compile(id) != crate::effects::MoveBehavior::Unimplemented {
+        return Vec::new();
+    }
+    let mut out = Vec::new();
+    if data["selfSwitch"].as_str().is_some() {
+        out.push("field:selfSwitch=string".into());
+    }
+    if data["forceSwitch"].as_bool() == Some(true) {
+        out.push("field:forceSwitch".into());
+    }
+    let mut callbacks = Vec::new();
+    collect_callback_keys(data, &mut callbacks);
+    for key in callbacks {
+        if !PORTED_MOVE_CALLBACK_KEYS.contains(&key.as_str()) {
+            out.push(format!("callback:{key}"));
+        }
+    }
+    if let Some(fields) = data.as_object() {
+        for key in fields.keys() {
+            if !HANDLED_MOVE_FIELDS.contains(&key.as_str()) {
+                out.push(format!("field:{key}"));
+            }
+        }
+    }
+    let mut payload = |prefix: &str, effect: &Value| {
+        let Some(fields) = effect.as_object() else {
+            return;
+        };
+        for (key, value) in fields {
+            if key == "self" {
+                continue;
+            }
+            if !matches!(
+                key.as_str(),
+                "chance" | "boosts" | "status" | "volatileStatus" | "onHit"
+            ) {
+                out.push(format!("effect:key={key}"));
+                continue;
+            }
+            if key == "status"
+                && let Some(name) = value.as_str()
+                && !HANDLED_STATUSES.contains(&name)
+            {
+                out.push(format!("effect:status={name}"));
+            }
+            if key == "volatileStatus"
+                && let Some(name) = value.as_str()
+                && !HANDLED_VOLATILES.contains(&name)
+            {
+                out.push(format!("effect:volatile={name}"));
+            }
+        }
+        let _ = prefix;
+    };
+    for key in ["secondary", "self"] {
+        if data.get(key).is_some_and(|v| !v.is_null()) {
+            payload(key, &data[key]);
+        }
+    }
+    if let Some(list) = data["secondaries"].as_array() {
+        for entry in list {
+            payload("secondaries", entry);
+        }
+    }
+    for key in ["status", "volatileStatus"] {
+        if let Some(name) = data[key].as_str() {
+            let handled = if key == "status" {
+                HANDLED_STATUSES.contains(&name)
+            } else {
+                HANDLED_VOLATILES.contains(&name)
+            };
+            if !handled {
+                let prefix = if key == "status" { "status" } else { "volatile" };
+                out.push(format!("effect:{prefix}={name}"));
+            }
+        }
+    }
+    out.sort();
+    out.dedup();
+    out
+}
+
+/// Cold development diagnostic for a blocked ability: the declared reference
+/// callback keys that have no native port.
+pub fn ability_block_reasons(id: &str, data: &Value) -> Vec<String> {
+    if crate::effects::Ability::compile(id).is_ported() {
+        return Vec::new();
+    }
+    let mut callbacks = Vec::new();
+    collect_callback_keys(data, &mut callbacks);
+    callbacks.sort();
+    callbacks.dedup();
+    callbacks
+        .into_iter()
+        .map(|key| format!("callback:{key}"))
+        .collect()
+}
+
+/// Cold development diagnostic for a blocked item.
+pub fn item_block_reasons(id: &str, data: &Value) -> Vec<String> {
+    if crate::effects::Item::compile(id) != crate::effects::Item::Unimplemented {
+        return Vec::new();
+    }
+    let mut callbacks = Vec::new();
+    collect_callback_keys(data, &mut callbacks);
+    callbacks.sort();
+    callbacks.dedup();
+    callbacks
+        .into_iter()
+        .map(|key| format!("callback:{key}"))
+        .collect()
+}
+
+impl Dex {
+    pub fn load(dir: &Path) -> Result<Self> {
+        let manifest_bytes = std::fs::read(dir.join("manifest.json"))?;
+        let manifest: Value = serde_json::from_slice(&manifest_bytes)?;
+        if manifest["oracle_commit"] != crate::ORACLE_COMMIT || manifest["format"] != crate::FORMAT
+        {
+            return Err(EngineError::AssetMismatch("rule/reference pin".into()));
+        }
+        let bytes = std::fs::read(dir.join("dex.json"))?;
+        let digest = format!("{:x}", Sha256::digest(&bytes));
+        if manifest["files"]["dex.json"]["sha256"] != digest {
+            return Err(EngineError::AssetMismatch("dex content digest".into()));
+        }
+        let value: Value = serde_json::from_slice(&bytes)?;
+        let tables = value["tables"]
+            .as_object()
+            .ok_or_else(|| EngineError::AssetMismatch("tables".into()))?;
+        let mut names = BTreeMap::new();
+        let mut ids = BTreeMap::new();
+        for (kind, table) in tables {
+            let mut ns = vec![String::new()];
+            let mut ix = BTreeMap::new();
+            for row in table
+                .as_array()
+                .ok_or_else(|| EngineError::AssetMismatch(kind.clone()))?
+            {
+                let id = row["id"]
+                    .as_str()
+                    .ok_or_else(|| EngineError::AssetMismatch("id".into()))?;
+                if row["numeric_id"].as_u64() != Some(ns.len() as u64)
+                    || ns.len() > u16::MAX as usize
+                {
+                    return Err(EngineError::AssetMismatch(
+                        "non-contiguous/overflowing IDs".into(),
+                    ));
+                }
+                ix.insert(id.into(), ns.len() as Id);
+                ns.push(id.into());
+            }
+            names.insert(kind.clone(), ns);
+            ids.insert(kind.clone(), ix);
+        }
+        let lookup = |kind: &str, name: &str| -> Result<Id> {
+            if kind == "abilities" && name.is_empty() {
+                return Ok(0);
+            }
+            ids[kind]
+                .get(&to_id(name))
+                .copied()
+                .ok_or_else(|| EngineError::AssetMismatch(format!("unknown {kind}:{name}")))
+        };
+        let mut species = vec![Species {
+            id: 0,
+            base_stats: [0; 6],
+            types: vec![],
+            abilities: vec![],
+            fixed_gender: None,
+            max_hp: None,
+            weight_hg: 0,
+            base_species: 0,
+            is_mega: false,
+            nfe: false,
+        }];
+        for row in tables["species"].as_array().unwrap() {
+            let d = &row["data"];
+            let types = d["types"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|x| lookup("types", x.as_str().unwrap()))
+                .collect::<Result<_>>()?;
+            let abilities = d["abilities"]
+                .as_object()
+                .unwrap()
+                .values()
+                .map(|x| lookup("abilities", x.as_str().unwrap()))
+                .collect::<Result<_>>()?;
+            species.push(Species {
+                id: species.len() as Id,
+                base_stats: STAT_NAMES.map(|k| d["baseStats"][k].as_u64().unwrap() as u16),
+                types,
+                abilities,
+                fixed_gender: match d["gender"].as_str() {
+                    Some("M") => Some(1),
+                    Some("F") => Some(2),
+                    Some("N") => Some(0),
+                    _ => None,
+                },
+                max_hp: d["maxHP"].as_u64().map(|v| v as u16),
+                weight_hg: d["weighthg"].as_u64().unwrap_or(0) as u32,
+                base_species: lookup("species", d["baseSpecies"].as_str().unwrap())?,
+                is_mega: d["isMega"].as_bool().unwrap_or(false),
+                nfe: d["nfe"].as_bool().unwrap_or(false),
+            });
+        }
+        let mut moves = vec![Move {
+            id: 0,
+            move_type: 0,
+            category: Category::Status,
+            target: Target::SelfOnly,
+            power: 0,
+            accuracy: None,
+            pp: 0,
+            priority: 0,
+            contact: false,
+            protect: false,
+            sound: false,
+            bullet: false,
+            powder: false,
+            pulse: false,
+            punch: false,
+            slicing: false,
+            bite: false,
+            no_pp_boosts: false,
+            crit_ratio: 1,
+            hit: Default::default(),
+            self_effect: None,
+            secondaries: vec![],
+            ignore_immunity: false,
+            tracks_target: false,
+            conversion_excluded: false,
+            normalize_excluded: false,
+            is_z: false,
+            is_max: false,
+            smart_target: false,
+            pledge_combo: false,
+            defrost: false,
+            thaws_target: false,
+            protect_punish: crate::effects::ProtectPunish::None,
+            recoil: None,
+            drain: None,
+            side_condition: 0,
+            weather: 0,
+            terrain: 0,
+            will_crit: false,
+            ignore_defensive: false,
+            ignore_evasion: false,
+            sheer_force_boosted: false,
+            ohko: None,
+            fixed_damage: None,
+                self_destruct: SelfDestructMode::None,
+                bp_callback: None,
+                hooks: 0,
+                override_offensive_stat: None,
+                override_defensive_stat: None,
+                override_offensive_target: false,
+                self_boost: None,
+                breaks_protect: false,
+                multihit: None,
+                self_switch: SelfSwitch::None,
+                force_switch: false,
+            }];
+        let mut native_moves = vec![crate::effects::MoveBehavior::Unimplemented];
+        let mut native_move_hooks = vec![0u16];
+        for row in tables["moves"].as_array().unwrap() {
+            let d = &row["data"];
+            let behavior = classify_move(row["id"].as_str().unwrap(), d);
+            native_moves.push(behavior);
+            native_move_hooks.push(move_hooks(row["id"].as_str().unwrap()));
+            let implemented = behavior != crate::effects::MoveBehavior::Unimplemented;
+            let effect = |data: &Value| -> Result<crate::effects::HitEffect> {
+                let condition = |key: &str| -> Result<Id> {
+                    match data[key].as_str() {
+                        Some(name) if implemented => lookup("conditions", name),
+                        Some(name) => Ok(lookup("conditions", name).unwrap_or(0)),
+                        None => Ok(0),
+                    }
+                };
+                Ok(crate::effects::HitEffect {
+                    boosts: ["atk", "def", "spa", "spd", "spe", "accuracy", "evasion"]
+                        .map(|k| data["boosts"][k].as_i64().unwrap_or(0) as i8),
+                    status: condition("status")?,
+                    volatile: condition("volatileStatus")?,
+                    heal: data["heal"]
+                        .as_array()
+                        .map(|v| [v[0].as_u64().unwrap() as u16, v[1].as_u64().unwrap() as u16]),
+                })
+            };
+            moves.push(Move {
+                id: moves.len() as Id,
+                move_type: lookup("types", d["type"].as_str().unwrap())?,
+                category: match d["category"].as_str().unwrap() {
+                    "Physical" => Category::Physical,
+                    "Special" => Category::Special,
+                    _ => Category::Status,
+                },
+                target: Target::parse(d["target"].as_str().unwrap())?,
+                power: d["basePower"].as_u64().unwrap_or(0) as u16,
+                accuracy: d["accuracy"].as_u64().map(|x| x as u8),
+                pp: d["pp"].as_u64().unwrap() as u8,
+                priority: d["priority"].as_i64().unwrap_or(0) as i8,
+                contact: d["flags"]["contact"] == 1,
+                protect: d["flags"]["protect"] == 1,
+                sound: d["flags"]["sound"] == 1,
+                bullet: d["flags"]["bullet"] == 1,
+                powder: d["flags"]["powder"] == 1,
+                pulse: d["flags"]["pulse"] == 1,
+                punch: d["flags"]["punch"] == 1,
+                slicing: d["flags"]["slicing"] == 1,
+                bite: d["flags"]["bite"] == 1,
+                no_pp_boosts: d["noPPBoosts"].as_bool().unwrap_or(false),
+                crit_ratio: d["critRatio"].as_u64().unwrap_or(1) as u8,
+                hit: effect(d)?,
+                self_effect: d.get("self").map(effect).transpose()?,
+                secondaries: d["secondaries"]
+                    .as_array()
+                    .into_iter()
+                    .flatten()
+                    .map(|v| {
+                        Ok(crate::effects::SecondaryEffect {
+                            chance: v["chance"].as_u64().unwrap_or(100) as u8,
+                            target: effect(v)?,
+                            own: v.get("self").map(effect).transpose()?,
+                        })
+                    })
+                    .collect::<Result<_>>()?,
+                ignore_immunity: d["ignoreImmunity"].as_bool().unwrap_or(false),
+                tracks_target: d["tracksTarget"].as_bool().unwrap_or(false),
+                conversion_excluded: matches!(
+                    row["id"].as_str().unwrap(),
+                    "judgment"
+                        | "multiattack"
+                        | "naturalgift"
+                        | "revelationdance"
+                        | "technoblast"
+                        | "terrainpulse"
+                        | "weatherball"
+                ),
+                normalize_excluded: matches!(
+                    row["id"].as_str().unwrap(),
+                    "hiddenpower"
+                        | "judgment"
+                        | "multiattack"
+                        | "naturalgift"
+                        | "revelationdance"
+                        | "struggle"
+                        | "technoblast"
+                        | "terrainpulse"
+                        | "weatherball"
+                ),
+                is_z: d["isZ"]
+                    .as_bool()
+                    .unwrap_or_else(|| d["isZ"].as_str().is_some_and(|value| !value.is_empty())),
+                is_max: d["isMax"]
+                    .as_bool()
+                    .unwrap_or_else(|| d["isMax"].as_str().is_some_and(|value| !value.is_empty())),
+                smart_target: d["smartTarget"].as_bool().unwrap_or(false),
+                pledge_combo: d["flags"]["pledgecombo"] == 1,
+                defrost: d["flags"]["defrost"] == 1,
+                thaws_target: d["thawsTarget"].as_bool().unwrap_or(false),
+                protect_punish: match row["id"].as_str().unwrap() {
+                    "spikyshield" => crate::effects::ProtectPunish::DamageEighthMaxHp,
+                    "banefulbunker" => crate::effects::ProtectPunish::Poison,
+                    "kingsshield" => crate::effects::ProtectPunish::AttackDown,
+                    _ => crate::effects::ProtectPunish::None,
+                },
+                recoil: d["recoil"]
+                    .as_array()
+                    .map(|v| [v[0].as_u64().unwrap() as u16, v[1].as_u64().unwrap() as u16]),
+                drain: d["drain"]
+                    .as_array()
+                    .map(|v| [v[0].as_u64().unwrap() as u16, v[1].as_u64().unwrap() as u16]),
+                terrain: match d["terrain"].as_str() {
+                    Some(name) if implemented => lookup("conditions", name)?,
+                    Some(name) => lookup("conditions", name).unwrap_or(0),
+                    None => 0,
+                },
+                weather: match d["weather"].as_str() {
+                    Some(name) if implemented => lookup("conditions", name)?,
+                    Some(name) => lookup("conditions", name).unwrap_or(0),
+                    None => 0,
+                },
+                side_condition: match d["sideCondition"].as_str() {
+                    Some(name) if implemented => lookup("conditions", name)?,
+                    Some(name) => lookup("conditions", name).unwrap_or(0),
+                    None => 0,
+                },
+                will_crit: d["willCrit"].as_bool().unwrap_or(false),
+                ignore_defensive: d["ignoreDefensive"].as_bool().unwrap_or(false),
+                ignore_evasion: d["ignoreEvasion"].as_bool().unwrap_or(false),
+                sheer_force_boosted: d["hasSheerForceBoost"].as_bool().unwrap_or(false),
+                ohko: match &d["ohko"] {
+                    Value::Bool(true) => Some(0),
+                    Value::String(name) if implemented => Some(lookup("types", name)?),
+                    Value::String(_) => Some(0),
+                    _ => None,
+                },
+                fixed_damage: match &d["damage"] {
+                    Value::String(kind) if kind == "level" => Some(FixedDamage::Level),
+                    Value::Number(value) => Some(FixedDamage::Flat(value.as_u64().unwrap() as u16)),
+                    _ => match d["damageCallback"]["callback"].as_str() {
+                        Some(key) if key.ends_with("superfang.damageCallback") => {
+                            Some(FixedDamage::HalfTargetHp)
+                        }
+                        Some(key) if key.ends_with("endeavor.damageCallback") => {
+                            Some(FixedDamage::Endeavor)
+                        }
+                        Some(key) if key.ends_with("finalgambit.damageCallback") => {
+                            Some(FixedDamage::UserHp)
+                        }
+                        _ => None,
+                    },
+                },
+                self_destruct: match d["selfdestruct"].as_str() {
+                    Some("always") => SelfDestructMode::Always,
+                    Some("ifHit") => SelfDestructMode::IfHit,
+                    _ => SelfDestructMode::None,
+                },
+                bp_callback: d["basePowerCallback"]["callback"]
+                    .as_str()
+                    .and_then(crate::effects::BasePowerKind::compile),
+                hooks: move_hooks(row["id"].as_str().unwrap()),
+                override_offensive_stat: stat_index(d["overrideOffensiveStat"].as_str()),
+                override_defensive_stat: stat_index(d["overrideDefensiveStat"].as_str()),
+                override_offensive_target: d["overrideOffensivePokemon"].as_str()
+                    == Some("target"),
+                self_boost: d.get("selfBoost").map(effect).transpose()?,
+                breaks_protect: d["breaksProtect"].as_bool().unwrap_or(false),
+                multihit: match &d["multihit"] {
+                    Value::Number(value) => value.as_u64().map(|n| [n as u8, n as u8]),
+                    Value::Array(range) if range.len() == 2 => Some([
+                        range[0].as_u64().unwrap() as u8,
+                        range[1].as_u64().unwrap() as u8,
+                    ]),
+                    _ => None,
+                },
+                self_switch: match &d["selfSwitch"] {
+                    Value::Bool(true) => SelfSwitch::Switch,
+                    Value::String(value) if value == "copyvolatile" => SelfSwitch::CopyVolatile,
+                    Value::String(value) if value == "shedtail" => SelfSwitch::ShedTail,
+                    _ => SelfSwitch::None,
+                },
+                force_switch: d["forceSwitch"].as_bool().unwrap_or(false),
+            });
+        }
+        let mut natures = vec![Nature::default()];
+        for row in tables["natures"].as_array().unwrap() {
+            let index = |key| {
+                row["data"][key]
+                    .as_str()
+                    .and_then(|s| STAT_NAMES.iter().position(|n| *n == s))
+            };
+            natures.push(Nature {
+                plus: index("plus"),
+                minus: index("minus"),
+            });
+        }
+        let type_count = names["types"].len();
+        let mut chart = vec![vec![0; type_count]; type_count];
+        for row in tables["types"].as_array().unwrap() {
+            let defender = row["numeric_id"].as_u64().unwrap() as usize;
+            for (name, val) in row["data"]["damageTaken"].as_object().unwrap() {
+                // The chart also contains status immunities, retained in source assets.
+                if let Ok(attacker) = lookup("types", name) {
+                    chart[attacker as usize][defender] = match val.as_u64() {
+                        Some(1) => 1,
+                        Some(2) => -1,
+                        Some(3) => -127,
+                        _ => 0,
+                    };
+                }
+            }
+        }
+        let scope_bytes = std::fs::read(dir.join("scope.json"))?;
+        if manifest["files"]["scope.json"]["sha256"]
+            != format!("{:x}", Sha256::digest(&scope_bytes))
+        {
+            return Err(EngineError::AssetMismatch("scope digest".into()));
+        }
+        let scope: Value = serde_json::from_slice(&scope_bytes)?;
+        let mut legal_starting_species = vec![false; species.len()];
+        let mut legal_moves_by_species = vec![vec![]; species.len()];
+        let mut legal_abilities_by_species = vec![vec![]; species.len()];
+        for row in scope["starting_species"].as_array().unwrap() {
+            let s = lookup("species", row["species"].as_str().unwrap())? as usize;
+            legal_starting_species[s] = true;
+            legal_moves_by_species[s] = row["learnable_moves"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|m| lookup("moves", m.as_str().unwrap()))
+                .collect::<Result<_>>()?;
+            legal_abilities_by_species[s] = row["abilities"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|m| lookup("abilities", m.as_str().unwrap()))
+                .collect::<Result<_>>()?;
+        }
+        let mut legal_items = vec![false; names["items"].len()];
+        legal_items[0] = true;
+        for item in scope["allowed_items"].as_array().unwrap() {
+            legal_items[lookup("items", item.as_str().unwrap())? as usize] = true;
+        }
+        let mut native_abilities = vec![crate::effects::Ability::Unimplemented];
+        native_abilities.extend(
+            names["abilities"]
+                .iter()
+                .skip(1)
+                .map(|id| crate::effects::Ability::compile(id)),
+        );
+        let mut mega_stones = vec![vec![]; names["items"].len()];
+        for row in tables["items"].as_array().unwrap() {
+            if let Some(mapping) = row["data"]["megaStone"].as_object() {
+                mega_stones[row["numeric_id"].as_u64().unwrap() as usize] = mapping
+                    .iter()
+                    .map(|(base, mega)| {
+                        Ok((
+                            lookup("species", base)?,
+                            lookup("species", mega.as_str().unwrap())?,
+                        ))
+                    })
+                    .collect::<Result<_>>()?;
+            }
+        }
+        let mut native_items = vec![crate::effects::Item::Unimplemented; names["items"].len()];
+        native_items[0] = crate::effects::Item::None;
+        for row in tables["items"].as_array().unwrap() {
+            let id = row["id"].as_str().unwrap();
+            native_items[row["numeric_id"].as_u64().unwrap() as usize] =
+                crate::items::classify(id, &row["data"]);
+        }
+        let effects = crate::effects::NativeEffects {
+            abilities: native_abilities,
+            items: native_items,
+            choice_lock: lookup("conditions", "choicelock")?,
+            moves: native_moves,
+            move_hooks: native_move_hooks,
+            fake_out: lookup("moves", "fakeout")?,
+            mega_stones,
+            protect: lookup("conditions", "protect")?,
+            stall: lookup("conditions", "stall")?,
+            spiky_shield: lookup("conditions", "spikyshield")?,
+            baneful_bunker: lookup("conditions", "banefulbunker")?,
+            kings_shield: lookup("conditions", "kingsshield")?,
+            endure: lookup("conditions", "endure")?,
+            wide_guard: lookup("conditions", "wideguard")?,
+            quick_guard: lookup("conditions", "quickguard")?,
+            helping_hand: lookup("conditions", "helpinghand")?,
+            follow_me: lookup("conditions", "followme")?,
+            rage_powder: lookup("conditions", "ragepowder")?,
+            damp_moves: [
+                lookup("moves", "explosion")?,
+                lookup("moves", "mindblown")?,
+                lookup("moves", "mistyexplosion")?,
+                lookup("moves", "selfdestruct")?,
+            ],
+            must_recharge: lookup("conditions", "mustrecharge")?,
+            throat_chop: lookup("conditions", "throatchop")?,
+            aurora_veil: lookup("conditions", "auroraveil")?,
+            confusion: lookup("conditions", "confusion")?,
+            sticky_hold: lookup("abilities", "stickyhold")?,
+            flash_fire: lookup("conditions", "flashfire")?,
+            unburden: lookup("conditions", "unburden")?,
+            struggle: lookup("moves", "struggle")?,
+            ground: lookup("types", "ground")?,
+            fire: lookup("types", "fire")?,
+            normal: lookup("types", "normal")?,
+            fairy: lookup("types", "fairy")?,
+            water: lookup("types", "water")?,
+            grass: lookup("types", "grass")?,
+            bug: lookup("types", "bug")?,
+            ice: lookup("types", "ice")?,
+            electric: lookup("types", "electric")?,
+            poison_type: lookup("types", "poison")?,
+            steel: lookup("types", "steel")?,
+            burn: lookup("conditions", "brn")?,
+            paralysis: lookup("conditions", "par")?,
+            sleep: lookup("conditions", "slp")?,
+            freeze: lookup("conditions", "frz")?,
+            poison: lookup("conditions", "psn")?,
+            toxic: lookup("conditions", "tox")?,
+            flinch: lookup("conditions", "flinch")?,
+            drain: lookup("conditions", "drain")?,
+            recoil: lookup("conditions", "recoil")?,
+            tailwind: lookup("conditions", "tailwind")?,
+            reflect: lookup("conditions", "reflect")?,
+            light_screen: lookup("conditions", "lightscreen")?,
+            trick_room: lookup("conditions", "trickroom")?,
+            electric_terrain: lookup("conditions", "electricterrain")?,
+            grassy_terrain: lookup("conditions", "grassyterrain")?,
+            misty_terrain: lookup("conditions", "mistyterrain")?,
+            psychic_terrain: lookup("conditions", "psychicterrain")?,
+            flying: lookup("types", "flying")?,
+            psychic: lookup("types", "psychic")?,
+            dragon: lookup("types", "dragon")?,
+            quake_moves: [
+                lookup("moves", "earthquake")?,
+                lookup("moves", "bulldoze")?,
+                lookup("moves", "magnitude")?,
+            ],
+            rain: lookup("conditions", "raindance")?,
+            sun: lookup("conditions", "sunnyday")?,
+            sand: lookup("conditions", "sandstorm")?,
+            snow: lookup("conditions", "snowscape")?,
+            rock: lookup("types", "rock")?,
+            dark: lookup("types", "dark")?,
+            ghost: lookup("types", "ghost")?,
+            fighting: lookup("types", "fighting")?,
+        };
+        Ok(Self {
+            species,
+            moves,
+            natures,
+            names,
+            ids,
+            asset_digest: format!("{:x}", Sha256::digest(&manifest_bytes)),
+            type_chart: chart,
+            legal_starting_species,
+            legal_items,
+            legal_moves_by_species,
+            legal_abilities_by_species,
+            effects,
+        })
+    }
+
+    pub fn id(&self, kind: &str, name: &str) -> Result<Id> {
+        self.ids
+            .get(kind)
+            .and_then(|t| t.get(&to_id(name)))
+            .copied()
+            .ok_or_else(|| EngineError::InvalidInput(format!("unknown {kind}:{name}")))
+    }
+}

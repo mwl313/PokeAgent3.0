@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-07",
+  "cpu": "Intel Xeon E5-2673 v4 @ 2.30GHz",
+  "sockets": 2,
+  "physical_cores_per_socket": 20,
+  "logical_cpus": 80,
+  "numa_nodes": 2,
+  "rust": "1.90.0",
+  "profile": "release; workspace thin LTO",
+  "timing_repetitions": 3,
+  "allocation_repetitions": 1,
+  "affinity_applied": false,
+  "numa_binding_applied": false,
+  "worker_configurations": [
+    "1 group of 2048; 1 Rayon worker",
+    "2 concurrent groups of 1024; 16 Rayon workers each"
+  ],
+  "workload": "95 pinned complete legal synthetic fixture battles repeated over 2048 environments; saved audit-stage measurements predate next weather-ability fixture additions",
+  "initialization_in_timed_region": false,
+  "observation_measurement": "owned PlayerView + first-prefix candidates when observe=true",
+  "model_policy": "absent",
+  "python_bridge": "not implemented",
+  "allocation_counter": "counts alloc/realloc requests; atomic counter timings excluded from speed comparison",
+  "rss": "/proc/self/status process VmRSS sampled after cold preparation; includes static shared data and prebuilt fixture action rounds"
+}

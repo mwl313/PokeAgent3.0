@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "prepare:teams": "node scripts/prepare_teams.mjs",
-    "test": "node --test tests/team-preparation.test.mjs"
+    "test": "node --test tests/team-preparation.test.mjs",
+    "export:engine": "node scripts/export_engine_data.mjs",
+    "test:engine": "bash scripts/cargo.sh test --locked && node --test engine/tests/reference.test.mjs"
   },
   "engines": { "node": ">=22.18.0" }
 }

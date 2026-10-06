@@ -1,0 +1,85 @@
+    Finished `release` profile [optimized] target(s) in 0.03s
+     Running `target/release/examples/blocker_priority`
+1136 teams; 1 initially runnable
+ 1.     6 teams  <- fix ability goodasgold
+    runnable now: 7 / 1136 (fixed 1 gaps)
+ 2.     4 teams  <- fix move knockoff
+    runnable now: 11 / 1136 (fixed 2 gaps)
+ 3.     1 teams  <- fix move hyperbeam
+    runnable now: 12 / 1136 (fixed 3 gaps)
+ 4.     6 teams  <- fix move detect
+    runnable now: 18 / 1136 (fixed 4 gaps)
+ 5.     2 teams  <- fix move uturn
+    runnable now: 20 / 1136 (fixed 5 gaps)
+ 6.     1 teams  <- fix move haze
+    runnable now: 21 / 1136 (fixed 6 gaps)
+ 7.     1 teams  <- fix move dualwingbeat
+    runnable now: 22 / 1136 (fixed 7 gaps)
+ 8.     2 teams  <- fix ability galewings
+    runnable now: 24 / 1136 (fixed 8 gaps)
+ 9.     1 teams  <- fix move dragontail
+    runnable now: 25 / 1136 (fixed 9 gaps)
+10.     1 teams  <- fix ability roughskin
+    runnable now: 26 / 1136 (fixed 10 gaps)
+11.     1 teams  <- fix move solarbeam
+    runnable now: 27 / 1136 (fixed 11 gaps)
+12.     1 teams  <- fix move ragingbull
+    runnable now: 28 / 1136 (fixed 12 gaps)
+13.     1 teams  <- fix ability unnerve
+    runnable now: 29 / 1136 (fixed 13 gaps)
+14.     4 teams  <- fix ability armortail
+    runnable now: 33 / 1136 (fixed 14 gaps)
+15.     9 teams  <- fix move helpinghand
+    runnable now: 42 / 1136 (fixed 15 gaps)
+16.     9 teams  <- fix move partingshot
+    runnable now: 51 / 1136 (fixed 16 gaps)
+17.     5 teams  <- fix move yawn
+    runnable now: 56 / 1136 (fixed 17 gaps)
+18.     6 teams  <- fix move stompingtantrum
+    runnable now: 62 / 1136 (fixed 18 gaps)
+19.     6 teams  <- fix move throatchop
+    runnable now: 68 / 1136 (fixed 19 gaps)
+20.     6 teams  <- fix move flipturn
+    runnable now: 74 / 1136 (fixed 20 gaps)
+21.     7 teams  <- fix ability flowerveil
+    runnable now: 81 / 1136 (fixed 21 gaps)
+22.     4 teams  <- fix move wideguard
+    runnable now: 85 / 1136 (fixed 22 gaps)
+23.     8 teams  <- fix move twinbeam
+    runnable now: 93 / 1136 (fixed 23 gaps)
+24.     5 teams  <- fix ability prankster
+    runnable now: 98 / 1136 (fixed 24 gaps)
+25.    38 teams  <- fix move encore
+    runnable now: 136 / 1136 (fixed 25 gaps)
+26.    47 teams  <- fix move lightofruin
+    runnable now: 183 / 1136 (fixed 26 gaps)
+27.     9 teams  <- fix ability poisontouch
+    runnable now: 192 / 1136 (fixed 27 gaps)
+28.    11 teams  <- fix move direclaw
+    runnable now: 203 / 1136 (fixed 28 gaps)
+29.    71 teams  <- fix ability unburden
+    runnable now: 274 / 1136 (fixed 29 gaps)
+30.    12 teams  <- fix move roost
+    runnable now: 286 / 1136 (fixed 30 gaps)
+31.     8 teams  <- fix move auroraveil
+    runnable now: 294 / 1136 (fixed 31 gaps)
+32.    14 teams  <- fix ability cursedbody
+    runnable now: 308 / 1136 (fixed 32 gaps)
+33.    11 teams  <- fix move substitute
+    runnable now: 319 / 1136 (fixed 33 gaps)
+34.     7 teams  <- fix move taunt
+    runnable now: 326 / 1136 (fixed 34 gaps)
+35.     5 teams  <- fix move trick
+    runnable now: 331 / 1136 (fixed 35 gaps)
+36.     8 teams  <- fix move expandingforce
+    runnable now: 339 / 1136 (fixed 36 gaps)
+37.     8 teams  <- fix ability mirrorarmor
+    runnable now: 347 / 1136 (fixed 37 gaps)
+38.     6 teams  <- fix move steelbeam
+    runnable now: 353 / 1136 (fixed 38 gaps)
+39.     6 teams  <- fix move imprison
+    runnable now: 359 / 1136 (fixed 39 gaps)
+40.     6 teams  <- fix move followme
+    runnable now: 365 / 1136 (fixed 40 gaps)
+remaining blocked teams after greedy pass: 771
+example remaining gap set: ["ability damp", "ability hospitality", "ability stamina", "move electroshot", "move hurricane", "move ragepowder"]

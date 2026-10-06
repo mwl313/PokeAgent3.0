@@ -1,0 +1,18 @@
+training pool: 1136 teams, 14 complete natural battles (1.2%), 1122 blocked
+mean completed battle length: 8.6 turns, 14 decisive (decision cap 400)
+first blockers (each team counted once, at its earliest unsupported mechanic):
+   124  unsupported mechanic: ability unburden
+   100  unsupported mechanic: ability goodasgold
+    94  unsupported mechanic: ability armortail
+    92  unsupported mechanic: ability hospitality
+    84  unsupported mechanic: ability flowerveil
+    50  unsupported mechanic: ability unnerve
+    48  unsupported mechanic: ability cursedbody
+    43  unsupported mechanic: move encore
+    32  unsupported mechanic: ability emergencyexit
+    30  unsupported mechanic: ability toxicdebris
+    25  unsupported mechanic: move electroshot
+    24  unsupported mechanic: move stompingtantrum
+    22  unsupported mechanic: move solarbeam
+    22  unsupported mechanic: move throatchop
+    18  unsupported mechanic: ability thermalexchange

@@ -53,3 +53,8 @@ tmp/
 
 # Pinned third-party reference checkout and its local build.
 /vendor/pokemon-showdown/
+
+# Project-local Rust toolchain and build products.
+/.tools/
+/target/
+/engine/python/pa3_engine/*.so

@@ -2,7 +2,9 @@
 
 PokeAgent 3.0 aims to train a strong Pokémon VGC doubles policy through a full-scope Rust battle engine, scratch self-play reinforcement learning, and evaluation. The supplied Full Spec 1.1 defines the intended design.
 
-**Current status: the combined M-B/M-C pool is normalized, validated, deduplicated and frozen for the project.** It contains **1,136 eligible unique teams, all assigned to training with no dev/final holdouts**. The 1,207 original source records are preserved; 56 records are quarantined and 15 accepted duplicates merged. See [the fixed team pool](docs/TEAM_POOL.md) for rules, artifacts and verification. M-A and further collection are excluded by the user's source selection. Battle engine and model implementation have not started.
+**Current status: native Rust engine implementation is in progress.** Its scope is every Pokémon and set legal in pinned Champions M-C, including Mega forms and interacting effects, as requested by the user. See [engine scope and progress](engine/ENGINE_SCOPE.md). The [hot-path audit and native subset measurements](engine/HOT_PATH_AUDIT.md) record allocation fixes and their practical limits. Full battle transitions and effect coverage are not finished; the engine is not training-ready.
+
+The combined M-B/M-C pool is normalized, validated, deduplicated and frozen. It contains **1,136 eligible unique teams, all assigned to training with no dev/final holdouts**. The 1,207 original source records are preserved; 56 records are quarantined and 15 accepted duplicates merged. See [the fixed team pool](docs/TEAM_POOL.md). M-A and further collection remain excluded. Model implementation and training have not started.
 
 ## Project reference
 
@@ -57,7 +59,7 @@ The intended hardware is two V100 PCIe 32GB GPUs at 175W and 150W, assigned to N
 
 | Path | Purpose and present contents |
 |---|---|
-| `engine/` | Reserved for the Rust engine and reference adapter; empty placeholder |
+| `engine/` | Native Rust engine in progress, regulation catalogue, native batch stepping, development reference adapter and differential tests |
 | `agent/` | Reserved for model, PPO, collector, and evaluator; empty placeholder |
 | `configs/` | Active `train.yaml` pins the prepared team pool |
 | `data/schemas/` | Accepted team schema link; collected raw records remain separate from this legality-validated schema |
@@ -101,6 +103,6 @@ Independent reconstruction and hashes verified every saved M-B team against its 
 
 ## Values to establish during implementation
 
-Team counts, source hashes, roster groups and split assignments are now frozen. Full effect closure, tensor vocabularies, maximum action capacity and exact model parameter count remain engine/model implementation work. The Rust toolchain and complete training dependency lock are also unresolved. GPU runtime availability, memory headroom, DDP transport and end-to-end throughput require actual checks when that work is requested.
+Team counts, source hashes, roster groups and split assignments are now frozen. Full effect closure, tensor vocabularies, maximum action capacity and exact model parameter count remain engine/model implementation work. Rust 1.90.0 is pinned in the project-local toolchain and engine dependencies are locked; the complete training dependency lock remains unresolved. GPU runtime availability, memory headroom, DDP transport and end-to-end throughput require actual checks when that work is requested.
 
 The package's 1,000-team aspiration and 500–1,000 completed games per second goal are not measured results. With the all-training override, final evaluation measures policy progress on training teams and engine transfer. Unseen-team generalization and external competitive strength require separate evidence.

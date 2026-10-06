@@ -1,0 +1,10 @@
+native_observation_probe environments=2048 teams=1136 phase=preview iterations=64 repetitions=3 bridge=unmeasured model=unmeasured numa=unconfigured cold_load_reset_validation_and_warmup=excluded full_battle_observation_cost=unmeasured
+mode=cached_views_serial_encoding repetition=1 wall_s=1.932931 views_per_s=67810.0 batch_2048_ms=30.202
+mode=view_generation_and_encoding_1_worker repetition=1 wall_s=2.077097 views_per_s=63103.5 batch_2048_ms=32.455
+mode=cached_views_serial_encoding repetition=2 wall_s=1.863801 views_per_s=70325.1 batch_2048_ms=29.122
+mode=view_generation_and_encoding_1_worker repetition=2 wall_s=2.038920 views_per_s=64285.0 batch_2048_ms=31.858
+mode=cached_views_serial_encoding repetition=3 wall_s=1.876930 views_per_s=69833.2 batch_2048_ms=29.327
+mode=view_generation_and_encoding_1_worker repetition=3 wall_s=2.052718 views_per_s=63852.9 batch_2048_ms=32.074
+mode=view_generation_and_encoding_2x16_workers repetition=1 wall_s=0.765510 views_per_s=171221.8 batch_2048_ms=11.961
+mode=view_generation_and_encoding_2x16_workers repetition=2 wall_s=0.955309 views_per_s=137203.8 batch_2048_ms=14.927
+mode=view_generation_and_encoding_2x16_workers repetition=3 wall_s=0.745780 views_per_s=175751.5 batch_2048_ms=11.653

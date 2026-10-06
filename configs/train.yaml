@@ -35,7 +35,11 @@ rules:
   active_slots: 2
   oracle_repo: smogon/pokemon-showdown
   oracle_ref: 14546894d86f9589ac11130c510bbe73b6968665
-  scope_from: all_eligible_inventory_effect_dependency_closure
+  scope_from: all_legal_mc_species_forms_sets_and_effect_dependency_closure
+  scope_override: User requires all Pokemon legal in pinned Champions M-C, including
+    Mega forms and interacting effects, independent of the frozen training inventory.
+  scope_manifest: engine/data/scope.json
+  scope_document: engine/ENGINE_SCOPE.md
   resource_rules: derive_from_pinned_format
   allocation_unit: source_typed_then_pinned_champions_parser
   silent_unsupported_effect: false
@@ -469,13 +473,14 @@ execution:
   design_only: false
   scraping_executed: true
   engine_implemented: false
+  engine_implementation_started: true
   training_executed: false
   new_payment_authorized: false
   new_remote_write_authorized: false
   team_preparation_executed: true
   team_pool_frozen: true
-  execution_scope: team collection, normalization, reference validation and grouped
-    splits only; no engine or model implementation or training
+  execution_scope: frozen team preparation and native Rust engine implementation;
+    full battle transitions and effect coverage remain in progress; no model or training
 runtime_environment:
   CUDA_DEVICE_ORDER: PCI_BUS_ID
   CUDA_VISIBLE_DEVICES: 0,1

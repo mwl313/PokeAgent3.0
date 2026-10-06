@@ -1,0 +1,11 @@
+component_probes fixtures=95 coldsetup=excluded bridge=unmeasured policy=unmeasured full_event_dispatch_decomposition=unmeasured
+direct_state_step trace=false wall_s=0.179522 side_submissions=59307 side_submissions_per_s=330361.4 completed_battles=2048 completed_battles_per_s=11408.1 mean_side_submissions=28.96
+direct_state_step trace=true wall_s=0.220220 side_submissions=59307 side_submissions_per_s=269307.7 completed_battles=2048 completed_battles_per_s=9299.8 mean_side_submissions=28.96
+idle_batch_scan_only environments=2048 workers=1 calls=1000 wall_s=0.031123 us_per_idle_call=31.123 active_submission_validation=unmeasured
+idle_batch_scan_only environments=2048 workers=16 calls=1000 wall_s=0.125668 us_per_idle_call=125.668 active_submission_validation=unmeasured
+speed_sort_primitive handlers=4 ties=false sorts=100000 wall_s=0.018664 ns_per_sort=186.6 includes_input_copy=true full_event_dispatch=unmeasured
+speed_sort_primitive handlers=4 ties=true sorts=100000 wall_s=0.008893 ns_per_sort=88.9 includes_input_copy=true full_event_dispatch=unmeasured
+speed_sort_primitive handlers=16 ties=false sorts=100000 wall_s=0.108286 ns_per_sort=1082.9 includes_input_copy=true full_event_dispatch=unmeasured
+speed_sort_primitive handlers=16 ties=true sorts=100000 wall_s=0.015652 ns_per_sort=156.5 includes_input_copy=true full_event_dispatch=unmeasured
+speed_sort_primitive handlers=32 ties=false sorts=100000 wall_s=0.385674 ns_per_sort=3856.7 includes_input_copy=true full_event_dispatch=unmeasured
+speed_sort_primitive handlers=32 ties=true sorts=100000 wall_s=0.034602 ns_per_sort=346.0 includes_input_copy=true full_event_dispatch=unmeasured

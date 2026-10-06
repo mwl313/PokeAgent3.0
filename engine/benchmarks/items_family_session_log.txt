@@ -1,0 +1,61 @@
+Items / item-interaction family — session log (primary agent, 2026-10-07)
+========================================================================
+
+Landed (all differential-tested against the pinned reference):
+
+1. Data-driven item classification: engine/src/items.rs
+   - Item::MegaStone only when the declaration is exactly {inert fields,
+     megaStone, own onTakeItem}; anything else stays Item::Unimplemented.
+   - Dex::mega_stone_matches / Dex::item_take_refused helpers.
+   - Legal item coverage 84/166 -> 165/166 (only `metronome` remains).
+
+2. Pokemon#takeItem primitive (engine/src/battle/hooks.rs)
+   - take_item_checked -> Empty | Refused | Taken (silent, reference-exact).
+   - take_item adds the public End event for removal moves.
+   - restore_item = the raw failed-swap assignment (no Start event, no
+     lastItem, fresh effect order for snapshot validity).
+   - give_item = reference setItem give (public -item + item Start event).
+   - takeItem never records lastItem; only useItem/eatItem do.
+
+3. Moves
+   - Knock Off: moves:knockoff.onBasePower 1.5x gated on the TakeItem check,
+     moves:knockoff.onAfterHit removal for an alive user after DamagingHit.
+   - Trick / Switcheroo: onTryImmunity (Sticky Hold) before accuracy, onHit
+     swap, refused/empty restore + fail, -item / silent -enditem hand-offs.
+   - Reference `choicelock.onDisableMove` lazy drop when the Choice item is
+     gone (end_turn/makeRequest pass).
+
+4. Integration fixes found by the new fixtures
+   - Failed Trick/Switcheroo must not run the reference post-move phases:
+     `did_anything` is now decided by the swap, not by the empty generic
+     payload (hit_effect() reports "changed" for empty payloads).
+   - Request bench order: BattleState::bench now filters `selected_order`
+     (preview pick order) instead of the live `positions[2..]` arrangement;
+     the snapshot validator recomputes requests from `selected_order`, and the
+     reference lists switch destinations in request-team order. This fixed
+     the effect_order suite (`terrain_weather_room_coexistence_805`).
+   - Snapshot schema is now a single source of truth
+     (`state::SNAPSHOT_SCHEMA`), used by restore validation and the tests.
+   - Generator bug: `battle.getTarget()` consumes reference RNG (random-target
+     fallback). Fixture choosers must use `pokemon.getAtLoc()`;
+     generate_more_item_interactions.mjs does.
+
+5. New development instruments (cold paths)
+   - engine/examples/pool_run_report.rs: real first operational blocker per
+     frozen training team under a deterministic native policy.
+   - engine/examples/snapshot_probe.rs: first snapshot-validation failure in
+     the corpus (optional SNAPSHOT_PROBE_ITEMS dump).
+   - debug_fixture: PA3_EVENT_LIMIT + effect id in event dumps.
+   - engine/tests/generate_more_item_interactions.mjs: 10 complete legal item
+     battles merged into turn-fixtures.json by the exporter.
+
+Verification at hand-off
+   - `node engine/tests/verify_turn_fixtures.mjs`: 532 fixtures / 11,682
+     decision boundaries re-verified from a fresh pinned Showdown.
+   - `cargo test --test effect_order` 2/2, `--test contracts` 16/16,
+     `--test fixture_coverage` 1/1 green.
+   - `turns` corpus test red only on the move workstream's newest in-flight
+     fixtures (last observed: move_roar_3210 boundary 11 RNG).
+   - Coverage: moves 314/515, abilities 75/223, items 165/166.
+   - Training pool: 14/1136 teams complete under the deterministic probe,
+     zero remaining item blockers.

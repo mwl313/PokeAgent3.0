@@ -1,0 +1,9 @@
+{
+  "fixtures": 95,
+  "environments": 2048,
+  "side_submissions": 59307,
+  "committed_decision_advances": 32330,
+  "mean_side_submissions": 28.95849609375,
+  "mean_committed_decision_advances": 15.7861328125,
+  "definition": "An advance is committed when the other side was Wait before the submitted side choice. Includes preview/replacement and terminal advances; excludes initial reset and uncommitted first-side choices."
+}

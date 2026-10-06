@@ -1,0 +1,43 @@
+training pool: 1136 teams, 7 complete natural battles (0.6%), 1129 blocked
+mean completed battle length: 7.0 turns, 7 decisive (decision cap 400)
+first blockers (each team counted once, at its earliest unsupported mechanic):
+   120  unsupported mechanic: ability unburden
+    95  unsupported mechanic: ability goodasgold
+    92  unsupported mechanic: ability armortail
+    89  unsupported mechanic: ability hospitality
+    83  unsupported mechanic: ability flowerveil
+    47  unsupported mechanic: ability unnerve
+    46  unsupported mechanic: ability cursedbody
+    43  unsupported mechanic: move partingshot
+    41  unsupported mechanic: move encore
+    31  unsupported mechanic: ability emergencyexit
+    30  unsupported mechanic: ability toxicdebris
+    22  unsupported mechanic: move stompingtantrum
+    21  unsupported mechanic: move electroshot
+    18  unsupported mechanic: ability thermalexchange
+    17  unsupported mechanic: ability trace
+    16  unsupported mechanic: ability damp
+    16  unsupported mechanic: move throatchop
+    15  unsupported mechanic: move solarbeam
+    14  unsupported mechanic: move hyperbeam
+    14  unsupported mechanic: move knockoff
+    13  unsupported mechanic: ability galewings
+    13  unsupported mechanic: move uturn
+    12  unsupported mechanic: ability soundproof
+    11  unsupported mechanic: ability friendguard
+     9  unsupported mechanic: Mega ability contrary
+     9  unsupported mechanic: move expandingforce
+     9  unsupported mechanic: move flipturn
+     8  unsupported mechanic: Mega ability noguard
+     7  unsupported mechanic: ability magicbounce
+     7  unsupported mechanic: ability mirrorarmor
+     7  unsupported mechanic: ability moody
+     7  unsupported mechanic: ability telepathy
+     7  unsupported mechanic: move helpinghand
+     6  unsupported mechanic: ability compoundeyes
+     6  unsupported mechanic: move followme
+     6  unsupported mechanic: move yawn
+     5  unsupported mechanic: Mega ability eelevate
+     5  unsupported mechanic: ability contrary
+     5  unsupported mechanic: ability disguise
+     5  unsupported mechanic: ability scrappy

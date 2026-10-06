@@ -1,0 +1,31 @@
+{
+  "schema": "pa3-engine-assets-v1",
+  "oracle_commit": "14546894d86f9589ac11130c510bbe73b6968665",
+  "format": "gen9championsvgc2026regmc",
+  "files": {
+    "dex.json": {
+      "sha256": "63ccf25496fe40aea4f041b053296287bf00765aa6eeb8a1d5a4c9dfd179f9dc",
+      "bytes": 2619546
+    },
+    "scope.json": {
+      "sha256": "ce24d9743bdc595ae2865c0297a9bfcd70315fd61ceb41983286e1a0ad472b97",
+      "bytes": 314907
+    },
+    "callbacks.json": {
+      "sha256": "69f17c1d04d41b292bfbf5ca5c3260914205a11c3a9dc01d8bcc41592c4281c0",
+      "bytes": 921648
+    },
+    "training-teams.json": {
+      "sha256": "904ca06aa8cd9257e3fd61080b0490f06c8d7570cacc6208de677e636f91d567",
+      "bytes": 1143683
+    },
+    "reference-fixtures.json": {
+      "sha256": "54a91b206bef3fd11b302a5cb871adadaabebc0426575c951e9f93d8bab567e3",
+      "bytes": 1358768
+    },
+    "turn-fixtures.json": {
+      "sha256": "2a7452d0e9636ed7a38e6ae6d2a4a48dad796da0a95a8736e4065550efc65dee",
+      "bytes": 52996709
+    }
+  }
+}

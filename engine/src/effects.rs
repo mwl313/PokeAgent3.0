@@ -1,0 +1,1014 @@
+//! Native handler selection. Unknown entries are explicit work items, never
+//! neutral effects. These enums are populated once, not by string dispatch in turns.
+use crate::assets::Id;
+use serde::{Deserialize, Serialize};
+
+/// Action-local move callbacks that cannot be expressed as generic declarative
+/// data. Each bit is an exact transcription of the pinned reference callback;
+/// the cold classifier only enables a move when every callback it declares is
+/// ported, so an unsupported variant stays an explicit operational error.
+pub mod hook {
+    /// `moves:fakeout.onTry` plus the Champions `onDisableMove` override.
+    pub const FAKE_OUT_FIRST_TURN: u16 = 1 << 0;
+    /// `moves:suckerpunch.onTry`.
+    pub const SUCKER_PUNCH: u16 = 1 << 1;
+    /// `moves:hurricane|thunder.onModifyMove`: rain makes the move always hit,
+    /// sun sets 50% accuracy.
+    pub const ACCURACY_RAIN_SUN: u16 = 1 << 2;
+    /// `moves:blizzard.onModifyMove`: snow makes the move always hit.
+    pub const ACCURACY_SNOW: u16 = 1 << 3;
+    /// `moves:grassyglide.onModifyPriority`.
+    pub const PRIORITY_GRASSY_GLIDE: u16 = 1 << 4;
+    /// `moves:freezedry.onEffectiveness`.
+    pub const FREEZE_DRY: u16 = 1 << 5;
+    /// `moves:lowkick|grassknot.onTryHit`: the Dynamax branch cannot be reached
+    /// in the pinned regulation, so a Dynamax volatile is an explicit error.
+    pub const DYNAMAX_GUARD: u16 = 1 << 6;
+    /// `moves:knockoff.onBasePower` plus its `onAfterHit` item removal: the
+    /// 1.5x boost only applies when the item can actually be taken.
+    pub const KNOCK_OFF: u16 = 1 << 7;
+    /// `moves:teleport.onTry`: Teleport fails outright, before any hit step,
+    /// when the user has no switchable reserve.
+    pub const TELEPORT: u16 = 1 << 8;
+    /// `moves:partingshot.onHit`: the pivot is cancelled when the Attack and
+    /// Special Attack drop fails.
+    pub const PARTING_SHOT: u16 = 1 << 9;
+    /// `moves:direclaw.secondary.onHit`: the secondary samples one of
+    /// poison/paralysis/sleep and applies it through `trySetStatus`.
+    pub const DIRE_CLAW: u16 = 1 << 10;
+    /// `moves:throatchop.secondary.onHit`: adds the two-turn volatile that
+    /// disables and refuses sound moves.
+    pub const THROAT_CHOP: u16 = 1 << 11;
+    /// `moves:expandingforce.onModifyMove|onBasePower`: Psychic Terrain turns
+    /// the move into a spread move and boosts it 1.5x for grounded users.
+    pub const EXPANDING_FORCE: u16 = 1 << 12;
+    /// `moves:auroraveil.onTry`: the screen only starts while snow is falling.
+    pub const AURORA_VEIL: u16 = 1 << 13;
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Ability {
+    Unimplemented,
+    Armor,
+    Levitate,
+    Blaze,
+    Torrent,
+    Overgrow,
+    Swarm,
+    Intimidate,
+    Defiant,
+    Competitive,
+    ClearBody,
+    InnerFocus,
+    OwnTempo,
+    Oblivious,
+    SpeedBoost,
+    ToughClaws,
+    Technician,
+    Adaptability,
+    MegaLauncher,
+    IronFist,
+    Sharpness,
+    StrongJaw,
+    HugePower,
+    Filter,
+    Multiscale,
+    ThickFat,
+    Regenerator,
+    NaturalCure,
+    RockHead,
+    Reckless,
+    LiquidOoze,
+    Infiltrator,
+    Drizzle,
+    Drought,
+    SandStream,
+    SnowWarning,
+    SwiftSwim,
+    Chlorophyll,
+    SandRush,
+    SlushRush,
+    ElectricSurge,
+    GrassySurge,
+    MistySurge,
+    PsychicSurge,
+    RainDish,
+    IceBody,
+    SolarPower,
+    CloudNine,
+    AirLock,
+    SandForce,
+    SandVeil,
+    SnowCloak,
+    Overcoat,
+    Hydration,
+    DrySkin,
+    WaterAbsorb,
+    VoltAbsorb,
+    EarthEater,
+    SapSipper,
+    MotorDrive,
+    Static,
+    FlashFire,
+    LightningRod,
+    StormDrain,
+    Pixilate,
+    Aerilate,
+    Refrigerate,
+    Galvanize,
+    Normalize,
+    Dragonize,
+    LiquidVoice,
+    HyperCutter,
+    Synchronize,
+    RoughSkin,
+    Stamina,
+    FlameBody,
+    PoisonTouch,
+    Prankster,
+    Aftermath,
+    Analytic,
+    Angerpoint,
+    Anticipation,
+    Armortail,
+    Aromaveil,
+    Auraguard,
+    Battlebond,
+    Berserk,
+    Bigpecks,
+    Bulletproof,
+    Cheekpouch,
+    Compoundeyes,
+    Contrary,
+    Corrosion,
+    Cudchew,
+    Curiousmedicine,
+    Cursedbody,
+    Cutecharm,
+    Damp,
+    Disguise,
+    Earlybird,
+    Eelevate,
+    Effectspore,
+    Electromorphosis,
+    Embodyaspectcornerstone,
+    Embodyaspecthearthflame,
+    Embodyaspectteal,
+    Embodyaspectwellspring,
+    Emergencyexit,
+    Fairyaura,
+    Firemane,
+    Flowerveil,
+    Fluffy,
+    Forecast,
+    Forewarn,
+    Friendguard,
+    Frisk,
+    Furcoat,
+    Galewings,
+    Gluttony,
+    Goodasgold,
+    Gooey,
+    Grasspelt,
+    Guarddog,
+    Gulpmissile,
+    Guts,
+    Harvest,
+    Healer,
+    Heatproof,
+    Heavymetal,
+    Hospitality,
+    Hungerswitch,
+    Hustle,
+    Iceface,
+    Illuminate,
+    Illusion,
+    Immunity,
+    Imposter,
+    Innardsout,
+    Insomnia,
+    Justified,
+    Keeneye,
+    Klutz,
+    Leafguard,
+    Libero,
+    Lightmetal,
+    Limber,
+    Longreach,
+    Magicbounce,
+    Magicguard,
+    Magician,
+    Magmaarmor,
+    Marvelscale,
+    Megasol,
+    Merciless,
+    Mimicry,
+    Minus,
+    Mirrorarmor,
+    Moldbreaker,
+    Moody,
+    Moxie,
+    Mummy,
+    Noguard,
+    Opportunist,
+    Parentalbond,
+    Pickpocket,
+    Pickup,
+    Piercingdrill,
+    Plus,
+    Poisonheal,
+    Poisonpoint,
+    Pressure,
+    Protean,
+    Punkrock,
+    Purifyingsalt,
+    Queenlymajesty,
+    Quickdraw,
+    Quickfeet,
+    Rattled,
+    Receiver,
+    Ripen,
+    Rivalry,
+    Runaway,
+    Sandspit,
+    Scrappy,
+    Screencleaner,
+    Seedsower,
+    Shadowtag,
+    Shedskin,
+    Sheerforce,
+    Shielddust,
+    Shieldsdown,
+    Skilllink,
+    Sniper,
+    Soundproof,
+    Spicyspray,
+    Stakeout,
+    Stall,
+    Stalwart,
+    Stancechange,
+    Steadfast,
+    Steelyspirit,
+    Stench,
+    Stickyhold,
+    Sturdy,
+    Suctioncups,
+    Superluck,
+    Supersweetsyrup,
+    Supremeoverlord,
+    Surgesurfer,
+    Sweetveil,
+    Symbiosis,
+    Tangledfeet,
+    Telepathy,
+    Thermalexchange,
+    Toxicdebris,
+    Trace,
+    Unaware,
+    Unburden,
+    Unnerve,
+    Unseenfist,
+    Vitalspirit,
+    Wanderingspirit,
+    Waterbubble,
+    Weakarmor,
+    Whitesmoke,
+    Zerotohero,
+}
+
+impl Ability {
+    pub fn compile(id: &str) -> Self {
+        match id {
+            "battlearmor" | "shellarmor" => Self::Armor,
+            "levitate" => Self::Levitate,
+            "blaze" => Self::Blaze,
+            "torrent" => Self::Torrent,
+            "overgrow" => Self::Overgrow,
+            "swarm" => Self::Swarm,
+            "intimidate" => Self::Intimidate,
+            "defiant" => Self::Defiant,
+            "competitive" => Self::Competitive,
+            "clearbody" => Self::ClearBody,
+            "innerfocus" => Self::InnerFocus,
+            "owntempo" => Self::OwnTempo,
+            "oblivious" => Self::Oblivious,
+            "speedboost" => Self::SpeedBoost,
+            "toughclaws" => Self::ToughClaws,
+            "technician" => Self::Technician,
+            "adaptability" => Self::Adaptability,
+            "megalauncher" => Self::MegaLauncher,
+            "ironfist" => Self::IronFist,
+            "sharpness" => Self::Sharpness,
+            "strongjaw" => Self::StrongJaw,
+            "hugepower" => Self::HugePower,
+            "purepower" => Self::HugePower,
+            "filter" => Self::Filter,
+            "solidrock" => Self::Filter,
+            "multiscale" => Self::Multiscale,
+            "thickfat" => Self::ThickFat,
+            "regenerator" => Self::Regenerator,
+            "naturalcure" => Self::NaturalCure,
+            "rockhead" => Self::RockHead,
+            "reckless" => Self::Reckless,
+            "liquidooze" => Self::LiquidOoze,
+            "infiltrator" => Self::Infiltrator,
+            "drizzle" => Self::Drizzle,
+            "drought" => Self::Drought,
+            "sandstream" => Self::SandStream,
+            "snowwarning" => Self::SnowWarning,
+            "swiftswim" => Self::SwiftSwim,
+            "chlorophyll" => Self::Chlorophyll,
+            "sandrush" => Self::SandRush,
+            "slushrush" => Self::SlushRush,
+            "electricsurge" => Self::ElectricSurge,
+            "grassysurge" => Self::GrassySurge,
+            "mistysurge" => Self::MistySurge,
+            "psychicsurge" => Self::PsychicSurge,
+            "raindish" => Self::RainDish,
+            "icebody" => Self::IceBody,
+            "solarpower" => Self::SolarPower,
+            "cloudnine" => Self::CloudNine,
+            "airlock" => Self::AirLock,
+            "sandforce" => Self::SandForce,
+            "sandveil" => Self::SandVeil,
+            "snowcloak" => Self::SnowCloak,
+            "overcoat" => Self::Overcoat,
+            "hydration" => Self::Hydration,
+            "dryskin" => Self::DrySkin,
+            "waterabsorb" => Self::WaterAbsorb,
+            "voltabsorb" => Self::VoltAbsorb,
+            "eartheater" => Self::EarthEater,
+            "sapsipper" => Self::SapSipper,
+            "motordrive" => Self::MotorDrive,
+            "static" => Self::Static,
+            "flashfire" => Self::FlashFire,
+            "lightningrod" => Self::LightningRod,
+            "stormdrain" => Self::StormDrain,
+            "pixilate" => Self::Pixilate,
+            "aerilate" => Self::Aerilate,
+            "refrigerate" => Self::Refrigerate,
+            "galvanize" => Self::Galvanize,
+            "normalize" => Self::Normalize,
+            "dragonize" => Self::Dragonize,
+            "liquidvoice" => Self::LiquidVoice,
+            "hypercutter" => Self::HyperCutter,
+            "synchronize" => Self::Synchronize,
+            "roughskin" => Self::RoughSkin,
+            "stamina" => Self::Stamina,
+            "flamebody" => Self::FlameBody,
+            "poisontouch" => Self::PoisonTouch,
+            "prankster" => Self::Prankster,
+
+            "aftermath" => Self::Aftermath,
+            "analytic" => Self::Analytic,
+            "angerpoint" => Self::Angerpoint,
+            "anticipation" => Self::Anticipation,
+            "armortail" => Self::Armortail,
+            "aromaveil" => Self::Aromaveil,
+            "auraguard" => Self::Auraguard,
+            "battlebond" => Self::Battlebond,
+            "berserk" => Self::Berserk,
+            "bigpecks" => Self::Bigpecks,
+            "bulletproof" => Self::Bulletproof,
+            "cheekpouch" => Self::Cheekpouch,
+            "compoundeyes" => Self::Compoundeyes,
+            "contrary" => Self::Contrary,
+            "corrosion" => Self::Corrosion,
+            "cudchew" => Self::Cudchew,
+            "curiousmedicine" => Self::Curiousmedicine,
+            "cursedbody" => Self::Cursedbody,
+            "cutecharm" => Self::Cutecharm,
+            "damp" => Self::Damp,
+            "disguise" => Self::Disguise,
+            "earlybird" => Self::Earlybird,
+            "eelevate" => Self::Eelevate,
+            "effectspore" => Self::Effectspore,
+            "electromorphosis" => Self::Electromorphosis,
+            "embodyaspectcornerstone" => Self::Embodyaspectcornerstone,
+            "embodyaspecthearthflame" => Self::Embodyaspecthearthflame,
+            "embodyaspectteal" => Self::Embodyaspectteal,
+            "embodyaspectwellspring" => Self::Embodyaspectwellspring,
+            "emergencyexit" => Self::Emergencyexit,
+            "fairyaura" => Self::Fairyaura,
+            "firemane" => Self::Firemane,
+            "flowerveil" => Self::Flowerveil,
+            "fluffy" => Self::Fluffy,
+            "forecast" => Self::Forecast,
+            "forewarn" => Self::Forewarn,
+            "friendguard" => Self::Friendguard,
+            "frisk" => Self::Frisk,
+            "furcoat" => Self::Furcoat,
+            "galewings" => Self::Galewings,
+            "gluttony" => Self::Gluttony,
+            "goodasgold" => Self::Goodasgold,
+            "gooey" => Self::Gooey,
+            "grasspelt" => Self::Grasspelt,
+            "guarddog" => Self::Guarddog,
+            "gulpmissile" => Self::Gulpmissile,
+            "guts" => Self::Guts,
+            "harvest" => Self::Harvest,
+            "healer" => Self::Healer,
+            "heatproof" => Self::Heatproof,
+            "heavymetal" => Self::Heavymetal,
+            "hospitality" => Self::Hospitality,
+            "hungerswitch" => Self::Hungerswitch,
+            "hustle" => Self::Hustle,
+            "iceface" => Self::Iceface,
+            "illuminate" => Self::Illuminate,
+            "illusion" => Self::Illusion,
+            "immunity" => Self::Immunity,
+            "imposter" => Self::Imposter,
+            "innardsout" => Self::Innardsout,
+            "insomnia" => Self::Insomnia,
+            "justified" => Self::Justified,
+            "keeneye" => Self::Keeneye,
+            "klutz" => Self::Klutz,
+            "leafguard" => Self::Leafguard,
+            "libero" => Self::Libero,
+            "lightmetal" => Self::Lightmetal,
+            "limber" => Self::Limber,
+            "longreach" => Self::Longreach,
+            "magicbounce" => Self::Magicbounce,
+            "magicguard" => Self::Magicguard,
+            "magician" => Self::Magician,
+            "magmaarmor" => Self::Magmaarmor,
+            "marvelscale" => Self::Marvelscale,
+            "megasol" => Self::Megasol,
+            "merciless" => Self::Merciless,
+            "mimicry" => Self::Mimicry,
+            "minus" => Self::Minus,
+            "mirrorarmor" => Self::Mirrorarmor,
+            "moldbreaker" => Self::Moldbreaker,
+            "moody" => Self::Moody,
+            "moxie" => Self::Moxie,
+            "mummy" => Self::Mummy,
+            "noguard" => Self::Noguard,
+            "opportunist" => Self::Opportunist,
+            "parentalbond" => Self::Parentalbond,
+            "pickpocket" => Self::Pickpocket,
+            "pickup" => Self::Pickup,
+            "piercingdrill" => Self::Piercingdrill,
+            "plus" => Self::Plus,
+            "poisonheal" => Self::Poisonheal,
+            "poisonpoint" => Self::Poisonpoint,
+            "pressure" => Self::Pressure,
+            "protean" => Self::Protean,
+            "punkrock" => Self::Punkrock,
+            "purifyingsalt" => Self::Purifyingsalt,
+            "queenlymajesty" => Self::Queenlymajesty,
+            "quickdraw" => Self::Quickdraw,
+            "quickfeet" => Self::Quickfeet,
+            "rattled" => Self::Rattled,
+            "receiver" => Self::Receiver,
+            "ripen" => Self::Ripen,
+            "rivalry" => Self::Rivalry,
+            "runaway" => Self::Runaway,
+            "sandspit" => Self::Sandspit,
+            "scrappy" => Self::Scrappy,
+            "screencleaner" => Self::Screencleaner,
+            "seedsower" => Self::Seedsower,
+            "shadowtag" => Self::Shadowtag,
+            "shedskin" => Self::Shedskin,
+            "sheerforce" => Self::Sheerforce,
+            "shielddust" => Self::Shielddust,
+            "shieldsdown" => Self::Shieldsdown,
+            "skilllink" => Self::Skilllink,
+            "sniper" => Self::Sniper,
+            "soundproof" => Self::Soundproof,
+            "spicyspray" => Self::Spicyspray,
+            "stakeout" => Self::Stakeout,
+            "stall" => Self::Stall,
+            "stalwart" => Self::Stalwart,
+            "stancechange" => Self::Stancechange,
+            "steadfast" => Self::Steadfast,
+            "steelyspirit" => Self::Steelyspirit,
+            "stench" => Self::Stench,
+            "stickyhold" => Self::Stickyhold,
+            "sturdy" => Self::Sturdy,
+            "suctioncups" => Self::Suctioncups,
+            "superluck" => Self::Superluck,
+            "supersweetsyrup" => Self::Supersweetsyrup,
+            "supremeoverlord" => Self::Supremeoverlord,
+            "surgesurfer" => Self::Surgesurfer,
+            "sweetveil" => Self::Sweetveil,
+            "symbiosis" => Self::Symbiosis,
+            "tangledfeet" => Self::Tangledfeet,
+            "telepathy" => Self::Telepathy,
+            "thermalexchange" => Self::Thermalexchange,
+            "toxicdebris" => Self::Toxicdebris,
+            "trace" => Self::Trace,
+            "unaware" => Self::Unaware,
+            "unburden" => Self::Unburden,
+            "unnerve" => Self::Unnerve,
+            "unseenfist" => Self::Unseenfist,
+            "vitalspirit" => Self::Vitalspirit,
+            "wanderingspirit" => Self::Wanderingspirit,
+            "waterbubble" => Self::Waterbubble,
+            "weakarmor" => Self::Weakarmor,
+            "whitesmoke" => Self::Whitesmoke,
+            "zerotohero" => Self::Zerotohero,
+            _ => Self::Unimplemented,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Item {
+    None,
+    Unimplemented,
+    /// Data-only Mega Stone: the base-form -> Mega mapping plus the refusal to
+    /// be taken by Knock Off / Thief / Covet / Trick / Switcheroo.
+    MegaStone,
+    Leftovers,
+    SitrusBerry,
+    OranBerry,
+    LumBerry,
+    LifeOrb,
+    ChoiceScarf,
+    ChoiceBand,
+    ChoiceSpecs,
+    FocusSash,
+    FocusBand,
+    RockyHelmet,
+    ExpertBelt,
+    BigRoot,
+    LightClay,
+    DampRock,
+    HeatRock,
+    SmoothRock,
+    IcyRock,
+    TerrainExtender,
+    // Type-enhancing items (`onBasePowerPriority: 15`, 4915/4096).
+    BlackBelt,
+    BlackGlasses,
+    Charcoal,
+    DragonFang,
+    FairyFeather,
+    HardStone,
+    Magnet,
+    MetalCoat,
+    MiracleSeed,
+    MysticWater,
+    NeverMeltIce,
+    PoisonBarb,
+    SharpBeak,
+    SilkScarf,
+    SilverPowder,
+    SoftSand,
+    SpellTag,
+    TwistedSpoon,
+    // Category-enhancing items (`onBasePowerPriority: 16`, 4505/4096).
+    MuscleBand,
+    WiseGlasses,
+    // Defense-side modifiers.
+    AssaultVest,
+    Eviolite,
+    IronBall,
+    // Resist berries (`onSourceModifyDamage`).
+    BabiriBerry,
+    ChartiBerry,
+    ChilanBerry,
+    ChopleBerry,
+    CobBerry,
+    ColburBerry,
+    HabanBerry,
+    KasibBerry,
+    KebiaBerry,
+    OccaBerry,
+    PasshoBerry,
+    PayapaBerry,
+    RindoBerry,
+    RoseliBerry,
+    ShucaBerry,
+    TangaBerry,
+    WacanBerry,
+    YacheBerry,
+    // Status-curing and PP berries.
+    CheriBerry,
+    ChestoBerry,
+    PechaBerry,
+    RawstBerry,
+    AspearBerry,
+    LeppaBerry,
+    PersimBerry,
+    // Terrain seeds.
+    ElectricSeed,
+    GrassySeed,
+    MistySeed,
+    PsychicSeed,
+    // Utility items.
+    WhiteHerb,
+    MentalHerb,
+    AirBalloon,
+    WideLens,
+    ZoomLens,
+    BrightPowder,
+    ScopeLens,
+    KingsRock,
+    ShellBell,
+    LightBall,
+    Leek,
+    BlackSludge,
+    StickyBarb,
+    NormalGem,
+    ShedShell,
+    BindingBand,
+    QuickClaw,
+    RedCard,
+    EjectButton,
+}
+impl Item {
+    pub fn compile(id: &str) -> Self {
+        match id {
+            "" => Self::None,
+            "leftovers" => Self::Leftovers,
+            "sitrusberry" => Self::SitrusBerry,
+            "oranberry" => Self::OranBerry,
+            "lumberry" => Self::LumBerry,
+            "lifeorb" => Self::LifeOrb,
+            "choicescarf" => Self::ChoiceScarf,
+            "focussash" => Self::FocusSash,
+            "rockyhelmet" => Self::RockyHelmet,
+            "expertbelt" => Self::ExpertBelt,
+            "bigroot" => Self::BigRoot,
+            "lightclay" => Self::LightClay,
+            "damprock" => Self::DampRock,
+            "heatrock" => Self::HeatRock,
+            "smoothrock" => Self::SmoothRock,
+            "icyrock" => Self::IcyRock,
+            "terrainextender" => Self::TerrainExtender,
+            "choiceband" => Self::ChoiceBand,
+            "choicespecs" => Self::ChoiceSpecs,
+            "focusband" => Self::FocusBand,
+            "blackbelt" => Self::BlackBelt,
+            "blackglasses" => Self::BlackGlasses,
+            "charcoal" => Self::Charcoal,
+            "dragonfang" => Self::DragonFang,
+            "fairyfeather" => Self::FairyFeather,
+            "hardstone" => Self::HardStone,
+            "magnet" => Self::Magnet,
+            "metalcoat" => Self::MetalCoat,
+            "miracleseed" => Self::MiracleSeed,
+            "mysticwater" => Self::MysticWater,
+            "nevermeltice" => Self::NeverMeltIce,
+            "poisonbarb" => Self::PoisonBarb,
+            "sharpbeak" => Self::SharpBeak,
+            "silkscarf" => Self::SilkScarf,
+            "silverpowder" => Self::SilverPowder,
+            "softsand" => Self::SoftSand,
+            "spelltag" => Self::SpellTag,
+            "twistedspoon" => Self::TwistedSpoon,
+            "muscleband" => Self::MuscleBand,
+            "wiseglasses" => Self::WiseGlasses,
+            "assaultvest" => Self::AssaultVest,
+            "eviolite" => Self::Eviolite,
+            "ironball" => Self::IronBall,
+            "babiriberry" => Self::BabiriBerry,
+            "chartiberry" => Self::ChartiBerry,
+            "chilanberry" => Self::ChilanBerry,
+            "chopleberry" => Self::ChopleBerry,
+            "cobaberry" => Self::CobBerry,
+            "colburberry" => Self::ColburBerry,
+            "habanberry" => Self::HabanBerry,
+            "kasibberry" => Self::KasibBerry,
+            "kebiaberry" => Self::KebiaBerry,
+            "occaberry" => Self::OccaBerry,
+            "passhoberry" => Self::PasshoBerry,
+            "payapaberry" => Self::PayapaBerry,
+            "rindoberry" => Self::RindoBerry,
+            "roseliberry" => Self::RoseliBerry,
+            "shucaberry" => Self::ShucaBerry,
+            "tangaberry" => Self::TangaBerry,
+            "wacanberry" => Self::WacanBerry,
+            "yacheberry" => Self::YacheBerry,
+            "cheriberry" => Self::CheriBerry,
+            "chestoberry" => Self::ChestoBerry,
+            "pechaberry" => Self::PechaBerry,
+            "rawstberry" => Self::RawstBerry,
+            "aspearberry" => Self::AspearBerry,
+            "leppaberry" => Self::LeppaBerry,
+            "persimberry" => Self::PersimBerry,
+            "electricseed" => Self::ElectricSeed,
+            "grassyseed" => Self::GrassySeed,
+            "mistyseed" => Self::MistySeed,
+            "psychicseed" => Self::PsychicSeed,
+            "whiteherb" => Self::WhiteHerb,
+            "mentalherb" => Self::MentalHerb,
+            "airballoon" => Self::AirBalloon,
+            "widelens" => Self::WideLens,
+            "zoomlens" => Self::ZoomLens,
+            "brightpowder" => Self::BrightPowder,
+            "scopelens" => Self::ScopeLens,
+            "kingsrock" => Self::KingsRock,
+            "shellbell" => Self::ShellBell,
+            "lightball" => Self::LightBall,
+            "leek" => Self::Leek,
+            "blacksludge" => Self::BlackSludge,
+            "stickybarb" => Self::StickyBarb,
+            "normalgem" => Self::NormalGem,
+            "shedshell" => Self::ShedShell,
+            "bindingband" => Self::BindingBand,
+            "quickclaw" => Self::QuickClaw,
+            "redcard" => Self::RedCard,
+            "ejectbutton" => Self::EjectButton,
+
+            _ => Self::Unimplemented,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum MoveBehavior {
+    Unimplemented,
+    Damage,
+    Effect,
+    Protect,
+    Endure,
+    Guard,
+    Struggle,
+    SideCondition,
+    ScreenBreak,
+    Weather,
+    WeatherBall,
+    TrickRoom,
+    Terrain,
+    /// `trick` / `switcheroo`: item swap with the reference TakeItem refusal
+    /// and failed-swap restore semantics.
+    Trick,
+    /// `helpinghand`: single-turn ally volatile with a stacking BasePower
+    /// multiplier.
+    HelpingHand,
+    /// `followme`: single-turn self volatile that redirects opposing moves.
+    FollowMe,
+    /// `ragepowder`: Follow Me's powder variant, ignored by a powder-immune
+    /// attacker.
+    RagePowder,
+}
+
+/// Reference `Protect`-family contact punishment, executed by the volatile
+/// that actually blocked the hit. Each variant is an exact transcription of
+/// the pinned move condition's `onTryHit` contact branch.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ProtectPunish {
+    None,
+    /// Spiky Shield: `this.damage(source.baseMaxhp / 8, source, target)`.
+    DamageEighthMaxHp,
+    /// Baneful Bunker: `source.trySetStatus('psn', target, ...)`.
+    Poison,
+    /// King's Shield: `this.boost({atk: -1}, source, target, ...)`.
+    AttackDown,
+}
+
+impl MoveBehavior {
+    pub fn compile(id: &str) -> Self {
+        match id {
+            "psychic" | "energyball" | "dragonclaw" | "dragonpulse" | "seedbomb"
+            | "smartstrike" | "highhorsepower" | "megahorn" | "xscissor" | "slash"
+            | "nightslash" | "shadowclaw" | "aerialace" | "aquajet" | "aquatail" | "hydropump"
+            | "surf" | "earthquake" | "hypervoice" | "dazzlinggleam" | "powergem" | "tackle"
+            | "pound" | "scratch" | "quickattack" | "vinewhip" | "watergun" | "gust"
+            | "wingattack" | "peck" | "drillpeck" | "psychocut" | "razorleaf" | "mudslap" => {
+                Self::Damage
+            }
+            "flamethrower" | "icebeam" | "thunderbolt" | "shadowball" | "darkpulse"
+            | "bodyslam" | "scald" | "heatwave" | "rockslide" | "discharge" | "zapcannon"
+            | "icywind" | "snarl" | "ancientpower" | "closecombat" | "overheat" | "leafstorm"
+            | "dracometeor" | "bulletpunch" | "firepunch" | "icepunch" | "thunderpunch"
+            | "crunch" | "bite" | "airslash" | "ironhead" | "playrough" => Self::Damage,
+            "doubleedge" | "takedown" | "submission" | "wildcharge" | "flareblitz"
+            | "woodhammer" | "bravebird" | "headsmash" | "volttackle" | "absorb" | "megadrain"
+            | "gigadrain" | "drainpunch" | "drainingkiss" | "hornleech" | "leechlife"
+            | "oblivionwing" | "paraboliccharge" => Self::Damage,
+            "toxic" | "willowisp" | "thunderwave" | "poisonpowder" | "sleeppowder" | "spore"
+            | "hypnosis" | "swordsdance" | "calmmind" | "agility" | "irondefense" | "nastyplot"
+            | "charm" | "faketears" | "growl" | "recover" | "slackoff" | "sandattack"
+            | "doubleteam" | "sweetscent" => Self::Effect,
+            "protect" => Self::Protect,
+            // The Protect family shares the `stall` gate and the priority-3
+            // blocking phase; each move carries its own blocking volatile.
+            "detect" | "spikyshield" | "banefulbunker" | "kingsshield" => Self::Protect,
+            // Endure rides the same stall gate but clamps damage instead of
+            // blocking the hit.
+            "endure" => Self::Endure,
+            // Duration-one side conditions that block spread/priority moves.
+            "wideguard" | "quickguard" => Self::Guard,
+            "struggle" => Self::Struggle,
+            "tailwind" | "reflect" | "lightscreen" | "auroraveil" => Self::SideCondition,
+            "brickbreak" | "psychicfangs" => Self::ScreenBreak,
+            "raindance" | "sunnyday" | "sandstorm" | "snowscape" => Self::Weather,
+            "weatherball" => Self::WeatherBall,
+            "trickroom" => Self::TrickRoom,
+            "electricterrain" | "grassyterrain" | "mistyterrain" | "psychicterrain" => {
+                Self::Terrain
+            }
+            "trick" | "switcheroo" => Self::Trick,
+            "helpinghand" => Self::HelpingHand,
+            "followme" => Self::FollowMe,
+            "ragepowder" => Self::RagePowder,
+            _ => Self::Unimplemented,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct HitEffect {
+    pub boosts: [i8; 7],
+    pub status: Id,
+    pub volatile: Id,
+    pub heal: Option<[u16; 2]>,
+}
+
+/// Ported reference `basePowerCallback` formulas. The cold loader resolves a
+/// move's callback key to one of these; the battle path evaluates it with
+/// local state only.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum BasePowerKind {
+    Acrobatics,
+    ElectroBall,
+    Eruption,
+    Flail,
+    GrassKnot,
+    GyroBall,
+    HardPress,
+    HeatCrash,
+    Hex,
+    InfernalParade,
+    LastRespects,
+    LowKick,
+    PowerTrip,
+    RisingVoltage,
+}
+
+impl BasePowerKind {
+    pub fn compile(key: &str) -> Option<Self> {
+        Some(match key {
+            "moves:acrobatics.basePowerCallback" => Self::Acrobatics,
+            "moves:electroball.basePowerCallback" => Self::ElectroBall,
+            "moves:eruption.basePowerCallback" | "moves:waterspout.basePowerCallback" => {
+                Self::Eruption
+            }
+            "moves:flail.basePowerCallback" | "moves:reversal.basePowerCallback" => Self::Flail,
+            "moves:grassknot.basePowerCallback" => Self::GrassKnot,
+            "moves:gyroball.basePowerCallback" => Self::GyroBall,
+            "moves:hardpress.basePowerCallback" => Self::HardPress,
+            "moves:heatcrash.basePowerCallback" | "moves:heavyslam.basePowerCallback" => {
+                Self::HeatCrash
+            }
+            "moves:hex.basePowerCallback" => Self::Hex,
+            "moves:infernalparade.basePowerCallback" => Self::InfernalParade,
+            "moves:lastrespects.basePowerCallback" => Self::LastRespects,
+            "moves:lowkick.basePowerCallback" => Self::LowKick,
+            "moves:powertrip.basePowerCallback" | "moves:storedpower.basePowerCallback" => {
+                Self::PowerTrip
+            }
+            "moves:risingvoltage.basePowerCallback" => Self::RisingVoltage,
+            _ => return None,
+        })
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SecondaryEffect {
+    pub chance: u8,
+    pub target: HitEffect,
+    pub own: Option<HitEffect>,
+}
+
+#[derive(Debug, Clone)]
+pub struct NativeEffects {
+    pub abilities: Vec<Ability>,
+    pub moves: Vec<MoveBehavior>,
+    pub items: Vec<Item>,
+    pub choice_lock: Id,
+    /// Exact Champions base-form -> Mega-form mappings, indexed by held item.
+    pub mega_stones: Vec<Vec<(Id, Id)>>,
+    pub protect: Id,
+    pub stall: Id,
+    /// Additional Protect-family volatiles that block hits in the same
+    /// `hitStepTryHitEvent` phase (priority 3).
+    pub spiky_shield: Id,
+    pub baneful_bunker: Id,
+    pub kings_shield: Id,
+    /// `endure` volatile: clamps incoming move damage to `hp - 1`.
+    pub endure: Id,
+    /// Duration-one side conditions that block spread / priority moves.
+    pub wide_guard: Id,
+    pub quick_guard: Id,
+    /// Snow-only screen that halves both damage categories.
+    pub aurora_veil: Id,
+    /// Single-turn redirection / support volatiles.
+    pub helping_hand: Id,
+    pub follow_me: Id,
+    pub rage_powder: Id,
+    /// The four self-destructing moves refused by `abilities:damp`.
+    pub damp_moves: [Id; 4],
+    /// Volatile that skips the holder's next action.
+    pub must_recharge: Id,
+    /// Volatile that disables and refuses sound moves for two turns.
+    pub throat_chop: Id,
+    /// Volatile with a 2..5 turn timer and a 33% self-hit chance.
+    pub confusion: Id,
+    /// Ability id for the Trick/Switcheroo `onTryImmunity` refusal.
+    pub sticky_hold: Id,
+    pub flash_fire: Id,
+    /// Ability-granted volatile that doubles Speed while the holder has no item.
+    pub unburden: Id,
+    pub struggle: Id,
+    pub ground: Id,
+    pub fire: Id,
+    pub normal: Id,
+    pub fairy: Id,
+    pub water: Id,
+    pub grass: Id,
+    pub bug: Id,
+    pub ice: Id,
+    pub electric: Id,
+    pub poison_type: Id,
+    pub steel: Id,
+    pub burn: Id,
+    pub paralysis: Id,
+    pub sleep: Id,
+    pub freeze: Id,
+    pub poison: Id,
+    pub toxic: Id,
+    pub flinch: Id,
+    pub drain: Id,
+    pub recoil: Id,
+    pub tailwind: Id,
+    pub reflect: Id,
+    pub light_screen: Id,
+    pub rain: Id,
+    pub sun: Id,
+    pub sand: Id,
+    pub snow: Id,
+    pub rock: Id,
+    pub dark: Id,
+    pub ghost: Id,
+    pub fighting: Id,
+    pub trick_room: Id,
+    pub electric_terrain: Id,
+    pub grassy_terrain: Id,
+    pub misty_terrain: Id,
+    pub psychic_terrain: Id,
+    pub flying: Id,
+    pub psychic: Id,
+    pub dragon: Id,
+    pub quake_moves: [Id; 3],
+    /// Ported action-local callbacks per move id (see `hook`).
+    pub move_hooks: Vec<u16>,
+    /// Fake Out move id, used by the ported Champions `onDisableMove`.
+    pub fake_out: Id,
+}
+
+impl NativeEffects {
+    /// Every volatile whose `onTryHit` blocks a normal hit. Order is the
+    /// reference creation order used to pick the punishment of the volatile
+    /// that actually blocked; the list stays tiny and local to the target.
+    pub fn protection_volatiles(&self) -> [Id; 4] {
+        [
+            self.protect,
+            self.spiky_shield,
+            self.baneful_bunker,
+            self.kings_shield,
+        ]
+    }
+
+    pub fn protect_punish(&self, volatile: Id) -> ProtectPunish {
+        if volatile == self.spiky_shield {
+            ProtectPunish::DamageEighthMaxHp
+        } else if volatile == self.baneful_bunker {
+            ProtectPunish::Poison
+        } else if volatile == self.kings_shield {
+            ProtectPunish::AttackDown
+        } else {
+            ProtectPunish::None
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Entity {
+    pub side: u8,
+    pub roster: u8,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum QueuedKind {
+    BeforeTurn,
+    Move,
+    Switch,
+    RunSwitch,
+    Mega,
+    Residual,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct QueuedAction {
+    pub kind: QueuedKind,
+    pub actor: Option<Entity>,
+    pub move_slot: u8,
+    pub move_id: Id,
+    pub target_location: i8,
+    pub destination: u8,
+    pub priority: crate::queue::Priority,
+}
