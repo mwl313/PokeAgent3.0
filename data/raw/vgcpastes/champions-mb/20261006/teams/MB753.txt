@@ -1,0 +1,59 @@
+Farigiraf (M) @ Sitrus Berry  
+Ability: Armor Tail  
+Level: 50  
+EVs: 27 HP / 21 Def / 18 SpD  
+Bold Nature  
+- Psychic  
+- Thunderbolt  
+- Trick Room  
+- Psychic Terrain  
+
+Armarouge (M) @ Focus Sash  
+Ability: Flash Fire  
+Level: 50  
+EVs: 32 HP / 32 SpA / 2 SpD  
+Quiet Nature  
+- Armor Cannon  
+- Expanding Force  
+- Ally Switch  
+- Wide Guard  
+
+Simipour (F) @ Mystic Water  
+Ability: Torrent  
+Level: 50  
+EVs: 32 Atk / 2 SpA / 32 Spe  
+Hasty Nature  
+- Scald  
+- Flip Turn  
+- Taunt  
+- Fake Out  
+
+Avalugg-Hisui (F) @ Wide Lens  
+Ability: Sturdy  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Def  
+Brave Nature  
+- Mountain Gale  
+- Rock Slide  
+- Body Press  
+- Protect  
+
+Abomasnow (M) @ Abomasite  
+Ability: Snow Warning  
+Level: 50  
+EVs: 32 HP / 1 Def / 32 SpA / 1 SpD  
+Quiet Nature  
+- Energy Ball  
+- Blizzard  
+- Ice Shard  
+- Earth Power  
+
+Hatterene (F) @ Life Orb  
+Ability: Magic Bounce  
+Level: 50  
+EVs: 32 HP / 2 Def / 32 SpA  
+Quiet Nature  
+- Expanding Force  
+- Dazzling Gleam  
+- Mystical Fire  
+- Trick Room  

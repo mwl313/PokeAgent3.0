@@ -1,0 +1,88 @@
+{
+  "prepared_on": "2026-10-06",
+  "scope": "Read package and prepare directories only; no project implementation or execution.",
+  "source_archive": "PokeAgent3_FullScope_Spec_v1.1_MiniDC_20261006.zip",
+  "archive_sha256": "7305d52dcac3286e93c5e8f5df9c29dfca5cac8463b92237ca866e6ba1c4e00b",
+  "extracted_to": "docs/spec/fullspec-1.1-minidc-20261006",
+  "package_manifest_entries_verified": 9,
+  "package_files_preserved": 10,
+  "checks": {
+    "zip_crc": true,
+    "manifest_sizes_and_sha256": true,
+    "yaml_parse": true,
+    "json_schema_draft_2020_12_structure": true,
+    "token_and_batch_arithmetic": true
+  },
+  "convenience_links": {
+    "configs/train.yaml": "PA3_TRAINING_CONFIG.yaml",
+    "data/schemas/team-record.schema.json": "PA3_TEAM_RECORD_SCHEMA.json",
+    "runtime/constraints-minidc.txt": "runtime/constraints-minidc.txt",
+    "runtime/minidc.env": "runtime/minidc.env"
+  },
+  "preexisting_deleted_paths_preserved": [
+    "agents.md",
+    "configs/PA3_TRAINING_CONFIG.yaml",
+    "data/PA3_TEAM_RECORD_SCHEMA.json",
+    "docs/20261006-design-rl-sim-harness-v2.0.md",
+    "docs/20261006-plan-rl-sim-harness-v2.0.md",
+    "docs/20261006-review-fullscope-delta-v1.0.md",
+    "docs/20261006-spec-doc-naming-v1.2.md",
+    "docs/README.md",
+    "docs/import/20261006/MANIFEST.json",
+    "docs/import/20261006/PACKAGE_MANIFEST.json",
+    "docs/import/20261006/POKEAGENT_3_0_FULL_SPEC.md",
+    "docs/import/20261006/README.md"
+  ],
+  "not_performed": [
+    "implementation",
+    "dependency installation",
+    "hardware or GPU validation",
+    "team collection",
+    "training",
+    "evaluation",
+    "service or system changes",
+    "git staging or commits"
+  ],
+  "files": [
+    {
+      "path": "PA3_TEAM_RECORD_SCHEMA.json",
+      "sha256": "817f2f390115149b3aa18fd388f0fd380d8051cebbede5cc09a92041b0d2da33"
+    },
+    {
+      "path": "PA3_TRAINING_CONFIG.yaml",
+      "sha256": "d3eaaa3d12acdd9f6452ac4d300f4fdd8472a67878ca16dcf2526b17da2cfafc"
+    },
+    {
+      "path": "PACKAGE_MANIFEST.json",
+      "sha256": "312be0d5599f2f17102c640501e3f23944ed2b9ec467cf9d44c43b4ca1727aeb"
+    },
+    {
+      "path": "POKEAGENT_3_0_FULL_SPEC.md",
+      "sha256": "16e49b78ae44d24854b58ae87754bcb98f9571f2757c83ebbe5317f8fd130976"
+    },
+    {
+      "path": "README.md",
+      "sha256": "84ceb0a23647dac63f934e182e456c12c27174d4c5ce8105cd4be7a7b02884d9"
+    },
+    {
+      "path": "RUNTIME_CHANGES.md",
+      "sha256": "fccae53381973a39b09965f43030496a148aba267229cf4dde00baf25b31df79"
+    },
+    {
+      "path": "START_AGENT.md",
+      "sha256": "da95d960a7856adf6efe75e21f2c56e32a2af6254f74fb1c126b1c56d19d1370"
+    },
+    {
+      "path": "reference/73-v100-driver-cuda-constraints.md",
+      "sha256": "9860b5cca4de76a6c6487c5ec4ab0175fd790ca4c26a6589e0bb4de3bbe680a8"
+    },
+    {
+      "path": "runtime/constraints-minidc.txt",
+      "sha256": "2108dc0c5842429674cb9db85ae8e9f50ec2bb93703e3bbf3e49bc2a16144eed"
+    },
+    {
+      "path": "runtime/minidc.env",
+      "sha256": "49d6c97d9c936d7d5164e7cf5dd158d2698ee3d0a11a478e9cb64f02a57812c4"
+    }
+  ]
+}

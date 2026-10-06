@@ -1,0 +1,131 @@
+{
+  "source_url": "https://docs.google.com/spreadsheets/d/1axlwmzPA49rYkqXh7zHvAtSP-TKbM0ijGYBPRflLSWw/edit?gid=1458357160",
+  "sheet_title": "Champions M-B",
+  "sheet_snapshot_at": "2026-10-06T11:31:59.880Z",
+  "collection_started_at": "2026-10-06T11:32:01.293081+00:00",
+  "collection_finished_at": "2026-10-06T11:45:48.018277+00:00",
+  "sheet_team_rows": 861,
+  "evs_yes_rows": 783,
+  "excluded_other_evs_rows": 78,
+  "unique_selected_links": 782,
+  "successful_team_extractions": 783,
+  "fetch_or_extraction_failures": 0,
+  "member_count_distribution": {
+    "6": 783
+  },
+  "checks_passed": {
+    "all_six_explicit_allocations": 782,
+    "all_six_four_moves": 767,
+    "all_six_nature_lines": 780,
+    "allocation_parse_complete": 783
+  },
+  "teams_with_extraction_issues": 17,
+  "unique_exact_team_texts": 773,
+  "exact_text_duplicate_groups": [
+    [
+      "MB843",
+      "MB791"
+    ],
+    [
+      "MB681",
+      "MB492"
+    ],
+    [
+      "MB655",
+      "MB607"
+    ],
+    [
+      "MB611",
+      "MB549"
+    ],
+    [
+      "MB465",
+      "MB380"
+    ],
+    [
+      "MB372",
+      "MB141"
+    ],
+    [
+      "MB317",
+      "MB288"
+    ],
+    [
+      "MB259",
+      "MB238"
+    ],
+    [
+      "MB212",
+      "MB61"
+    ],
+    [
+      "MB136",
+      "MB92"
+    ]
+  ],
+  "collection_policy": {
+    "selection": "M-B rows marked EVs Yes only",
+    "max_concurrency": 1,
+    "minimum_request_interval_seconds": 1.05,
+    "robots_txt_observation": "https://pokepast.es/robots.txt returned HTTP 404 before collection",
+    "max_response_bytes": 10485760,
+    "raw_html_preserved": true,
+    "missing_data_imputed": false,
+    "allocation_units_converted": false,
+    "battle_legality_checked": false,
+    "canonical_deduplication_performed": false,
+    "train_dev_final_split_created": false
+  },
+  "verification": {
+    "all_selected_rows_accounted_for": true,
+    "all_response_sha256_verified": true,
+    "all_extracted_text_sha256_verified": true,
+    "independent_html_text_reconstruction_matched": 783
+  },
+  "allocation_complete_records": 782,
+  "missing_allocation_team_ids": [
+    "MB382"
+  ],
+  "fewer_than_four_moves_team_ids": [
+    "MB579",
+    "MB576",
+    "MB572",
+    "MB527",
+    "MB422",
+    "MB403",
+    "MB400",
+    "MB384",
+    "MB382",
+    "MB368",
+    "MB367",
+    "MB292",
+    "MB261",
+    "MB235",
+    "MB112",
+    "MB5"
+  ],
+  "missing_nature_line_team_ids": [
+    "MB391",
+    "MB382",
+    "MB292"
+  ],
+  "extraction_issue_note": "These flags compare the original paste with the supplied completeness requirements; fewer than four moves may be intentional (for example Ditto or Last Resort sets). No moves, natures, or allocations were filled in, and no teams were removed from the full collection. This is not a battle-legality judgment.",
+  "http_source_links_retrieved_over_https": [
+    {
+      "team_id": "MB539",
+      "source_url": "http://pokepast.es/59949a7fbac6e3fa",
+      "fetched_url": "https://pokepast.es/59949a7fbac6e3fa"
+    }
+  ],
+  "dataset_path": "data/raw/vgcpastes/champions-mb/20261006",
+  "ma_collected": false,
+  "artifact_sha256": {
+    "sheet_snapshot.json": "bd7e6845d274abd14c1bda21787cda26ae176a2514dea3e28c4fde6d67274f00",
+    "pokepaste_links.txt": "e1ac6e1bf9c4d07d2e9b06cb98173b06bc0268af664b7d3d5f397c3f6c4cf555",
+    "teams.jsonl": "b8210275a5d39fc3634ffae65d27bac5373e47c5fbc0f1c0dc1526f58ff7223e",
+    "teams_with_allocations.jsonl": "9c3984925063ac71daa8a56ca0e5bec0e428fc71f1bae710fec90ad09c756569",
+    "all_teams.txt": "a1a684478f45f4549bc310642e1876e91a2bf5e89b9911942f7a59e70b39c1f9",
+    "failures.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+    "extraction_issues.json": "489f8571cbffb3af4e033b51beaf565418f31e95dd647290d21262cb222f8634"
+  }
+}

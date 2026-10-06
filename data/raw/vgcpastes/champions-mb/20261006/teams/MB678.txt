@@ -1,0 +1,59 @@
+Blastoise (M) @ Blastoisinite  
+Ability: Rain Dish  
+Level: 50  
+EVs: 1 HP / 1 Def / 32 SpA / 32 Spe  
+Modest Nature  
+- Water Spout  
+- Dark Pulse  
+- Aura Sphere  
+- Protect  
+
+Maushold-Four @ Chople Berry  
+Ability: Friend Guard  
+Level: 50  
+EVs: 32 HP / 8 Def / 2 SpD / 24 Spe  
+Timid Nature  
+- Follow Me  
+- Super Fang  
+- Taunt  
+- Protect  
+
+Talonflame (M) @ Life Orb  
+Ability: Gale Wings  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Jolly Nature  
+- Brave Bird  
+- Flare Blitz  
+- Tailwind  
+- Protect  
+
+Garchomp (M) @ Roseli Berry  
+Ability: Rough Skin  
+Level: 50  
+EVs: 32 Atk / 2 Def / 32 Spe  
+Jolly Nature  
+- Earthquake  
+- Dragon Claw  
+- Rock Slide  
+- Protect  
+
+Floette-Eternal (F) @ Floettite  
+Ability: Flower Veil  
+Level: 50  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Timid Nature  
+- Moonblast  
+- Dazzling Gleam  
+- Light of Ruin  
+- Protect  
+
+Basculegion (M) @ Focus Sash  
+Ability: Adaptability  
+Level: 50  
+EVs: 32 Atk / 2 Def / 32 Spe  
+Jolly Nature  
+- Last Respects  
+- Wave Crash  
+- Aqua Jet  
+- Protect  

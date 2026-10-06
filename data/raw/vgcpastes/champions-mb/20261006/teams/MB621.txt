@@ -1,0 +1,59 @@
+Raichu (F) @ Raichunite Y  
+Ability: Lightning Rod  
+Level: 50  
+EVs: 32 HP / 10 Def / 24 Spe  
+Timid Nature  
+- Protect  
+- Zap Cannon  
+- Fake Out  
+- Focus Blast  
+
+Clefable (F) @ Sitrus Berry  
+Ability: Unaware  
+Level: 50  
+EVs: 32 HP / 32 Def / 2 SpD  
+Bold Nature  
+- Protect  
+- Follow Me  
+- Moonblast  
+- Helping Hand  
+
+Aerodactyl (M) @ Focus Sash  
+Ability: Unnerve  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Jolly Nature  
+- Wide Guard  
+- Taunt  
+- Rock Slide  
+- Tailwind  
+
+Ceruledge (F) @ Leftovers  
+Ability: Flash Fire  
+Level: 50  
+EVs: 32 HP / 15 Atk / 9 Def / 10 SpD  
+Adamant Nature  
+- Protect  
+- Shadow Sneak  
+- Bitter Blade  
+- Bulk Up  
+
+Mamoswine (F) @ Life Orb  
+Ability: Oblivious  
+Level: 50  
+EVs: 32 Atk / 2 SpD / 32 Spe  
+Jolly Nature  
+- High Horsepower  
+- Icicle Crash  
+- Ice Shard  
+- Protect  
+
+Glimmora (F) @ Glimmoranite  
+Ability: Toxic Debris  
+Level: 50  
+EVs: 1 HP / 32 SpA / 1 SpD / 32 Spe  
+Timid Nature  
+- Spiky Shield  
+- Power Gem  
+- Sludge Bomb  
+- Earth Power  

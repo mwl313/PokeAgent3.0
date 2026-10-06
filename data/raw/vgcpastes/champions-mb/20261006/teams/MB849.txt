@@ -1,0 +1,65 @@
+Kingambit @ Life Orb  
+Ability: Defiant  
+Level: 50  
+Shiny: Yes  
+EVs: 14 HP / 32 Atk / 1 Def / 1 SpD / 18 Spe  
+Adamant Nature  
+- Protect  
+- Iron Head  
+- Sucker Punch  
+- Kowtow Cleave  
+
+Arcanine-Hisui @ Focus Sash  
+Ability: Rock Head  
+Level: 50  
+Shiny: Yes  
+EVs: 1 HP / 32 Atk / 1 SpD / 32 Spe  
+Jolly Nature  
+- Head Smash  
+- Flare Blitz  
+- Protect  
+- Extreme Speed  
+
+Whimsicott @ Occa Berry  
+Ability: Prankster  
+Level: 50  
+Shiny: Yes  
+EVs: 30 HP / 25 Def / 1 SpA / 2 SpD / 8 Spe  
+Timid Nature  
+- Tailwind  
+- Grass Knot  
+- Moonblast  
+- Charm  
+
+Sylveon @ Fairy Feather  
+Ability: Pixilate  
+Level: 50  
+Shiny: Yes  
+EVs: 11 HP / 10 Def / 20 SpA / 1 SpD / 23 Spe  
+Modest Nature  
+- Detect  
+- Calm Mind  
+- Hyper Beam  
+- Hyper Voice  
+
+Raichu-Mega-Y @ Raichunite Y  
+Ability: Lightning Rod  
+Level: 50  
+Shiny: Yes  
+EVs: 26 HP / 5 Def / 2 SpA / 1 SpD / 32 Spe  
+Timid Nature  
+- Focus Blast  
+- Zap Cannon  
+- Protect  
+- Fake Out  
+
+Staraptor-Mega @ Staraptite  
+Ability: Intimidate  
+Level: 50  
+Shiny: Yes  
+EVs: 15 HP / 16 Atk / 1 Def / 2 SpD / 32 Spe  
+Jolly Nature  
+- Protect  
+- Close Combat  
+- Roost  
+- Brave Bird  

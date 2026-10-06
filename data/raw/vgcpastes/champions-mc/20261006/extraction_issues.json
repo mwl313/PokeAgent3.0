@@ -1,0 +1,15 @@
+[
+  {
+    "team_id": "MC98",
+    "url": "https://pokepast.es/0addcf1b3a357c71",
+    "checks": {
+      "member_count": 6,
+      "six_members": true,
+      "members_with_explicit_allocation": 0,
+      "all_six_explicit_allocations": false,
+      "all_six_four_moves": true,
+      "all_six_nature_lines": true,
+      "allocation_parse_complete": true
+    }
+  }
+]

@@ -1,0 +1,53 @@
+Staraptor @ Staraptite  
+Ability: Intimidate  
+EVs: 21 HP / 11 Atk / 2 SpD / 32 Spe  
+Jolly Nature  
+- Brave Bird  
+- Close Combat  
+- Tailwind  
+- Protect  
+
+Tyranitar @ Tyranitarite  
+Ability: Sand Stream  
+EVs: 2 HP / 29 Atk / 3 Def / 32 Spe  
+Jolly Nature  
+- Rock Slide  
+- Knock Off  
+- Low Kick  
+- Protect  
+
+Excadrill @ Focus Sash  
+Ability: Sand Rush  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Adamant Nature  
+- High Horsepower  
+- Iron Head  
+- Rock Slide  
+- Protect  
+
+Milotic @ Sitrus Berry  
+Ability: Competitive  
+EVs: 32 HP / 27 Def / 2 SpD / 5 Spe  
+Modest Nature  
+- Scald  
+- Ice Beam  
+- Icy Wind  
+- Protect  
+
+Gholdengo @ Life Orb  
+Ability: Good as Gold  
+EVs: 27 HP / 23 Def / 7 SpA / 9 Spe  
+Modest Nature  
+- Make It Rain  
+- Shadow Ball  
+- Nasty Plot  
+- Protect  
+
+Sinistcha @ Colbur Berry  
+Ability: Hospitality  
+EVs: 32 HP / 4 Def / 30 SpD  
+Calm Nature  
+- Matcha Gotcha  
+- Rage Powder  
+- Trick Room  
+- Protect  

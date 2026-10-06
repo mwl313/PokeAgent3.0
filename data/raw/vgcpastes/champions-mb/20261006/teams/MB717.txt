@@ -1,0 +1,53 @@
+Raichu @ Raichunite Y  
+Ability: Lightning Rod  
+EVs: 32 HP / 1 Def / 1 SpD / 32 Spe  
+Timid Nature  
+- Zap Cannon  
+- Focus Blast  
+- Fake Out  
+- Protect  
+
+Kingambit @ Life Orb  
+Ability: Defiant  
+EVs: 24 HP / 32 Atk / 1 Def / 9 Spe  
+Adamant Nature  
+- Kowtow Cleave  
+- Sucker Punch  
+- Swords Dance  
+- Protect  
+
+Basculegion @ Mystic Water  
+Ability: Adaptability  
+EVs: 28 Atk / 11 Def / 27 Spe  
+Adamant Nature  
+- Wave Crash  
+- Last Respects  
+- Aqua Jet  
+- Protect  
+
+Aerodactyl @ Aerodactylite  
+Ability: Unnerve  
+EVs: 18 HP / 12 Atk / 4 Def / 32 Spe  
+Jolly Nature  
+- Rock Slide  
+- Dual Wingbeat  
+- Tailwind  
+- Protect  
+
+Sneasler @ Focus Sash  
+Ability: Poison Touch  
+EVs: 32 Atk / 2 Def / 32 Spe  
+Jolly Nature  
+- Close Combat  
+- Dire Claw  
+- Fake Out  
+- Protect  
+
+Sylveon @ Fairy Feather  
+Ability: Pixilate  
+EVs: 11 HP / 12 Def / 20 SpA / 23 Spe  
+Modest Nature  
+- Hyper Voice  
+- Hyper Beam  
+- Quick Attack  
+- Detect  

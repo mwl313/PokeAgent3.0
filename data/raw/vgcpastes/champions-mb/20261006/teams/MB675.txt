@@ -1,0 +1,55 @@
+Incineroar @ White Herb  
+Ability: Intimidate  
+EVs: 32 HP / 31 Atk / 3 Def  
+Brave Nature  
+- Flare Blitz  
+- Darkest Lariat  
+- Close Combat  
+- Fake Out  
+
+Hatterene @ Life Orb  
+Ability: Magic Bounce  
+Shiny: Yes  
+EVs: 27 HP / 7 Def / 32 SpA  
+Quiet Nature  
+- Psychic  
+- Trick Room  
+- Dazzling Gleam  
+- Protect  
+
+Farigiraf @ Sitrus Berry  
+Ability: Armor Tail  
+EVs: 29 HP / 3 Def / 2 SpA / 32 SpD  
+Modest Nature  
+- Psychic  
+- Trick Room  
+- Thunderbolt  
+- Protect  
+
+Torkoal @ Charcoal  
+Ability: Drought  
+Shiny: Yes  
+EVs: 32 HP / 32 SpA / 2 SpD  
+Quiet Nature  
+- Eruption  
+- Weather Ball  
+- Earth Power  
+- Protect  
+
+Kangaskhan @ Kangaskhanite  
+Ability: Scrappy  
+EVs: 32 HP / 31 Atk / 3 SpD  
+Brave Nature  
+- Double-Edge  
+- Fake Out  
+- Sucker Punch  
+- Low Kick  
+
+Charizard @ Charizardite Y  
+Ability: Blaze  
+EVs: 22 HP / 16 Def / 11 SpA / 17 Spe  
+Modest Nature  
+- Heat Wave  
+- Overheat  
+- Solar Beam  
+- Protect  

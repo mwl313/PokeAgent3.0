@@ -1,0 +1,55 @@
+# 문서/에이전트 파일은 추적한다. 실행 산출물과 large assets는 추적하지 않는다.
+
+# --- 런타임/환경 ---
+node_modules/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.DS_Store
+
+# --- DSH 로컬 상태 (스킬만 추적) ---
+.dsh/*
+!.dsh/skills/
+
+# --- 시뮬/학습 산출물 ---
+bench/**/runs/
+bench/**/*.log
+bench/**/*.csv.gz
+runs/
+checkpoints/
+agent/**/logs/
+agent/**/wandb/
+agent/**/tb/
+*.pt
+*.ckpt
+*.onnx
+*.safetensors
+
+# --- 대용량 데이터/리플레이 (별도 저장·백업 대상) ---
+/data/raw/*
+!/data/raw/vgcpastes/
+/data/raw/vgcpastes/*
+!/data/raw/vgcpastes/champions-mb/
+!/data/raw/vgcpastes/champions-mc/
+/data/raw/vgcpastes/champions-mb/*
+/data/raw/vgcpastes/champions-mc/*
+!/data/raw/vgcpastes/champions-mb/20261006/
+!/data/raw/vgcpastes/champions-mc/20261006/
+data/dex-dump/
+/data/teams/*
+!/data/teams/mb-mc-v1/
+!/data/teams/mb-mc-v2-all-train/
+data/crawl-cache/
+replays/
+# 팀 스키마·정본 설정은 추적한다
+!data/PA3_TEAM_RECORD_SCHEMA.json
+
+# --- 임시 ---
+tmp/
+*.tmp
+*.bak
+
+# Pinned third-party reference checkout and its local build.
+/vendor/pokemon-showdown/

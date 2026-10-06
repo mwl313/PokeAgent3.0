@@ -1,0 +1,59 @@
+Floette-Eternal (F) @ Floettite  
+Ability: Flower Veil  
+Level: 50  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Timid Nature  
+- Light of Ruin  
+- Dazzling Gleam  
+- Moonblast  
+- Protect  
+
+Maushold-Four @ Wide Lens  
+Ability: Technician  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Jolly Nature  
+- Population Bomb  
+- Protect  
+- Follow Me  
+- Feint  
+
+Garchomp (F) @ Sitrus Berry  
+Ability: Rough Skin  
+Level: 50  
+EVs: 5 HP / 10 Atk / 22 Def / 10 SpD / 19 Spe  
+Adamant Nature  
+- Protect  
+- Rock Slide  
+- Dragon Claw  
+- Earthquake  
+
+Talonflame (M) @ Charcoal  
+Ability: Gale Wings  
+Level: 50  
+EVs: 4 HP / 15 Def / 19 SpA / 28 Spe  
+Timid Nature  
+- Protect  
+- Overheat  
+- Tailwind  
+- Quick Guard  
+
+Raichu (F) @ Raichunite Y  
+Ability: Lightning Rod  
+Level: 50  
+EVs: 27 HP / 16 Def / 23 Spe  
+Timid Nature  
+- Zap Cannon  
+- Focus Blast  
+- Fake Out  
+- Protect  
+
+Kingambit (M) @ Focus Sash  
+Ability: Defiant  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Adamant Nature  
+- Protect  
+- Sucker Punch  
+- Kowtow Cleave  
+- Iron Head  

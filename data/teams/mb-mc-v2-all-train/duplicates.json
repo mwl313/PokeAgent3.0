@@ -1,0 +1,107 @@
+[
+  {
+    "team_id": "pa3-0c3585c1f749f94cd42a675e68b3472ef8a5876aa0152df23478ebed9ebe461f",
+    "source_team_ids": [
+      "MC24",
+      "MC63"
+    ]
+  },
+  {
+    "team_id": "pa3-18b6f4f5866e6ce02f66a2a6bcf5a7d2bde8405777efccfb65d75767c0f6c6c2",
+    "source_team_ids": [
+      "MB136",
+      "MB92"
+    ]
+  },
+  {
+    "team_id": "pa3-22c6605f7d8fe4fd5aeb36c44cf49e7c354c5f26a1e5962bc6e0bc0ce12dc948",
+    "source_team_ids": [
+      "MB492",
+      "MB681"
+    ]
+  },
+  {
+    "team_id": "pa3-2f9c76f13d9564bf74944e604cf529508174666e689ea03b1d23cdab1889bd53",
+    "source_team_ids": [
+      "MB141",
+      "MB372"
+    ]
+  },
+  {
+    "team_id": "pa3-391beed4bcb5331f2dd17d2bbf430036ffdba181eef49a69684e0d6ecdeb7109",
+    "source_team_ids": [
+      "MB212",
+      "MB61"
+    ]
+  },
+  {
+    "team_id": "pa3-3ef17b7d3c3ace25cdd4bf3efc54c1d0644a1bd78484fe138928e6a732da9a40",
+    "source_team_ids": [
+      "MB238",
+      "MB259"
+    ]
+  },
+  {
+    "team_id": "pa3-4ed6fcd167d25f9f139e35743f7966af0d3220ccf31d1dec71293c665c8695d6",
+    "source_team_ids": [
+      "MC393",
+      "MC396"
+    ]
+  },
+  {
+    "team_id": "pa3-8feaad6774a1127340b2c617167f509639c4f32aff7db3a65283f4fc2a026bbb",
+    "source_team_ids": [
+      "MB288",
+      "MB317"
+    ]
+  },
+  {
+    "team_id": "pa3-92e30946342da13261f8983dc02dac62a45c9bd63a56f329ccdcf16c9ad7560e",
+    "source_team_ids": [
+      "MB549",
+      "MB611"
+    ]
+  },
+  {
+    "team_id": "pa3-99b8fc76f930e371936d6b348edf15efd6384604d78e4be143641a18aa8f97a5",
+    "source_team_ids": [
+      "MC189",
+      "MC245"
+    ]
+  },
+  {
+    "team_id": "pa3-9fdf54c37ac251f5f47d86f00a40b396bcc7b6e95241aa1e093657a207796e3e",
+    "source_team_ids": [
+      "MB380",
+      "MB465"
+    ]
+  },
+  {
+    "team_id": "pa3-ac344b71dbb7d696c0848be23a020e35d78871d9ab7fbe23704b23aba4199c08",
+    "source_team_ids": [
+      "MB104",
+      "MB33"
+    ]
+  },
+  {
+    "team_id": "pa3-b7278f69b20aa48001e313e5f0f521c2507ae875e0e3071e04b5102da652b16a",
+    "source_team_ids": [
+      "MB791",
+      "MB843"
+    ]
+  },
+  {
+    "team_id": "pa3-c1f250ef2096fbbf340e29920706642ab4932f2ce5419fe21be8af342ab37a3f",
+    "source_team_ids": [
+      "MB607",
+      "MB655"
+    ]
+  },
+  {
+    "team_id": "pa3-ca5935f7bdcf28908b089fe175e753d346f2391a6eedfe21e5f0ad4260f8e1c8",
+    "source_team_ids": [
+      "MC26",
+      "MC35"
+    ]
+  }
+]

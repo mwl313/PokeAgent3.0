@@ -1,0 +1,53 @@
+Farigiraf @ Colbur Berry  
+Ability: Armor Tail  
+EVs: 24 HP / 27 Def / 15 SpD  
+Relaxed Nature  
+- Psychic Fangs  
+- Thunderbolt  
+- Trick Room  
+- Helping Hand  
+
+Gallade @ Focus Sash  
+Ability: Sharpness  
+EVs: 32 HP / 32 Atk / 2 SpD  
+Brave Nature  
+- Sacred Sword  
+- Psycho Cut  
+- Leaf Blade  
+- Wide Guard  
+
+Kangaskhan @ Kangaskhanite  
+Ability: Scrappy  
+EVs: 21 HP / 23 Atk / 22 Def  
+Relaxed Nature  
+- Crunch  
+- Double-Edge  
+- Fake Out  
+- Hammer Arm  
+
+Reuniclus @ Wise Glasses  
+Ability: Overcoat  
+EVs: 29 HP / 9 Def / 15 SpA / 13 SpD  
+Quiet Nature  
+- Shadow Ball  
+- Psychic  
+- Trick Room  
+- Energy Ball  
+
+Conkeldurr @ Life Orb  
+Ability: Sheer Force  
+EVs: 21 HP / 4 Atk / 25 Def / 16 SpD  
+Brave Nature  
+- Ice Punch  
+- Poison Jab  
+- Fire Punch  
+- Thunder Punch  
+
+Torkoal @ Charcoal  
+Ability: Drought  
+EVs: 30 HP / 1 Def / 32 SpA / 3 SpD  
+Quiet Nature  
+- Protect  
+- Eruption  
+- Weather Ball  
+- Earth Power  

@@ -1,0 +1,60 @@
+Whimsicott @ Focus Sash  
+Ability: Prankster  
+Level: 50  
+Shiny: Yes  
+EVs: 2 Def / 32 SpA / 32 Spe  
+Timid Nature  
+- Protect  
+- Encore  
+- Moonblast  
+- Tailwind  
+
+Charizard-Mega-Y @ Charizardite Y  
+Ability: Drought  
+Level: 50  
+EVs: 20 HP / 32 Def / 1 SpA / 13 Spe  
+Modest Nature  
+- Weather Ball  
+- Protect  
+- Heat Wave  
+- Solar Beam  
+
+Basculegion (M) @ Mystic Water  
+Ability: Adaptability  
+Level: 50  
+EVs: 28 Atk / 13 Def / 25 Spe  
+Adamant Nature  
+- Wave Crash  
+- Last Respects  
+- Aqua Jet  
+- Protect  
+
+Kingambit @ Chople Berry  
+Ability: Defiant  
+Level: 50  
+EVs: 32 HP / 25 Atk / 9 Def  
+Adamant Nature  
+- Sucker Punch  
+- Iron Head  
+- Kowtow Cleave  
+- Low Kick  
+
+Sneasler @ White Herb  
+Ability: Unburden  
+Level: 50  
+EVs: 16 HP / 20 Atk / 30 Spe  
+Adamant Nature  
+- Close Combat  
+- Dire Claw  
+- Rock Tomb  
+- Protect  
+
+Garchomp @ Life Orb  
+Ability: Rough Skin  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Jolly Nature  
+- Rock Slide  
+- Earthquake  
+- Dragon Claw  
+- Protect  

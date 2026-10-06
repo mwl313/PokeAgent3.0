@@ -1,0 +1,1289 @@
+[
+  {
+    "source_team_id": "MB852",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/42d53375663aa736",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Blaze",
+            "Solar Power"
+          ],
+          "base_species": "Charizard",
+          "oracle_default": "Blaze",
+          "source": "Drought"
+        },
+        "member_index": 1
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB840",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/dc7b05506a44c661",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Intimidate",
+            "Reckless"
+          ],
+          "base_species": "Staraptor",
+          "oracle_default": "Intimidate",
+          "source": "Contrary"
+        },
+        "member_index": 1
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB776",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/626eb94332156b08",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Pressure",
+            "Rock Head",
+            "Unnerve"
+          ],
+          "base_species": "Aerodactyl",
+          "oracle_default": "Rock Head",
+          "source": "Tough Claws"
+        },
+        "member_index": 3
+      },
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Lightning Rod",
+            "Static"
+          ],
+          "base_species": "Raichu",
+          "oracle_default": "Static",
+          "source": "No Guard"
+        },
+        "member_index": 4
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB769",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/5dfcc39533b0b713",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Leaf Guard",
+            "Overgrow"
+          ],
+          "base_species": "Meganium",
+          "oracle_default": "Overgrow",
+          "source": "Mega Sol"
+        },
+        "member_index": 0
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB695",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/f77ea22a4a5d1d15",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Overgrow",
+            "Unburden"
+          ],
+          "base_species": "Sceptile",
+          "oracle_default": "Overgrow",
+          "source": "Lightning Rod"
+        },
+        "member_index": 0
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB670",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/0b6204a01a06be02",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Flower Veil",
+            "Symbiosis"
+          ],
+          "base_species": "Floette-Eternal",
+          "oracle_default": "Flower Veil",
+          "source": "Fairy Aura"
+        },
+        "member_index": 0
+      },
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Blaze",
+            "Solar Power"
+          ],
+          "base_species": "Charizard",
+          "oracle_default": "Blaze",
+          "source": "Drought"
+        },
+        "member_index": 1
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB661",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/8be5fd8b80ed230d",
+    "reasons": [
+      {
+        "code": "item_not_explicit",
+        "details": "Talonflame (F)",
+        "member_index": 5
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB616",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/3d1887cf62fc6d4e",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Blaze",
+            "Magician"
+          ],
+          "base_species": "Delphox",
+          "oracle_default": "Blaze",
+          "source": "Levitate"
+        },
+        "member_index": 5
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB579",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/ced5e323d8db832d",
+    "reasons": [
+      {
+        "code": "requires_four_explicit_moves",
+        "details": [
+          "Last Resort",
+          "Fake Out"
+        ],
+        "member_index": 4
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB576",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/b45547c781cfc488",
+    "reasons": [
+      {
+        "code": "requires_four_explicit_moves",
+        "details": [
+          "Transform"
+        ],
+        "member_index": 3
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB572",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/c25d2b38c8e4da99",
+    "reasons": [
+      {
+        "code": "requires_four_explicit_moves",
+        "details": [
+          "Transform"
+        ],
+        "member_index": 0
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB560",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/37fc662d924c0e70",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Flower Veil",
+            "Symbiosis"
+          ],
+          "base_species": "Floette-Eternal",
+          "oracle_default": "Flower Veil",
+          "source": "Fairy Aura"
+        },
+        "member_index": 0
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB527",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/571f8346d06f3cdd",
+    "reasons": [
+      {
+        "code": "requires_four_explicit_moves",
+        "details": [
+          "Transform"
+        ],
+        "member_index": 4
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB503",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/d5bcbb5e3082664f",
+    "reasons": [
+      {
+        "code": "item_not_explicit",
+        "details": "Talonflame",
+        "member_index": 2
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB495",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/76581e6804367d73",
+    "reasons": [
+      {
+        "code": "reference_illegal",
+        "details": "Grimmsnarl's move Scratch does not exist in Gen 9.",
+        "member_index": null
+      },
+      {
+        "code": "reference_illegal",
+        "details": "Grimmsnarl can't learn Scratch.",
+        "member_index": null
+      }
+    ],
+    "reference_problems": [
+      "Grimmsnarl's move Scratch does not exist in Gen 9.",
+      "Grimmsnarl can't learn Scratch."
+    ]
+  },
+  {
+    "source_team_id": "MB423",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/9e447be12c2fbc70",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Lightning Rod",
+            "Static"
+          ],
+          "base_species": "Raichu",
+          "oracle_default": "Static",
+          "source": "No Guard"
+        },
+        "member_index": 0
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB422",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/7f6c8e4b1e78dc5b",
+    "reasons": [
+      {
+        "code": "requires_four_explicit_moves",
+        "details": [
+          "Last Resort",
+          "Fake Out"
+        ],
+        "member_index": 0
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB421",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/4acbefd0b90556cf",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Lightning Rod",
+            "Static"
+          ],
+          "base_species": "Raichu",
+          "oracle_default": "Static",
+          "source": "No Guard"
+        },
+        "member_index": 5
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB403",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/6eb1815de4b3d61d",
+    "reasons": [
+      {
+        "code": "requires_four_explicit_moves",
+        "details": [
+          "Last Resort",
+          "Fake Out"
+        ],
+        "member_index": 1
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB400",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/7fb20a7940d8b48a",
+    "reasons": [
+      {
+        "code": "requires_four_explicit_moves",
+        "details": [
+          "Last Resort",
+          "Fake Out"
+        ],
+        "member_index": 4
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB391",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/ed9a1ba91a781507",
+    "reasons": [
+      {
+        "code": "missing_explicit_nature",
+        "details": "Metagross @ Metagrossite",
+        "member_index": 0
+      },
+      {
+        "code": "unapproved_set_change",
+        "details": {
+          "after": "Serious",
+          "before": "",
+          "field": "nature"
+        },
+        "member_index": 0
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB384",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/bd0c8a6669250b04",
+    "reasons": [
+      {
+        "code": "requires_four_explicit_moves",
+        "details": [
+          "Fake Out",
+          "Last Resort"
+        ],
+        "member_index": 5
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB382",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/1cc7218362209428",
+    "reasons": [
+      {
+        "code": "missing_or_multiple_allocation_lines",
+        "details": [],
+        "member_index": 4
+      },
+      {
+        "code": "requires_four_explicit_moves",
+        "details": [
+          "Transform"
+        ],
+        "member_index": 4
+      },
+      {
+        "code": "missing_explicit_nature",
+        "details": "Ditto @ Choice Scarf",
+        "member_index": 4
+      },
+      {
+        "code": "reference_illegal",
+        "details": "Ditto has exactly 0 Stat Points - did you forget to invest it? (If this was intentional, change your Nature to a different neutral Nature, which won't change its stats but will tell us that it wasn't a mistake).",
+        "member_index": null
+      },
+      {
+        "code": "unapproved_set_change",
+        "details": {
+          "after": "Serious",
+          "before": "",
+          "field": "nature"
+        },
+        "member_index": 4
+      }
+    ],
+    "reference_problems": [
+      "Ditto has exactly 0 Stat Points - did you forget to invest it? (If this was intentional, change your Nature to a different neutral Nature, which won't change its stats but will tell us that it wasn't a mistake)."
+    ]
+  },
+  {
+    "source_team_id": "MB368",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/e8e8c94abcd9c821",
+    "reasons": [
+      {
+        "code": "requires_four_explicit_moves",
+        "details": [
+          "Fake Out",
+          "Last Resort"
+        ],
+        "member_index": 1
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB367",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/7c969009a3ea27bb",
+    "reasons": [
+      {
+        "code": "requires_four_explicit_moves",
+        "details": [
+          "Last Resort",
+          "Fake Out"
+        ],
+        "member_index": 3
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB337",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/b0e7111884bc9784",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Flower Veil",
+            "Symbiosis"
+          ],
+          "base_species": "Floette-Eternal",
+          "oracle_default": "Flower Veil",
+          "source": "Fairy Aura"
+        },
+        "member_index": 5
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB311",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/e21041e0f9c8190b",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Lightning Rod",
+            "Static"
+          ],
+          "base_species": "Raichu",
+          "oracle_default": "Static",
+          "source": "No Guard"
+        },
+        "member_index": 0
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB292",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/d4e2f2167bd00f63",
+    "reasons": [
+      {
+        "code": "requires_four_explicit_moves",
+        "details": [
+          "Dazzling Gleam"
+        ],
+        "member_index": 4
+      },
+      {
+        "code": "missing_explicit_nature",
+        "details": "Alcremie (F) @ Chople Berry",
+        "member_index": 4
+      },
+      {
+        "code": "requires_four_explicit_moves",
+        "details": [
+          "Facade"
+        ],
+        "member_index": 5
+      },
+      {
+        "code": "missing_explicit_nature",
+        "details": "Araquanid @ Babiri Berry",
+        "member_index": 5
+      },
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Intimidate",
+            "Reckless"
+          ],
+          "base_species": "Staraptor",
+          "oracle_default": "Intimidate",
+          "source": "Contrary"
+        },
+        "member_index": 0
+      },
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Corrosion",
+            "Toxic Debris"
+          ],
+          "base_species": "Glimmora",
+          "oracle_default": "Toxic Debris",
+          "source": "Adaptability"
+        },
+        "member_index": 1
+      },
+      {
+        "code": "unapproved_set_change",
+        "details": {
+          "after": "Serious",
+          "before": "",
+          "field": "nature"
+        },
+        "member_index": 4
+      },
+      {
+        "code": "unapproved_set_change",
+        "details": {
+          "after": "Serious",
+          "before": "",
+          "field": "nature"
+        },
+        "member_index": 5
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB261",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/868616f74e2373bb",
+    "reasons": [
+      {
+        "code": "requires_four_explicit_moves",
+        "details": [
+          "Fake Out",
+          "Last Resort"
+        ],
+        "member_index": 0
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB235",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/5d9021e5d4ca36cd",
+    "reasons": [
+      {
+        "code": "requires_four_explicit_moves",
+        "details": [
+          "Fake Out",
+          "Last Resort"
+        ],
+        "member_index": 0
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB228",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/e15d08803a7e0c19",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Adaptability",
+            "Poison Point",
+            "Poison Touch"
+          ],
+          "base_species": "Dragalge",
+          "oracle_default": "Poison Point",
+          "source": "Regenerator"
+        },
+        "member_index": 0
+      },
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Intimidate",
+            "Reckless"
+          ],
+          "base_species": "Staraptor",
+          "oracle_default": "Intimidate",
+          "source": "Contrary"
+        },
+        "member_index": 2
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB198",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/126c2dd2034d9908",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Damp",
+            "Torrent"
+          ],
+          "base_species": "Swampert",
+          "oracle_default": "Torrent",
+          "source": "Swift Swim"
+        },
+        "member_index": 1
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB180",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/2c76e1700bb8e31d",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Clear Body",
+            "Light Metal"
+          ],
+          "base_species": "Metagross",
+          "oracle_default": "Clear Body",
+          "source": "Tough Claws"
+        },
+        "member_index": 0
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB163",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/e27d5141de9b68ab",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Lightning Rod",
+            "Static"
+          ],
+          "base_species": "Raichu",
+          "oracle_default": "Static",
+          "source": "Electric Surge"
+        },
+        "member_index": 0
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB135",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/923458d53d1b753e",
+    "reasons": [
+      {
+        "code": "reference_illegal",
+        "details": "Scrafty can't have Infiltrator.",
+        "member_index": null
+      }
+    ],
+    "reference_problems": [
+      "Scrafty can't have Infiltrator."
+    ]
+  },
+  {
+    "source_team_id": "MB112",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/c9eb31413e55910b",
+    "reasons": [
+      {
+        "code": "requires_four_explicit_moves",
+        "details": [
+          "Last Resort",
+          "Fake Out"
+        ],
+        "member_index": 3
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB77",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/3db90a016d44edf6",
+    "reasons": [
+      {
+        "code": "item_not_explicit",
+        "details": "Talonflame",
+        "member_index": 3
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB8",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/5b203a397256d099",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Flower Veil",
+            "Symbiosis"
+          ],
+          "base_species": "Floette-Eternal",
+          "oracle_default": "Flower Veil",
+          "source": "Fairy Aura"
+        },
+        "member_index": 1
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MB5",
+    "source_tab": "Champions M-B",
+    "source_url": "https://pokepast.es/855f0c1126bf690a",
+    "reasons": [
+      {
+        "code": "requires_four_explicit_moves",
+        "details": [
+          "Transform"
+        ],
+        "member_index": 5
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MC285",
+    "source_tab": "Champions M-C",
+    "source_url": "https://pokepast.es/472a153c121df28d",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Justified",
+            "Pressure",
+            "Super Luck"
+          ],
+          "base_species": "Absol",
+          "oracle_default": "Pressure",
+          "source": "Sharpness"
+        },
+        "member_index": 0
+      },
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Intimidate",
+            "Moxie"
+          ],
+          "base_species": "Salamence",
+          "oracle_default": "Intimidate",
+          "source": "Aerilate"
+        },
+        "member_index": 1
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MC279",
+    "source_tab": "Champions M-C",
+    "source_url": "https://pokepast.es/a1b7a6d0af006124",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Damp",
+            "Torrent"
+          ],
+          "base_species": "Swampert",
+          "oracle_default": "Torrent",
+          "source": "Swift Swim"
+        },
+        "member_index": 5
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MC240",
+    "source_tab": "Champions M-C",
+    "source_url": "https://pokepast.es/235094a08938ad08",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Justified",
+            "Pressure",
+            "Super Luck"
+          ],
+          "base_species": "Absol",
+          "oracle_default": "Pressure",
+          "source": "Sharpness"
+        },
+        "member_index": 5
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MC232",
+    "source_tab": "Champions M-C",
+    "source_url": "https://pokepast.es/31a5a41549fd6ddf",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Justified",
+            "Pressure",
+            "Super Luck"
+          ],
+          "base_species": "Absol",
+          "oracle_default": "Pressure",
+          "source": "Sharpness"
+        },
+        "member_index": 0
+      },
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Flower Veil",
+            "Symbiosis"
+          ],
+          "base_species": "Floette-Eternal",
+          "oracle_default": "Flower Veil",
+          "source": "Fairy Aura"
+        },
+        "member_index": 4
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MC224",
+    "source_tab": "Champions M-C",
+    "source_url": "https://pokepast.es/b6bace50909f3571",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Intimidate",
+            "Moxie"
+          ],
+          "base_species": "Salamence",
+          "oracle_default": "Intimidate",
+          "source": "Aerilate"
+        },
+        "member_index": 0
+      },
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Cursed Body",
+            "Snow Cloak"
+          ],
+          "base_species": "Froslass",
+          "oracle_default": "Snow Cloak",
+          "source": "Snow Warning"
+        },
+        "member_index": 2
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MC223",
+    "source_tab": "Champions M-C",
+    "source_url": "https://pokepast.es/6a572a56178f0271",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Intimidate",
+            "Moxie"
+          ],
+          "base_species": "Salamence",
+          "oracle_default": "Intimidate",
+          "source": "Aerilate"
+        },
+        "member_index": 0
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MC222",
+    "source_tab": "Champions M-C",
+    "source_url": "https://pokepast.es/a475819584747fe7",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Intimidate",
+            "Moxie"
+          ],
+          "base_species": "Salamence",
+          "oracle_default": "Intimidate",
+          "source": "Aerilate"
+        },
+        "member_index": 0
+      },
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Flower Veil",
+            "Symbiosis"
+          ],
+          "base_species": "Floette-Eternal",
+          "oracle_default": "Flower Veil",
+          "source": "Fairy Aura"
+        },
+        "member_index": 1
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MC221",
+    "source_tab": "Champions M-C",
+    "source_url": "https://pokepast.es/fdc0b961c0d0ef8c",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Intimidate",
+            "Moxie"
+          ],
+          "base_species": "Salamence",
+          "oracle_default": "Intimidate",
+          "source": "Aerilate"
+        },
+        "member_index": 0
+      },
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Flower Veil",
+            "Symbiosis"
+          ],
+          "base_species": "Floette-Eternal",
+          "oracle_default": "Flower Veil",
+          "source": "Fairy Aura"
+        },
+        "member_index": 1
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MC214",
+    "source_tab": "Champions M-C",
+    "source_url": "https://pokepast.es/30899280e5d3329e",
+    "reasons": [
+      {
+        "code": "reference_illegal",
+        "details": "Archaludon's move Precipice Blades does not exist in Gen 9.",
+        "member_index": null
+      },
+      {
+        "code": "reference_illegal",
+        "details": "Archaludon can't learn Precipice Blades.",
+        "member_index": null
+      }
+    ],
+    "reference_problems": [
+      "Archaludon's move Precipice Blades does not exist in Gen 9.",
+      "Archaludon can't learn Precipice Blades."
+    ]
+  },
+  {
+    "source_team_id": "MC213",
+    "source_tab": "Champions M-C",
+    "source_url": "https://pokepast.es/83bf8aa4785e4b68",
+    "reasons": [
+      {
+        "code": "reference_illegal",
+        "details": "Archaludon's move Precipice Blades does not exist in Gen 9.",
+        "member_index": null
+      },
+      {
+        "code": "reference_illegal",
+        "details": "Archaludon can't learn Precipice Blades.",
+        "member_index": null
+      }
+    ],
+    "reference_problems": [
+      "Archaludon's move Precipice Blades does not exist in Gen 9.",
+      "Archaludon can't learn Precipice Blades."
+    ]
+  },
+  {
+    "source_team_id": "MC210",
+    "source_tab": "Champions M-C",
+    "source_url": "https://pokepast.es/a4768a9bbf6876de",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Flower Veil",
+            "Symbiosis"
+          ],
+          "base_species": "Floette-Eternal",
+          "oracle_default": "Flower Veil",
+          "source": "Fairy Aura"
+        },
+        "member_index": 3
+      },
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Rain Dish",
+            "Torrent"
+          ],
+          "base_species": "Blastoise",
+          "oracle_default": "Torrent",
+          "source": "Mega Launcher"
+        },
+        "member_index": 4
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MC172",
+    "source_tab": "Champions M-C",
+    "source_url": "https://pokepast.es/b2d0e7f2f14c59e4",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Intimidate",
+            "Moxie"
+          ],
+          "base_species": "Salamence",
+          "oracle_default": "Intimidate",
+          "source": "Aerilate"
+        },
+        "member_index": 3
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MC136",
+    "source_tab": "Champions M-C",
+    "source_url": "https://pokepast.es/bad1f0554790c541",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Intimidate",
+            "Moxie"
+          ],
+          "base_species": "Salamence",
+          "oracle_default": "Intimidate",
+          "source": "Aerilate"
+        },
+        "member_index": 0
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MC118",
+    "source_tab": "Champions M-C",
+    "source_url": "https://pokepast.es/027fda21958e66de",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Clear Body",
+            "Light Metal"
+          ],
+          "base_species": "Metagross",
+          "oracle_default": "Clear Body",
+          "source": "Tough Claws"
+        },
+        "member_index": 0
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MC98",
+    "source_tab": "Champions M-C",
+    "source_url": "https://pokepast.es/0addcf1b3a357c71",
+    "reasons": [
+      {
+        "code": "missing_or_multiple_allocation_lines",
+        "details": [],
+        "member_index": 0
+      },
+      {
+        "code": "missing_or_multiple_allocation_lines",
+        "details": [],
+        "member_index": 1
+      },
+      {
+        "code": "missing_or_multiple_allocation_lines",
+        "details": [],
+        "member_index": 2
+      },
+      {
+        "code": "missing_or_multiple_allocation_lines",
+        "details": [],
+        "member_index": 3
+      },
+      {
+        "code": "missing_or_multiple_allocation_lines",
+        "details": [],
+        "member_index": 4
+      },
+      {
+        "code": "missing_or_multiple_allocation_lines",
+        "details": [],
+        "member_index": 5
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MC70",
+    "source_tab": "Champions M-C",
+    "source_url": "https://pokepast.es/2c92e63c0fd4a43c",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Intimidate",
+            "Moxie"
+          ],
+          "base_species": "Salamence",
+          "oracle_default": "Intimidate",
+          "source": "Aerilate"
+        },
+        "member_index": 0
+      }
+    ],
+    "reference_problems": []
+  },
+  {
+    "source_team_id": "MC10",
+    "source_tab": "Champions M-C",
+    "source_url": "https://pokepast.es/81427a109e744097",
+    "reasons": [
+      {
+        "code": "ambiguous_base_ability",
+        "details": {
+          "alternatives": [
+            "Rain Dish",
+            "Torrent"
+          ],
+          "base_species": "Blastoise",
+          "oracle_default": "Torrent",
+          "source": "Mega Launcher"
+        },
+        "member_index": 4
+      }
+    ],
+    "reference_problems": []
+  }
+]

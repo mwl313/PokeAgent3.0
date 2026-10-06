@@ -1,0 +1,59 @@
+Metagross @ Metagrossite  
+Ability: Clear Body  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Jolly Nature  
+- Iron Head  
+- Psychic Fangs  
+- Ice Punch  
+- Protect  
+
+Dragonite (M) @ Dragoninite  
+Ability: Multiscale  
+Level: 50  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Modest Nature  
+- Dragon Pulse  
+- Heat Wave  
+- Tailwind  
+- Protect  
+
+Sableye (M) @ Roseli Berry  
+Ability: Prankster  
+Level: 50  
+EVs: 32 HP / 13 Def / 21 SpD  
+Careful Nature  
+- Fake Out  
+- Will-O-Wisp  
+- Encore  
+- Foul Play  
+
+Tyranitar (F) @ Choice Scarf  
+Ability: Sand Stream  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Jolly Nature  
+- Rock Slide  
+- Knock Off  
+- Low Kick  
+- Stomping Tantrum  
+
+Sylveon (M) @ Life Orb  
+Ability: Pixilate  
+Level: 50  
+EVs: 32 HP / 32 SpA / 2 SpD  
+Modest Nature  
+- Hyper Voice  
+- Hyper Beam  
+- Quick Attack  
+- Detect  
+
+Arcanine (M) @ Sitrus Berry  
+Ability: Intimidate  
+Level: 50  
+EVs: 32 HP / 10 Atk / 13 Def / 10 SpD / 1 Spe  
+Adamant Nature  
+- Flare Blitz  
+- Snarl  
+- Extreme Speed  
+- Protect  

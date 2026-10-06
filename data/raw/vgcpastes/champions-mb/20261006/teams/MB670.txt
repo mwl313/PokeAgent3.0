@@ -1,0 +1,59 @@
+Floette-Mega (F) @ Floettite  
+Ability: Fairy Aura  
+Level: 50  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Modest Nature  
+- Protect  
+- Moonblast  
+- Dazzling Gleam  
+- Light of Ruin  
+
+Charizard-Mega-Y @ Charizardite Y  
+Ability: Drought  
+Level: 50  
+EVs: 22 HP / 14 Def / 30 Spe  
+Modest Nature  
+- Protect  
+- Heat Wave  
+- Weather Ball  
+- Roar  
+
+Garchomp @ Life Orb  
+Ability: Rough Skin  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Jolly Nature  
+- Protect  
+- Earthquake  
+- Stomping Tantrum  
+- Rock Slide  
+
+Maushold @ Wide Lens  
+Ability: Technician  
+Level: 50  
+EVs: 10 HP / 30 Atk / 26 Spe  
+Adamant Nature  
+- Protect  
+- Population Bomb  
+- Feint  
+- Follow Me  
+
+Whimsicott @ Focus Sash  
+Ability: Prankster  
+Level: 50  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Timid Nature  
+- Protect  
+- Moonblast  
+- Encore  
+- Tailwind  
+
+Basculegion (M) @ Choice Scarf  
+Ability: Adaptability  
+Level: 50  
+EVs: 32 Atk / 2 Def / 32 Spe  
+Jolly Nature  
+- Last Respects  
+- Wave Crash  
+- Flip Turn  
+- Aqua Jet  

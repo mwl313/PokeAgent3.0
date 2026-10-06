@@ -1,0 +1,21 @@
+{
+  "dataset_id": "mb-mc-v2-all-train",
+  "manifest_sha256": "15ac30b2dbafac08bd4e50f4534d14f9ee485e0133ae32b281fa12cdc5174fbe",
+  "checks": {
+    "automated_tests_passed": 8,
+    "accepted_json_schema_records_validated": 1136,
+    "pinned_reference_legality_and_pack_roundtrip": true,
+    "all_eligible_teams_assigned_to_train": true,
+    "dev_records": 0,
+    "final_records": 0,
+    "source_record_accounting": 1207,
+    "byte_identical_rebuild": true,
+    "starting_stat_checks": true,
+    "active_config_matches_dataset": true,
+    "original_package_bytes_preserved": true,
+    "original_collection_artifact_hashes_verified": true,
+    "ma_excluded": true
+  },
+  "preparation_code_sha256": "d5a101dc526644298912ccd15e9126b7ffbb05aec3d7bce81c661cc0aa8994a7",
+  "scope": "Local team preparation; all eligible teams train per user override. No Rust engine, model training, GPU workload, service changes, remote writes or git commits."
+}

@@ -1,0 +1,59 @@
+Garchomp-Mega @ Garchompite  
+Ability: Rough Skin  
+Level: 50  
+EVs: 10 HP / 30 SpA / 26 Spe  
+Modest Nature  
+- Earth Power  
+- Draco Meteor  
+- Power Gem  
+- Protect  
+
+Tyranitar @ Choice Scarf  
+Ability: Sand Stream  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Jolly Nature  
+- Knock Off  
+- Rock Slide  
+- Ice Punch  
+- Low Kick  
+
+Corviknight @ Life Orb  
+Ability: Mirror Armor  
+Level: 50  
+EVs: 6 HP / 28 Atk / 32 Spe  
+Jolly Nature  
+- Brave Bird  
+- Iron Head  
+- Tailwind  
+- Protect  
+
+Milotic @ Sitrus Berry  
+Ability: Competitive  
+Level: 50  
+EVs: 32 HP / 31 Def / 3 Spe  
+Bold Nature  
+- Scald  
+- Icy Wind  
+- Haze  
+- Protect  
+
+Sinistcha @ Kasib Berry  
+Ability: Hospitality  
+Level: 50  
+EVs: 31 HP / 4 Def / 1 SpA / 30 SpD  
+Bold Nature  
+- Matcha Gotcha  
+- Rage Powder  
+- Trick Room  
+- Protect  
+
+Ceruledge @ Colbur Berry  
+Ability: Flash Fire  
+Level: 50  
+EVs: 27 HP / 15 Atk / 18 Def / 1 SpD / 5 Spe  
+Adamant Nature  
+- Bitter Blade  
+- Shadow Sneak  
+- Bulk Up  
+- Protect  

@@ -1,0 +1,59 @@
+Sinistcha @ Kasib Berry  
+Ability: Hospitality  
+Level: 50  
+EVs: 32 HP / 14 Def / 20 SpD  
+Calm Nature  
+- Life Dew  
+- Matcha Gotcha  
+- Rage Powder  
+- Hex  
+
+Milotic (M) @ Leftovers  
+Ability: Competitive  
+Level: 50  
+EVs: 32 HP / 27 Def / 5 SpD / 2 Spe  
+Calm Nature  
+- Muddy Water  
+- Hypnosis  
+- Coil  
+- Recover  
+
+Incineroar (M) @ Sitrus Berry  
+Ability: Intimidate  
+Level: 50  
+EVs: 31 HP / 15 Atk / 10 Def / 10 SpD  
+Adamant Nature  
+- Fake Out  
+- Parting Shot  
+- Darkest Lariat  
+- Flare Blitz  
+
+Raichu (M) @ Raichunite Y  
+Ability: Lightning Rod  
+Level: 50  
+EVs: 30 HP / 13 Def / 23 Spe  
+Timid Nature  
+- Zap Cannon  
+- Focus Blast  
+- Fake Out  
+- Protect  
+
+Mimikyu (M) @ Life Orb  
+Ability: Disguise  
+Level: 50  
+EVs: 9 HP / 30 Atk / 2 Def / 25 Spe  
+Adamant Nature  
+- Play Rough  
+- Shadow Sneak  
+- Protect  
+- Swords Dance  
+
+Ninetales-Alola (M) @ Focus Sash  
+Ability: Snow Warning  
+Level: 50  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Timid Nature  
+- Blizzard  
+- Freeze-Dry  
+- Protect  
+- Encore  

@@ -1,0 +1,59 @@
+Staraptor (M) @ Staraptite  
+Ability: Intimidate  
+Level: 50  
+EVs: 31 HP / 1 Atk / 2 SpD / 32 Spe  
+Jolly Nature  
+- Close Combat  
+- Brave Bird  
+- Roost  
+- Protect  
+
+Glimmora (F) @ Focus Sash  
+Ability: Toxic Debris  
+Level: 50  
+EVs: 1 HP / 1 Def / 32 SpA / 32 Spe  
+Modest Nature  
+- Power Gem  
+- Sludge Bomb  
+- Earth Power  
+- Spiky Shield  
+
+Whimsicott (F) @ Occa Berry  
+Ability: Prankster  
+Level: 50  
+EVs: 30 HP / 29 Def / 7 Spe  
+Timid Nature  
+- Tailwind  
+- Moonblast  
+- Charm  
+- Light Screen  
+
+Kingambit (M) @ Chople Berry  
+Ability: Defiant  
+Level: 50  
+EVs: 32 HP / 25 Atk / 2 Def / 6 SpD / 1 Spe  
+Adamant Nature  
+- Kowtow Cleave  
+- Iron Head  
+- Low Kick  
+- Sucker Punch  
+
+Dragapult (M) @ Life Orb  
+Ability: Clear Body  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Jolly Nature  
+- Dragon Darts  
+- Phantom Force  
+- Will-O-Wisp  
+- Protect  
+
+Delphox (M) @ Delphoxite  
+Ability: Blaze  
+Level: 50  
+EVs: 3 HP / 32 Def / 10 SpA / 21 Spe  
+Timid Nature  
+- Heat Wave  
+- Psychic  
+- Encore  
+- Protect  

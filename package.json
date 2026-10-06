@@ -1,0 +1,10 @@
+{
+  "name": "pokeagent3-data-preparation",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prepare:teams": "node scripts/prepare_teams.mjs",
+    "test": "node --test tests/team-preparation.test.mjs"
+  },
+  "engines": { "node": ">=22.18.0" }
+}

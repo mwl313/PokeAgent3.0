@@ -1,0 +1,64 @@
+Biceps (Swampert-Mega) @ Swampertite  
+Ability: Torrent  
+Level: 50  
+Shiny: Yes  
+EVs: 14 HP / 20 Atk / 3 SpD / 29 Spe  
+Adamant Nature  
+- Wave Crash  
+- Earthquake  
+- Ice Punch  
+- Protect  
+
+Royal Mail (Pelipper) @ Sitrus Berry  
+Ability: Drizzle  
+Level: 50  
+Shiny: Yes  
+EVs: 31 HP / 25 SpD / 10 Spe  
+Bold Nature  
+- Weather Ball  
+- Hurricane  
+- Tailwind  
+- Wide Guard  
+
+Golden Gate (Archaludon) @ Leftovers  
+Ability: Stamina  
+Level: 50  
+Shiny: Yes  
+EVs: 27 HP / 5 Def / 1 SpA / 25 SpD / 8 Spe  
+Calm Nature  
+- Electro Shot  
+- Dragon Pulse  
+- Flash Cannon  
+- Protect  
+
+Danklin (Grimmsnarl) @ Light Clay  
+Ability: Prankster  
+Level: 50  
+Shiny: Yes  
+EVs: 32 HP / 9 Def / 25 SpD  
+Sassy Nature  
+- Light Screen  
+- Reflect  
+- Parting Shot  
+- Spirit Break  
+
+Winged King (Charizard-Mega-Y) @ Charizardite Y  
+Ability: Blaze  
+Shiny: Yes  
+EVs: 20 HP / 3 Def / 21 SpA / 22 Spe  
+Modest Nature  
+- Weather Ball  
+- Heat Wave  
+- Hurricane  
+- Protect  
+
+Plant Life (Venusaur) @ Focus Sash  
+Ability: Chlorophyll  
+Level: 50  
+Shiny: Yes  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Modest Nature  
+- Leaf Storm  
+- Sleep Powder  
+- Sludge Bomb  
+- Protect  

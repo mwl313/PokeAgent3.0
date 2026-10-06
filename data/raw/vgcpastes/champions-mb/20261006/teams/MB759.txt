@@ -1,0 +1,53 @@
+Reg M-A (Charizard) @ Charizardite Y  
+Ability: Blaze  
+EVs: 20 HP / 31 Def / 1 SpA / 14 Spe  
+Modest Nature  
+- Heat Wave  
+- Weather Ball  
+- Solar Beam  
+- Protect  
+
+$69.99 + tax (Floette-Eternal) @ Floettite  
+Ability: Flower Veil  
+EVs: 14 HP / 25 Def / 5 SpA / 22 Spe  
+Modest Nature  
+- Calm Mind  
+- Moonblast  
+- Dazzling Gleam  
+- Protect  
+
+John (Incineroar) @ Sitrus Berry  
+Ability: Intimidate  
+EVs: 32 HP / 1 Atk / 6 Def / 10 SpD / 17 Spe  
+Careful Nature  
+- Fake Out  
+- Flare Blitz  
+- Throat Chop  
+- Parting Shot  
+
+Garchonkus (Garchomp) @ Choice Scarf  
+Ability: Rough Skin  
+EVs: 4 HP / 30 Atk / 32 Spe  
+Adamant Nature  
+- Dragon Claw  
+- Earthquake  
+- Stomping Tantrum  
+- Rock Slide  
+
+Chai tea (Sinistcha) @ Occa Berry  
+Ability: Hospitality  
+EVs: 32 HP / 14 Def / 20 SpD  
+Bold Nature  
+- Matcha Gotcha  
+- Trick Room  
+- Rage Powder  
+- Protect  
+
+Elon (Gholdengo) @ Focus Sash  
+Ability: Good as Gold  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Timid Nature  
+- Make It Rain  
+- Shadow Ball  
+- Power Gem  
+- Protect  

@@ -1,0 +1,22 @@
+{
+  "repository": "https://github.com/smogon/pokemon-showdown",
+  "commit": "14546894d86f9589ac11130c510bbe73b6968665",
+  "local_path": "vendor/pokemon-showdown",
+  "license": "MIT",
+  "file_sha256": {
+    "package-lock.json": "15ad8a83f7ae0e8b3f0a54d3ca9c74e6b14c004c5e6ac02536f3fa2689f49a5d",
+    "LICENSE": "b2002a9fd52ba8db3783a05fbdebfb09c34fd09513b90f6b390a2c0dfbc93ed0",
+    "config/formats.ts": "a042cf99140a39a4bd610bb3de90da1137403a47709bc9d849a411e452a9468e",
+    "sim/teams.ts": "58b78336904801fcec5cd003c1a7af7718adbd31ddd1155bff72913663c9b2cd",
+    "sim/team-validator.ts": "0e2f95edb157e34a8c72b4fd1bf644ae65494b00993ccb79cd7fdf16ddb4ab94",
+    "data/mods/champions/scripts.ts": "21c26e520804d648493f43a6ec94e5c7d65a79cc41eb58feeb39df7a2914c126",
+    "data/mods/champions/rulesets.ts": "31671152a6ff1f09d81a5306baadaa1593ef235e5c7cdcc9180c67bac8e84cd9"
+  },
+  "built_js_tree_sha256": "8267340e53d9f972fb3fb832427d0be3a05e3344c0663d32833cccefa6184a8d",
+  "node": "v22.23.3",
+  "npm": "10.9.9",
+  "esbuild": "0.25.0",
+  "build": "bash scripts/setup_reference.sh",
+  "services_started": false,
+  "gpu_used": false
+}

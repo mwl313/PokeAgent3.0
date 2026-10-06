@@ -1,0 +1,4 @@
+# MiniDC runtime pin from the supplied 2026-10-06 handoff.
+# This is not a requirements file and not a complete transitive lock.
+# Use with EVERY runtime pip install; do not upgrade pip or the host stack.
+torch==2.14.0+cu126

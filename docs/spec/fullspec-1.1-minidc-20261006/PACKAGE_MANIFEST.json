@@ -1,0 +1,98 @@
+{
+  "schema": "pa3-document-package-v2",
+  "spec_version": "fullspec-1.1-minidc-lock",
+  "scope": "Runtime documentation/config update only. No local/remote host commands, GPU execution, installs, model training or service control.",
+  "parent_package_name": "PokeAgent3_FullScope_Spec_20261006.zip",
+  "parent_package_sha256": "bd26d28fcd4b86529fb20cc535c949d3fa3b1dbfedf89cda6bf96eb980943a3f",
+  "constraint_source_sha256": "9860b5cca4de76a6c6487c5ec4ab0175fd790ca4c26a6589e0bb4de3bbe680a8",
+  "unchanged_scientific_config_sections": [
+    "scope",
+    "rules",
+    "teams",
+    "observation",
+    "model",
+    "rollout",
+    "training",
+    "opponents",
+    "evaluation",
+    "checkpointing",
+    "logging",
+    "performance",
+    "execution"
+  ],
+  "unchanged_team_record_schema_sha256": "817f2f390115149b3aa18fd388f0fd380d8051cebbede5cc09a92041b0d2da33",
+  "full_spec_original_top_level_sections_preserved": [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16"
+  ],
+  "checks": {
+    "yaml_parse": true,
+    "json_parse": true,
+    "scientific_sections_unchanged": true,
+    "batch_math": true,
+    "source_bytes_preserved": true,
+    "all_original_document_sections_retained": true
+  },
+  "files": [
+    {
+      "path": "PA3_TEAM_RECORD_SCHEMA.json",
+      "bytes": 6677,
+      "sha256": "817f2f390115149b3aa18fd388f0fd380d8051cebbede5cc09a92041b0d2da33"
+    },
+    {
+      "path": "PA3_TRAINING_CONFIG.yaml",
+      "bytes": 14262,
+      "sha256": "d3eaaa3d12acdd9f6452ac4d300f4fdd8472a67878ca16dcf2526b17da2cfafc"
+    },
+    {
+      "path": "POKEAGENT_3_0_FULL_SPEC.md",
+      "bytes": 62450,
+      "sha256": "16e49b78ae44d24854b58ae87754bcb98f9571f2757c83ebbe5317f8fd130976"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2215,
+      "sha256": "84ceb0a23647dac63f934e182e456c12c27174d4c5ce8105cd4be7a7b02884d9"
+    },
+    {
+      "path": "RUNTIME_CHANGES.md",
+      "bytes": 2954,
+      "sha256": "fccae53381973a39b09965f43030496a148aba267229cf4dde00baf25b31df79"
+    },
+    {
+      "path": "START_AGENT.md",
+      "bytes": 2373,
+      "sha256": "da95d960a7856adf6efe75e21f2c56e32a2af6254f74fb1c126b1c56d19d1370"
+    },
+    {
+      "path": "reference/73-v100-driver-cuda-constraints.md",
+      "bytes": 11714,
+      "sha256": "9860b5cca4de76a6c6487c5ec4ab0175fd790ca4c26a6589e0bb4de3bbe680a8"
+    },
+    {
+      "path": "runtime/constraints-minidc.txt",
+      "bytes": 225,
+      "sha256": "2108dc0c5842429674cb9db85ae8e9f50ec2bb93703e3bbf3e49bc2a16144eed"
+    },
+    {
+      "path": "runtime/minidc.env",
+      "bytes": 716,
+      "sha256": "49d6c97d9c936d7d5164e7cf5dd158d2698ee3d0a11a478e9cb64f02a57812c4"
+    }
+  ]
+}

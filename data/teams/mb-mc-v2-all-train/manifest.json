@@ -1,0 +1,81 @@
+{
+  "dataset_id": "mb-mc-v2-all-train",
+  "schema_version": "pa3-frozen-team-pool-v1",
+  "format": "gen9championsvgc2026regmc",
+  "oracle_commit": "14546894d86f9589ac11130c510bbe73b6968665",
+  "source_selection": "User-approved frozen M-B and M-C EVs Yes batches only; M-A excluded; no future automatic additions",
+  "source_inputs": [
+    {
+      "tab": "Champions M-B",
+      "path": "data/raw/vgcpastes/champions-mb/20261006",
+      "records": 783,
+      "teams_jsonl_sha256": "b8210275a5d39fc3634ffae65d27bac5373e47c5fbc0f1c0dc1526f58ff7223e",
+      "sheet_snapshot_sha256": "bd7e6845d274abd14c1bda21787cda26ae176a2514dea3e28c4fde6d67274f00"
+    },
+    {
+      "tab": "Champions M-C",
+      "path": "data/raw/vgcpastes/champions-mc/20261006",
+      "records": 424,
+      "teams_jsonl_sha256": "81d4589564db7da69302c816e17de2b41b1d2bed8f85207e940540c1e013f355",
+      "sheet_snapshot_sha256": "09ccd81a3cbc1f80aa6507bd7756bc29ad09c9e2a44577c91341e7b8f9f05ab4"
+    }
+  ],
+  "source_input_sha256": "2082a988a80cbc28be55b5742bab9f323594963bec3926b206231df64485b09d",
+  "source_rows": 1207,
+  "accepted_source_rows": 1151,
+  "quarantined_source_rows": 56,
+  "unique_eligible_teams": 1136,
+  "duplicate_source_rows_collapsed": 15,
+  "roster_groups": 903,
+  "split_seed": 20261006,
+  "split_algorithm": "All eligible groups assigned to train by user request; seeded group ordering only; no dev/final holdouts",
+  "heldout_team_generalization_available": false,
+  "supersedes_dataset": "mb-mc-v1",
+  "fingerprint_algorithm": "SHA256 canonical JSON; canonical reference base forms/sets; ignore nickname, roster order, move order, shiny/ball and disabled Tera; preserve gender/default policy and all battle-relevant values",
+  "group_algorithm": "Unordered reference out-of-battle species plus item-enabled resource form for all six members",
+  "counts": {
+    "train": {
+      "teams": 1136,
+      "groups": 903
+    },
+    "dev": {
+      "teams": 0,
+      "groups": 0
+    },
+    "final": {
+      "teams": 0,
+      "groups": 0
+    }
+  },
+  "quarantine_reason_counts": {
+    "ambiguous_base_ability": 32,
+    "item_not_explicit": 3,
+    "missing_explicit_nature": 3,
+    "missing_or_multiple_allocation_lines": 2,
+    "reference_illegal": 5,
+    "requires_four_explicit_moves": 16,
+    "unapproved_set_change": 3
+  },
+  "training_sampling": "uniform_unique_team_from_train_only",
+  "final_results_for_tuning": false,
+  "information_boundary": "Canonical records contain full private sets for the simulator. Actor inputs must come from player-specific observations, never source IDs or hidden opponent set records.",
+  "source_permission": "Public collection provenance preserved; redistribution permission not inferred. Keep dataset local.",
+  "state": "frozen_ready_for_engine_integration",
+  "engine_effect_closure_implemented": false,
+  "counts_are_not_training_results": true,
+  "artifact_sha256": {
+    "all.jsonl": "023568856fd6bb8670c81babdc55f8cc6dd307a46ef6f6bd721f7f317da63a6a",
+    "all_teams.txt": "41ad820a6a2512139afadabaa12fbe87e933770429b82d429a7aed2368f238b9",
+    "dev.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "dev.showdown.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "duplicates.json": "f92b5623c690500abc298ca5b523459f2b6cbd22c2206f7a8a58111d41ab6fc2",
+    "final.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "final.showdown.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "groups.json": "76f8065deeec59c93a4df40a578f661cc5a55543f3ee08c5bf5afe9eb72f99b2",
+    "inventory.json": "7bedb4300681becfa6e5ea7f5e3c21033520ce9cc2df2aff320421e4b6079dcb",
+    "quarantine.jsonl": "3bfdf14c3cd4db9c6e57fead2227dc0b5ea62ed5ae092eb619a84b349640ad7b",
+    "source-index.jsonl": "df899f87e839a69a01972ba5492262a9266120bb6a74301bc6a3f919fb14c511",
+    "train.jsonl": "023568856fd6bb8670c81babdc55f8cc6dd307a46ef6f6bd721f7f317da63a6a",
+    "train.showdown.jsonl": "b3136505b5d6a5836e167176eb3a4564f8f8725c6dfa3861ace9ed42200cdfb8"
+  }
+}

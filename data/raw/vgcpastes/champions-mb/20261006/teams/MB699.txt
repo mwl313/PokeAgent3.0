@@ -1,0 +1,59 @@
+Milotic (F) @ Leftovers  
+Ability: Competitive  
+Level: 50  
+EVs: 23 HP / 20 Def / 5 SpA / 18 Spe  
+Calm Nature  
+- Muddy Water  
+- Coil  
+- Hypnosis  
+- Recover  
+
+Maushold-Four @ Chople Berry  
+Ability: Friend Guard  
+Level: 50  
+EVs: 32 HP / 1 Def / 1 SpD / 32 Spe  
+Timid Nature  
+- Super Fang  
+- Follow Me  
+- Beat Up  
+- Protect  
+
+Raichu (F) @ Raichunite Y  
+Ability: Lightning Rod  
+Level: 50  
+EVs: 30 HP / 13 Def / 23 Spe  
+Timid Nature  
+- Zap Cannon  
+- Focus Blast  
+- Fake Out  
+- Feint  
+
+Gallade (M) @ Galladite  
+Ability: Justified  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Jolly Nature  
+- Drain Punch  
+- Rock Slide  
+- Shadow Sneak  
+- Protect  
+
+Weavile (F) @ Wide Lens  
+Ability: Pressure  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Jolly Nature  
+- Triple Axel  
+- Knock Off  
+- Fake Out  
+- Low Kick  
+
+Gholdengo @ Life Orb  
+Ability: Good as Gold  
+Level: 50  
+EVs: 25 HP / 8 Def / 23 SpA / 10 Spe  
+Modest Nature  
+- Make It Rain  
+- Shadow Ball  
+- Nasty Plot  
+- Protect  

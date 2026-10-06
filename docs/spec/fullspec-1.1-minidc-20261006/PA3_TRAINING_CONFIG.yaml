@@ -1,0 +1,458 @@
+# PokeAgent 3.0 Full Scope, MiniDC pinned runtime revision 1.1.
+# Design only. Host measurements are inherited from the supplied constraint sheet.
+project:
+  name: PokeAgent3.0
+  spec_version: fullspec-1.1-minidc-lock
+  master_document: POKEAGENT_3_0_FULL_SPEC.md
+  seed: 20261006
+  mode: scratch_self_play
+  configuration_is_design_not_execution_receipt: true
+  runtime_constraint_source: reference/73-v100-driver-cuda-constraints.md
+  runtime_constraint_source_sha256: 9860b5cca4de76a6c6487c5ec4ab0175fd790ca4c26a6589e0bb4de3bbe680a8
+scope:
+  stages:
+  - build_full_scope_fast_engine
+  - intensive_rl
+  - evaluate_model
+  model_architecture_sweep: false
+  small_team_curriculum: false
+  auto_continue_within_approved_run: true
+  new_human_approval_per_checkpoint: false
+  human_action_bc: false
+  pretrained_weights: null
+  train_search: false
+  external_llm_in_battle_loop: false
+  cloud_auto_rental: false
+  public_ladder: false
+  remote_upload: false
+rules:
+  format_id: gen9championsvgc2026regmc
+  team_sheet: closed
+  series: bo1
+  roster_size: 6
+  bring_size: 4
+  active_slots: 2
+  oracle_repo: smogon/pokemon-showdown
+  oracle_ref: 14546894d86f9589ac11130c510bbe73b6968665
+  scope_from: all_eligible_inventory_effect_dependency_closure
+  resource_rules: derive_from_pinned_format
+  allocation_unit: source_typed_then_pinned_champions_parser
+  silent_unsupported_effect: false
+  rng: pinned_reference_semantics
+  expected_damage_rng_replacement: false
+  predicted_win_early_termination: false
+teams:
+  source: VGCPastes_public_repository_and_linked_pastes
+  sheet_id: 1axlwmzPA49rYkqXh7zHvAtSP-TKbM0ijGYBPRflLSWw
+  source_tabs:
+  - Champions M-A
+  - Champions M-B
+  - Champions M-C
+  require_all_six_explicit_allocations: true
+  require_four_moves_per_member: true
+  require_nature: true
+  missing_ev_imputation: false
+  rental_code_as_full_set: false
+  automatic_legacy_ev_conversion: false
+  documented_exact_source_conversion_only: true
+  max_accepted_teams: null
+  aspirational_train_team_count: 1000
+  min_teams_for_scope_override: null
+  train_count: DERIVE_FROM_COMPLETE_CRAWL
+  dev_count: DERIVE_FROM_GROUP_SPLIT
+  final_count: DERIVE_FROM_GROUP_SPLIT
+  group_key: unordered_format_normalized_species_form_roster
+  split_ratios:
+    train: 0.9
+    dev: 0.05
+    final: 0.05
+  split_seed: 20261006
+  train_sampling: uniform_unique_team
+  source_tab_reweighting: false
+  use_full_train_pool_from_first_training_reset: true
+  roster_permutation: true
+  move_slot_permutation: true
+  update_inventory_during_main_run: false
+  crawl:
+    max_concurrent_per_host: 2
+    requests_per_second_per_host: 1
+    http_timeout_seconds: 30
+    network_retries: 5
+    honor_retry_after: true
+    cache: true
+    bypass_access_controls: false
+    max_response_bytes: 10485760
+    provenance_required: true
+    all_public_pages_and_tabs: true
+    prefer_public_bulk_exports: true
+engine:
+  language: rust
+  bridge: pyo3_batch
+  environment_groups: 2
+  worker_threads_per_group: 16
+  envs_per_group: 1024
+  num_envs: 2048
+  numa_affinity: bind_each_group_to_its_gpu_local_numa_node
+  release_gil: true
+  string_hot_path: false
+  oracle_per_candidate: false
+  candidate_mask: player_observable_request_semantics
+  complete_joint_prefix_feasibility: true
+  persistent_knowledge: true
+  training_count_unit: natural_complete_match_once
+  oracle_validation: development_and_transfer_only
+observation:
+  schema: pa3-entity-observation-v1
+  representation: typed_tensor
+  tokens:
+    global: 1
+    field: 1
+    side: 2
+    pokemon: 12
+    moves: 48
+    recent_events: 24
+  active_layout_tokens: 88
+  padded_tokens: 96
+  effect_schema: compile_full_dex_effect_flags_values_sources_known_masks
+  revealed_move_repertoire: persistent_bitset_separate_from_current_four_slots
+  unknown_masks: true
+  enemy_hidden_stats: false
+  opponent_team_id: false
+  precomputed_damage_features: false
+  external_usage_features: false
+  raw_allocation_and_stat_provenance: true
+model:
+  name: PA3-8M
+  initialization: random
+  target_parameter_band:
+  - 8000000
+  - 10000000
+  encoder_layers: 6
+  d_model: 320
+  attention_heads: 5
+  head_dim: 64
+  ffn_dim: 1280
+  activation: gelu
+  pre_layernorm: true
+  causal_attention: false
+  dropout: 0.0
+  attention_dropout: 0.0
+  encode_state_once_per_request: true
+  prefix_decoder: GRUCell
+  prefix_hidden: 320
+  max_request_branches: 4
+  candidate_padding_per_branch: 64
+  candidate_capacity_resolution: derive_from_full_scope_before_training_no_truncation
+  normal_order:
+  - atomic_slot_A
+  - atomic_slot_B_given_A
+  atomic_action_fields:
+  - kind
+  - own_slot
+  - move_slot
+  - target_location
+  - switch_destination
+  - resource_flag
+  preview_order:
+  - lead_a
+  - lead_b
+  - reserve_1
+  - reserve_2
+  replacement_order:
+  - replace_a
+  - replace_b_given_first
+  critic_hidden: 256
+  critic_output: linear_scalar
+  critic_input: observation_only
+  trainable_parameters: all
+  embedding_init_std: 0.02
+  linear_init: xavier
+  policy_output_init_gain: 0.01
+hardware:
+  host: user_minidc
+  gpu_count: 2
+  gpu_type: V100_PCIE_32GB
+  model_parallel: false
+  inference_devices:
+  - 0
+  - 1
+  update_mode: synchronous_data_parallel
+  ddp_backend: nccl
+  single_learner_same_global_batch_fallback: true
+  inference_max_batch_per_gpu: 512
+  inference_microbatch_per_gpu: 256
+  gpu_soft_budget_gib_each: 28
+  host_soft_budget_gib: 48
+  rollout_host_budget_gib: 24
+  pinned_staging_budget_gib_total: 1
+  terminate_unrelated_processes: false
+  host_profile_source: user_handoff_2026-10-06_not_independently_measured_here
+  compute_capability: '7.0'
+  gpu_p2p_available: false
+  gpu_topology: SYS
+  inter_gpu_transfer: host_staging
+  inter_gpu_bandwidth_gbps_reported: 4.0
+  gpu_power_limits_watts:
+  - 175
+  - 150
+  power_limit_changes_authorized: false
+  primary_learner_device: 0
+  rank_numa_map:
+  - local_rank: 0
+    gpu_pci_bus: '05:00.0'
+    numa_node: 0
+    reported_cpu_affinity: 0-19,40-59
+    suggested_engine_worker_cpus: 0-15
+  - local_rank: 1
+    gpu_pci_bus: '84:00.0'
+    numa_node: 1
+    reported_cpu_affinity: 20-39,60-79
+    suggested_engine_worker_cpus: 20-35
+  ddp_gradient_sync: final_microbatch_only_no_sync_includes_forward_and_backward
+  ddp_transport_policy: disable_p2p_keep_shared_memory
+  ddp_startup_probe: one_real_collective_as_part_of_startup_not_separate_study
+  ddp_health_failure_scope: recover_same_global_batch_without_driver_or_service_changes
+  single_learner_device: 0
+  single_learner_microbatch: 256
+  single_learner_accumulation: 16
+  single_learner_secondary_gpu_role: same_version_rollout_and_frozen_evaluation
+  thermal_asymmetry: gpu1_may_throttle_preserve_175_150W_do_not_raise_limits
+  host_memory_allocation: numa_local_per_rank_including_staging
+  startup_resource_check: nvidia_smi_occupancy_available_ram_and_free_disk_once
+  reported_free_disk_gb_at_handoff: 89
+  external_llm_provider: external_api_development_only
+  protected_services:
+  - dsh-web
+  - llama-swap
+  stop_or_restart_protected_services: false
+  automatic_process_kill: false
+  local_llm_requests_during_gpu_run: false
+  documented_unload_endpoint: http://127.0.0.1:8080/api/models/unload
+  unload_policy: only_if_needed_with_gpu_run_approval_no_service_stop_no_requests_during_training
+  service_api_called_by_this_package: false
+software:
+  python: 3.12.3
+  pytorch: 2.14.0+cu126
+  pytorch_cuda_wheel: cu126
+  compatibility_baseline_not_latest_recommendation: true
+  rust_toolchain: lock_resolved_version
+  mixed_precision: fp16
+  master_parameters_dtype: float32
+  probability_and_loss_dtype: float32
+  amp_grad_scaler: true
+  requires_flashattention2: false
+  requires_bf16: false
+  requires_tf32: false
+  os_reported: Ubuntu 24.04.5 LTS
+  kernel_reported: 6.8.0-142-generic
+  python_executable: python3
+  pytorch_cuda_runtime: '12.6'
+  pytorch_index: https://download.pytorch.org/whl/cu126
+  nvidia_driver: 580.178.04
+  nvidia_driver_package_reported: nvidia-driver-580-server=580.178.04-0ubuntu0.24.04.1
+  system_cuda_toolkit: 12.8.2
+  system_cuda_package: cuda-toolkit-12-8
+  nvcc_release: '12.8'
+  nvcc_build: V12.8.93
+  cuda_home: /usr/local/cuda-12.8
+  cuda_symlink: /usr/local/cuda -> cuda-12.8
+  gcc_reported: 13.3.0
+  cmake_reported: 3.28.3
+  pip_reported: '24.0'
+  uv_required: false
+  use_existing_host_stack: true
+  automatic_host_changes: false
+  automatic_torch_upgrade_or_downgrade: false
+  automatic_cuda_toolkit_change: false
+  driver_upgrade_authorized: false
+  apt_upgrade_authorized: false
+  apt_hold_release_authorized: false
+  systemd_change_authorized: false
+  held_packages_reported: 55
+  venv_policy: reuse_verified_project_venv_else_python3_venv_no_system_site_changes
+  dependency_constraints_file: runtime/constraints-minidc.txt
+  dependency_resolution_conflict: fix_dependency_request_do_not_relax_torch_pin
+  build_isolation_policy: rust_pyo3_build_without_torch_build_dependency_no_cuda_jit_by_default
+  installed_dependencies_lock: freeze_resolved_local_venv_after_success_no_invented_transitive_pins
+  pip_upgrade_authorized: false
+  runtime_environment_file: runtime/minidc.env
+  execution_mode: eager
+  torch_compile: false
+  inductor_required: false
+  custom_triton_kernels: false
+  cuda_graphs_default: false
+  attention_backend: pytorch_sdpa_math
+  attention_fallback: explicit_torch_matmul_softmax
+  xformers_required: false
+  flashattention2_allowed: false
+  bf16_allowed: false
+  fp8_allowed: false
+  tf32_allowed: false
+  int8_tensor_core_required: false
+  custom_cuda_extensions_default: false
+  custom_cuda_arch_if_separately_needed: sm_70
+  custom_cuda_compiler_if_separately_needed: /usr/local/cuda-12.8/bin/nvcc
+  pytorch_wheel_uses_system_toolkit_for_normal_execution: false
+  ld_library_path_cuda_override: false
+  reported_existing_sm70_health_binary: /opt/minidc-tools/vadd
+  new_gpu_validation_executed_for_this_revision: false
+rollout:
+  freeze_current_per_iteration: true
+  freeze_opponent_pool_per_iteration: true
+  freeze_each_episode_policy: true
+  target_min_learner_decisions: 131072
+  target_min_completed_matches: 2048
+  collection_stop: both_minima_reached_then_stop_resets_and_drain
+  keep_overshoot: true
+  final_iteration: remaining_natural_match_goal_overrides_minimum_cohort
+  terminal_reward:
+    win: 1.0
+    loss: -1.0
+    draw: 0.0
+  reward_shaping: false
+  collect_both_sides_when_current_self_play: true
+  collect_historical_opponent_rows: false
+  historical_offpolicy_correction: false
+  store_encoder_activations: false
+  packed_host_buffer: true
+  disk_spill_if_needed: true
+  natural_rule_draws: oracle_defined
+  operational_abort_as_draw: false
+training:
+  natural_matches_target: 100000000
+  count_eval_matches_toward_target: false
+  optimizer: adam
+  learning_rate: 0.0003
+  betas:
+  - 0.9
+  - 0.999
+  eps: 1.0e-05
+  weight_decay: 0.0
+  ppo_epochs: 4
+  global_minibatch_size: 4096
+  per_rank_minibatch_size: 2048
+  microbatch_per_rank: 256
+  grad_accumulation_per_rank: 8
+  drop_last_minibatch: false
+  pad_and_mask_final_minibatch: true
+  sample_weighted_ddp_reduction: true
+  clip_epsilon: 0.2
+  gamma: 1.0
+  gae_lambda: 0.95
+  value_loss: half_mse
+  value_coefficient: 0.5
+  value_clip: false
+  max_grad_norm: 0.5
+  advantage_normalization: iteration_actor_rows
+  advantage_std_floor: 1.0e-08
+  entropy_definition: mean_branch_entropy_divided_by_logK
+  entropy_coefficient: 0.01
+  uniform_kl_direction: KL_uniform_to_policy
+  uniform_kl_normalized_by_logK: true
+  uniform_kl_coefficient: 0.001
+  target_approx_kl: 0.03
+  kl_response: end_remaining_epochs_only_then_new_rollout
+  action_temperature: 1.0
+  lr_schedule:
+    clock: committed_natural_training_matches
+    warmup_matches: 250000
+    warmup_start_lr: 1.0e-05
+    peak_lr: 0.0003
+    after_warmup: cosine
+    final_lr: 3.0e-05
+    horizon_matches: 100000000
+opponents:
+  current_probability: 0.5
+  historical_probability: 0.5
+  empty_pool_fallback: current
+  max_historical_policies: 8
+  historical_sampling: uniform_unique_digest
+  snapshot_interval_matches: 1000000
+  retention:
+    first_1m: 1
+    best_dev: 1
+    recent: 6
+  deduplicate_digests: true
+  no_teacher_loss: true
+evaluation:
+  sampling_mode: categorical
+  temperature: 1.0
+  periodic_interval_training_matches: 1000000
+  periodic_total_games: 512
+  vs_incumbent_games: 256
+  vs_fixed_anchor_games: 256
+  anchors:
+  - random_initial
+  - first_1m_if_available
+  promotion:
+    challenger_vs_incumbent_min_score: 0.55
+    max_anchor_score_drop: 0.05
+    development_only: true
+    never_required_to_continue_training: true
+  transfer_interval_training_matches: 10000000
+  transfer_games_per_backend: 256
+  transfer_backends:
+  - rust
+  - reference_showdown
+  final_candidates:
+  - latest
+  - best_dev
+  deduplicate_candidate_digests: true
+  final_rust_games_per_candidate: 2048
+  final_showdown_games_per_candidate: 512
+  final_opponents:
+  - random_initial
+  - snapshot_1m
+  - snapshot_10m
+  - snapshot_50m
+  final_rust_games_per_opponent: 512
+  final_source: heldout_final_team_groups
+  public_ladder: false
+  do_not_claim_mikumiku_superiority_without_matching_evidence: true
+checkpointing:
+  resume_checkpoint_interval_seconds: 600
+  at_safe_iteration_boundary: true
+  save_at_milestones: true
+  keep_latest_full: 2
+  keep_best_dev: true
+  actor_only_every_matches: 1000000
+  atomic_write: true
+  preserve_optimizer_scaler_rng_cursor: true
+  restart_entire_training_for_io_error: false
+logging:
+  main_artifacts:
+  - run.json
+  - metrics.jsonl
+  - checkpoints/
+  - summary.md
+  full_training_trace_probability: 0.0001
+  all_failures: true
+  all_raw_rollouts_forever: false
+  hash_each_action: false
+performance:
+  aspirational_completed_games_per_second:
+  - 500
+  - 1000
+  is_measured: false
+  unit: natural_complete_match
+  include_training_and_eval_overhead_separately: true
+  architecture_sweep: false
+  same_model_batch_worker_tuning: true
+execution:
+  design_only: true
+  scraping_executed: false
+  engine_implemented: false
+  training_executed: false
+  new_payment_authorized: false
+  new_remote_write_authorized: false
+runtime_environment:
+  CUDA_DEVICE_ORDER: PCI_BUS_ID
+  CUDA_VISIBLE_DEVICES: 0,1
+  CUDA_HOME: /usr/local/cuda-12.8
+  TORCH_CUDA_ARCH_LIST: '7.0'
+  NCCL_P2P_DISABLE: '1'
+  NCCL_SHM_DISABLE: '0'
+  TORCHDYNAMO_DISABLE: '1'
+  OMP_NUM_THREADS: '1'
+  MKL_NUM_THREADS: '1'
+  RAYON_NUM_THREADS: '16'
