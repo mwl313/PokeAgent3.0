@@ -759,6 +759,9 @@ pub enum MoveBehavior {
     TerrainPulse,
     /// `perishsong`: the field-wide three-turn countdown volatile.
     PerishSong,
+    /// `substitute`: pays a quarter of the user's maximum HP for a decoy
+    /// whose remaining HP lives in the volatile's single value.
+    Substitute,
     TrickRoom,
     Terrain,
     /// `trick` / `switcheroo`: item swap with the reference TakeItem refusal
@@ -864,6 +867,7 @@ impl MoveBehavior {
             "weatherball" => Self::WeatherBall,
             "terrainpulse" => Self::TerrainPulse,
             "perishsong" => Self::PerishSong,
+            "substitute" => Self::Substitute,
             "trickroom" => Self::TrickRoom,
             "electricterrain" | "grassyterrain" | "mistyterrain" | "psychicterrain" => {
                 Self::Terrain
@@ -1026,6 +1030,9 @@ pub struct NativeEffects {
     pub perish_song: Id,
     /// `leechseed` condition: drains the holder into the seeding slot.
     pub leech_seed: Id,
+    /// `moves:substitute.condition`: the user's damage-absorbing decoy. The
+    /// volatile's single value is the decoy's remaining HP.
+    pub substitute: Id,
     /// Volatile that disables and refuses sound moves for two turns.
     pub throat_chop: Id,
     /// `move:encore` volatile: locks the holder into its last move.

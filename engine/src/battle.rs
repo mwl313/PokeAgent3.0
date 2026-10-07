@@ -1789,6 +1789,82 @@ impl BattleState {
             self.each_update(dex)?;
             return Ok(());
         }
+        if behavior == MoveBehavior::Substitute {
+            // `moves:substitute`: a self-targeting status move. `onTryHit`
+            // refuses an existing decoy and a user that cannot pay (hp at or
+            // below maxHP/4, or the Shedinja clause maxHP === 1). The
+            // condition's `onStart` then stores floor(maxHP/4) as the decoy's
+            // HP and ends any `partiallytrapped` volatile; `onHit` pays the
+            // same floor(maxHP/4) as direct damage.
+            let max_hp = u32::from(self.mon(actor).stats[0]);
+            let hp = u32::from(self.mon(actor).hp);
+            if self
+                .mon(actor)
+                .volatiles
+                .contains_key(&dex.effects.substitute)
+                || max_hp == 1
+                || hp <= max_hp / 4
+            {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                return Ok(());
+            }
+            let sub_hp = max_hp / 4;
+            let order = self.allocate_effect_order()?;
+            self.mon_mut(actor).volatiles.insert(
+                dex.effects.substitute,
+                EffectState {
+                    id: dex.effects.substitute,
+                    effect_order: order,
+                    effect_order_assigned: true,
+                    values: vec![i64::from(sub_hp)],
+                    ..Default::default()
+                },
+            );
+            self.emit(
+                EventKind::EffectStart,
+                actor,
+                None,
+                EffectRef::Condition(dex.effects.substitute),
+                0,
+                false,
+            )?;
+            if self
+                .mon_mut(actor)
+                .volatiles
+                .remove(&dex.effects.partially_trapped)
+                .is_some()
+            {
+                self.emit(
+                    EventKind::EffectEnd,
+                    actor,
+                    None,
+                    EffectRef::Condition(dex.effects.partially_trapped),
+                    0,
+                    false,
+                )?;
+            }
+            // `onHit` direct damage: no Damage-event clamps (Sturdy, Focus
+            // Sash and Endure cannot refuse the cost); the TryHit gate already
+            // proved hp > maxHP/4, so this cannot faint the user.
+            let cost = (max_hp / 4).min(hp);
+            if cost > 0 {
+                self.mon_mut(actor).hp -= cost as u16;
+                self.emit(
+                    EventKind::Damage,
+                    actor,
+                    Some(actor),
+                    EffectRef::Move(move_id),
+                    -(cost as i32),
+                    true,
+                )?;
+            }
+            // A self-target status move that did anything runs the two
+            // move-loop Update events, exactly like the Protect family.
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
+            self.each_update(dex)?;
+            self.each_update(dex)?;
+            return Ok(());
+        }
         let spread = targets.len() > 1;
         // PrepareHit abilities run once per action, before both the multi-hit
         // dispatch and the single-hit steps.
@@ -2132,6 +2208,10 @@ impl BattleState {
             }
         }
         let hit_targets: SmallVec<[Entity; 4]> = hit.iter().map(|(t, _)| *t).collect();
+        // Targets whose primary hit the decoy consumed. Every per-target
+        // effect phase below runs without them, exactly like the reference's
+        // `runMoveEffects`/`selfDrops`/`forceSwitch` null-target handling.
+        let mut sub_absorbed = SmallVec::<[Entity; 4]>::new();
         let mut damages = SmallVec::<[(Entity, u16); 4]>::new();
         for (target, effectiveness) in hit {
             if m.category == Category::Status {
@@ -2145,7 +2225,12 @@ impl BattleState {
                 if m.fixed_damage == Some(crate::assets::FixedDamage::UserHp) {
                     self.faint_now(actor);
                 }
-                damages.push((target, amount.min(u32::from(u16::MAX)) as u16));
+                let amount = amount.min(u32::from(u16::MAX)) as u16;
+                if self.intercept_substitute(dex, actor, target, m, amount)? {
+                    sub_absorbed.push(target);
+                } else {
+                    damages.push((target, amount));
+                }
                 continue;
             }
             // `willCrit` skips the crit draw entirely; armor still cancels it.
@@ -2305,8 +2390,19 @@ impl BattleState {
             )?;
             let final_modifier = self.damage_modifier(dex, context)?;
             let damage = damage::finish_damage(damage, final_modifier, false);
-            damages.push((target, damage));
+            // The decoy call in the reference still resolves the full damage
+            // (identical RNG draws) and then eats it instead of the target.
+            if self.intercept_substitute(dex, actor, target, m, damage)? {
+                sub_absorbed.push(target);
+            } else {
+                damages.push((target, damage));
+            }
         }
+        let effect_targets: SmallVec<[Entity; 4]> = hit_targets
+            .iter()
+            .copied()
+            .filter(|target| !sub_absorbed.contains(target))
+            .collect();
         let mut total_damage = 0u32;
         let mut hit_any = false;
         // Reference `hitStepMoveHitLoop` passes `hurtThisTurn + curDamage`,
@@ -2357,8 +2453,22 @@ impl BattleState {
                 )?;
             }
         }
-        let mut did_anything = m.category != Category::Status;
-        for &target in &hit_targets {
+        // A status move the decoy ate still counts as having done something
+        // (`HIT_SUBSTITUTE` is truthy in `runMoveEffects`), so the action is a
+        // success rather than a failure.
+        let mut did_anything =
+            m.category != Category::Status || !sub_absorbed.is_empty();
+        for &target in &effect_targets {
+            // Status moves also run the reference's TryPrimaryHit decoy stage
+            // before `runMoveEffects`: a decoy absorbs the whole move (zero
+            // damage) and the action still counts as a success.
+            if m.category == Category::Status
+                && self.intercept_substitute(dex, actor, target, m, 0)?
+            {
+                sub_absorbed.push(target);
+                did_anything = true;
+                continue;
+            }
             if behavior == MoveBehavior::Trick {
                 // Trick/Switcheroo decide success themselves: the empty generic
                 // payload must not mark a refused swap as "did anything", or
@@ -2506,13 +2616,19 @@ impl BattleState {
             self.hit_effect(dex, actor, actor, effect, false)?;
         }
         for &target in &hit_targets {
+            // The reference's `secondaries` skips only targets marked `false`;
+            // a decoy-absorbed target is `null` and still consumes each roll
+            // while its own payload is dropped and a secondary `self` applies.
+            let absorbed = sub_absorbed.contains(&target);
             for secondary in m.secondaries.iter().filter(|_| !m.sheer_force) {
                 if self.rng.below(100) < u32::from(secondary.chance) {
-                    self.hit_effect(dex, target, actor, &secondary.target, true)?;
-                    if hooks & crate::effects::hook::DIRE_CLAW != 0 {
+                    if !absorbed {
+                        self.hit_effect(dex, target, actor, &secondary.target, true)?;
+                    }
+                    if hooks & crate::effects::hook::DIRE_CLAW != 0 && !absorbed {
                         self.dire_claw_secondary(dex, actor, target)?;
                     }
-                    if hooks & crate::effects::hook::THROAT_CHOP != 0 {
+                    if hooks & crate::effects::hook::THROAT_CHOP != 0 && !absorbed {
                         self.throat_chop_secondary(dex, actor, target)?;
                     }
                     if let Some(effect) = &secondary.own {
@@ -2527,7 +2643,7 @@ impl BattleState {
         // refuse the drag (Suction Cups, Guard Dog, Ingrain) keep the target in
         // place; those effects stay operational errors until ported.
         if m.force_switch {
-            for &target in &hit_targets {
+            for &target in &effect_targets {
                 if self.mon(target).hp == 0
                     || self.mon(actor).hp == 0
                     || !self.can_switch(target.side as usize)
@@ -2547,14 +2663,14 @@ impl BattleState {
         // check runs right after the DamagingHit event, with the HP it had
         // before that event (Rough Skin-style recoil can drop it under half).
         let user_hp_before_damaging_hit = self.mon(actor).hp;
-        self.damaging_hit(dex, actor, &hit_targets, m)?;
+        self.damaging_hit(dex, actor, &effect_targets, m)?;
         if !hit_targets.is_empty() {
             self.emergency_exit_check(dex, actor, user_hp_before_damaging_hit)?;
         }
         // `moves:knockoff.onAfterHit`: after the DamagingHit event, an alive
         // user removes the item of every target the move damaged.
         if m.hooks & crate::effects::hook::KNOCK_OFF != 0 && self.mon(actor).hp > 0 {
-            for &target in &hit_targets {
+            for &target in &effect_targets {
                 self.take_item(dex, target, actor)?;
             }
         }
@@ -2589,7 +2705,7 @@ impl BattleState {
             }
         }
         if m.thaws_target {
-            for target in hit_targets {
+            for &target in &effect_targets {
                 if self.mon(target).status == dex.effects.freeze {
                     self.cure_status(target)?;
                 }
@@ -2719,6 +2835,10 @@ impl BattleState {
         // for the end-of-action Emergency Exit checks, i.e. each damaged
         // target's HP before this move started resolving.
         let mut hit_before: SmallVec<[(Entity, u16); 4]> = SmallVec::new();
+        // Per-target decoy bookkeeping of the most recent hit, mirroring the
+        // reference's `targetsCopy` nulling that survives into the
+        // `AfterMoveSecondary` phase.
+        let mut sub_absorbed: SmallVec<[Entity; 4]> = SmallVec::new();
         // `multiaccuracy`: hits after the first roll accuracy again and the
         // first miss ends the remaining hits (Population Bomb, Triple Axel).
         let multi_accuracy = m.hooks & crate::effects::hook::MULTI_ACCURACY != 0;
@@ -2756,6 +2876,29 @@ impl BattleState {
                         parental_bond_second_hit: parental_bond && hit == 2,
                     },
                 )?;
+                sub_absorbed.retain(|t| *t != target);
+                if self.intercept_substitute(dex, actor, target, m, damage)? {
+                    sub_absorbed.push(target);
+                    // `selfDrops` still runs against the nulled target, and the
+                    // reference's `secondaries` still rolls each chance while
+                    // dropping the target payload.
+                    if hit == 1
+                        && let Some(effect) = m.self_effect.as_ref().filter(|_| !m.sheer_force)
+                    {
+                        if effect.boosts.iter().any(|b| *b != 0) {
+                            self.rng.below(100);
+                        }
+                        self.hit_effect(dex, actor, actor, effect, false)?;
+                    }
+                    for secondary in m.secondaries.iter().filter(|_| !m.sheer_force) {
+                        if self.rng.below(100) < u32::from(secondary.chance)
+                            && let Some(effect) = &secondary.own
+                        {
+                            self.hit_effect(dex, actor, actor, effect, true)?;
+                        }
+                    }
+                    continue;
+                }
                 let damage = self.sturdy_clamp(dex, target, damage)?;
                 let damage = self.damage_item(dex, target, damage)?;
                 let damage = self.endure_clamp(dex, target, damage);
@@ -2858,6 +3001,9 @@ impl BattleState {
         self.each_update(dex)?;
         if m.thaws_target {
             for target in targets {
+                if sub_absorbed.contains(&target) {
+                    continue;
+                }
                 if self.mon(target).status == dex.effects.freeze {
                     self.cure_status(target)?;
                 }
@@ -3567,6 +3713,85 @@ impl BattleState {
         secondary: bool,
     ) -> Result<bool> {
         self.hit_effect_with_ability(dex, target, source, effect, secondary, None)
+    }
+
+    /// `moves:substitute.condition.onTryPrimaryHit`: a primary hit whose source
+    /// differs from the target and whose action does not carry
+    /// `flags.bypasssub` is consumed by the target's decoy. `damage` is the
+    /// damage the hit resolved to (`0` for status moves, which the decoy also
+    /// absorbs). Returns `true` when the decoy took the hit, in which case the
+    /// caller must skip the target's own damage, effects and post-hit phases;
+    /// recoil and drain are driven by the damage the decoy ate.
+    fn intercept_substitute(
+        &mut self,
+        dex: &Dex,
+        source: Entity,
+        target: Entity,
+        m: &crate::assets::Move,
+        damage: u16,
+    ) -> Result<bool> {
+        if target == source
+            || m.bypass_sub
+            || !self
+                .mon(target)
+                .volatiles
+                .contains_key(&dex.effects.substitute)
+        {
+            return Ok(false);
+        }
+        let sub_hp = self
+            .mon(target)
+            .volatiles
+            .get(&dex.effects.substitute)
+            .and_then(|effect| effect.values.first())
+            .copied()
+            .unwrap_or(0);
+        let dealt = i64::from(damage).min(sub_hp.max(0));
+        if sub_hp <= i64::from(damage) {
+            // The decoy breaks; `removeVolatile` emits the public end. The
+            // reference adds a bare `-ohko` message for OHKO moves here, which
+            // carries no state.
+            self.mon_mut(target)
+                .volatiles
+                .remove(&dex.effects.substitute);
+            self.emit(
+                EventKind::EffectEnd,
+                target,
+                None,
+                EffectRef::Condition(dex.effects.substitute),
+                0,
+                false,
+            )?;
+        } else if let Some(effect) = self
+            .mon_mut(target)
+            .volatiles
+            .get_mut(&dex.effects.substitute)
+        {
+            // `-activate ... [damage]` is a message-only announcement; no
+            // knowledge field changes while the decoy survives.
+            effect.values[0] -= dealt;
+        }
+        if dealt > 0
+            && let Some(fraction) = m.recoil
+            && dex.effects.abilities[self.mon(source).ability as usize] != Ability::RockHead
+        {
+            let recoil = stats::round_fraction(dealt as u32, fraction).max(1);
+            self.indirect_damage(
+                dex,
+                source,
+                source,
+                recoil,
+                EffectRef::Condition(dex.effects.recoil),
+            )?;
+        }
+        if let Some([numerator, denominator]) = m.drain {
+            // The substitute path uses `Math.ceil`, unlike the `Math.round`
+            // that `battle.damage` applies to an ordinary drain.
+            let amount = (dealt as u64 * u64::from(numerator))
+                .div_ceil(u64::from(denominator));
+            self.drain_heal(dex, source, target, amount as u32)?;
+        }
+        Ok(true)
     }
 
     /// `moves:direclaw.secondary.onHit` (Champions 30% secondary): sample one

@@ -870,6 +870,16 @@ impl BattleState {
                         effect.duration.is_none()
                             && effect.values.is_empty()
                             && effect.source.is_some()
+                    } else if id == dex.effects.substitute {
+                        // `moves:substitute.condition`: the decoy's remaining
+                        // HP starts at floor(maxHP/4) and only shrinks; a decoy
+                        // that reaches zero is removed, so any retained
+                        // snapshot sees 1..floor(maxHP/4). No duration, no
+                        // source.
+                        effect.duration.is_none()
+                            && effect.values.len() == 1
+                            && effect.values[0] > 0
+                            && effect.values[0] <= i64::from(m.stats[0] / 4)
                     } else if id == dex.effects.partially_trapped {
                         // `partiallytrapped`: a 5-or-6 turn bind that stores its
                         // damage divisor and keeps the binding source.
