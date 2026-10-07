@@ -3748,15 +3748,25 @@ impl BattleState {
         if self.mon(e).volatiles.contains_key(&dex.effects.flinch) {
             return Ok(Some(MoveResult::Failed));
         }
-        // `moves:throatchop.condition.onBeforeMove` (priority 6, between
-        // flinch and confusion): a sound move is refused outright. The
-        // condition's `onModifyMove` guard is the same rule one phase later
-        // and is unreachable once BeforeMove has already refused the move.
-        if m.sound
+        // `moves:throatchop.condition.onBeforeMove` and
+        // `moves:healblock.condition.onBeforeMove` (both priority 6, between
+        // flinch and confusion): a sound move under Throat Chop, or a
+        // `heal`-flag move under Heal Block, is refused outright. Both
+        // callbacks return false, so when a move carries both flags and both
+        // volatiles are present the reference's creation-order tiebreak only
+        // changes the refusal message; the engine reports the same failure.
+        // Each condition's `onModifyMove` guard is the same rule one phase
+        // later and is unreachable once BeforeMove has already refused.
+        if (m.sound
             && self
                 .mon(e)
                 .volatiles
-                .contains_key(&dex.effects.throat_chop)
+                .contains_key(&dex.effects.throat_chop))
+            || (m.heal
+                && self
+                    .mon(e)
+                    .volatiles
+                    .contains_key(&dex.effects.heal_block))
         {
             return Ok(Some(MoveResult::Failed));
         }
@@ -4278,7 +4288,9 @@ impl BattleState {
             let amount =
                 ((u32::from(p.stats[0]) * u32::from(n) + u32::from(d) / 2) / u32::from(d)) as u16;
             let amount = amount.min(p.stats[0] - p.hp);
-            if amount == 0 {
+            // `moves:*heal*.onHit` recovers through `this.heal`, which Heal
+            // Block refuses; the effect then reports that nothing happened.
+            if amount == 0 || self.heal_blocked(dex, target) {
                 return Ok(false);
             }
             self.mon_mut(target).hp += amount;
@@ -4503,6 +4515,7 @@ impl BattleState {
                 || volatile == dex.effects.glaive_rush
                 || volatile == dex.effects.partially_trapped
                 || volatile == dex.effects.leech_seed
+                || volatile == dex.effects.heal_block
             {
                 changed |= self.start_selection_volatile(
                     dex,
@@ -4723,12 +4736,23 @@ impl BattleState {
             )?;
             return Ok(true);
         }
-        // `moves:yawn.condition` (2 turns, residual order 23) and
-        // `moves:roost.condition` (1 turn, residual order 25) are the only
-        // ported volatiles that carry a numeric duration without their own
-        // rest-of-family handling.
-        if volatile == dex.effects.yawn || volatile == dex.effects.roost {
-            let duration = if volatile == dex.effects.yawn { 2 } else { 1 };
+        // `moves:yawn.condition` (2 turns, residual order 23),
+        // `moves:roost.condition` (1 turn, residual order 25) and
+        // `moves:healblock.condition` (2 turns from Psychic Noise, residual
+        // order 20) are the ported volatiles that carry a numeric duration
+        // without their own rest-of-family handling. Heal Block's
+        // `durationCallback` returns 5 for the past-generation Heal Block move
+        // and 7 under Persistent, but neither is legal in the pinned format,
+        // so only Psychic Noise's 2 is reachable here.
+        if volatile == dex.effects.yawn
+            || volatile == dex.effects.roost
+            || volatile == dex.effects.heal_block
+        {
+            let duration = match volatile {
+                id if id == dex.effects.yawn => 2,
+                id if id == dex.effects.heal_block => 2,
+                _ => 1,
+            };
             let order = self.allocate_effect_order()?;
             self.mon_mut(target).volatiles.insert(
                 volatile,
@@ -5084,6 +5108,8 @@ impl BattleState {
                         (16, 0)
                     } else if id == dex.effects.disable {
                         (17, 0)
+                    } else if id == dex.effects.heal_block {
+                        (20, 0)
                     } else if id == dex.effects.throat_chop {
                         (22, 0)
                     } else if id == dex.effects.yawn {
@@ -5239,21 +5265,10 @@ impl BattleState {
                     -i32::from(actual),
                     true,
                 )?;
-                // `this.heal(damage, target, pokemon)`: a plain heal that fails
-                // silently at full HP.
-                let room = self.mon(source).stats[0] - self.mon(source).hp;
-                let healed = actual.min(room);
-                if healed > 0 {
-                    self.mon_mut(source).hp += healed;
-                    self.emit(
-                        EventKind::Heal,
-                        source,
-                        Some(e),
-                        EffectRef::Condition(id),
-                        i32::from(healed),
-                        true,
-                    )?;
-                }
+                // `this.heal(damage, target, pokemon)`: 'leechseed' is on both
+                // TryHeal lists, so the seeded slot's Liquid Ooze and the
+                // seeder's Big Root interact exactly like a drain heal.
+                self.drain_heal(dex, source, e, u32::from(actual), EffectRef::Condition(id))?;
                 continue;
             }
             if status == 0 && id == dex.effects.partially_trapped {
@@ -5444,7 +5459,10 @@ impl BattleState {
                     && (id == dex.effects.poison || id == dex.effects.toxic)
                 {
                     let p = self.mon(e);
-                    if p.hp > 0 && p.hp < p.stats[0] {
+                    // The heal runs through `this.heal`, so Heal Block refuses
+                    // it; the residual damage stays refused either way and the
+                    // ability is only revealed by the heal message.
+                    if p.hp > 0 && p.hp < p.stats[0] && !self.heal_blocked(dex, e) {
                         let amount = (p.stats[0] / 8).max(1).min(p.stats[0] - p.hp);
                         self.reveal_ability(e)?;
                         self.mon_mut(e).hp += amount;
@@ -5553,6 +5571,7 @@ impl BattleState {
                     }
                     if id == dex.effects.protect
                         || id == dex.effects.throat_chop
+                        || id == dex.effects.heal_block
                         || id == dex.effects.taunt
                         || id == dex.effects.encore
                         || id == dex.effects.disable
@@ -6008,6 +6027,11 @@ impl BattleState {
                 let throat_chop = mon
                     .volatiles
                     .contains_key(&dex.effects.throat_chop);
+                // `moves:healblock.condition.onDisableMove`: every `heal`-flag
+                // move is disabled in the request while the volatile is active.
+                let heal_block = mon
+                    .volatiles
+                    .contains_key(&dex.effects.heal_block);
                 // `moves:encore.condition.onDisableMove`: every move except the
                 // encored one is disabled while the holder still has it.
                 let encore = mon
@@ -6033,7 +6057,8 @@ impl BattleState {
                         || (fake_out_disabled
                             && (mv.id == dex.effects.fake_out
                                 || mv.id == dex.effects.first_impression))
-                        || (throat_chop && dex.moves[mv.id as usize].sound);
+                        || (throat_chop && dex.moves[mv.id as usize].sound)
+                        || (heal_block && dex.moves[mv.id as usize].heal);
                     if let Some(id) = encore {
                         disabled |= i64::from(mv.id) != id;
                     }

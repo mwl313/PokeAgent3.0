@@ -938,6 +938,15 @@ impl BattleState {
                             && effect.values.len() == 1
                             && effect.values[0] > 0
                             && effect.source.is_some()
+                    } else if id == dex.effects.heal_block {
+                        // `moves:healblock.condition` (Psychic Noise, two turns):
+                        // a duration-bearing refusal volatile that records the
+                        // source slot and carries no payload.
+                        effect
+                            .duration
+                            .is_some_and(|duration| (1..=2).contains(&duration))
+                            && effect.values.is_empty()
+                            && effect.source.is_some()
                     } else if id == dex.effects.follow_me || id == dex.effects.rage_powder {
                         // `moves:followme.condition` / `moves:ragepowder.condition`:
                         // duration-one redirection volatiles that share the

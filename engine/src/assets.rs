@@ -116,6 +116,9 @@ pub struct Move {
     pub contact: bool,
     pub protect: bool,
     pub sound: bool,
+    /// `flags.heal`: the move recovers HP, so Heal Block disables it in the
+    /// request and refuses it when it was committed before the volatile landed.
+    pub heal: bool,
     /// `flags.bypasssub`: the action ignores the target's Substitute.
     pub bypass_sub: bool,
     pub bullet: bool,
@@ -616,14 +619,17 @@ const HANDLED_MOVE_FLAGS: &[&str] = &[
     "reflectable",
     "snatch",
     "sound",
+    // `heal` is consumed by the ported Heal Block volatile: Heal Block
+    // disables the holder's heal-flag moves in the request and refuses one
+    // that was already committed.
+    "heal",
     // Flags whose only consumers (Bulletproof, Dancer, Wind Rider, Gravity,
-    // Heal Block, Substitute, Minimize, Knock Off's item gate) remain explicit
-    // errors, so they cannot change an implemented mechanic yet.
+    // Substitute, Minimize, Knock Off's item gate) remain explicit errors, so
+    // they cannot change an implemented mechanic yet.
     "bullet",
     "bypasssub",
     "dance",
     "gravity",
-    "heal",
     "minimize",
     "nonsky",
     "noparentalbond",
@@ -842,6 +848,10 @@ const HANDLED_VOLATILES: &[&str] = &[
     "torment",
     // Substitute's HP-bearing decoy volatile.
     "substitute",
+    // Psychic Noise's two-turn recovery lock. The condition also declares a
+    // past-generation Heal Block move, which stays an explicit error through
+    // its unported callbacks.
+    "healblock",
 ];
 
 /// Status/volatile payloads of every declared effect must already have native
@@ -1281,6 +1291,7 @@ impl Dex {
             contact: false,
             protect: false,
             sound: false,
+            heal: false,
             bypass_sub: false,
             bullet: false,
             powder: false,
@@ -1375,6 +1386,7 @@ impl Dex {
                 contact: d["flags"]["contact"] == 1,
                 protect: d["flags"]["protect"] == 1,
                 sound: d["flags"]["sound"] == 1,
+                heal: d["flags"]["heal"] == 1,
                 bypass_sub: d["flags"]["bypasssub"] == 1,
                 bullet: d["flags"]["bullet"] == 1,
                 powder: d["flags"]["powder"] == 1,
@@ -1720,6 +1732,7 @@ impl Dex {
             metronome: lookup("conditions", "metronome")?,
             ability_shield: lookup("items", "abilityshield")?,
             throat_chop: lookup("conditions", "throatchop")?,
+            heal_block: lookup("conditions", "healblock")?,
             mimikyu: lookup("species", "mimikyu")?,
             mimikyu_totem: lookup("species", "mimikyutotem")?,
             mimikyu_busted: lookup("species", "mimikyubusted")?,

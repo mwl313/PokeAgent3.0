@@ -1070,6 +1070,11 @@ pub struct NativeEffects {
     pub ability_shield: Id,
     /// Volatile that disables and refuses sound moves for two turns.
     pub throat_chop: Id,
+    /// `healblock` condition: refuses every HP recovery, disables the holder's
+    /// `heal`-flag moves and refuses one already committed to them. Applied by
+    /// Psychic Noise for two turns (the past-generation Heal Block move would
+    /// use five, and Persistent seven, but neither is legal in M-C).
+    pub heal_block: Id,
     /// Disguise's species family, resolved once at load: the undisguised forms
     /// absorb the first damaging move, the busted forms do not.
     pub mimikyu: Id,
