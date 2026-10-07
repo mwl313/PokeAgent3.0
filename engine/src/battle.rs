@@ -3532,7 +3532,7 @@ impl BattleState {
         // per-target computation.
         let decoys: SmallVec<[Entity; 4]> = hit
             .iter()
-            .filter(|(target, _)| self.decoy_absorbs(dex, actor, *target, m))
+            .filter(|(target, _)| self.decoy_absorbs(dex, actor, *target, m, m.infiltrates))
             .map(|(target, _)| *target)
             .collect();
         let ordered: SmallVec<[(Entity, i8); 4]> = hit
@@ -3571,7 +3571,7 @@ impl BattleState {
                     self.faint_now(actor);
                 }
                 let amount = amount.min(u32::from(u16::MAX)) as u16;
-                if self.intercept_substitute(dex, actor, target, m, amount)? {
+                if self.intercept_substitute(dex, actor, target, m, amount, m.infiltrates)? {
                     sub_absorbed.push(target);
                 } else {
                     damages.push((target, amount));
@@ -3737,7 +3737,7 @@ impl BattleState {
             let damage = damage::finish_damage(damage, final_modifier, false);
             // The decoy call in the reference still resolves the full damage
             // (identical RNG draws) and then eats it instead of the target.
-            if self.intercept_substitute(dex, actor, target, m, damage)? {
+            if self.intercept_substitute(dex, actor, target, m, damage, m.infiltrates)? {
                 sub_absorbed.push(target);
             } else {
                 damages.push((target, damage));
@@ -3846,7 +3846,7 @@ impl BattleState {
             // before `runMoveEffects`: a decoy absorbs the whole move (zero
             // damage) and the action still counts as a success.
             if m.category == Category::Status
-                && self.intercept_substitute(dex, actor, target, m, 0)?
+                && self.intercept_substitute(dex, actor, target, m, 0, m.infiltrates)?
             {
                 sub_absorbed.push(target);
                 did_anything = true;
@@ -4718,7 +4718,7 @@ impl BattleState {
                     continue;
                 }
                 sub_absorbed.retain(|t| *t != target);
-                if self.intercept_substitute(dex, actor, target, m, damage)? {
+                if self.intercept_substitute(dex, actor, target, m, damage, m.infiltrates)? {
                     sub_absorbed.push(target);
                     // `selfDrops` still runs against the nulled target, and the
                     // reference's `secondaries` still rolls each chance while
@@ -5989,8 +5989,10 @@ impl BattleState {
         source: Entity,
         target: Entity,
         m: &crate::assets::Move,
+        infiltrates: bool,
     ) -> bool {
         target != source
+            && !infiltrates
             && !m.bypass_sub
             && self
                 .mon(target)
@@ -6012,8 +6014,9 @@ impl BattleState {
         target: Entity,
         m: &crate::assets::Move,
         damage: u16,
+        infiltrates: bool,
     ) -> Result<bool> {
-        if !self.decoy_absorbs(dex, source, target, m) {
+        if !self.decoy_absorbs(dex, source, target, m, infiltrates) {
             return Ok(false);
         }
         let sub_hp = self

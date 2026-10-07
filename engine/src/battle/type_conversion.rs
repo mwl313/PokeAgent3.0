@@ -40,6 +40,9 @@ pub(super) struct ActiveMove<'a> {
     /// for every non-scripted move its holder uses, so `getMoveTargets` skips
     /// redirection.
     pub tracks_target: bool,
+    /// `abilities:infiltrator.onModifyMove`: every move the holder uses
+    /// ignores the target's decoy (and its side's screens).
+    pub infiltrates: bool,
 }
 impl Deref for ActiveMove<'_> {
     type Target = crate::assets::Move;
@@ -69,6 +72,7 @@ impl BattleState {
             has_bounced: false,
             priority: None,
             tracks_target: data.tracks_target,
+            infiltrates: false,
         };
         // `abilities:stalwart.onModifyMove` (priority 1): the holder's moves
         // ignore redirection. Stalwart has no `breakable` flag, so Mold Breaker
@@ -172,6 +176,12 @@ impl BattleState {
         // immunity bypass, without changing its type or category.
         if ability == Ability::Scrappy {
             action.scrappy = true;
+        }
+        // `abilities:infiltrator.onModifyMove`: the action ignores the target's
+        // decoy (`moves:substitute.condition.onTryPrimaryHit` returns early on
+        // `move.infiltrates`).
+        if ability == Ability::Infiltrator {
+            action.infiltrates = true;
         }
         let (move_type, type_changer_boosted) =
             self.converted_move_type(dex, actor, data, action.move_type);
