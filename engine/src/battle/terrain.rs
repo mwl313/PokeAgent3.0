@@ -124,6 +124,35 @@ impl BattleState {
         Ok(())
     }
 
+    /// Reference `Field#clearTerrain`: run the active terrain's FieldEnd, drop
+    /// the field state and then run the global TerrainChange event. Steel
+    /// Roller is the only legal caller in the pinned regulation.
+    pub(super) fn clear_terrain(&mut self, dex: &Dex, source: Entity) -> Result<bool> {
+        let Some(id) = [
+            dex.effects.electric_terrain,
+            dex.effects.grassy_terrain,
+            dex.effects.misty_terrain,
+            dex.effects.psychic_terrain,
+        ]
+        .into_iter()
+        .find(|id| self.field.contains_key(id))
+        else {
+            return Ok(false);
+        };
+        self.field.remove(&id);
+        self.emit(
+            EventKind::FieldEffectEnd,
+            source,
+            None,
+            EffectRef::Condition(id),
+            0,
+            false,
+        )?;
+        self.field_change_order();
+        super::item_ports::terrain_change_event(self, dex)?;
+        Ok(true)
+    }
+
     pub(super) fn grassy_heal(&mut self, dex: &Dex, target: Entity) -> Result<()> {
         let p = self.mon(target);
         // `moves:grassyterrain.condition.onResidual` heals through `this.heal`.

@@ -383,6 +383,7 @@ const HANDLED_MOVE_FIELDS: &[&str] = &[
     "onTry",
     "onDisableMove",
     "onTryHit",
+    "onAfterSubDamage",
     "onModifyMove",
     "onModifyPriority",
     "onEffectiveness",
@@ -605,6 +606,11 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     // Beat Up: the captured party list and its per-hit base power formula.
     "moves:beatup.onModifyMove",
     "moves:beatup.basePowerCallback",
+    // Steel Roller: the terrain-presence Try gate plus the terrain clear on a
+    // landed hit and on a hit a substitute absorbs.
+    "moves:steelroller.onTry",
+    "moves:steelroller.onHit",
+    "moves:steelroller.onAfterSubDamage",
 ];
 
 /// Ported action-local callbacks, keyed by move id. Every entry must have its
@@ -695,6 +701,7 @@ fn move_hooks(id: &str) -> u32 {
         "strengthsap" => hook::STRENGTH_SAP,
         "doubleshock" => hook::DOUBLE_SHOCK,
         "beatup" => hook::BEAT_UP,
+        "steelroller" => hook::STEEL_ROLLER,
         _ => 0,
     }
 }
