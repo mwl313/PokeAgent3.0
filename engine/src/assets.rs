@@ -177,6 +177,9 @@ pub struct Move {
     pub mind_blown_recoil: bool,
     pub drain: Option<[u16; 2]>,
     pub side_condition: Id,
+    /// `slotCondition`: a condition attached to the user's *slot* (Revival
+    /// Blessing), stored in the side's per-slot condition map.
+    pub slot_condition: Id,
     pub weather: Id,
     pub terrain: Id,
     /// `willCrit: true` moves always land a critical hit without a crit draw.
@@ -1445,6 +1448,7 @@ impl Dex {
             mind_blown_recoil: false,
             drain: None,
             side_condition: 0,
+            slot_condition: 0,
             weather: 0,
             terrain: 0,
             will_crit: false,
@@ -1601,6 +1605,11 @@ impl Dex {
                     None => 0,
                 },
                 side_condition: match d["sideCondition"].as_str() {
+                    Some(name) if implemented => lookup("conditions", name)?,
+                    Some(name) => lookup("conditions", name).unwrap_or(0),
+                    None => 0,
+                },
+                slot_condition: match d["slotCondition"].as_str() {
                     Some(name) if implemented => lookup("conditions", name)?,
                     Some(name) => lookup("conditions", name).unwrap_or(0),
                     None => 0,
@@ -1849,6 +1858,7 @@ impl Dex {
             mega_stones,
             protect: lookup("conditions", "protect")?,
             stall: lookup("conditions", "stall")?,
+            revival_blessing: lookup("conditions", "revivalblessing")?,
             spiky_shield: lookup("conditions", "spikyshield")?,
             baneful_bunker: lookup("conditions", "banefulbunker")?,
             kings_shield: lookup("conditions", "kingsshield")?,

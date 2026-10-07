@@ -1272,14 +1272,20 @@ impl BattleState {
                 QueuedKind::Switch => {
                     let actor = action.actor.unwrap();
                     let slot = self.mon(actor).active_slot.unwrap();
-                    self.switch_in(
-                        dex,
-                        Entity {
-                            side: actor.side,
-                            roster: action.destination,
-                        },
-                        slot,
-                    )?;
+                    let incoming = Entity {
+                        side: actor.side,
+                        roster: action.destination,
+                    };
+                    // A switch action submitted under the `revivalblessing`
+                    // slot condition revives the chosen fainted member instead
+                    // of swapping the user out.
+                    if self.sides[actor.side as usize].slot_conditions[slot as usize]
+                        .contains_key(&dex.effects.revival_blessing)
+                    {
+                        self.apply_revival_blessing(dex, actor, incoming, slot)?;
+                    } else {
+                        self.switch_in(dex, incoming, slot)?;
+                    }
                 }
                 QueuedKind::Move => {
                     let actor = action.actor.unwrap();
@@ -2219,6 +2225,51 @@ impl BattleState {
             self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
             // Reference `hitStepMoveHitLoop` runs `eachEvent('Update')` once
             // after the hit step and once more at the end of the loop.
+            self.each_update(dex)?;
+            self.each_update(dex)?;
+            return Ok(());
+        }
+        if behavior == MoveBehavior::RevivalBlessing {
+            // `moves:revivalblessing.onTryHit` (`PrepareHit` already ran for
+            // the ability hooks): the move fails outright unless the side has a
+            // fainted party member.
+            if !self.sides[actor.side as usize]
+                .pokemon
+                .iter()
+                .any(|p| p.selected && p.fainted)
+            {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                return Ok(());
+            }
+            // The move's `slotCondition` lands on the user's slot and its
+            // `selfSwitch` marks the user, which turns the post-action request
+            // into the revive choice. The user itself stays on the field when
+            // the choice is committed.
+            let slot = self
+                .mon(actor)
+                .active_slot
+                .expect("revival blessing user is active");
+            let order = self.allocate_effect_order()?;
+            self.sides[actor.side as usize].slot_conditions[slot as usize].insert(
+                dex.effects.revival_blessing,
+                EffectState {
+                    id: dex.effects.revival_blessing,
+                    duration: Some(1),
+                    effect_order: order,
+                    effect_order_assigned: true,
+                    source: Some((
+                        if actor.side == 0 {
+                            SideId::P1
+                        } else {
+                            SideId::P2
+                        },
+                        actor.roster,
+                    )),
+                    ..Default::default()
+                },
+            );
+            self.mon_mut(actor).switch_flag = Some(move_id);
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
             self.each_update(dex)?;
             self.each_update(dex)?;
             return Ok(());
@@ -7040,6 +7091,71 @@ impl BattleState {
             .collect()
     }
 
+    /// Reference `getSwitchRequestData().reviving` destinations: every fainted
+    /// selected party member in request-team order, the only legal choice for a
+    /// slot that holds the `revivalblessing` condition.
+    fn revival_targets(&self, side: usize) -> Vec<u8> {
+        let Some(order) = self.sides[side].selected_order else {
+            return Vec::new();
+        };
+        order
+            .iter()
+            .copied()
+            .filter(|r| self.sides[side].pokemon[*r as usize].fainted)
+            .collect()
+    }
+
+    /// The active slot holding the `revivalblessing` slot condition, if any.
+    fn revival_slot(&self, dex: &Dex, side: usize) -> Option<u8> {
+        (0..2u8).find(|slot| {
+            self.sides[side].slot_conditions[*slot as usize]
+                .contains_key(&dex.effects.revival_blessing)
+        })
+    }
+
+    /// Reference `Battle#runAction` case `'revivalblessing'`: the chosen
+    /// fainted party member returns at half its maximum HP with its status and
+    /// faint flags cleared, the side counts one more living member and the
+    /// slot condition is consumed. A revived member still occupying an active
+    /// slot re-enters the field immediately (`instaswitch`), which runs the
+    /// full switch-in pipeline (hazards, ability End/Start, Update).
+    fn apply_revival_blessing(
+        &mut self,
+        dex: &Dex,
+        actor: Entity,
+        revived: Entity,
+        slot: u8,
+    ) -> Result<()> {
+        let move_id = self.mon(actor).switch_flag.unwrap_or(0);
+        self.sides[actor.side as usize].slot_conditions[slot as usize]
+            .remove(&dex.effects.revival_blessing);
+        // `Side#chooseSwitch` clears the user's switch flag when the revival
+        // choice is accepted: the user does not leave the field.
+        self.mon_mut(actor).switch_flag = None;
+        self.mon_mut(actor).plain_switch_flag = false;
+        let active_slot = self.mon(revived).active_slot;
+        let healed = (self.mon(revived).stats[0] / 2).max(1);
+        {
+            let mon = self.mon_mut(revived);
+            mon.fainted = false;
+            mon.status = 0;
+            mon.status_state = EffectState::default();
+            mon.hp = healed;
+        }
+        self.emit(
+            EventKind::Heal,
+            revived,
+            Some(actor),
+            EffectRef::Move(move_id),
+            i32::from(healed),
+            false,
+        )?;
+        if let Some(active_slot) = active_slot {
+            self.switch_in(dex, revived, active_slot)?;
+        }
+        Ok(())
+    }
+
     /// Reference `possibleSwitches`: possible switch-ins in live party order
     /// (`side.pokemon` positions after the active slots). The phazing drag
     /// samples this array, which is deliberately not the request-team order
@@ -7210,11 +7326,14 @@ impl BattleState {
                 .any(|r| {
                     let p = &self.sides[side].pokemon[*r as usize];
                     p.switch_flag.is_some() || p.plain_switch_flag
-                });
+                })
+                || self.revival_slot(dex, side).is_some();
             if !flagged {
                 continue;
             }
-            if self.can_switch(side) {
+            // A revival choice needs no live reserve: its destinations are the
+            // side's fainted members.
+            if self.can_switch(side) || self.revival_slot(dex, side).is_some() {
                 *needed = true;
             } else {
                 for r in self.sides[side].active.iter().flatten() {
@@ -7227,17 +7346,20 @@ impl BattleState {
             return false;
         }
         for (side, needed) in needed.into_iter().enumerate() {
+            let reviving = self.revival_slot(dex, side);
             let slots = std::array::from_fn(|slot| {
                 let Some(roster) = self.sides[side].active[slot] else {
                     return SlotRequest::default();
                 };
                 let p = &self.sides[side].pokemon[roster as usize];
+                let slot_reviving = reviving == Some(slot as u8);
                 SlotRequest {
                     present: !p.fainted,
                     // A `selfSwitch` pivot is alive and keeps its move list;
                     // only `forceSwitch` marks the slot as actionable.
                     requires_replacement: needed
-                        && (p.switch_flag.is_some() || p.plain_switch_flag),
+                        && (p.switch_flag.is_some() || p.plain_switch_flag || slot_reviving),
+                    reviving: slot_reviving,
                     // The reference's switch request carries no `active` entry,
                     // so it advertises no Mega availability for the swapper.
                     can_mega: false,
@@ -7265,6 +7387,11 @@ impl BattleState {
                 },
                 slots,
                 bench: self.bench(side).into_vec(),
+                revive_targets: if reviving.is_some() {
+                    self.revival_targets(side)
+                } else {
+                    vec![]
+                },
                 preview_roster: vec![],
             };
         }
@@ -7304,6 +7431,7 @@ impl BattleState {
                 },
                 slots,
                 bench: self.bench(side).into_vec(),
+                revive_targets: vec![],
                 preview_roster: vec![],
             };
         }
@@ -7617,6 +7745,7 @@ impl BattleState {
                 kind: RequestKind::Normal,
                 slots,
                 bench: self.bench(side).into_vec(),
+                revive_targets: vec![],
                 preview_roster: vec![],
             };
         }

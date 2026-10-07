@@ -116,9 +116,18 @@ export function createScaffold() {
         : null;
       if (side.requestState === 'switch') {
         if (!req.forceSwitch[slot]) { commands.push('pass'); continue; }
-        const reserve = named && !named.fainted && !side.active.includes(named)
-          ? named
-          : bench.find(x => !chosen.has(x));
+        // `reviving: true` marks a Revival Blessing choice: its legal
+        // destinations are the side's fainted members instead of the bench.
+        // A switch request carries the party list under `req.side.pokemon`,
+        // in the side's battle order; `reviving` is set on the acting slot's
+        // entry when a Revival Blessing choice is pending.
+        const entry = req.side?.pokemon?.[side.pokemon.indexOf(p)];
+        const reviving = Boolean(entry?.reviving);
+        const reserve = reviving
+          ? (named && named.fainted ? named : side.pokemon.find(x => x.fainted && !chosen.has(x)))
+          : (named && !named.fainted && !side.active.includes(named)
+            ? named
+            : bench.find(x => !chosen.has(x)));
         if (!reserve) { actions.push(select('Pass', slot)); commands.push('pass'); continue; }
         chosen.add(reserve);
         actions.push(select('Switch', slot, roster(reserve)));

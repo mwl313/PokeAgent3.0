@@ -123,6 +123,7 @@ fn normal() -> Request {
         kind: RequestKind::Normal,
         slots: [slot.clone(), slot],
         bench: vec![2, 3],
+        revive_targets: vec![],
         preview_roster: vec![],
     }
 }

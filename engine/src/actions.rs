@@ -99,6 +99,11 @@ pub struct SlotRequest {
     /// the move.
     #[serde(default)]
     pub last_active: bool,
+    /// Reference `getSwitchRequestData().reviving`: this slot holds the
+    /// `revivalblessing` slot condition, so the replacement choice picks a
+    /// *fainted* party member instead of a reserve.
+    #[serde(default)]
+    pub reviving: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -107,6 +112,10 @@ pub struct Request {
     pub slots: [SlotRequest; 2],
     /// Eligible destinations in the player's stable roster indexing.
     pub bench: Vec<u8>,
+    /// Fainted party members eligible for a pending Revival Blessing, in
+    /// request-team order. Only consulted for a `reviving` slot.
+    #[serde(default)]
+    pub revive_targets: Vec<u8>,
     pub preview_roster: Vec<u8>,
 }
 
@@ -116,6 +125,7 @@ impl Request {
             kind: RequestKind::Preview,
             slots: Default::default(),
             bench: vec![],
+            revive_targets: vec![],
             preview_roster: (0..6).collect(),
         }
     }
@@ -137,7 +147,7 @@ impl Request {
     }
 
     pub fn validate(&self) -> Result<()> {
-        for values in [&self.bench, &self.preview_roster] {
+        for values in [&self.bench, &self.revive_targets, &self.preview_roster] {
             let mut mask = 0u8;
             for &x in values {
                 if x >= 6 || mask & (1 << x) != 0 {
@@ -195,12 +205,23 @@ impl Request {
         let available: SmallVec<[u8; 6]> =
             self.bench.iter().copied().filter(|x| !used(*x)).collect();
         if self.kind == RequestKind::Replacement {
-            let mut out: SmallVec<[AtomicAction; 64]> = available
+            // A `reviving` slot chooses among the side's *fainted* members;
+            // every other replacement slot chooses among the live reserves.
+            let destinations: SmallVec<[u8; 6]> = if slot.reviving {
+                self.revive_targets
+                    .iter()
+                    .copied()
+                    .filter(|x| !used(*x))
+                    .collect()
+            } else {
+                available.clone()
+            };
+            let mut out: SmallVec<[AtomicAction; 64]> = destinations
                 .iter()
                 .map(|x| AtomicAction::select(ActionKind::Switch, slot_id, *x))
                 .collect();
             // With two empty slots and one reserve, either slot can receive it.
-            if branches.len() - prefix.len() > available.len() {
+            if branches.len() - prefix.len() > destinations.len() {
                 out.push(AtomicAction::pass(slot_id));
             }
             return out;

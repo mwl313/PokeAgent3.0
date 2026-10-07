@@ -390,7 +390,9 @@ impl Outcome {
 ///
 /// 14: queued actions carry `source_effect` (the Round chain's
 /// `move.sourceEffect`).
-pub const SNAPSHOT_SCHEMA: u32 = 14;
+/// 15: requests carry `revive_targets` / `SlotRequest.reviving`, and sides
+/// persist the `revivalblessing` slot condition.
+pub const SNAPSHOT_SCHEMA: u32 = 15;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BattleState {
@@ -1090,12 +1092,16 @@ impl BattleState {
             {
                 return Err(EngineError::InvalidInput("snapshot side conditions".into()));
             }
-            if side
-                .slot_conditions
-                .iter()
-                .any(|conditions| !conditions.is_empty())
-            {
-                return Err(EngineError::Unsupported("snapshot slot condition".into()));
+            // Only the ported slot conditions may appear: Revival Blessing's
+            // revive protocol marker.
+            for conditions in &side.slot_conditions {
+                for &id in conditions.keys() {
+                    if id != dex.effects.revival_blessing {
+                        return Err(EngineError::Unsupported(format!(
+                            "snapshot slot condition {id}"
+                        )));
+                    }
+                }
             }
             for (&id, effect) in &side.conditions {
                 if ![
@@ -1558,19 +1564,28 @@ impl BattleState {
                             });
                             let fainted = side.active[slot]
                                 .is_some_and(|r| side.pokemon[r as usize].fainted);
+                            // `revivalblessing`: the slot's condition makes the
+                            // replacement choice pick a *fainted* member, so it
+                            // is actionable even with an empty bench.
+                            let reviving =
+                                side.slot_conditions[slot].contains_key(&dex.effects.revival_blessing);
                             SlotRequest {
                                 present: side.active[slot].is_some() && !fainted,
-                                requires_replacement: fainted || blocked,
+                                requires_replacement: fainted || blocked || reviving,
+                                reviving,
                                 ..Default::default()
                             }
                         }
                     });
+                    let revival = slots.iter().any(|s| s.reviving);
                     let kind = if normal {
                         RequestKind::Normal
-                    } else if !bench.is_empty() && slots.iter().any(|s| s.requires_replacement) {
+                    } else if (!bench.is_empty() || revival)
+                        && slots.iter().any(|s| s.requires_replacement)
+                    {
                         // A slot only becomes an actionable replacement when a
-                        // reserve exists to fill it; a side with an empty bench
-                        // keeps waiting for the rest of the turn.
+                        // reserve exists to fill it, except for a revival
+                        // choice, whose destinations are the fainted members.
                         RequestKind::Replacement
                     } else {
                         RequestKind::Wait
@@ -1579,6 +1594,7 @@ impl BattleState {
                         kind,
                         slots,
                         bench,
+                        revive_targets: vec![],
                         preview_roster: vec![],
                     };
                     let relationship_ok = if normal {
@@ -1608,11 +1624,11 @@ impl BattleState {
                             shape_ok
                                 && (state.mid_turn
                                     || !actionable
-                                    || expected.bench.is_empty())
+                                    || expected.bench.is_empty() && !revival)
                         } else {
                             request.kind == RequestKind::Replacement
                                 && actionable
-                                && !expected.bench.is_empty()
+                                && (!expected.bench.is_empty() || revival)
                                 && shape_ok
                         }
                     };

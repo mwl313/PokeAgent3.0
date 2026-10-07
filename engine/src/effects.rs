@@ -855,6 +855,10 @@ pub enum MoveBehavior {
     /// move action of the turn (`action.order = 201`); fails in singles and
     /// against a target with no queued move.
     Quash,
+    /// `revivalblessing`: fails with no fainted party member, otherwise puts
+    /// the `revivalblessing` slot condition on the user and asks the side to
+    /// pick a fainted party member to revive at half HP.
+    RevivalBlessing,
     /// `upperhand`: fails outright unless the target still has a queued move
     /// action whose *declaration* priority is positive and whose category is
     /// not Status.
@@ -977,6 +981,7 @@ impl MoveBehavior {
             "swallow" => Self::Swallow,
             "rest" => Self::Rest,
             "quash" => Self::Quash,
+            "revivalblessing" => Self::RevivalBlessing,
             "upperhand" => Self::UpperHand,
             "round" => Self::Round,
             _ => Self::Unimplemented,
@@ -1105,6 +1110,9 @@ pub struct NativeEffects {
     pub mega_stones: Vec<Vec<(Id, Id)>>,
     pub protect: Id,
     pub stall: Id,
+    /// The `revivalblessing` slot condition (Revival Blessing's revive
+    /// protocol marker).
+    pub revival_blessing: Id,
     /// Additional Protect-family volatiles that block hits in the same
     /// `hitStepTryHitEvent` phase (priority 3).
     pub spiky_shield: Id,
