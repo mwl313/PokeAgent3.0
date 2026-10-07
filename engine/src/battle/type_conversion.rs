@@ -36,6 +36,10 @@ pub(super) struct ActiveMove<'a> {
     /// `ModifyPriority` result back onto the active move). A nested `useMove`
     /// inherits the outer action's priority; `None` means "not yet resolved".
     pub priority: Option<i8>,
+    /// Action-local copy of `move.tracksTarget`. `abilities:stalwart` sets it
+    /// for every non-scripted move its holder uses, so `getMoveTargets` skips
+    /// redirection.
+    pub tracks_target: bool,
 }
 impl Deref for ActiveMove<'_> {
     type Target = crate::assets::Move;
@@ -64,7 +68,16 @@ impl BattleState {
             calls_move: false,
             has_bounced: false,
             priority: None,
+            tracks_target: data.tracks_target,
         };
+        // `abilities:stalwart.onModifyMove` (priority 1): the holder's moves
+        // ignore redirection. Stalwart has no `breakable` flag, so Mold Breaker
+        // never suppresses it.
+        if dex.effects.abilities[self.mon(actor).ability as usize] == Ability::Stalwart
+            && data.target != Target::Scripted
+        {
+            action.tracks_target = true;
+        }
         // The move's own callbacks precede the actor's ModifyType event.
         if behavior == MoveBehavior::Struggle {
             action.move_type = 0;

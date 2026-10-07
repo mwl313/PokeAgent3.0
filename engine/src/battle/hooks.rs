@@ -1693,7 +1693,11 @@ impl BattleState {
         for (stat, change) in changes.iter_mut().enumerate() {
             if (source != target
                 && *change < 0
-                && (ability == Ability::ClearBody || ability == Ability::HyperCutter && stat == 0))
+                && (ability == Ability::ClearBody
+                    || ability == Ability::HyperCutter && stat == 0
+                    // `abilities:bigpecks.onTryBoost`: only Defense drops are
+                    // refused; a secondary-sourced drop is refused silently.
+                    || ability == Ability::Bigpecks && stat == 1))
                 || (intimidate
                     && stat == 0
                     && *change != 0
@@ -2007,6 +2011,22 @@ impl BattleState {
                         if a.status != 0 { 6144 } else { 4096 },
                     );
                 }
+                // `abilities:plus|minus.onModifySpA` (priority 5): 1.5x while
+                // another active ally on the field holds Plus or Minus. The
+                // reference's `allies()` excludes the holder itself.
+                if matches!(event, ModifierEvent::SpecialAttack)
+                    && matches!(attacking, Ability::Plus | Ability::Minus)
+                {
+                    let ally = self.active_entities(true).into_iter().any(|e| {
+                        e != actor
+                            && e.side == actor.side
+                            && matches!(
+                                dex.effects.abilities[self.mon(e).ability as usize],
+                                Ability::Plus | Ability::Minus
+                            )
+                    });
+                    add(actor, 5, if ally { 6144 } else { 4096 });
+                }
                 // `abilities:waterbubble.onModifyAtk/SpA` doubles the holder's
                 // Water attacks (default priority 0).
                 if attacking == Ability::Waterbubble {
@@ -2204,6 +2224,31 @@ impl BattleState {
         // holder applies the boost — the reference marks the first handler to
         // run as `move.auraBooster` — while every other holder keeps a no-op
         // entry so the handler set (and therefore tie ordering) matches.
+        // `abilities:steelyspirit.onAllyBasePower` (priority 22): every holder
+        // on the attacker's side (its own included) adds 1.5x to a Steel move;
+        // non-Steel moves keep the no-op entries for exact ordering.
+        if matches!(event, ModifierEvent::BasePower) {
+            for holder in self.active_entities(false) {
+                if holder.side == actor.side
+                    && dex.effects.abilities[self.mon(holder).ability as usize]
+                        == Ability::Steelyspirit
+                {
+                    hooks.push((
+                        Priority {
+                            priority: 22 * 10000,
+                            speed: self.mon(holder).cached_speed,
+                            sub_order: 7,
+                            ..Default::default()
+                        },
+                        if m.move_type == dex.effects.steel {
+                            6144
+                        } else {
+                            4096
+                        },
+                    ));
+                }
+            }
+        }
         if matches!(event, ModifierEvent::BasePower) {
             let fairy = dex.effects.fairy;
             let mut aura: SmallVec<[(Entity, i32); 4]> = SmallVec::new();
@@ -2463,7 +2508,6 @@ impl Ability {
             | Ability::Aromaveil
             | Ability::Battlebond
             | Ability::Berserk
-            | Ability::Bigpecks
             | Ability::Cheekpouch
             | Ability::Corrosion
             | Ability::Cudchew
@@ -2498,12 +2542,10 @@ impl Ability {
             | Ability::Megasol
             | Ability::Merciless
             | Ability::Mimicry
-            | Ability::Minus
             | Ability::Mummy
             | Ability::Opportunist
             | Ability::Pickup
             | Ability::Piercingdrill
-            | Ability::Plus
             | Ability::Quickdraw
             | Ability::Rattled
             | Ability::Receiver
@@ -2517,9 +2559,7 @@ impl Ability {
             | Ability::Skilllink
             | Ability::Stakeout
             | Ability::Stall
-            | Ability::Stalwart
             | Ability::Steadfast
-            | Ability::Steelyspirit
             | Ability::Stench
             | Ability::Stickyhold
             | Ability::Suctioncups
