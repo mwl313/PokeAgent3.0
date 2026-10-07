@@ -5360,6 +5360,21 @@ impl BattleState {
                     },
                 ));
             }
+            // `abilities:healer.onResidual` shares Hydration's order/sub-order;
+            // the roll only happens for a statused adjacent ally.
+            if dex.effects.abilities[self.mon(e).ability as usize] == Ability::Healer {
+                handlers.push((
+                    e,
+                    self.mon(e).ability,
+                    14,
+                    Priority {
+                        order: 5,
+                        sub_order: 3,
+                        speed: self.mon(e).cached_speed,
+                        ..Default::default()
+                    },
+                ));
+            }
             if dex.effects.abilities[self.mon(e).ability as usize] == Ability::SpeedBoost {
                 handlers.push((
                     e,
@@ -5719,6 +5734,30 @@ impl BattleState {
                 {
                     self.reveal_ability(e)?;
                     self.cure_status(e)?;
+                }
+            } else if status == 14 {
+                // `abilities:healer.onResidual`: every statused adjacent ally
+                // is cured on the Champions even 1/2 roll (the base game uses
+                // 3/10; `data/mods/champions/abilities.ts` overrides it),
+                // revealing the ability once per successful cure.
+                if self.mon(e).ability != id {
+                    continue;
+                }
+                let allies: SmallVec<[Entity; 1]> = self.sides[e.side as usize]
+                    .active
+                    .iter()
+                    .flatten()
+                    .map(|&roster| Entity {
+                        side: e.side,
+                        roster,
+                    })
+                    .filter(|ally| *ally != e)
+                    .collect();
+                for ally in allies {
+                    if self.mon(ally).status != 0 && self.rng.chance(1, 2) {
+                        self.reveal_ability(e)?;
+                        self.cure_status(ally)?;
+                    }
                 }
             } else if status == 3 {
                 if self.mon(e).item == id {

@@ -1466,6 +1466,40 @@ impl BattleState {
                 self.reveal_ability(e)?;
             }
         }
+        // `abilities:curiousmedicine.onStart`: every adjacent ally's stat
+        // boosts are cleared. The reference emits one message per ally, so an
+        // ally-less holder stays hidden.
+        if dex.effects.abilities[self.mon(e).ability as usize] == Ability::Curiousmedicine {
+            let allies: SmallVec<[Entity; 1]> = self.sides[e.side as usize]
+                .active
+                .iter()
+                .flatten()
+                .map(|&roster| Entity {
+                    side: e.side,
+                    roster,
+                })
+                .filter(|ally| *ally != e)
+                .collect();
+            if !allies.is_empty() {
+                self.reveal_ability(e)?;
+                for ally in allies {
+                    for stat in 0..7usize {
+                        let old = self.mon(ally).boosts[stat];
+                        if old != 0 {
+                            self.mon_mut(ally).boosts[stat] = 0;
+                            self.emit(
+                                EventKind::Boost,
+                                ally,
+                                None,
+                                EffectRef::Stat(stat as Id),
+                                -i32::from(old),
+                                false,
+                            )?;
+                        }
+                    }
+                }
+            }
+        }
         // `abilities:frisk.onStart`: every active foe's held item is announced.
         // The ability only becomes public knowledge through the first item
         // message, so an item-less opposing side stays hidden.
@@ -2581,7 +2615,6 @@ impl Ability {
             | Ability::Cheekpouch
             | Ability::Corrosion
             | Ability::Cudchew
-            | Ability::Curiousmedicine
             | Ability::Cutecharm
             | Ability::Earlybird
             | Ability::Electromorphosis
@@ -2595,7 +2628,6 @@ impl Ability {
             | Ability::Guarddog
             | Ability::Gulpmissile
             | Ability::Harvest
-            | Ability::Healer
             | Ability::Heavymetal
             | Ability::Hungerswitch
             | Ability::Hustle
