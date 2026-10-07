@@ -54,6 +54,11 @@ pub mod hook {
     /// `multiaccuracy`: the move re-rolls accuracy for every hit after the
     /// first and stops on the first miss (Population Bomb, Triple Axel).
     pub const MULTI_ACCURACY: u32 = 1 << 16;
+    /// `moves:soak.onHit`: overwrite the target's types with pure Water.
+    pub const SOAK: u32 = 1 << 17;
+    /// `moves:doubleshock.onTryMove|self.onHit`: fails without the Electric
+    /// type and removes it from the user on a landed hit.
+    pub const DOUBLE_SHOCK: u32 = 1 << 18;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

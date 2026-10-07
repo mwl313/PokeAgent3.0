@@ -527,6 +527,10 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:leechseed.onTryImmunity",
     "moves:leechseed.condition.onStart",
     "moves:leechseed.condition.onResidual",
+    // In-battle type changes.
+    "moves:soak.onHit",
+    "moves:doubleshock.onTryMove",
+    "moves:doubleshock.self.onHit",
 ];
 
 /// Ported action-local callbacks, keyed by move id. Every entry must have its
@@ -605,6 +609,8 @@ fn move_hooks(id: &str) -> u32 {
         "disable" => hook::DISABLE_TARGET_GATE,
         "clangoroussoul" => hook::CLANGOROUS_SOUL,
         "populationbomb" | "tripleaxel" => hook::MULTI_ACCURACY,
+        "soak" => hook::SOAK,
+        "doubleshock" => hook::DOUBLE_SHOCK,
         _ => 0,
     }
 }

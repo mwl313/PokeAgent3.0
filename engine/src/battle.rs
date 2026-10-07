@@ -406,6 +406,24 @@ impl BattleState {
         types
     }
 
+    /// Reference `Pokemon#setType`: replace the stored type list outright.
+    /// The pinned regulation reaches this only through Soak and Double Shock,
+    /// whose results are always representable; a typeless result (a pure
+    /// Electric Double Shock user) stays an explicit operational error.
+    /// `knownType`/`apparentType` bookkeeping has no native counterpart.
+    pub(super) fn set_type(&mut self, dex: &Dex, e: Entity, types: &[Id]) -> Result<bool> {
+        let _ = dex;
+        if types.is_empty() {
+            return Err(EngineError::Unsupported("typeless result".into()));
+        }
+        // Type id 0 is the `'???'` placeholder Double Shock leaves behind.
+        if self.mon(e).types.as_slice() == types {
+            return Ok(false);
+        }
+        self.mon_mut(e).types = types.to_vec();
+        Ok(true)
+    }
+
     fn effective_priority(&self, dex: &Dex, actor: Entity, move_id: Id) -> i8 {
         let mut priority = dex.moves[move_id as usize].priority;
         if dex.effects.move_hooks[move_id as usize]
@@ -1468,6 +1486,13 @@ impl BattleState {
             self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
             return Ok(());
         }
+        if hooks & crate::effects::hook::DOUBLE_SHOCK != 0
+            && !self.effective_types(dex, actor).contains(&dex.effects.electric)
+        {
+            // `moves:doubleshock.onTryMove`: the user must still be Electric.
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+            return Ok(());
+        }
         if hooks & crate::effects::hook::SUCKER_PUNCH != 0 {
             let target = redirected.or(selected);
             if !self.sucker_punch_target_attacks(dex, target) {
@@ -2315,7 +2340,15 @@ impl BattleState {
                 // an empty bench).
                 did_anything |= self.can_switch(target.side as usize);
             } else {
-                did_anything |= self.hit_effect(dex, target, actor, &m.hit, false)?;
+                // `moves:soak.onHit`: pure-Water targets refuse; anything else
+                // is overwritten with pure Water.
+                if hooks & crate::effects::hook::SOAK != 0
+                    && self.effective_types(dex, target).as_slice() != [dex.effects.water]
+                {
+                    did_anything |= self.set_type(dex, target, &[dex.effects.water])?;
+                } else if hooks & crate::effects::hook::SOAK == 0 {
+                    did_anything |= self.hit_effect(dex, target, actor, &m.hit, false)?;
+                }
             }
             // `moves:partingshot.onHit` applies the Attack/Sp. Atk drop itself
             // (the pinned declaration has no `boosts` field) and deletes its
@@ -2331,6 +2364,21 @@ impl BattleState {
                     BoostCause::Move { secondary: false },
                 )?;
             }
+        }
+        // `moves:doubleshock.self.onHit`: a landed Double Shock strips every
+        // Electric type from the user (Pawmot keeps Fighting). A typeless
+        // result is unreachable in the pinned regulation and fails closed.
+        if hooks & crate::effects::hook::DOUBLE_SHOCK != 0 && did_anything {
+            // The reference maps every Electric slot to the `'???'` placeholder
+            // instead of dropping it; the native spells that placeholder as
+            // type id 0 (the empty catalogue row), which is neutral on both
+            // sides of the type chart exactly like `'???'`.
+            let mapped: SmallVec<[Id; 4]> = self
+                .effective_types(dex, actor)
+                .into_iter()
+                .map(|kind| if kind == dex.effects.electric { 0 } else { kind })
+                .collect();
+            self.set_type(dex, actor, &mapped)?;
         }
         // `moves:clangoroussoul.onHit`: once the five-stat self boost applied,
         // the user pays a third of its maximum HP as direct damage (no Damage

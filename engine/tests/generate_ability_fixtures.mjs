@@ -239,7 +239,7 @@ const capture = session => {
         ability: ids.abilities[p.ability] ?? 0,
         ability_ending: Boolean(p.abilityState?.ending),
         item: p.item ? ids.items[p.item] : 0,
-        types: p.types.map(t => ids.types[toID(t)]),
+        types: p.types.map(t => ids.types[toID(t)] ?? 0),
         pp: p.moveSlots.map(m => m.pp),
         disabled: p.moveSlots.map(m => Boolean(m.disabled)),
         volatiles: Object.keys(p.volatiles).map(id => ids.conditions[id]).sort((a, b) => a - b),

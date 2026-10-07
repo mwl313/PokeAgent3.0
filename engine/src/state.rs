@@ -669,9 +669,11 @@ impl BattleState {
                     || usize::from(m.nature) >= dex.natures.len()
                     || m.types.is_empty()
                     || m.types.len() > 3
+                    // Type id 0 is the `'???'` placeholder Double Shock maps
+                    // Electric slots to, mirroring the reference's `'???'`.
                     || m.types
                         .iter()
-                        .any(|t| *t == 0 || usize::from(*t) >= dex.names["types"].len())
+                        .any(|t| usize::from(*t) >= dex.names["types"].len())
                     || m.stats[0] == 0
                     || m.level != 50
                     || m.gender > 2

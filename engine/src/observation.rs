@@ -575,7 +575,8 @@ impl<'a> Encoder<'a> {
                 return Err(EngineError::InvalidInput("observation own Pokémon".into()));
             }
             for &kind in &mon.types {
-                self.id(kind, 5, false)?;
+                // Type id 0 is the `'???'` placeholder (Double Shock).
+                self.id(kind, 5, true)?;
             }
             for m in mon.moves.iter().chain(&mon.base_moves) {
                 self.id(m.id, 1, false)?;
@@ -587,7 +588,8 @@ impl<'a> Encoder<'a> {
         for mon in &view.knowledge.pokemon {
             self.id(mon.species, 0, true)?;
             for &kind in &mon.types {
-                self.id(kind, 5, false)?;
+                // Type id 0 is the `'???'` placeholder (Double Shock).
+                self.id(kind, 5, true)?;
             }
             for (known, cat) in [
                 (mon.status, 4),
