@@ -655,6 +655,13 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:charge.condition.onMoveAborted",
     "moves:charge.condition.onAfterMove",
     "moves:charge.condition.onEnd",
+    // Ability-transfer moves: the gates and the setAbility payloads.
+    "moves:entrainment.onTryHit",
+    "moves:entrainment.onHit",
+    "moves:roleplay.onTryHit",
+    "moves:roleplay.onHit",
+    "moves:simplebeam.onTryHit",
+    "moves:simplebeam.onHit",
     // Magic Powder: the pure-Psychic type overwrite.
     "moves:magicpowder.onHit",
     // Eerie Spell: the three-PP drain on the target's last move.
@@ -833,6 +840,9 @@ fn move_hooks(id: &str) -> u64 {
         "burningjealousy" => hook::BURNING_JEALOUSY,
         "acupressure" => hook::ACUPRESSURE,
         "magicpowder" => hook::MAGIC_POWDER,
+        "entrainment" => hook::ENTRAINMENT,
+        "roleplay" => hook::ROLE_PLAY,
+        "simplebeam" => hook::SIMPLE_BEAM,
         "eeriespell" => hook::EERIE_SPELL,
         "burnup" => hook::BURN_UP,
         "triattack" => hook::TRI_ATTACK,
@@ -1873,6 +1883,19 @@ impl Dex {
                 no_suppress_abilities[row["numeric_id"].as_u64().unwrap() as usize] = true;
             }
         }
+        // `flags.noentrain` / `flags.failroleplay`: the ability-transfer moves
+        // refuse these holders.
+        let mut no_entrain_abilities = vec![false; names["abilities"].len()];
+        let mut fail_role_play_abilities = vec![false; names["abilities"].len()];
+        for row in tables["abilities"].as_array().unwrap() {
+            let index = row["numeric_id"].as_u64().unwrap() as usize;
+            if row["data"]["flags"]["noentrain"] == 1 {
+                no_entrain_abilities[index] = true;
+            }
+            if row["data"]["flags"]["failroleplay"] == 1 {
+                fail_role_play_abilities[index] = true;
+            }
+        }
         // `flags.failskillswap`: Skill Swap refuses when either side's ability
         // carries the flag.
         let mut no_skill_swap_abilities = vec![false; names["abilities"].len()];
@@ -1887,6 +1910,10 @@ impl Dex {
             no_trace_abilities,
             breakable_abilities,
             no_suppress_abilities,
+            no_entrain_abilities,
+            fail_role_play_abilities,
+            simple_ability: lookup("abilities", "simple")?,
+            truant_ability: lookup("abilities", "truant")?,
             no_skill_swap_abilities,
             choice_lock: lookup("conditions", "choicelock")?,
             disable_move_conditions: disable_move_handler_ids(

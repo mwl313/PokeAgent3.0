@@ -1955,6 +1955,13 @@ impl BattleState {
                 *change = change.saturating_neg();
             }
         }
+        // `abilities:simple.onChangeBoost`: every nonzero entry doubles before
+        // the capped boost table is computed.
+        if ability == Ability::Simple {
+            for change in changes.iter_mut() {
+                *change = change.saturating_mul(2);
+            }
+        }
         // The reference caps the entire incoming boost table before TryBoost.
         for (i, change) in changes.iter_mut().enumerate() {
             let old = self.mon(target).boosts[i];

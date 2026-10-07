@@ -111,6 +111,13 @@ pub mod hook {
     /// `moves:eeriespell.secondary.onHit`: deduct three PP from the target's
     /// last move.
     pub const EERIE_SPELL: u64 = 1 << 39;
+    /// `moves:entrainment.onTryHit|onHit`: the target adopts the user's
+    /// ability (gate: different, replaceable, `noentrain`-free).
+    pub const ENTRAINMENT: u64 = 1 << 40;
+    /// `moves:roleplay.onTryHit|onHit`: the user adopts the target's ability.
+    pub const ROLE_PLAY: u64 = 1 << 41;
+    /// `moves:simplebeam.onTryHit|onHit`: the target's ability becomes Simple.
+    pub const SIMPLE_BEAM: u64 = 1 << 42;
     /// `moves:burnup.onTryMove|self.onHit`: fails without the Fire type and
     /// strips it from the user on a landed hit.
     pub const BURN_UP: u64 = 1 << 35;
@@ -312,6 +319,8 @@ pub enum Ability {
     Arenatrap,
     Magnetpull,
     Shedskin,
+    /// `abilities:simple.onChangeBoost`: doubles every incoming boost delta.
+    Simple,
     Sheerforce,
     Shielddust,
     Shieldsdown,
@@ -549,6 +558,7 @@ impl Ability {
             "shedskin" => Self::Shedskin,
             "sheerforce" => Self::Sheerforce,
             "shielddust" => Self::Shielddust,
+            "simple" => Self::Simple,
             "shieldsdown" => Self::Shieldsdown,
             "skilllink" => Self::Skilllink,
             "sniper" => Self::Sniper,
@@ -1142,6 +1152,13 @@ pub struct NativeEffects {
     /// `flags.failskillswap`: abilities that refuse the Skill Swap exchange
     /// on either side.
     pub no_skill_swap_abilities: Vec<bool>,
+    /// `flags.noentrain` / `flags.failroleplay`: the ability-transfer moves
+    /// refuse these holders.
+    pub no_entrain_abilities: Vec<bool>,
+    pub fail_role_play_abilities: Vec<bool>,
+    /// The `simple` and `truant` ability ids (Simple Beam's gates).
+    pub simple_ability: Id,
+    pub truant_ability: Id,
     pub moves: Vec<MoveBehavior>,
     pub items: Vec<Item>,
     /// Pinned `flags.notrace` abilities: Trace never copies them (Trace itself

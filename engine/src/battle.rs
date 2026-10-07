@@ -3238,6 +3238,47 @@ impl BattleState {
             });
             failed_otherwise |= hit.len() != before;
         }
+        // `moves:entrainment.onTryHit`: a different, replaceable target ability
+        // and a user ability without `noentrain`.
+        if hooks & crate::effects::hook::ENTRAINMENT != 0 {
+            let source_ability = self.mon(actor).ability;
+            let before = hit.len();
+            hit.retain(|(target, _)| {
+                let target_ability = self.mon(*target).ability;
+                *target != actor
+                    && target_ability != source_ability
+                    && !dex.effects.no_suppress_abilities[target_ability as usize]
+                    && target_ability != dex.effects.truant_ability
+                    && !dex.effects.no_entrain_abilities[source_ability as usize]
+            });
+            failed_otherwise |= hit.len() != before;
+        }
+        // `moves:roleplay.onTryHit`: the target's ability must differ from the
+        // user's, must not carry `failroleplay`, and the user's must be
+        // replaceable.
+        if hooks & crate::effects::hook::ROLE_PLAY != 0 {
+            let source_ability = self.mon(actor).ability;
+            let before = hit.len();
+            hit.retain(|(target, _)| {
+                let target_ability = self.mon(*target).ability;
+                target_ability != source_ability
+                    && !dex.effects.fail_role_play_abilities[target_ability as usize]
+                    && !dex.effects.no_suppress_abilities[source_ability as usize]
+            });
+            failed_otherwise |= hit.len() != before;
+        }
+        // `moves:simplebeam.onTryHit`: the target's ability must be
+        // replaceable and neither Simple nor Truant.
+        if hooks & crate::effects::hook::SIMPLE_BEAM != 0 {
+            let before = hit.len();
+            hit.retain(|(target, _)| {
+                let target_ability = self.mon(*target).ability;
+                !dex.effects.no_suppress_abilities[target_ability as usize]
+                    && target_ability != dex.effects.simple_ability
+                    && target_ability != dex.effects.truant_ability
+            });
+            failed_otherwise |= hit.len() != before;
+        }
         failed_otherwise |= missed_accuracy;
         if hit.is_empty() {
             // Reference `useMoveInner` runs the move-owned `onMoveFail` before
@@ -3825,6 +3866,17 @@ impl BattleState {
                     && self.mon(target).types.as_slice() != [dex.effects.psychic]
                 {
                     did_anything |= self.set_type(dex, target, &[dex.effects.psychic])?;
+                }
+                // `setAbility` payloads of the ability-transfer moves.
+                if hooks & crate::effects::hook::ENTRAINMENT != 0 {
+                    let ability = self.mon(actor).ability;
+                    did_anything |= self.set_ability(dex, target, ability)?;
+                } else if hooks & crate::effects::hook::ROLE_PLAY != 0 {
+                    let ability = self.mon(target).ability;
+                    did_anything |= self.set_ability(dex, actor, ability)?;
+                } else if hooks & crate::effects::hook::SIMPLE_BEAM != 0 {
+                    did_anything |=
+                        self.set_ability(dex, target, dex.effects.simple_ability)?;
                 }
                 // `moves:burningjealousy.onHit`: each target whose stats were
                 // raised this turn is burned (silently refused when the
