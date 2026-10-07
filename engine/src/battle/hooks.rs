@@ -361,6 +361,13 @@ impl BattleState {
         if attacker == Ability::Compoundeyes {
             modifier = damage::chain_modifiers(modifier, 5325);
         }
+        // `abilities:tangledfeet.onModifyAccuracy` (priority -1): a confused
+        // holder halves the accuracy of moves aimed at it.
+        if defender == Ability::Tangledfeet
+            && self.mon(target).volatiles.contains_key(&dex.effects.confusion)
+        {
+            modifier = damage::chain_modifiers(modifier, 2048);
+        }
         if modifier == 4096 {
             return Some(accuracy);
         }
@@ -774,6 +781,19 @@ impl BattleState {
         (base + bonus).min(4)
     }
 
+    /// Reference `BattleQueue#willMove(pokemon)`: the Pokémon still has an
+    /// unexecuted queued move action. Analytic boosts while every other active
+    /// Pokémon has already acted.
+    fn moves_last(&self, actor: Entity) -> bool {
+        !self.active_entities(false).into_iter().any(|e| {
+            e != actor
+                && self
+                    .queue
+                    .iter()
+                    .any(|q| q.kind == QueuedKind::Move && q.actor == Some(e))
+        })
+    }
+
     pub(super) fn damage_item(&mut self, dex: &Dex, target: Entity, damage: u16) -> Result<u16> {
         let p = self.mon(target);
         if dex.effects.items[p.item as usize] == Item::FocusSash
@@ -1042,6 +1062,20 @@ impl BattleState {
                 handlers.push((
                     target,
                     14,
+                    Priority {
+                        sub_order: 7,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
+            // `abilities:seedsower.onDamagingHit`: any damaging hit scatters
+            // Grassy Terrain with the holder as its source.
+            if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Seedsower {
+                handlers.push((
+                    target,
+                    16,
                     Priority {
                         sub_order: 7,
                         speed: self.mon(target).cached_speed,
@@ -1329,6 +1363,10 @@ impl BattleState {
                         },
                     )?;
                 }
+            } else if kind == 16 {
+                // `abilities:seedsower.onDamagingHit`: scatter Grassy Terrain
+                // with the holder as its source (also revealing the ability).
+                self.start_terrain(dex, target, dex.effects.grassy_terrain, true)?;
             } else if m.move_type == dex.effects.fire {
                 self.cure_status(target)?;
             }
@@ -1896,6 +1934,13 @@ impl BattleState {
                 Ability::MegaLauncher => add(actor, 19, if m.pulse { 6144 } else { 4096 }),
                 Ability::Sharpness => add(actor, 19, if m.slicing { 6144 } else { 4096 }),
                 Ability::StrongJaw => add(actor, 19, if m.bite { 6144 } else { 4096 }),
+                // `abilities:analytic.onBasePower` (priority 21): 1.3x while no
+                // other active Pokémon still has an unexecuted move action.
+                Ability::Analytic => add(
+                    actor,
+                    21,
+                    if self.moves_last(actor) { 5325 } else { 4096 },
+                ),
                 // `abilities:supremeoverlord.onBasePower` (priority 21): the
                 // entry-time fainted count raises power by 10% per member.
                 Ability::Supremeoverlord => add(
@@ -2502,7 +2547,6 @@ impl Ability {
             self,
             Ability::Unimplemented
             | Ability::Aftermath
-            | Ability::Analytic
             | Ability::Angerpoint
             | Ability::Anticipation
             | Ability::Aromaveil
@@ -2552,7 +2596,6 @@ impl Ability {
             | Ability::Ripen
             | Ability::Runaway
             | Ability::Sandspit
-            | Ability::Seedsower
             | Ability::Shedskin
             | Ability::Shielddust
             | Ability::Shieldsdown
@@ -2566,7 +2609,6 @@ impl Ability {
             | Ability::Supersweetsyrup
             | Ability::Sweetveil
             | Ability::Symbiosis
-            | Ability::Tangledfeet
             | Ability::Unseenfist
             | Ability::Vitalspirit
             | Ability::Wanderingspirit
