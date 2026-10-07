@@ -800,6 +800,20 @@ impl BattleState {
                     index,
                 ));
             }
+            // `abilities:poisonpoint.onDamagingHit`: the same default-order
+            // contact roll as Static/Flame Body, but the attacker is poisoned.
+            if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Poisonpoint {
+                handlers.push((
+                    target,
+                    15,
+                    Priority {
+                        sub_order: 7,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
             if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Stamina {
                 handlers.push((
                     target,
@@ -1166,6 +1180,25 @@ impl BattleState {
                     ..Default::default()
                 };
                 self.hit_effect_with_ability(
+                    dex,
+                    actor,
+                    target,
+                    &effect,
+                    HitContext {
+                        ability_source: Some(target),
+                        ..Default::default()
+                    },
+                )?;
+            } else if kind == 15 {
+                // `abilities:poisonpoint.onDamagingHit`: an exact 3/10 poison
+                // roll on contact, with the holder as the status source. The
+                // roll is consumed even when the attacker cannot be poisoned.
+                if m.contact && self.rng.chance(3, 10) {
+                    let effect = crate::effects::HitEffect {
+                        status: dex.effects.poison,
+                        ..Default::default()
+                    };
+                    self.hit_effect_with_ability(
                         dex,
                         actor,
                         target,
@@ -1175,6 +1208,7 @@ impl BattleState {
                             ..Default::default()
                         },
                     )?;
+                }
             } else if m.move_type == dex.effects.fire {
                 self.cure_status(target)?;
             }
@@ -1249,6 +1283,39 @@ impl BattleState {
         }
         if weather != 0 {
             self.start_weather(dex, e, weather, true)?;
+        }
+        // `abilities:screencleaner.onStart`: remove Reflect, Light Screen and
+        // Aurora Veil from the holder's side and then from each opposing side,
+        // announcing the ability once before the first removal. The reference
+        // iterates the condition ids outermost, so the removals interleave
+        // per condition rather than per side.
+        if dex.effects.abilities[self.mon(e).ability as usize] == Ability::Screencleaner {
+            let mut activated = false;
+            for id in [
+                dex.effects.reflect,
+                dex.effects.light_screen,
+                dex.effects.aurora_veil,
+            ] {
+                for side in [e.side as usize, 1 - e.side as usize] {
+                    if self.sides[side].conditions.remove(&id).is_some() {
+                        if !activated {
+                            activated = true;
+                            self.reveal_ability(e)?;
+                        }
+                        self.emit(
+                            EventKind::SideEffectEnd,
+                            Entity {
+                                side: side as u8,
+                                roster: 0,
+                            },
+                            None,
+                            EffectRef::Condition(id),
+                            0,
+                            false,
+                        )?;
+                    }
+                }
+            }
         }
         // `abilities:hospitality.onStart`: heal each adjacent ally by
         // `baseMaxhp / 4`. In doubles the only adjacent ally is the partner;
@@ -1612,6 +1679,23 @@ impl BattleState {
                         4096
                     },
                 ),
+                // `abilities:rivalry.onBasePower` (priority 24): same gender
+                // multiplies by 1.25, opposite by 0.75; a genderless partner
+                // on either side leaves the power unchanged. The engine stores
+                // the reference `''` (genderless) as 0, `M` as 1 and `F` as 2.
+                Ability::Rivalry => {
+                    let attacker = self.mon(actor).gender;
+                    let defender = self.mon(target).gender;
+                    add(
+                        actor,
+                        24,
+                        if attacker != 0 && defender != 0 {
+                            if attacker == defender { 5120 } else { 3072 }
+                        } else {
+                            4096
+                        },
+                    )
+                }
                 Ability::Punkrock => add(actor, 7, if m.sound { 5325 } else { 4096 }),
                 _ => (),
                 }
@@ -2175,16 +2259,13 @@ impl Ability {
             | Ability::Pickup
             | Ability::Piercingdrill
             | Ability::Plus
-            | Ability::Poisonpoint
             | Ability::Pressure
             | Ability::Quickdraw
             | Ability::Rattled
             | Ability::Receiver
             | Ability::Ripen
-            | Ability::Rivalry
             | Ability::Runaway
             | Ability::Sandspit
-            | Ability::Screencleaner
             | Ability::Seedsower
             | Ability::Shedskin
             | Ability::Shielddust
@@ -2201,7 +2282,6 @@ impl Ability {
             | Ability::Suctioncups
             | Ability::Supersweetsyrup
             | Ability::Supremeoverlord
-            | Ability::Surgesurfer
             | Ability::Sweetveil
             | Ability::Symbiosis
             | Ability::Tangledfeet
