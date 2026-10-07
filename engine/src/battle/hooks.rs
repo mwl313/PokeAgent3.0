@@ -318,11 +318,18 @@ impl BattleState {
         actor: Entity,
         target: Entity,
         accuracy: Option<u16>,
+        minimize_bypass: bool,
     ) -> Option<u16> {
         let accuracy = accuracy?;
         // `moves:glaiverush.condition.onAccuracy`: while the drawback volatile
         // is up, moves used against the holder never miss.
         if self.mon(target).volatiles.contains_key(&dex.effects.glaive_rush) {
+            return None;
+        }
+        // `moves:minimize.condition.onAccuracy`: a `flags.minimize` move used
+        // against a minimized target returns true from the Accuracy event, so
+        // the roll is skipped entirely.
+        if minimize_bypass && self.mon(target).volatiles.contains_key(&dex.effects.minimize) {
             return None;
         }
         // No Guard (`onAnyAccuracyPriority: 0`): while an unsuppressed holder is
@@ -2073,6 +2080,17 @@ impl BattleState {
                     .mon(target)
                     .volatiles
                     .contains_key(&dex.effects.glaive_rush)
+                {
+                    add(target, 0, 8192);
+                }
+                // `moves:minimize.condition.onSourceModifyDamage`: a move
+                // carrying `flags.minimize` deals doubled damage to the
+                // minimized holder.
+                if m.minimize
+                    && self
+                        .mon(target)
+                        .volatiles
+                        .contains_key(&dex.effects.minimize)
                 {
                     add(target, 0, 8192);
                 }
