@@ -3877,13 +3877,17 @@ impl BattleState {
                 } else if hooks & crate::effects::hook::SOAK == 0 {
                     did_anything |= self.hit_effect_from_move(dex, target, actor, &m.hit, false, m)?;
                 }
-                // `moves:magicpowder.onHit`: pure-Psychic targets refuse;
-                // anything else is overwritten with pure Psychic.
-                if hooks & crate::effects::hook::MAGIC_POWDER != 0
-                    && self.effective_types(dex, target).as_slice() != [dex.effects.psychic]
-                    && self.mon(target).types.as_slice() != [dex.effects.psychic]
-                {
-                    did_anything |= self.set_type(dex, target, &[dex.effects.psychic])?;
+                // `moves:magicpowder.onHit`: a pure-Psychic target refuses the
+                // move outright (`onHit` returns false), so the generic empty
+                // payload's "connected" result must be discarded or the
+                // reference's per-hit loop would run its Update pair and spend
+                // two draws the failed move never reaches. The refusal test is
+                // `getTypes().join() === 'Psychic'`, i.e. the effective type
+                // list, not the stored one.
+                if hooks & crate::effects::hook::MAGIC_POWDER != 0 {
+                    did_anything =
+                        self.effective_types(dex, target).as_slice() != [dex.effects.psychic]
+                            && self.set_type(dex, target, &[dex.effects.psychic])?;
                 }
                 // `setAbility` payloads of the ability-transfer moves.
                 if hooks & crate::effects::hook::ENTRAINMENT != 0 {
