@@ -1866,7 +1866,18 @@ impl BattleState {
                 return Ok(());
             }
             let pick = candidates[self.rng.below(candidates.len() as u32) as usize];
-            return self.use_called_move(dex, actor, pick, slot);
+            self.use_called_move(dex, actor, pick, slot)?;
+            // Reference `hitStepMoveHitLoop` for the Sleep Talk action itself:
+            // `moves:sleeptalk.onHit` ignores the called move's result and
+            // returns undefined, which `runMoveEffects` turns into "did
+            // something". The outer hit loop therefore always runs both
+            // `eachEvent('Update')` handler-set sorts once a move was sampled
+            // and used - even when the called move itself failed before its
+            // own hit loop (e.g. a called Protect with no remaining action).
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
+            self.each_update(dex)?;
+            self.each_update(dex)?;
+            return Ok(());
         }
         if behavior == MoveBehavior::TrickRoom {
             self.toggle_trick_room(dex, actor)?;
