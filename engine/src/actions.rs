@@ -66,6 +66,11 @@ pub struct MoveChoice {
     pub slot: u8,
     pub target: Target,
     pub disabled: bool,
+    /// The world flag came from Imprison's `'hidden'` disable. The served
+    /// request turns it into `!restrictData` (`Pokemon#getMoves`), so only the
+    /// side's last active slot actually loses the move.
+    #[serde(default)]
+    pub hidden: bool,
     pub pp: u8,
 }
 
@@ -87,6 +92,13 @@ pub struct SlotRequest {
     /// no-op Recharge pseudo-move, which the BeforeMove gate consumes.
     pub locked_recharge: bool,
     pub locked_target_location: i8,
+    /// Reference `getMoves(..., restrictData = isLastActive())`: true when this
+    /// slot is the side's last non-fainted active Pokemon. Only that slot has
+    /// Imprison's `'hidden'` disables served as enabled (`disabled =
+    /// !restrictData`); the execution-time `onFoeBeforeMove` gate then refuses
+    /// the move.
+    #[serde(default)]
+    pub last_active: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -226,7 +238,9 @@ impl Request {
         let usable: SmallVec<[&MoveChoice; 4]> = slot
             .moves
             .iter()
-            .filter(|m| !m.disabled && m.pp > 0)
+            .filter(|m| {
+                (!m.disabled || m.hidden && slot.last_active) && m.pp > 0
+            })
             .collect();
         for m in &usable {
             for target in [-2, -1, 0, 1, 2] {

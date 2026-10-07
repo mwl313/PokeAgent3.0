@@ -4298,6 +4298,7 @@ impl BattleState {
                             slot: slot as u8,
                             target: dex.moves[mv.id as usize].target,
                             disabled: mv.disabled,
+                            hidden: mv.hidden,
                             pp: mv.pp,
                         })
                         .collect(),
@@ -4469,14 +4470,17 @@ impl BattleState {
                     if tormented && last_move != 0 && mv.id == last_move {
                         disabled = true;
                     }
-                    if imprisoned_moves.contains(&mv.id) {
-                        // `onFoeDisableMove` marks the move `'hidden'`; the
-                        // served choice legality rejects it even though
-                        // `Pokemon#getMoves` can display `false` to the last
-                        // active slot. The legal mask must exclude it.
+                    let hidden = imprisoned_moves.contains(&mv.id);
+                    if hidden {
+                        // `onFoeDisableMove` marks the move `'hidden'`. The
+                        // served request only turns that into `disabled` for
+                        // the side's last active Pokemon (`getMoves(lockedMove,
+                        // restrictData = isLastActive())`), so the world flag and
+                        // the served flag are tracked separately.
                         disabled = true;
                     }
                     mv.disabled = disabled;
+                    mv.hidden = hidden;
                 }
             }
             let slots = std::array::from_fn(|slot| {
@@ -4484,6 +4488,10 @@ impl BattleState {
                     return SlotRequest::default();
                 };
                 let p = &self.sides[side].pokemon[roster as usize];
+                let last_active = (slot + 1..2).all(|later| {
+                    self.sides[side].active[later]
+                        .map_or(true, |r| self.sides[side].pokemon[r as usize].fainted)
+                });
                 // Reference `getLockedMove()`: `mustrecharge.onLockMove`
                 // returns the Recharge pseudo-move, and `twoturnmove.onLockMove`
                 // the charging move with the location recorded on its start.
@@ -4502,6 +4510,7 @@ impl BattleState {
                             slot: slot as u8,
                             target: dex.moves[mv.id as usize].target,
                             disabled: false,
+                            hidden: false,
                             pp: mv.pp,
                         })
                         .collect()
@@ -4514,6 +4523,7 @@ impl BattleState {
                             slot: slot as u8,
                             target: dex.moves[mv.id as usize].target,
                             disabled: mv.disabled,
+                            hidden: mv.hidden,
                             pp: mv.pp,
                         })
                         .collect()
@@ -4536,6 +4546,7 @@ impl BattleState {
                     locked_move,
                     locked_recharge,
                     locked_target_location,
+                    last_active,
                     ..Default::default()
                 }
             });
