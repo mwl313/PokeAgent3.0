@@ -14,6 +14,7 @@ use pa3_engine::{
     state::{BattleState, SideId, Team},
 };
 use serde::Deserialize;
+use std::collections::BTreeSet;
 use std::path::Path;
 
 #[derive(Deserialize)]
@@ -151,4 +152,46 @@ fn every_player_known_state_field_reaches_the_observation_tensor() {
         }
     }
     assert_eq!(observed, 5, "known-state probes must all be observable");
+}
+
+/// Every publicly revealed lock/volatile condition must reach the tensor, not
+/// only the ones that existed when the encoder was written. This walks a real
+/// lock-family battle and requires the encoded effect set to carry the new
+/// volatile kinds.
+#[test]
+fn revealed_lock_conditions_reach_the_observation_tensor() {
+    let dex = Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap();
+    let corpus: Corpus =
+        serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap();
+    let mut found: BTreeSet<u16> = BTreeSet::new();
+    for fixture in &corpus.fixtures {
+        for step in &fixture.steps {
+            let mut state =
+                BattleState::reset(&dex, [&fixture.teams[0], &fixture.teams[1]], fixture.seed, [0, 1])
+                    .unwrap();
+            for inner in fixture.steps.iter().take_while(|s| !std::ptr::eq(*s, step)) {
+                state.step(&dex, inner.side, &inner.actions).unwrap();
+            }
+            if state.step(&dex, step.side, &step.actions).is_err() {
+                continue;
+            }
+            let encoder = Encoder::new(&dex).unwrap();
+            let mut buffers = ObservationBuffers::default();
+            encoder
+                .encode_into(&state.observe(SideId::P1), &mut buffers)
+                .unwrap();
+            for effect in &buffers.effects {
+                if effect.present {
+                    found.insert(effect.id);
+                }
+            }
+        }
+    }
+    for name in ["encore", "taunt", "disable", "torment", "imprison"] {
+        let id = dex.id("conditions", name).unwrap();
+        assert!(
+            found.contains(&id),
+            "revealed {name} never reached the observation tensor"
+        );
+    }
 }
