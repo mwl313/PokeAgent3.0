@@ -243,6 +243,9 @@ fixtures are merged) and are now redundant copies.
   samples (`getActionSpeed`/`resolveAction` during the mid-turn queue re-sort
   and `runMove` at execution — the native already did both) and the move then
   fails against the statused foe instead of applying a volatile.
+  A sweep of every `dex.effects.*` id comparison in the engine (both operand
+  orders plus `contains`/`matches!`) found no further cross-namespace
+  comparisons: the three above were the whole class.
 
 ## Remaining implementation
 

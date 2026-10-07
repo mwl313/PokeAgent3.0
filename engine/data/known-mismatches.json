@@ -1,6 +1,6 @@
 {
  "schema": "pa3-known-mismatches-v1",
- "note": "Reference-generated interaction fixtures that currently diverge natively. Each entry is a tracked bug, not a hidden skip: it moves back into turn-fixtures.json once fixed.",
+ "note": "Reference-generated interaction fixtures that diverged natively. Every entry is a tracked bug, not a hidden skip: an open entry stays out of the merged corpus until fixed. All three entries are now fixed and merged into turn-fixtures.json; the ledger keeps each fixture, reproducer and resolution note as history.",
  "mismatches": [
   {
    "name": "lock_crossfire",
