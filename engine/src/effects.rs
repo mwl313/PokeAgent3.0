@@ -851,6 +851,12 @@ pub enum MoveBehavior {
     /// `shedtail`: pays half the user's maximum HP for the same decoy, then
     /// leaves the field; the replacement receives only that decoy.
     ShedTail,
+    /// `chillyreception`: an `all`-target status move that sets snow through
+    /// the generic weather field, carries the `selfSwitch` pivot and never runs
+    /// the move-loop Update pair (the reference routes `all`-target moves
+    /// through `tryMoveHit`). Its queued `priorityChargeCallback` action adds
+    /// the move's one-turn volatile before any move of the turn.
+    ChillyReception,
     TrickRoom,
     Terrain,
     /// `trick` / `switcheroo`: item swap with the reference TakeItem refusal
@@ -1032,6 +1038,7 @@ impl MoveBehavior {
             "haze" => Self::Haze,
             "substitute" => Self::Substitute,
             "shedtail" => Self::ShedTail,
+            "chillyreception" => Self::ChillyReception,
             "sleeptalk" => Self::SleepTalk,
             "trickroom" => Self::TrickRoom,
             "electricterrain" | "grassyterrain" | "mistyterrain" | "psychicterrain" => {
@@ -1228,6 +1235,9 @@ pub struct NativeEffects {
     /// `moves:shedtail`: the `selfSwitch: 'shedtail'` pivot whose replacement
     /// receives only the outgoing Pokémon's decoy.
     pub shed_tail_move: Id,
+    /// `moves:chillyreception.condition`: the one-turn volatile added by the
+    /// queued move's `priorityChargeCallback` action.
+    pub chilly_reception: Id,
     /// Conditions declaring `noCopy`: `copyVolatileFrom` refuses to transfer
     /// them (Disable, Encore, Yawn, Smack Down, Stockpile, ...).
     pub no_copy_conditions: Vec<Id>,
@@ -1456,6 +1466,9 @@ pub struct Entity {
 pub enum QueuedKind {
     BeforeTurn,
     Move,
+    /// Reference `priorityChargeMove` (queue order 107): the queued move's
+    /// `priorityChargeCallback` runs before every move of the turn.
+    PriorityCharge,
     Switch,
     RunSwitch,
     Mega,

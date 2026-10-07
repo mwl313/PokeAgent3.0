@@ -228,6 +228,10 @@ pub struct Move {
     /// Ported two-turn charge callback (`onTryMove`) plus the move's own
     /// volatile condition, if the move declares one.
     pub charge: Option<crate::effects::ChargeSpec>,
+    /// `priorityChargeCallback` present: the queued action inserts a
+    /// `priorityChargeMove` action (order 107) that runs the callback before
+    /// any move of the turn (Chilly Reception).
+    pub priority_charge: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -1668,6 +1672,7 @@ impl Dex {
                 force_switch: false,
                 fail_encore: false,
                 future_move: false,
+                priority_charge: false,
                 charge: None,
             }];
         let mut native_moves = vec![crate::effects::MoveBehavior::Unimplemented];
@@ -1871,6 +1876,7 @@ impl Dex {
                 force_switch: d["forceSwitch"].as_bool().unwrap_or(false),
                 fail_encore: d["flags"]["failencore"] == 1,
                 future_move: d["flags"]["futuremove"] == 1,
+                priority_charge: d.get("priorityChargeCallback").is_some(),
                 charge: match charge_shape(row["id"].as_str().unwrap(), d) {
                     Some(shape) => {
                         let resolve = |names: &[&'static str]| -> Result<Vec<Id>> {
@@ -2105,6 +2111,7 @@ impl Dex {
             ally_switch: lookup("conditions", "allyswitch")?,
             stockpile: lookup("conditions", "stockpile")?,
             commanded: lookup("conditions", "commanded")?,
+            chilly_reception: lookup("conditions", "chillyreception")?,
             baton_pass_move: lookup("moves", "batonpass")?,
             shed_tail_move: lookup("moves", "shedtail")?,
             no_copy_conditions: condition_id_set(&tables["conditions"], None, true, NO_COPY_CONDITIONS)?,

@@ -320,6 +320,26 @@ impl BattleState {
                                 },
                             });
                         }
+                        // Reference `resolveAction`: a move declaring
+                        // `priorityChargeCallback` queues a
+                        // `priorityChargeMove` action (order 107) that runs the
+                        // callback before any move of the turn.
+                        if m.priority_charge {
+                            self.queue.push(QueuedAction {
+                                kind: QueuedKind::PriorityCharge,
+                                actor: Some(actor),
+                                move_slot: NO_SLOT,
+                                move_id: queued.move_id,
+                                source_effect: 0,
+                                target_location: 0,
+                                destination: NO_SLOT,
+                                priority: Priority {
+                                    order: 107,
+                                    speed: self.speed(dex, actor),
+                                    ..Default::default()
+                                },
+                            });
+                        }
                     }
                     self.queue.push(queued);
                 }
@@ -1356,6 +1376,32 @@ impl BattleState {
                         action.source_effect,
                     )?;
                     item_ports::white_herb_event(self, dex)?;
+                }
+                QueuedKind::PriorityCharge => {
+                    // `moves:chillyreception.priorityChargeCallback`: the
+                    // queued action adds the move's one-turn volatile before
+                    // any move of the turn. The reference start is silent for
+                    // this condition, and its residual duration tick removes
+                    // it at the end of the turn.
+                    let actor = action.actor.unwrap();
+                    if self
+                        .mon(actor)
+                        .volatiles
+                        .contains_key(&dex.effects.chilly_reception)
+                    {
+                        continue;
+                    }
+                    let order = self.allocate_effect_order()?;
+                    self.mon_mut(actor).volatiles.insert(
+                        dex.effects.chilly_reception,
+                        EffectState {
+                            id: dex.effects.chilly_reception,
+                            duration: Some(1),
+                            effect_order: order,
+                            effect_order_assigned: true,
+                            ..Default::default()
+                        },
+                    );
                 }
                 QueuedKind::Residual => self.residual(dex)?,
                 QueuedKind::Mega => self.run_mega(dex, action.actor.unwrap())?,
@@ -2481,6 +2527,22 @@ impl BattleState {
         }
         if behavior == MoveBehavior::Weather {
             self.start_weather(dex, actor, m.weather, false)?;
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
+            return Ok(());
+        }
+        if behavior == MoveBehavior::ChillyReception {
+            // Reference `useMoveInner`: an `all`-target move runs `tryMoveHit`,
+            // i.e. the `TryHitField` event (no handlers in the pinned data)
+            // followed by `moveHit` against the first resolved target, which
+            // applies the `weather` field and the inline `selfSwitch` gate.
+            // This path never runs the move-loop Update pair - only the
+            // post-action Update the queue loop already performs.
+            self.start_weather(dex, actor, m.weather, false)?;
+            if self.can_switch(actor.side as usize)
+                && !self.mon(actor).volatiles.contains_key(&dex.effects.commanded)
+            {
+                self.mon_mut(actor).switch_flag = Some(move_id);
+            }
             self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
             return Ok(());
         }
