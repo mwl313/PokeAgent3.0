@@ -1,6 +1,6 @@
 {
  "schema": "pa3-known-mismatches-v1",
- "note": "Reference-generated interaction fixtures that diverged natively. Every entry is a tracked bug, not a hidden skip: an open entry stays out of the merged corpus until fixed. One entry is open (2026-10-08): the non-Ghost Curse scene spends one extra end-of-turn Update draw natively (see its record). Everything else is fixed and merged.",
+ "note": "Reference-generated interaction fixtures that diverged natively. Every entry is a tracked bug, not a hidden skip: an open entry stays out of the merged corpus until fixed. One entry is open (2026-10-08): the non-Ghost Curse scene needs a deliberate action-mask decision before its behaviour can be witnessed.",
  "mismatches": [
   {
    "name": "lock_crossfire",
@@ -100445,7 +100445,7 @@
   {
    "name": "curse_non_ghost_boosts_the_user_35000",
    "status": "open",
-   "observed": "Champions `moves:curse` non-Ghost branch: `onModifyMove` redirects the target to self and `onHit` applies `this.boost({spe: -1, atk: 1, def: 1}, source, source)` directly (no selfDrops roll), with the boost's result as the move's success. The scene exposes two differences, both still open: (1) the generator's submitted choice carries target location 0 (the reference accepts a location-less choice for a target-choosing move and resolves it with `getRandomTarget`), which the native action mask rejects - the mask intentionally requires an explicit location, so this needs a deliberate contract decision, not a silent widening; (2) the native spends one extra end-of-turn Update shuffle draw: its post-residual state (26 draws, seed 64065,36672,33095,40354) equals the reference boundary while its own boundary seed is 57436,61441,64561,33197. Diagnose the residual handler list and the Update tie set against the Ghost scene (which matches at every boundary); the Protect `stall` volatiles and the 84-speed tie are the prime suspects.",
+   "observed": "Champions `moves:curse` non-Ghost branch: `onModifyMove` redirects the target to self and `onHit` applies `this.boost({spe: -1, atk: 1, def: 1}, source, source)` directly (no selfDrops roll), with the boost's result as the move's success. A legal-choice witness is currently impossible to express, and the scene records why: the reference's request still advertises Curse with target `normal`, yet `chooseMove` refuses any explicit target for a non-Ghost holder (`Can't move: You can't choose a target for Curse`), so the only accepted choice is location-less (`move 1`) - and the native action mask deliberately requires an explicit location for target-choosing moves. Widening `Target::valid_location` for location 0 broke the `contracts.rs` mask expectations, so resolving it needs a deliberate contract decision (mirror the reference's per-move choice validation, or keep the stricter mask and accept the divergence). Separately the scene shows one extra end-of-turn Update shuffle draw natively (native boundary 57436,61441,64561,33197 while its own post-residual state 64065,36672,33095,40354 equals the reference boundary); diagnose that together with the mask decision, using the Ghost scene (which matches at every boundary) as the control.",
    "fixture": "curse_non_ghost_boosts_the_user_35000"
   }
  ],
