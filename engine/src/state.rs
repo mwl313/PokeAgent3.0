@@ -849,6 +849,14 @@ impl BattleState {
                         effect.duration.is_none()
                             && effect.values.is_empty()
                             && effect.source.is_some()
+                    } else if id == dex.effects.perish_song {
+                        // `moves:perishsong.condition`: a four-tick countdown
+                        // that ends in a faint.
+                        effect
+                            .duration
+                            .is_some_and(|duration| (1..=4).contains(&duration))
+                            && effect.values.is_empty()
+                            && effect.source.is_some()
                     } else if id == dex.effects.partially_trapped {
                         // `partiallytrapped`: a 5-or-6 turn bind that stores its
                         // damage divisor and keeps the binding source.

@@ -744,6 +744,8 @@ pub enum MoveBehavior {
     /// `terrainpulse`: type and power follow the active terrain for a
     /// grounded user.
     TerrainPulse,
+    /// `perishsong`: the field-wide three-turn countdown volatile.
+    PerishSong,
     TrickRoom,
     Terrain,
     /// `trick` / `switcheroo`: item swap with the reference TakeItem refusal
@@ -848,6 +850,7 @@ impl MoveBehavior {
             "raindance" | "sunnyday" | "sandstorm" | "snowscape" => Self::Weather,
             "weatherball" => Self::WeatherBall,
             "terrainpulse" => Self::TerrainPulse,
+            "perishsong" => Self::PerishSong,
             "trickroom" => Self::TrickRoom,
             "electricterrain" | "grassyterrain" | "mistyterrain" | "psychicterrain" => {
                 Self::Terrain
@@ -1001,6 +1004,8 @@ pub struct NativeEffects {
     pub glaive_rush: Id,
     /// `partiallytrapped` condition: binding moves' damage/trap volatile.
     pub partially_trapped: Id,
+    /// `perishsong` condition: four-tick countdown that ends in a faint.
+    pub perish_song: Id,
     /// Volatile that disables and refuses sound moves for two turns.
     pub throat_chop: Id,
     /// `move:encore` volatile: locks the holder into its last move.

@@ -516,6 +516,10 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:clangoroussoul.onTry",
     "moves:clangoroussoul.onTryHit",
     "moves:clangoroussoul.onHit",
+    // Perish Song: the field-wide countdown application and its expiry.
+    "moves:perishsong.onHitField",
+    "moves:perishsong.condition.onEnd",
+    "moves:perishsong.condition.onResidual",
 ];
 
 /// Ported action-local callbacks, keyed by move id. Every entry must have its
@@ -760,6 +764,8 @@ const HANDLED_VOLATILES: &[&str] = &[
     "glaiverush",
     // Binding moves' damage/trap volatile.
     "partiallytrapped",
+    // Perish Song's three-turn countdown.
+    "perishsong",
     "mustrecharge",
     // Volatile selection-lock family: each id is declared by exactly one move
     // (encore, taunt, disable, imprison, torment) whose callbacks are below.
@@ -1623,6 +1629,7 @@ impl Dex {
             roost: lookup("conditions", "roost")?,
             glaive_rush: lookup("conditions", "glaiverush")?,
             partially_trapped: lookup("conditions", "partiallytrapped")?,
+            perish_song: lookup("conditions", "perishsong")?,
             throat_chop: lookup("conditions", "throatchop")?,
             encore: lookup("conditions", "encore")?,
             taunt: lookup("conditions", "taunt")?,

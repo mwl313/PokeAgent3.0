@@ -1498,6 +1498,82 @@ impl BattleState {
             self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
             return Ok(());
         }
+        if behavior == MoveBehavior::PerishSong {
+            // Reference `moves:perishsong.onHitField`: every active Pokémon is
+            // checked in field order. A miss, a protection block or a TryHit
+            // refusal still counts as a successful move; only a target that
+            // already carries the countdown contributes nothing, and the move
+            // fails outright when no target contributes.
+            let mut result = false;
+            let mut message = false;
+            let priority = self.effective_priority(dex, actor, move_id);
+            for target in self.active_entities(false) {
+                if self.mon(target).hp == 0 {
+                    continue;
+                }
+                let protected = m.protect
+                    && !m.breaks_protect
+                    && (self.guard_blocks(dex, target, m, priority)
+                        || self.blocking_protection(dex, target).is_some());
+                if protected {
+                    result = true;
+                    continue;
+                }
+                if let Some(spec) = self.charging_spec(dex, target)
+                    && spec.semi_invulnerable
+                    && !spec.invuln_exceptions.contains(&move_id)
+                {
+                    result = true;
+                    continue;
+                }
+                let mut accuracy = m.accuracy.map(u16::from);
+                if self.absorb_try_hit(dex, target, actor, m, &mut accuracy)? {
+                    result = true;
+                    continue;
+                }
+                if !self.mon(target).volatiles.contains_key(&dex.effects.perish_song) {
+                    let order = self.allocate_effect_order()?;
+                    self.mon_mut(target).volatiles.insert(
+                        dex.effects.perish_song,
+                        EffectState {
+                            id: dex.effects.perish_song,
+                            duration: Some(4),
+                            source: Some((
+                                if actor.side == 0 {
+                                    SideId::P1
+                                } else {
+                                    SideId::P2
+                                },
+                                actor.roster,
+                            )),
+                            effect_order: order,
+                            effect_order_assigned: true,
+                            ..Default::default()
+                        },
+                    );
+                    self.emit(
+                        EventKind::EffectStart,
+                        target,
+                        Some(actor),
+                        EffectRef::Condition(dex.effects.perish_song),
+                        0,
+                        false,
+                    )?;
+                    result = true;
+                    message = true;
+                }
+            }
+            let _ = (message, priority);
+            self.mon_mut(actor).move_this_turn_result = if result {
+                MoveResult::Success
+            } else {
+                MoveResult::Failed
+            };
+            // A status move never enters the hit loop, so the reference runs no
+            // Update and no AfterMoveSecondary phase here; the action tail's
+            // single Update is the only one.
+            return Ok(());
+        }
         if behavior == MoveBehavior::SideCondition {
             // Side-target moves use tryMoveHit, bypassing the Pokémon hit loop
             // and its two Update events. The queue runs the post-action Update.
@@ -4220,6 +4296,8 @@ impl BattleState {
                         (25, 0)
                     } else if id == dex.effects.partially_trapped {
                         (13, 0)
+                    } else if id == dex.effects.perish_song {
+                        (24, 0)
                     } else {
                         (0, 0)
                     };
@@ -4615,6 +4693,11 @@ impl BattleState {
                         if let Some(source) = yawn_source {
                             self.hit_effect(dex, e, source, &effect, false)?;
                         }
+                    }
+                    if id == dex.effects.perish_song {
+                        // `moves:perishsong.condition.onEnd`: the counter
+                        // reaching zero faints the holder.
+                        self.faint_now(e);
                     }
                     if id == dex.effects.protect
                         || id == dex.effects.throat_chop
