@@ -143,6 +143,12 @@ pub struct PokemonState {
     /// changes type once per switch-in. Reset when it enters the field.
     #[serde(default)]
     pub protean_used: bool,
+    /// `abilities:disguise` pending bust: the first damaging move was absorbed
+    /// and the next `Update` changes the holder to its busted forme and pays
+    /// an eighth of its maximum HP. Consumed by that Update and cleared on
+    /// switch-out.
+    #[serde(default)]
+    pub disguise_busted: bool,
     pub ability_effect_order: Option<u32>,
     pub item_effect_order: Option<u32>,
     pub item: Id,
@@ -272,6 +278,7 @@ impl PokemonState {
             ability: set.ability,
             ability_ending: false,
             protean_used: false,
+            disguise_busted: false,
             ability_effect_order: None,
             item_effect_order: None,
             item: set.item,
@@ -352,7 +359,7 @@ impl Outcome {
 /// Current snapshot schema. Bump when the persisted world shape changes; the
 /// restore path rejects every other value, and tests read this constant so a
 /// bump cannot leave a stale hard-coded expectation behind.
-pub const SNAPSHOT_SCHEMA: u32 = 10;
+pub const SNAPSHOT_SCHEMA: u32 = 11;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BattleState {
@@ -707,6 +714,15 @@ impl BattleState {
                     || m.switch_flag.is_some() && (m.fainted || m.active_slot.is_none())
                     || m.plain_switch_flag && (m.fainted || m.active_slot.is_none())
                     || m.force_switch_flag && (m.fainted || m.active_slot.is_none())
+                    // A pending Disguise bust only exists for a live Mimikyu
+                    // that is still in its undisguised forme.
+                    || m.disguise_busted
+                        && (m.fainted
+                            || m.active_slot.is_none()
+                            || dex.effects.abilities[m.ability as usize]
+                                != crate::effects::Ability::Disguise
+                            || !(m.species == dex.effects.mimikyu
+                                || m.species == dex.effects.mimikyu_totem))
                     || m.last_move != 0
                         && (usize::from(m.last_move) >= dex.moves.len()
                             || (m.last_move != dex.effects.struggle

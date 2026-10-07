@@ -17,12 +17,13 @@ impl BattleState {
     pub(super) fn base_power(
         &self,
         dex: &Dex,
-        kind: Option<BasePowerKind>,
-        declared: u32,
+        m: &ActiveMove<'_>,
         actor: Entity,
         target: Entity,
         hit: u32,
     ) -> u32 {
+        let kind = m.bp_callback;
+        let declared = u32::from(m.power);
         let Some(kind) = kind else {
             return declared;
         };
@@ -165,6 +166,22 @@ impl BattleState {
                 } else {
                     declared
                 }
+            }
+            // `moves:beatup.basePowerCallback`: `5 + floor(baseAtk / 10)` of
+            // the ally the current hit consumes. `move.allies` is captured by
+            // `onModifyMove`; the callback shifts one entry per hit, starting
+            // with the first (hit 1).
+            BasePowerKind::BeatUp => {
+                let Some(&roster) = m.allies.get(hit.saturating_sub(1) as usize) else {
+                    return 0;
+                };
+                let member = Entity {
+                    side: actor.side,
+                    roster,
+                };
+                let base_atk =
+                    u32::from(dex.species[self.mon(member).base_species as usize].base_stats[1]);
+                5 + base_atk / 10
             }
         }
     }

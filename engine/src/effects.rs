@@ -74,6 +74,10 @@ pub mod hook {
     /// `moves:strengthsap.onHit`: heal by the target's stage-boosted Attack
     /// (no ModifyStat modifiers) and drop the target's Attack one stage.
     pub const STRENGTH_SAP: u32 = 1 << 24;
+    /// `moves:beatup.onModifyMove`: the action's hit count is the number of
+    /// party members that are the user or are healthy and status-free, and
+    /// each hit's power comes from the next such member's set species.
+    pub const BEAT_UP: u32 = 1 << 25;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -931,6 +935,9 @@ pub enum BasePowerKind {
     StompingTantrum,
     PowerTrip,
     RisingVoltage,
+    /// `beatup`: `5 + floor(setSpecies.baseStats.atk / 10)` of the ally the
+    /// current hit consumes from the move's captured party list.
+    BeatUp,
 }
 
 impl BasePowerKind {
@@ -959,6 +966,7 @@ impl BasePowerKind {
                 Self::PowerTrip
             }
             "moves:risingvoltage.basePowerCallback" => Self::RisingVoltage,
+            "moves:beatup.basePowerCallback" => Self::BeatUp,
             _ => return None,
         })
     }
@@ -1054,6 +1062,12 @@ pub struct NativeEffects {
     pub metronome: Id,
     /// Volatile that disables and refuses sound moves for two turns.
     pub throat_chop: Id,
+    /// Disguise's species family, resolved once at load: the undisguised forms
+    /// absorb the first damaging move, the busted forms do not.
+    pub mimikyu: Id,
+    pub mimikyu_totem: Id,
+    pub mimikyu_busted: Id,
+    pub mimikyu_busted_totem: Id,
     /// `move:encore` volatile: locks the holder into its last move.
     pub encore: Id,
     /// `move:taunt` volatile: refuses Status moves.

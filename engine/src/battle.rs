@@ -504,8 +504,49 @@ impl BattleState {
                 self.reveal_ability(e)?;
                 self.cure_status(e)?;
             }
+            // Ability Update handlers run before item Update handlers.
+            self.disguise_update(dex, e)?;
             self.item_update(dex, e)?;
         }
+        Ok(())
+    }
+
+    /// `abilities:disguise.onUpdate`: a pending bust changes the holder to its
+    /// busted forme and then pays an eighth of its maximum HP as damage whose
+    /// effect is the new species. The forme change is cosmetic and permanent -
+    /// Mimikyu-Busted keeps the same stats, types and ability - so only the
+    /// species identity and the public events change.
+    fn disguise_update(&mut self, dex: &Dex, e: Entity) -> Result<()> {
+        if !self.mon(e).disguise_busted {
+            return Ok(());
+        }
+        self.mon_mut(e).disguise_busted = false;
+        let busted = if self.mon(e).species == dex.effects.mimikyu_totem {
+            dex.effects.mimikyu_busted_totem
+        } else {
+            dex.effects.mimikyu_busted
+        };
+        let types = dex.species[busted as usize].types.clone();
+        {
+            let mon = self.mon_mut(e);
+            mon.species = busted;
+            mon.base_species = busted;
+            mon.types = types.clone();
+        }
+        self.emit(
+            EventKind::Forme,
+            e,
+            None,
+            EffectRef::Species(busted),
+            0,
+            true,
+        )?;
+        for viewer in 0..2 {
+            let index = e.roster as usize + if e.side as usize == viewer { 0 } else { 6 };
+            self.knowledge[viewer].pokemon[index].types = types.clone();
+        }
+        let amount = u32::from(self.mon(e).stats[0]) / 8;
+        self.indirect_damage(dex, e, e, amount, EffectRef::Species(busted))?;
         Ok(())
     }
 
@@ -928,6 +969,7 @@ impl BattleState {
         mon.times_attacked = 0;
         mon.move_this_turn_result = crate::state::MoveResult::Undefined;
         mon.move_last_turn_result = crate::state::MoveResult::Undefined;
+        mon.disguise_busted = false;
         mon.ability = mon.base_ability;
         mon.species = mon.base_species;
         mon.types = dex.species[mon.species as usize].types.clone();
@@ -1965,13 +2007,14 @@ impl BattleState {
         let parental_bond = preparer == Ability::Parentalbond
             && m.category != Category::Status
             && m.multihit.is_none()
+            && m.allies.is_empty()
             && !m.no_parental_bond
             && m.charge.is_none()
             && !m.future_move
             && !spread
             && !m.is_z
             && !m.is_max;
-        if m.multihit.is_some() || parental_bond {
+        if m.multihit.is_some() || !m.allies.is_empty() || parental_bond {
             return self.use_multihit_move(dex, actor, move_id, m, targets, parental_bond);
         }
         // `selfdestruct: 'always'` faints the user before any target
@@ -2402,7 +2445,7 @@ impl BattleState {
             };
             // A callback base power of exactly zero means the reference returns
             // `undefined`: no damage is dealt and the damage stages are skipped.
-            let base_power = self.base_power(dex, m.bp_callback, u32::from(m.power), actor, target, 1);
+            let base_power = self.base_power(dex, m, actor, target, 1);
             if base_power == 0 {
                 continue;
             }
@@ -2508,6 +2551,33 @@ impl BattleState {
         // Emergency Exit check at the end of the action.
         let mut hit_before: SmallVec<[(Entity, u16); 4]> = SmallVec::new();
         for (target, damage) in damages {
+            // `abilities:disguise.onDamage` (onDamagePriority 1, so it runs
+            // before Sturdy, Focus Sash and Endure): the first damaging move
+            // against an undisguised Mimikyu is absorbed - the hit still lands
+            // and counts for `timesAttacked`, but no HP is lost - and the
+            // holder is marked for the forme change at the next Update.
+            if target != actor
+                && dex.effects.abilities[self.mon(target).ability as usize]
+                    == Ability::Disguise
+                && (self.mon(target).species == dex.effects.mimikyu
+                    || self.mon(target).species == dex.effects.mimikyu_totem)
+            {
+                self.reveal_ability(target)?;
+                self.mon_mut(target).disguise_busted = true;
+                hit_any = true;
+                let count = self.mon(target).times_attacked;
+                self.mon_mut(target).times_attacked = count.saturating_add(1);
+                hit_before.push((target, self.mon(target).hp));
+                self.emit(
+                    EventKind::Damage,
+                    target,
+                    Some(actor),
+                    EffectRef::Move(move_id),
+                    0,
+                    true,
+                )?;
+                continue;
+            }
             // `endure` clamps after item/berry damage modification and before
             // the damage is applied (reference `onDamage` priority -10).
             let damage = self.sturdy_clamp(dex, target, damage)?;
@@ -3076,6 +3146,33 @@ impl BattleState {
                         parental_bond_second_hit: parental_bond && hit == 2,
                     },
                 )?;
+                // `abilities:disguise.onDamage` inside the multi-hit loop: the
+                // first hit against an undisguised Mimikyu is absorbed, and the
+                // reference runs the Update *between* hits, so the remaining
+                // hits of the same move land on the busted forme (which keeps
+                // the same stats). The hit still counts for `timesAttacked` and
+                // the reported hit count.
+                if target != actor
+                    && dex.effects.abilities[self.mon(target).ability as usize]
+                        == Ability::Disguise
+                    && (self.mon(target).species == dex.effects.mimikyu
+                        || self.mon(target).species == dex.effects.mimikyu_totem)
+                {
+                    self.reveal_ability(target)?;
+                    self.mon_mut(target).disguise_busted = true;
+                    let count = self.mon(target).times_attacked;
+                    self.mon_mut(target).times_attacked = count.saturating_add(1);
+                    self.emit(
+                        EventKind::Damage,
+                        target,
+                        Some(actor),
+                        EffectRef::Move(move_id),
+                        0,
+                        true,
+                    )?;
+                    self.disguise_update(dex, target)?;
+                    continue;
+                }
                 sub_absorbed.retain(|t| *t != target);
                 if self.intercept_substitute(dex, actor, target, m, damage)? {
                     sub_absorbed.push(target);
@@ -3228,7 +3325,12 @@ impl BattleState {
     }
 
     /// Reference `battle.sample([...])`/`battle.random(a, b)` hit-count draws.
-    fn multihit_count(&mut self, m: &crate::assets::Move) -> u32 {
+    fn multihit_count(&mut self, m: &ActiveMove<'_>) -> u32 {
+        // `moves:beatup.onModifyMove`: a plain numeric `multihit` set by the
+        // callback, so the count is exact and consumes no draw.
+        if !m.allies.is_empty() {
+            return m.allies.len() as u32;
+        }
         match m.multihit {
             None | Some([0, 0]) => 1,
             Some([2, 5]) => {
@@ -3435,8 +3537,7 @@ impl BattleState {
             effectiveness,
             critical,
         };
-        let base_power =
-            self.base_power(dex, m.bp_callback, u32::from(m.power), actor, target, phase.hit);
+        let base_power = self.base_power(dex, m, actor, target, phase.hit);
         if base_power == 0 {
             return Ok(0);
         }

@@ -568,6 +568,9 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:substitute.condition.onEnd",
     // Strength Sap: the Attack-derived heal and the Attack drop.
     "moves:strengthsap.onHit",
+    // Beat Up: the captured party list and its per-hit base power formula.
+    "moves:beatup.onModifyMove",
+    "moves:beatup.basePowerCallback",
 ];
 
 /// Ported action-local callbacks, keyed by move id. Every entry must have its
@@ -654,6 +657,7 @@ fn move_hooks(id: &str) -> u32 {
         "poltergeist" => hook::POLTERGEIST,
         "strengthsap" => hook::STRENGTH_SAP,
         "doubleshock" => hook::DOUBLE_SHOCK,
+        "beatup" => hook::BEAT_UP,
         _ => 0,
     }
 }
@@ -1701,6 +1705,10 @@ impl Dex {
             substitute: lookup("conditions", "substitute")?,
             metronome: lookup("conditions", "metronome")?,
             throat_chop: lookup("conditions", "throatchop")?,
+            mimikyu: lookup("species", "mimikyu")?,
+            mimikyu_totem: lookup("species", "mimikyutotem")?,
+            mimikyu_busted: lookup("species", "mimikyubusted")?,
+            mimikyu_busted_totem: lookup("species", "mimikyubustedtotem")?,
             encore: lookup("conditions", "encore")?,
             taunt: lookup("conditions", "taunt")?,
             disable: lookup("conditions", "disable")?,

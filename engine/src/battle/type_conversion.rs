@@ -19,6 +19,11 @@ pub(super) struct ActiveMove<'a> {
     /// `abilities:scrappy.onModifyMove`: Normal and Fighting moves ignore the
     /// Ghost type immunity for this action.
     pub scrappy: bool,
+    /// `moves:beatup.onModifyMove`: the party members the action's hits consume
+    /// in order, as roster indices in reference `side.pokemon` order. The user
+    /// is always included; every other member only while alive and
+    /// status-free.
+    pub allies: SmallVec<[u8; 4]>,
 }
 impl Deref for ActiveMove<'_> {
     type Target = crate::assets::Move;
@@ -43,6 +48,7 @@ impl BattleState {
             type_changer_boosted: None,
             sheer_force: false,
             scrappy: false,
+            allies: SmallVec::new(),
         };
         // The move's own callbacks precede the actor's ModifyType event.
         if behavior == MoveBehavior::Struggle {
@@ -82,6 +88,18 @@ impl BattleState {
         // weather, which is the field's effective weather in every supported
         // state (no Cloud Nine/utility-umbrella override differs per target).
         let hooks = dex.effects.move_hooks[data.id as usize];
+        // `moves:beatup.onModifyMove`: capture `pokemon.side.pokemon.filter(
+        // ally => ally === pokemon || (!ally.fainted && !ally.status))`. The
+        // reference filters the live party array, so a member that has already
+        // fainted or carries a major status is skipped for this action.
+        if hooks & crate::effects::hook::BEAT_UP != 0 {
+            for &roster in &self.sides[actor.side as usize].positions {
+                let member = &self.sides[actor.side as usize].pokemon[roster as usize];
+                if roster == actor.roster || (!member.fainted && member.status == 0) {
+                    action.allies.push(roster);
+                }
+            }
+        }
         if hooks & crate::effects::hook::ACCURACY_SNOW != 0 && weather == dex.effects.snow {
             action.accuracy = None;
         }

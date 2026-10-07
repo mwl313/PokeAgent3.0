@@ -2057,7 +2057,6 @@ impl Ability {
             | Ability::Cudchew
             | Ability::Curiousmedicine
             | Ability::Cutecharm
-            | Ability::Disguise
             | Ability::Earlybird
             | Ability::Electromorphosis
             | Ability::Embodyaspectcornerstone
