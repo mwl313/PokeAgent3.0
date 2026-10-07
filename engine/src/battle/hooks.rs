@@ -277,7 +277,7 @@ impl BattleState {
 
     /// Location of `target` from `actor`'s perspective: negative for the
     /// actor's own side, positive for the foe side, 1-based by active slot.
-    fn location_of(&self, actor: Entity, target: Entity) -> Option<i8> {
+    pub(super) fn location_of(&self, actor: Entity, target: Entity) -> Option<i8> {
         let slot = self.mon(target).active_slot?;
         Some(if target.side == actor.side {
             -(slot as i8 + 1)

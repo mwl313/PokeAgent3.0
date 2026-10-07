@@ -628,6 +628,29 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:spitup.basePowerCallback",
     "moves:spitup.onTry",
     "moves:spitup.onAfterMove",
+    // Entry hazards: the four foeSide moves share one native behavior that
+    // starts or restarts their layer-based side condition. Spikes and Toxic
+    // Spikes cap at three and two layers; Stealth Rock and Sticky Web are
+    // single-layer conditions whose repeated use fails.
+    "moves:spikes.condition.onSideStart",
+    "moves:spikes.condition.onSideRestart",
+    "moves:spikes.condition.onSwitchIn",
+    "moves:stealthrock.condition.onSideStart",
+    "moves:stealthrock.condition.onSwitchIn",
+    "moves:stickyweb.condition.onSideStart",
+    "moves:stickyweb.condition.onSwitchIn",
+    "moves:toxicspikes.condition.onSideStart",
+    "moves:toxicspikes.condition.onSideRestart",
+    "moves:toxicspikes.condition.onSwitchIn",
+    // Defog clears the hazards of both sides, the target side's screens, the
+    // terrain and one evasion stage.
+    "moves:defog.onHit",
+    // On-hit hazard setters: the AfterHit event fires for landed hits and
+    // AfterSubDamage when a decoy absorbs the attack.
+    "moves:ceaselessedge.onAfterHit",
+    "moves:ceaselessedge.onAfterSubDamage",
+    "moves:stoneaxe.onAfterHit",
+    "moves:stoneaxe.onAfterSubDamage",
 ];
 
 /// Ported action-local callbacks, keyed by move id. Every entry must have its
@@ -720,6 +743,9 @@ fn move_hooks(id: &str) -> u32 {
         "beatup" => hook::BEAT_UP,
         "steelroller" => hook::STEEL_ROLLER,
         "spitup" => hook::SPIT_UP,
+        "ceaselessedge" => hook::CEASELESS_EDGE,
+        "stoneaxe" => hook::STONE_AXE,
+        "defog" => hook::DEFOG,
         _ => 0,
     }
 }
@@ -1792,6 +1818,9 @@ impl Dex {
             wide_guard: lookup("conditions", "wideguard")?,
             quick_guard: lookup("conditions", "quickguard")?,
             toxic_spikes: lookup("conditions", "toxicspikes")?,
+            spikes: lookup("conditions", "spikes")?,
+            stealth_rock: lookup("conditions", "stealthrock")?,
+            sticky_web: lookup("conditions", "stickyweb")?,
             helping_hand: lookup("conditions", "helpinghand")?,
             follow_me: lookup("conditions", "followme")?,
             rage_powder: lookup("conditions", "ragepowder")?,

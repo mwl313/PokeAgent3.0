@@ -86,6 +86,18 @@ pub mod hook {
     /// volatile and always removes it once the move has run, even when the
     /// hit is blocked or missed.
     pub const SPIT_UP: u32 = 1 << 27;
+    /// `moves:ceaselessedge.onAfterHit|onAfterSubDamage`: a landed or
+    /// decoy-absorbed hit scatters one Spikes layer onto the foe side unless
+    /// Sheer Force suppressed the action's secondary.
+    pub const CEASELESS_EDGE: u32 = 1 << 28;
+    /// `moves:stoneaxe.onAfterHit|onAfterSubDamage`: a landed or
+    /// decoy-absorbed hit sets Stealth Rock on the foe side unless Sheer Force
+    /// suppressed the action's secondary.
+    pub const STONE_AXE: u32 = 1 << 29;
+    /// `moves:defog.onHit`: clears the entry hazards on both sides, the
+    /// target side's screens, the active terrain, and drops the target's
+    /// evasion one stage unless a decoy blocks the drop.
+    pub const DEFOG: u32 = 1 << 30;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -820,6 +832,13 @@ pub enum MoveBehavior {
     /// `swallow`: heals a quarter, half or all of the user's maximum HP from
     /// the stockpile layer count and always consumes the volatile.
     Swallow,
+    /// `spikes` / `stealthrock` / `stickyweb` / `toxicspikes`: foeSide entry
+    /// hazards that start or restart a layer-based side condition which hurts
+    /// or slows the entrants of the side carrying it.
+    Hazard,
+    /// `defog`: clears the entry hazards on both sides, the target side's
+    /// screens, the active terrain and one stage of the target's evasion.
+    Defog,
 }
 
 /// Cold payload of a ported two-turn move. Every field is transcribed from
@@ -907,6 +926,13 @@ impl MoveBehavior {
             "wideguard" | "quickguard" => Self::Guard,
             "struggle" => Self::Struggle,
             "tailwind" | "reflect" | "lightscreen" | "auroraveil" => Self::SideCondition,
+            // FoeSide entry hazards share one behavior: they start or restart
+            // their layer-based side condition on the opposing side, and are
+            // reflectable through Magic Bounce's `onAllyTryHitSide`.
+            "spikes" | "stealthrock" | "stickyweb" | "toxicspikes" => Self::Hazard,
+            // `moves:defog.onHit`: clears hazards on both sides, the target
+            // side's screens, the terrain and one stage of target evasion.
+            "defog" => Self::Defog,
             "brickbreak" | "psychicfangs" => Self::ScreenBreak,
             "raindance" | "sunnyday" | "sandstorm" | "snowscape" => Self::Weather,
             "weatherball" => Self::WeatherBall,
@@ -1061,6 +1087,15 @@ pub struct NativeEffects {
     /// condition (no duration) that poisons or badly poisons grounded
     /// switch-ins and is absorbed by Poison types.
     pub toxic_spikes: Id,
+    /// `moves:spikes.condition`: a three-layer entry hazard that damages
+    /// grounded entrants for an eighth, sixth or quarter of their maximum HP.
+    pub spikes: Id,
+    /// `moves:stealthrock.condition`: a single-layer entry hazard that damages
+    /// entrants by their Rock effectiveness.
+    pub stealth_rock: Id,
+    /// `moves:stickyweb.condition`: a single-layer entry hazard that lowers
+    /// the Speed of grounded entrants one stage.
+    pub sticky_web: Id,
     /// Snow-only screen that halves both damage categories.
     pub aurora_veil: Id,
     /// Single-turn redirection / support volatiles.

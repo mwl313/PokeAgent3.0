@@ -1087,6 +1087,9 @@ impl BattleState {
                     dex.effects.wide_guard,
                     dex.effects.quick_guard,
                     dex.effects.toxic_spikes,
+                    dex.effects.spikes,
+                    dex.effects.stealth_rock,
+                    dex.effects.sticky_web,
                 ]
                 .contains(&id)
                 {
@@ -1104,6 +1107,27 @@ impl BattleState {
                         || effect.source.is_none()
                     {
                         return Err(EngineError::InvalidInput("snapshot hazard layers".into()));
+                    }
+                    continue;
+                }
+                if id == dex.effects.spikes {
+                    // Spikes mirrors its one-to-three layer count in the
+                    // duration slot for the fixture contract.
+                    if !matches!(effect.values.as_slice(), [1] | [2] | [3])
+                        || effect.duration != effect.values.first().map(|layers| *layers as u16)
+                        || effect.source.is_none()
+                    {
+                        return Err(EngineError::InvalidInput("snapshot hazard layers".into()));
+                    }
+                    continue;
+                }
+                if id == dex.effects.stealth_rock || id == dex.effects.sticky_web {
+                    // Single-layer hazards carry no payload and no duration.
+                    if !effect.values.is_empty()
+                        || effect.duration.is_some()
+                        || effect.source.is_none()
+                    {
+                        return Err(EngineError::InvalidInput("snapshot hazard payload".into()));
                     }
                     continue;
                 }

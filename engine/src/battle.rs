@@ -8,7 +8,7 @@ use crate::{
     assets::{Category, Dex, Id, Target},
     damage::{self, DamageInput},
     effects::{Ability, Entity, Item, MoveBehavior, QueuedAction, QueuedKind},
-    knowledge::{EffectRef, EventKind, HealthDisplay, SemanticEvent, public_health},
+    knowledge::{EffectRef, EventKind, HealthDisplay, Known, SemanticEvent, public_health},
     queue::{Priority, speed_sort},
     state::{
         BattleState, EffectState, EndReason, FaintData, MoveResult, NativeTrace, Outcome,
@@ -790,9 +790,19 @@ impl BattleState {
         source: Entity,
         id: Id,
     ) -> Result<bool> {
-        debug_assert_eq!(id, dex.effects.toxic_spikes);
+        // Spikes and Toxic Spikes are layer-based and restart up to their
+        // reference caps; Stealth Rock and Sticky Web are single-layer
+        // conditions whose repeated use fails (`onSideRestart` is absent).
+        let layered = id == dex.effects.spikes || id == dex.effects.toxic_spikes;
+        let cap = if id == dex.effects.spikes {
+            3
+        } else if id == dex.effects.toxic_spikes {
+            2
+        } else {
+            1
+        };
         // The public event names the *side* that now carries the hazard, not
-        // the Toxic Debris holder (which stays the recorded source).
+        // the effect's source (which stays the recorded origin).
         let subject = self.sides[side]
             .active
             .iter()
@@ -808,12 +818,12 @@ impl BattleState {
             });
         if let Some(state) = self.sides[side].conditions.get_mut(&id) {
             let layers = state.values.first().copied().unwrap_or(1);
-            if layers >= 2 {
+            if layers >= cap {
                 return Ok(false);
             }
             state.values[0] = layers + 1;
             let layers = state.values[0];
-            state.duration = Some(layers as u16);
+            state.duration = layered.then_some(layers as u16);
             self.emit(
                 EventKind::SideEffectStart,
                 subject,
@@ -829,11 +839,12 @@ impl BattleState {
             id,
             EffectState {
                 id,
-                // The layer count is stored in the duration slot so the
+                // A layer count is stored in the duration slot so the
                 // entry-hazard fixture contract (id, layers) matches every
-                // other side condition; `residual` skips this id entirely.
-                duration: Some(1),
-                values: vec![1],
+                // other side condition; `residual` skips these ids entirely.
+                // Single-layer hazards stay duration-less like the reference.
+                duration: layered.then_some(1),
+                values: if layered { vec![1] } else { Vec::new() },
                 effect_order: order,
                 effect_order_assigned: true,
                 source: Some((
@@ -851,9 +862,26 @@ impl BattleState {
             subject,
             None,
             EffectRef::Condition(id),
-            1,
+            // Single-layer hazards carry no timer: the start event reports a
+            // zero duration so the knowledge layer records the known 0 the
+            // fixture contract expects.
+            i32::from(layered),
             false,
         )?;
+        if !layered {
+            // The public event cannot distinguish a masked zero from a real
+            // one, so the side carrying a duration-less hazard records its
+            // own known zero directly; opponents keep the masked unknown.
+            for viewer in 0..self.knowledge.len() {
+                if viewer != side {
+                    continue;
+                }
+                let relative = usize::from(viewer != side);
+                if let Some(effect) = self.knowledge[viewer].sides[relative].get_mut(&id) {
+                    effect.duration = Known::new(0);
+                }
+            }
+        }
         Ok(true)
     }
 
@@ -863,14 +891,94 @@ impl BattleState {
     /// the opposing side's first active Pokémon.
     fn hazard_switch_in(&mut self, dex: &Dex, e: Entity) -> Result<()> {
         let side = e.side as usize;
-        let mut hazards: SmallVec<[(u32, Id); 2]> = self.sides[side]
+        let mut hazards: SmallVec<[(u32, Id); 4]> = self.sides[side]
             .conditions
             .iter()
-            .filter(|(id, _)| **id == dex.effects.toxic_spikes)
+            .filter(|(id, _)| {
+                **id == dex.effects.spikes
+                    || **id == dex.effects.stealth_rock
+                    || **id == dex.effects.sticky_web
+                    || **id == dex.effects.toxic_spikes
+            })
             .map(|(id, state)| (state.effect_order, *id))
             .collect();
+        // All entry hazards tie in priority and sub-order, so the reference
+        // fires them in creation order.
         hazards.sort_by_key(|(order, _)| *order);
         for (_, id) in hazards {
+            if id == dex.effects.spikes {
+                // `moves:spikes.condition.onSwitchIn`: grounded entrants take
+                // an eighth, sixth or quarter of their maximum HP.
+                if !self.grounded(dex, e) {
+                    continue;
+                }
+                let layers = self.sides[side].conditions[&id]
+                    .values
+                    .first()
+                    .copied()
+                    .unwrap_or(1)
+                    .clamp(0, 3) as usize;
+                let fractions = [0u64, 3, 4, 6];
+                let amount = (u64::from(self.mon(e).stats[0]) * fractions[layers] / 24) as u32;
+                self.indirect_damage(dex, e, e, amount, EffectRef::Condition(id))?;
+                continue;
+            }
+            if id == dex.effects.stealth_rock {
+                // `moves:stealthrock.condition.onSwitchIn`: the damage follows
+                // the Rock effectiveness exponent, so a 4x weakness doubles
+                // to half the maximum HP and each resistance halves it.
+                let type_mod = self
+                    .effective_types(dex, e)
+                    .iter()
+                    .try_fold(0i32, |total, &kind| {
+                        let value = dex.type_chart[dex.effects.rock as usize][kind as usize];
+                        if value == -127 {
+                            None
+                        } else {
+                            Some(total + i32::from(value))
+                        }
+                    })
+                    .unwrap_or(0)
+                    .clamp(-6, 6);
+                let max_hp = u64::from(self.mon(e).stats[0]);
+                let scaled = if type_mod >= 0 {
+                    max_hp << type_mod
+                } else {
+                    max_hp >> -type_mod
+                };
+                let amount = (scaled / 8) as u32;
+                self.indirect_damage(dex, e, e, amount, EffectRef::Condition(id))?;
+                continue;
+            }
+            if id == dex.effects.sticky_web {
+                // `moves:stickyweb.condition.onSwitchIn`: a grounded entrant
+                // loses one Speed stage, sourced by the opposing side's first
+                // active Pokémon.
+                if !self.grounded(dex, e) {
+                    continue;
+                }
+                let foe = 1 - side;
+                let Some(source) = self.sides[foe]
+                    .active
+                    .iter()
+                    .flatten()
+                    .map(|roster| Entity {
+                        side: foe as u8,
+                        roster: *roster,
+                    })
+                    .next()
+                else {
+                    continue;
+                };
+                self.boost(
+                    dex,
+                    e,
+                    source,
+                    [0, 0, 0, 0, -1, 0, 0],
+                    BoostCause::Move { secondary: false },
+                )?;
+                continue;
+            }
             if !self.grounded(dex, e) {
                 continue;
             }
@@ -921,6 +1029,104 @@ impl BattleState {
             self.hit_effect(dex, e, source, &effect, false)?;
         }
         Ok(())
+    }
+
+    /// `moves:defog.onHit`: drop the target's evasion unless a decoy blocks
+    /// it, remove the target side's screens, announce and remove the entry
+    /// hazards of both sides, and clear the active terrain. Returns whether
+    /// anything actually changed; an all-refused Defog fails like the
+    /// reference.
+    fn defog_hit(&mut self, dex: &Dex, actor: Entity, target: Entity) -> Result<bool> {
+        let mut success = false;
+        // Reference `if (!target.volatiles['substitute'] || move.infiltrates)`:
+        // the Infiltrator ability is an explicit operational error elsewhere,
+        // so only the decoy presence matters here.
+        if !self.mon(target).volatiles.contains_key(&dex.effects.substitute) {
+            success = self.boost(
+                dex,
+                target,
+                actor,
+                [0, 0, 0, 0, 0, 0, -1],
+                BoostCause::Move { secondary: false },
+            )?;
+        }
+        let hazards = [
+            dex.effects.spikes,
+            dex.effects.toxic_spikes,
+            dex.effects.stealth_rock,
+            dex.effects.sticky_web,
+        ];
+        // Reference `removeTarget`: the target side's screens vanish without
+        // an announcement (and without marking success), then its hazards are
+        // announced one by one.
+        let target_side = target.side as usize;
+        for id in [
+            dex.effects.reflect,
+            dex.effects.light_screen,
+            dex.effects.aurora_veil,
+            dex.effects.spikes,
+            dex.effects.toxic_spikes,
+            dex.effects.stealth_rock,
+            dex.effects.sticky_web,
+        ] {
+            if self.sides[target_side].conditions.remove(&id).is_some() {
+                if hazards.contains(&id) {
+                    let subject = self.side_subject(target_side);
+                    self.emit(
+                        EventKind::SideEffectEnd,
+                        subject,
+                        Some(actor),
+                        EffectRef::Condition(id),
+                        0,
+                        false,
+                    )?;
+                    success = true;
+                } else {
+                    // The reference removes the target side's screens without
+                    // an announcement; drop them from every viewer's
+                    // knowledge directly so the public model stays exact.
+                    for viewer in 0..self.knowledge.len() {
+                        let relative = usize::from(viewer != target_side);
+                        self.knowledge[viewer].sides[relative].remove(&id);
+                    }
+                }
+            }
+        }
+        // Reference `removeAll` on the source side: only the entry hazards.
+        let source_side = actor.side as usize;
+        for id in hazards {
+            if self.sides[source_side].conditions.remove(&id).is_some() {
+                let subject = self.side_subject(source_side);
+                self.emit(
+                    EventKind::SideEffectEnd,
+                    subject,
+                    Some(actor),
+                    EffectRef::Condition(id),
+                    0,
+                    false,
+                )?;
+                success = true;
+            }
+        }
+        self.clear_terrain(dex, actor)?;
+        Ok(success)
+    }
+
+    /// Representative entity of a side used to address side-target events.
+    fn side_subject(&self, side: usize) -> Entity {
+        self.sides[side]
+            .active
+            .iter()
+            .flatten()
+            .next()
+            .map(|roster| Entity {
+                side: side as u8,
+                roster: *roster,
+            })
+            .unwrap_or(Entity {
+                side: side as u8,
+                roster: 0,
+            })
     }
 
     fn mega_form(&self, dex: &Dex, e: Entity) -> Option<Id> {
@@ -2000,6 +2206,73 @@ impl BattleState {
             self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
             return Ok(());
         }
+        if behavior == MoveBehavior::Hazard {
+            // Reference `useMoveInner` for a foeSide move: the side-target
+            // `TryHitSide` event runs before the condition lands, so a Magic
+            // Bounce holder on the targeted side reflects the hazard back at
+            // its user through `onAllyTryHitSide`. The reflected use runs as a
+            // nested foeSide use from the holder, which lands the hazard on
+            // the original user's side.
+            let target_side = 1 - actor.side as usize;
+            if m.reflectable && !m.has_bounced {
+                let mut holders: SmallVec<[(Entity, i32); 2]> = self.sides[target_side]
+                    .active
+                    .iter()
+                    .flatten()
+                    .map(|roster| Entity {
+                        side: target_side as u8,
+                        roster: *roster,
+                    })
+                    .filter(|e| {
+                        self.mon(*e).hp > 0
+                            && dex.effects.abilities[self.mon(*e).ability as usize]
+                                == Ability::Magicbounce
+                            && !self.suppressing_ability(dex, actor, *e, m)
+                    })
+                    .map(|e| (e, i32::from(self.mon(e).stats[5])))
+                    .collect();
+                // `findEventHandlers` sorts the side handlers by the holder's
+                // raw Speed (ties keep slot order), and every qualifying
+                // holder reflects the move.
+                holders.sort_by(|a, b| b.1.cmp(&a.1));
+                let bounced = !holders.is_empty();
+                for &(bouncer, _) in &holders {
+                    let Some(loc) = self.location_of(bouncer, actor) else {
+                        continue;
+                    };
+                    self.reveal_ability(bouncer)?;
+                    self.use_move_inner(
+                        dex,
+                        bouncer,
+                        crate::actions::NO_SLOT,
+                        m.id,
+                        loc,
+                        crate::battle::MoveUse {
+                            called: true,
+                            bounced: true,
+                            priority: m.priority,
+                            caller_slot: crate::actions::NO_SLOT,
+                            explicit_target: true,
+                        },
+                    )?;
+                }
+                if bounced {
+                    // The outer move did nothing on the targeted side; the
+                    // reference returns from `hitStepTryHitSide` without a
+                    // failure message once a Null result reflected it.
+                    self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                    return Ok(());
+                }
+            }
+            let added =
+                self.add_side_hazard(dex, target_side, actor, m.side_condition)?;
+            self.mon_mut(actor).move_this_turn_result = if added {
+                MoveResult::Success
+            } else {
+                MoveResult::Failed
+            };
+            return Ok(());
+        }
         if behavior == MoveBehavior::SideCondition {
             // Side-target moves use tryMoveHit, bypassing the Pokémon hit loop
             // and its two Update events. The queue runs the post-action Update.
@@ -3072,6 +3345,10 @@ impl BattleState {
                 // the exchange result, so the empty generic payload must not
                 // mark a refused swap as "did anything".
                 did_anything |= self.skill_swap(dex, actor, target)?;
+            } else if behavior == MoveBehavior::Defog {
+                // `moves:defog.onHit`: the evasion drop and the side cleanups
+                // decide the move's success together.
+                did_anything |= self.defog_hit(dex, actor, target)?;
             } else if m.force_switch {
                 // Reference `runMoveEffects`: a force-switch move's only
                 // contribution to `didAnything` is
@@ -3326,6 +3603,23 @@ impl BattleState {
         // before that event (Rough Skin-style recoil can drop it under half).
         let user_hp_before_damaging_hit = self.mon(actor).hp;
         self.damaging_hit(dex, actor, &effect_targets, m)?;
+        // `moves:ceaselessedge.onAfterHit` / `moves:stoneaxe.onAfterHit`: an
+        // alive user scatters its hazard for every damaged target unless Sheer
+        // Force consumed the action's secondary (`!move.hasSheerForce`).
+        if !m.sheer_force && self.mon(actor).hp > 0 {
+            let hazard = if m.hooks & crate::effects::hook::CEASELESS_EDGE != 0 {
+                Some(dex.effects.spikes)
+            } else if m.hooks & crate::effects::hook::STONE_AXE != 0 {
+                Some(dex.effects.stealth_rock)
+            } else {
+                None
+            };
+            if let Some(id) = hazard {
+                for _ in &effect_targets {
+                    self.add_side_hazard(dex, 1 - actor.side as usize, actor, id)?;
+                }
+            }
+        }
         if !hit_targets.is_empty() {
             self.emergency_exit_check(dex, actor, user_hp_before_damaging_hit)?;
         }
@@ -4856,6 +5150,26 @@ impl BattleState {
         if m.hooks & crate::effects::hook::STEEL_ROLLER != 0 {
             self.clear_terrain(dex, source)?;
         }
+        // `moves:ceaselessedge.onAfterSubDamage` / `stoneaxe.onAfterSubDamage`:
+        // a decoy hit still scatters the hazard while the user is alive and
+        // Sheer Force did not consume the secondary.
+        // The asset-level `Move` cannot see the action's Sheer Force marker,
+        // so recompute the same condition `onModifyMove` used: a secondary-
+        // carrying move used by a Sheer Force holder.
+        let sheer_force = !m.secondaries.is_empty()
+            && dex.effects.abilities[self.mon(source).ability as usize] == Ability::Sheerforce;
+        if !sheer_force && self.mon(source).hp > 0 {
+            let hazard = if m.hooks & crate::effects::hook::CEASELESS_EDGE != 0 {
+                Some(dex.effects.spikes)
+            } else if m.hooks & crate::effects::hook::STONE_AXE != 0 {
+                Some(dex.effects.stealth_rock)
+            } else {
+                None
+            };
+            if let Some(id) = hazard {
+                self.add_side_hazard(dex, 1 - source.side as usize, source, id)?;
+            }
+        }
         Ok(true)
     }
 
@@ -5896,7 +6210,11 @@ impl BattleState {
                     (26, 5)
                 } else if id == dex.effects.aurora_veil {
                     (26, 10)
-                } else if id == dex.effects.toxic_spikes {
+                } else if id == dex.effects.toxic_spikes
+                    || id == dex.effects.spikes
+                    || id == dex.effects.stealth_rock
+                    || id == dex.effects.sticky_web
+                {
                     // Entry hazards carry no residual handler at all: their
                     // `duration` field stores the layer count for the fixture
                     // contract, so they must never join the timed sweep.
