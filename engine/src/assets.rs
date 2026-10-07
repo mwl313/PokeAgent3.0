@@ -465,6 +465,9 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:trick.onHit",
     "moves:switcheroo.onTryImmunity",
     "moves:switcheroo.onHit",
+    // Ability exchange: the fail gates, End/Start ordering and announcement
+    // are native (`Battle#skillSwap`).
+    "moves:skillswap.onHit",
     // Dire Claw's Champions secondary samples one of three major statuses and
     // applies it with `trySetStatus`; the 30% chance stays declarative.
     "moves:direclaw.secondary.onHit",
@@ -1721,12 +1724,21 @@ impl Dex {
                 no_suppress_abilities[row["numeric_id"].as_u64().unwrap() as usize] = true;
             }
         }
+        // `flags.failskillswap`: Skill Swap refuses when either side's ability
+        // carries the flag.
+        let mut no_skill_swap_abilities = vec![false; names["abilities"].len()];
+        for row in tables["abilities"].as_array().unwrap() {
+            if row["data"]["flags"]["failskillswap"] == 1 {
+                no_skill_swap_abilities[row["numeric_id"].as_u64().unwrap() as usize] = true;
+            }
+        }
         let effects = crate::effects::NativeEffects {
             abilities: native_abilities,
             items: native_items,
             no_trace_abilities,
             breakable_abilities,
             no_suppress_abilities,
+            no_skill_swap_abilities,
             choice_lock: lookup("conditions", "choicelock")?,
             disable_move_conditions: disable_move_handler_ids(
                 &tables["conditions"],

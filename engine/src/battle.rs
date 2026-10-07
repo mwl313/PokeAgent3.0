@@ -3021,6 +3021,11 @@ impl BattleState {
                 // payload must not mark a refused swap as "did anything", or
                 // the failed move would run the reference's post-move phases.
                 did_anything |= self.trick_swap(dex, actor, target)?;
+            } else if behavior == MoveBehavior::SkillSwap {
+                // `moves:skillswap.onHit`: the whole move succeeds or fails on
+                // the exchange result, so the empty generic payload must not
+                // mark a refused swap as "did anything".
+                did_anything |= self.skill_swap(dex, actor, target)?;
             } else if m.force_switch {
                 // Reference `runMoveEffects`: a force-switch move's only
                 // contribution to `didAnything` is
@@ -3833,6 +3838,39 @@ impl BattleState {
     /// Reference `moves:trick.onHit` / `switcheroo.onHit`: both items are taken
     /// and swapped only when neither take is refused and at least one item
     /// exists; otherwise both items are restored and the move fails.
+    /// Reference `Battle#skillSwap`: fail-gate both sides, announce, run the
+    /// outgoing abilities' End callbacks (source then target), exchange the
+    /// ability ids with fresh effect orders, then run the incoming abilities'
+    /// Start callbacks in the reference order (the source's old ability starts
+    /// on the target first, the target's old ability on the source second).
+    fn skill_swap(&mut self, dex: &Dex, actor: Entity, target: Entity) -> Result<bool> {
+        if self.mon(actor).fainted || self.mon(target).fainted {
+            return Ok(false);
+        }
+        let source_ability = self.mon(actor).ability;
+        let target_ability = self.mon(target).ability;
+        if dex.effects.no_skill_swap_abilities[source_ability as usize]
+            || dex.effects.no_skill_swap_abilities[target_ability as usize]
+        {
+            return Ok(false);
+        }
+        // The reference logs the exchanged ability names for a foe use; both
+        // become public knowledge either way.
+        self.reveal_ability(actor)?;
+        self.reveal_ability(target)?;
+        self.ability_end(dex, actor)?;
+        self.ability_end(dex, target)?;
+        let order = self.allocate_effect_order()?;
+        self.mon_mut(actor).ability = target_ability;
+        self.mon_mut(actor).ability_effect_order = Some(order);
+        let order = self.allocate_effect_order()?;
+        self.mon_mut(target).ability = source_ability;
+        self.mon_mut(target).ability_effect_order = Some(order);
+        self.ability_start(dex, target)?;
+        self.ability_start(dex, actor)?;
+        Ok(true)
+    }
+
     fn trick_swap(&mut self, dex: &Dex, actor: Entity, target: Entity) -> Result<bool> {
         use crate::battle::hooks::TakeOutcome;
         let yours = self.take_item_checked(dex, target)?;

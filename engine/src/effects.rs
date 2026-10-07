@@ -806,6 +806,9 @@ pub enum MoveBehavior {
     /// partner, gated by the `allyswitch` condition's escalating success
     /// roll on consecutive uses.
     AllySwitch,
+    /// `skillswap`: exchange both Pokémon's abilities through the reference
+    /// `Battle#skillSwap` helper (End, direct assignment, Start).
+    SkillSwap,
 }
 
 /// Cold payload of a ported two-turn move. Every field is transcribed from
@@ -910,6 +913,7 @@ impl MoveBehavior {
             "followme" => Self::FollowMe,
             "ragepowder" => Self::RagePowder,
             "allyswitch" => Self::AllySwitch,
+            "skillswap" => Self::SkillSwap,
             _ => Self::Unimplemented,
         }
     }
@@ -1002,6 +1006,9 @@ pub struct NativeEffects {
     /// `flags.cantsuppress`: abilities that Mummy / Wandering Spirit / Skill
     /// Swap may not overwrite or exchange.
     pub no_suppress_abilities: Vec<bool>,
+    /// `flags.failskillswap`: abilities that refuse the Skill Swap exchange
+    /// on either side.
+    pub no_skill_swap_abilities: Vec<bool>,
     pub moves: Vec<MoveBehavior>,
     pub items: Vec<Item>,
     /// Pinned `flags.notrace` abilities: Trace never copies them (Trace itself
