@@ -155,6 +155,26 @@ impl BattleState {
                     declared
                 }
             }
+            BasePowerKind::TemperFlare => {
+                // `moves:temperflare.basePowerCallback`: identical test to
+                // Stomping Tantrum's previous-move-failure read.
+                if self.mon(actor).move_last_turn_result == crate::state::MoveResult::Failed {
+                    declared * 2
+                } else {
+                    declared
+                }
+            }
+            BasePowerKind::Assurance => {
+                // `moves:assurance.basePowerCallback`: `target.hurtThisTurn`
+                // is the target's post-damage HP from any earlier damage this
+                // turn; it is falsy when no damage landed or the target
+                // fainted (HP 0) before this check.
+                if self.mon(target).hurt_this_turn {
+                    declared * 2
+                } else {
+                    declared
+                }
+            }
             BasePowerKind::PowerTrip => {
                 let boosts: u32 = self.mon(actor).boosts.iter().map(|b| (*b).max(0) as u32).sum();
                 declared + 20 * boosts

@@ -494,6 +494,28 @@ impl BattleState {
         dex.moves[action.move_id as usize].category != Category::Status
     }
 
+    /// Reference Upper Hand `onTry`: the selected target must still have a
+    /// queued move action whose effective priority is above 0.1 (the queued
+    /// priority is scaled by 10,000, so 0.1 is 1,000) and whose category is
+    /// not Status. The 100% flinch secondary runs on a landed hit.
+    fn upper_hand_target_attacks(&self, dex: &Dex, target: Option<Entity>) -> bool {
+        let Some(target) = target else {
+            return false;
+        };
+        if self.mon(target).fainted || self.mon(target).hp == 0 {
+            return false;
+        }
+        let Some(action) = self
+            .queue
+            .iter()
+            .find(|q| q.kind == QueuedKind::Move && q.actor == Some(target))
+        else {
+            return false;
+        };
+        action.priority.priority > 1_000
+            && dex.moves[action.move_id as usize].category != Category::Status
+    }
+
     fn each_update(&mut self, dex: &Dex) -> Result<()> {
         let mut active: SmallVec<[(Entity, Priority); 4]> = self
             .active_entities(false)
@@ -652,6 +674,10 @@ impl BattleState {
             self.clear_volatile(dex, old);
             // Reference `clearVolatile` also drops the pending switch flags of
             // the Pokémon leaving the field.
+            // Reference `switchIn` additionally resets the outgoing Pokémon's
+            // per-turn stat-change flags (battle-actions runSwitch).
+            self.mon_mut(old).stats_raised_this_turn = false;
+            self.mon_mut(old).stats_lowered_this_turn = false;
             self.mon_mut(old).switch_flag = None;
             self.mon_mut(old).plain_switch_flag = false;
             self.mon_mut(old).force_switch_flag = false;
@@ -990,6 +1016,9 @@ impl BattleState {
         mon.times_attacked = 0;
         mon.move_this_turn_result = crate::state::MoveResult::Undefined;
         mon.move_last_turn_result = crate::state::MoveResult::Undefined;
+        // Reference `clearVolatile` clears `hurtThisTurn` (the stat-change
+        // flags are reset by the switch path and the turn rollover instead).
+        mon.hurt_this_turn = false;
         mon.disguise_busted = false;
         mon.ability = mon.base_ability;
         mon.species = mon.base_species;
@@ -1410,6 +1439,11 @@ impl BattleState {
             self.mon_mut(actor).move_this_turn_result = result;
             return Ok(());
         }
+        // Reference `useMoveInner` adds an ephemeral volatile named by the
+        // move id before a forced `cantusetwice` repeat and removes it after
+        // the action, purely to emit a hint. The native event model has no
+        // hint channel and the marker never survives an action boundary, so
+        // only the request-level disable (end_turn) is modelled.
         // Reference `useMoveInner` skips PP deduction while the Pokémon is
         // locked (`getLockedMove()`), i.e. on the release turn of a charge and
         // on the forced Recharge turn.
@@ -1567,6 +1601,15 @@ impl BattleState {
                 return Ok(());
             }
         }
+        // `moves:upperhand.onTry`: the same queued-action read as Sucker
+        // Punch, plus the effective-priority and category gates.
+        if hooks & crate::effects::hook::UPPER_HAND != 0 {
+            let target = redirected.or(selected);
+            if !self.upper_hand_target_attacks(dex, target) {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                return Ok(());
+            }
+        }
         // `moves:teleport.onTry`: Teleport fails before any hit step when the
         // user has no switchable reserve. The plain `selfSwitch` moves instead
         // nullify their own result after a failed pivot attempt.
@@ -1593,6 +1636,12 @@ impl BattleState {
                 self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
                 return Ok(());
             }
+        }
+        // `moves:steelroller.onTry`: the move fails outright while no terrain
+        // is active, before protection, immunity and accuracy.
+        if hooks & crate::effects::hook::STEEL_ROLLER != 0 && self.terrain_id(dex) == 0 {
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+            return Ok(());
         }
         // `items:metronome.condition.onTryMove` (priority -2, the last TryMove
         // handler): a lost item removes the counter volatile here; otherwise
@@ -2619,6 +2668,11 @@ impl BattleState {
             total_damage += u32::from(actual);
             hit_any = true;
             self.mon_mut(target).hp -= actual;
+            // `Battle#spreadDamage` sets `hurtThisTurn` to the post-damage HP:
+            // a landed hit marks the target for Assurance unless it fainted.
+            if actual != 0 && self.mon(target).hp > 0 {
+                self.mon_mut(target).hurt_this_turn = true;
+            }
             // Reference `hitStepMoveHitLoop`: a landed hit increments the
             // target's `timesAttacked`, even when it dealt zero damage.
             if target != actor {
@@ -2655,6 +2709,12 @@ impl BattleState {
         // A status move the decoy ate still counts as having done something
         // (`HIT_SUBSTITUTE` is truthy in `runMoveEffects`), so the action is a
         // success rather than a failure.
+        // `moves:steelroller.onHit` (runMoveEffects step 3): the terrain is
+        // cleared after the hit lands and before self drops and secondaries.
+        // A hit absorbed by Disguise still connected, so it clears as well.
+        if hooks & crate::effects::hook::STEEL_ROLLER != 0 && hit_any {
+            self.clear_terrain(dex)?;
+        }
         let mut did_anything =
             m.category != Category::Status || !sub_absorbed.is_empty();
         for &target in &effect_targets {
@@ -2978,7 +3038,12 @@ impl BattleState {
                 let recoil =
                     stats::round_fraction(u32::from(self.mon(actor).stats[0]), [1, 4]).max(1);
                 let hp_before = self.mon(actor).hp;
+                // Reference `strugglerecoil` is `directDamage`, which bypasses
+                // the `spreadDamage` funnel and therefore never marks
+                // `hurtThisTurn`; restore the pre-call value.
+                let hurt_before = self.mon(actor).hurt_this_turn;
                 self.indirect_damage(dex, actor, actor, recoil, EffectRef::Move(move_id))?;
+                self.mon_mut(actor).hurt_this_turn = hurt_before;
                 self.emergency_exit_check(dex, actor, hp_before)?;
             } else if let Some(fraction) = m.recoil
                 && dex.effects.abilities[self.mon(actor).ability as usize] != Ability::RockHead
@@ -3241,6 +3306,10 @@ impl BattleState {
                 let actual = damage.min(self.mon(target).hp);
                 total_damage += u32::from(actual);
                 self.mon_mut(target).hp -= actual;
+                // `Battle#spreadDamage` marks the target for Assurance.
+                if actual != 0 && self.mon(target).hp > 0 {
+                    self.mon_mut(target).hurt_this_turn = true;
+                }
                 if target != actor {
                     let count = self.mon(target).times_attacked;
                     self.mon_mut(target).times_attacked = count.saturating_add(1);
@@ -3847,6 +3916,11 @@ impl BattleState {
             return Ok(());
         }
         self.mon_mut(e).hp -= actual as u16;
+        // Confusion self-damage runs through `Battle#damage` in the reference,
+        // so it marks the holder's `hurtThisTurn` as well.
+        if self.mon(e).hp > 0 {
+            self.mon_mut(e).hurt_this_turn = true;
+        }
         if self.mon(e).hp == 0 {
             self.faint_queue.push(FaintData {
                 target: e,
@@ -4164,6 +4238,11 @@ impl BattleState {
             // `-activate ... [damage]` is a message-only announcement; no
             // knowledge field changes while the decoy survives.
             effect.values[0] -= dealt;
+        }
+        // `moves:steelroller.onAfterSubDamage`: the terrain clears once the
+        // decoy has taken the hit, before recoil.
+        if dex.effects.move_hooks[m.id as usize] & crate::effects::hook::STEEL_ROLLER != 0 {
+            self.clear_terrain(dex)?;
         }
         if dealt > 0
             && let Some(fraction) = m.recoil
@@ -5268,6 +5347,10 @@ impl BattleState {
                     continue;
                 }
                 self.mon_mut(e).hp -= actual;
+                // `Battle#damage` funnel: residual damage marks `hurtThisTurn`.
+                if self.mon(e).hp > 0 {
+                    self.mon_mut(e).hurt_this_turn = true;
+                }
                 if self.mon(e).hp == 0 {
                     self.faint_queue.push(FaintData {
                         target: e,
@@ -5503,6 +5586,11 @@ impl BattleState {
                 }
                 let actual = damage.min(self.mon(e).hp);
                 self.mon_mut(e).hp -= actual;
+                // Status residuals damage through `Battle#damage`, which
+                // records `hurtThisTurn` like any other damage event.
+                if self.mon(e).hp > 0 {
+                    self.mon_mut(e).hurt_this_turn = true;
+                }
                 if self.mon(e).hp == 0 {
                     let source = self.mon(e).status_state.source.map(|(side, roster)| Entity {
                         side: side.index() as u8,
@@ -6019,6 +6107,13 @@ impl BattleState {
                 // becomes `moveLastTurnResult` for the new decision boundary.
                 mon.move_last_turn_result = mon.move_this_turn_result;
                 mon.move_this_turn_result = crate::state::MoveResult::Undefined;
+                // Reference rollover (skipped on turn 1): the per-turn damage
+                // and stat-change flags reset for every active Pokémon.
+                if self.turn > 1 {
+                    mon.hurt_this_turn = false;
+                    mon.stats_raised_this_turn = false;
+                    mon.stats_lowered_this_turn = false;
+                }
                 // Reference `choicelock.onDisableMove`: the lock is dropped
                 // lazily when the holder no longer has a Choice item (Knock
                 // Off, Trick, …) or no longer knows the locked move.
@@ -6090,6 +6185,12 @@ impl BattleState {
                         disabled = true;
                     }
                     if tormented && last_move != 0 && mv.id == last_move {
+                        disabled = true;
+                    }
+                    // Reference `cantusetwice` pass: after every DisableMove
+                    // handler, a flagged move is unselectable while the
+                    // holder's recorded last move is that same move.
+                    if dex.moves[mv.id as usize].cant_use_twice && mv.id == last_move {
                         disabled = true;
                     }
                     let hidden = imprisoned_moves.contains(&mv.id);

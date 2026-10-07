@@ -483,6 +483,11 @@ impl BattleState {
         }
         let actual = amount.min(u32::from(self.mon(target).hp)) as u16;
         self.mon_mut(target).hp -= actual;
+        // Reference `Battle#spreadDamage` funnel: a target that actually lost
+        // HP and is still alive records `hurtThisTurn` for Assurance.
+        if self.mon(target).hp > 0 {
+            self.mon_mut(target).hurt_this_turn = true;
+        }
         if self.mon(target).hp == 0 {
             self.faint_queue.push(crate::state::FaintData {
                 target,
@@ -780,6 +785,11 @@ impl BattleState {
             false,
         )?;
         self.mon_mut(target).hp -= actual;
+        // Same `hurtThisTurn` marker as the general damage funnel; item and
+        // ability recoil all run through the reference `Battle#damage` path.
+        if self.mon(target).hp > 0 {
+            self.mon_mut(target).hurt_this_turn = true;
+        }
         if self.mon(target).hp == 0 {
             self.faint_queue.push(crate::state::FaintData {
                 target,
@@ -1621,6 +1631,10 @@ impl BattleState {
             self.reveal_ability(target)?;
         }
         let mut changed = false;
+        // Reference `boost` tail reads the post-TryBoost delta table, where a
+        // zeroed entry behaves like a deleted key (neither raise nor lower).
+        let raised = changes.iter().any(|change| *change > 0);
+        let lowered = changes.iter().any(|change| *change < 0);
         for (stat, change) in changes.into_iter().enumerate() {
             let old = self.mon(target).boosts[stat];
             let new = (old + change).clamp(-6, 6);
@@ -1647,6 +1661,16 @@ impl BattleState {
                 let mut response = [0; 7];
                 response[if ability == Ability::Defiant { 0 } else { 2 }] = 2;
                 self.boost(dex, target, target, response, BoostCause::Ability(ability))?;
+            }
+        }
+        // Reference `boost` tail: a successful change sets the per-turn
+        // raise/lower flags from that delta table.
+        if changed {
+            if raised {
+                self.mon_mut(target).stats_raised_this_turn = true;
+            }
+            if lowered {
+                self.mon_mut(target).stats_lowered_this_turn = true;
             }
         }
         Ok(changed)
@@ -1775,6 +1799,21 @@ impl BattleState {
                     && !dex.item_take_refused(d.item, d.base_species)
                 {
                     add(actor, 0, 6144);
+                }
+                // `moves:lashout.onBasePower` (priority 0): `chainModify(2)`
+                // while the user's stats were lowered this turn. The handler
+                // participates in the reference handler set even when the
+                // flag is clear, so the no-op entry keeps tie ordering exact.
+                if m.hooks & crate::effects::hook::LASH_OUT != 0 {
+                    add(
+                        actor,
+                        0,
+                        if self.mon(actor).stats_lowered_this_turn {
+                            8192
+                        } else {
+                            4096
+                        },
+                    );
                 }
             }
             ModifierEvent::Attack | ModifierEvent::SpecialAttack => {

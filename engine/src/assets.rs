@@ -129,6 +129,9 @@ pub struct Move {
     pub bite: bool,
     /// `flags.noparentalbond`: Parental Bond never adds its second hit.
     pub no_parental_bond: bool,
+    /// `flags.cantusetwice`: the move is unselectable once the holder's
+    /// recorded last move is this move (Gigaton Hammer in the pinned scope).
+    pub cant_use_twice: bool,
     pub no_pp_boosts: bool,
     pub crit_ratio: u8,
     pub hit: crate::effects::HitEffect,
@@ -371,6 +374,9 @@ const HANDLED_MOVE_FIELDS: &[&str] = &[
     // keys in `PORTED_MOVE_CALLBACK_KEYS` gate which exact handlers are legal.
     "onBasePower",
     "onAfterHit",
+    // `moves:steelroller.onAfterSubDamage`: the terrain clears after a decoy
+    // takes the hit (status moves never reach this path).
+    "onAfterSubDamage",
     "onTryImmunity",
     "onHit",
     "overrideOffensiveStat",
@@ -578,6 +584,19 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     // Beat Up: the captured party list and its per-hit base power formula.
     "moves:beatup.onModifyMove",
     "moves:beatup.basePowerCallback",
+    // Damage-condition base powers: Assurance's `target.hurtThisTurn` and
+    // Temper Flare's previous-move-failure test.
+    "moves:assurance.basePowerCallback",
+    "moves:temperflare.basePowerCallback",
+    // Lash Out: doubles while the user's stats were lowered this turn.
+    "moves:lashout.onBasePower",
+    // Steel Roller: the terrain requirement and the field clear on hit or
+    // after the damage is dealt to a Substitute.
+    "moves:steelroller.onTry",
+    "moves:steelroller.onHit",
+    "moves:steelroller.onAfterSubDamage",
+    // Upper Hand: the positive-priority target gate; the flinch is declarative.
+    "moves:upperhand.onTry",
 ];
 
 /// Ported action-local callbacks, keyed by move id. Every entry must have its
@@ -623,6 +642,10 @@ const HANDLED_MOVE_FLAGS: &[&str] = &[
     // disables the holder's heal-flag moves in the request and refuses one
     // that was already committed.
     "heal",
+    // `cantusetwice` is consumed by the ported request-level disable: once the
+    // holder's recorded last move is the flagged move, it is served disabled
+    // until another move is used or the holder leaves the field.
+    "cantusetwice",
     // Flags whose only consumers (Bulletproof, Dancer, Wind Rider, Gravity,
     // Substitute, Minimize, Knock Off's item gate) remain explicit errors, so
     // they cannot change an implemented mechanic yet.
@@ -668,6 +691,9 @@ fn move_hooks(id: &str) -> u32 {
         "strengthsap" => hook::STRENGTH_SAP,
         "doubleshock" => hook::DOUBLE_SHOCK,
         "beatup" => hook::BEAT_UP,
+        "lashout" => hook::LASH_OUT,
+        "steelroller" => hook::STEEL_ROLLER,
+        "upperhand" => hook::UPPER_HAND,
         _ => 0,
     }
 }
@@ -1300,6 +1326,7 @@ impl Dex {
             slicing: false,
             bite: false,
             no_parental_bond: false,
+            cant_use_twice: false,
             no_pp_boosts: false,
             crit_ratio: 1,
             hit: Default::default(),
@@ -1395,6 +1422,7 @@ impl Dex {
                 slicing: d["flags"]["slicing"] == 1,
                 bite: d["flags"]["bite"] == 1,
                 no_parental_bond: d["flags"]["noparentalbond"] == 1,
+                cant_use_twice: d["flags"]["cantusetwice"] == 1,
                 no_pp_boosts: d["noPPBoosts"].as_bool().unwrap_or(false),
                 crit_ratio: d["critRatio"].as_u64().unwrap_or(1) as u8,
                 hit: effect(d)?,

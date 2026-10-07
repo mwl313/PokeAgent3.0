@@ -124,6 +124,34 @@ impl BattleState {
         Ok(())
     }
 
+    /// `Field#clearTerrain` (Steel Roller's `onHit` / `onAfterSubDamage`):
+    /// ends the active terrain without a replacement and publishes the end
+    /// through the normal FieldEffectEnd path, which also drops the opposing
+    /// player's exact-duration knowledge of the terrain.
+    pub(super) fn clear_terrain(&mut self, dex: &Dex) -> Result<()> {
+        let id = self.terrain_id(dex);
+        if id == 0 {
+            return Ok(());
+        }
+        let Some(state) = self.field.remove(&id) else {
+            return Ok(());
+        };
+        let (side, roster) = state.source.unwrap_or((SideId::P1, 0));
+        self.emit(
+            EventKind::FieldEffectEnd,
+            Entity {
+                side: side.index() as u8,
+                roster,
+            },
+            None,
+            EffectRef::Condition(id),
+            0,
+            false,
+        )?;
+        self.field_change_order();
+        Ok(())
+    }
+
     pub(super) fn grassy_heal(&mut self, dex: &Dex, target: Entity) -> Result<()> {
         let p = self.mon(target);
         // `moves:grassyterrain.condition.onResidual` heals through `this.heal`.

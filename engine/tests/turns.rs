@@ -127,6 +127,14 @@ struct ExpectedMon {
     can_mega: bool,
     pp: Vec<u8>,
     volatiles: Vec<String>,
+    /// Reference per-turn flags, only present in fixtures whose generator
+    /// records them (`hurtThisTurn` as a boolean truthiness projection).
+    #[serde(default)]
+    hurt_this_turn: Option<bool>,
+    #[serde(default)]
+    stats_raised_this_turn: Option<bool>,
+    #[serde(default)]
+    stats_lowered_this_turn: Option<bool>,
 }
 
 #[test]
@@ -496,6 +504,28 @@ fn native_battles_match_reference_at_every_decision_boundary() {
                         "{context} {:?} mon {} volatiles",
                         side, p.roster
                     );
+                    // Reference per-turn flags, when the fixture records them.
+                    if let Some(hurt) = p.hurt_this_turn {
+                        assert_eq!(
+                            mon["hurt_this_turn"].as_bool().unwrap(), hurt,
+                            "{context} {:?} mon {} hurtThisTurn",
+                            side, p.roster
+                        );
+                    }
+                    if let Some(raised) = p.stats_raised_this_turn {
+                        assert_eq!(
+                            mon["stats_raised_this_turn"].as_bool().unwrap(), raised,
+                            "{context} {:?} mon {} statsRaisedThisTurn",
+                            side, p.roster
+                        );
+                    }
+                    if let Some(lowered) = p.stats_lowered_this_turn {
+                        assert_eq!(
+                            mon["stats_lowered_this_turn"].as_bool().unwrap(), lowered,
+                            "{context} {:?} mon {} statsLoweredThisTurn",
+                            side, p.roster
+                        );
+                    }
                 }
             }
             assert_eq!(

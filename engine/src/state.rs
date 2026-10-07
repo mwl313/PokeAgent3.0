@@ -197,6 +197,20 @@ pub struct PokemonState {
     /// Reference `moveLastTurnResult` (see `MoveResult`).
     #[serde(default)]
     pub move_last_turn_result: MoveResult,
+    /// Reference `hurtThisTurn`: truthy once the Pokémon has lost HP this
+    /// turn through a `Pokemon.damage` path and is still alive (the reference
+    /// stores the post-damage HP, so a fainted target reads falsy). Cleared
+    /// by `clearVolatile` and at turn rollover. Assurance reads it.
+    #[serde(default)]
+    pub hurt_this_turn: bool,
+    /// Reference `statsRaisedThisTurn` / `statsLoweredThisTurn`: set by a
+    /// successful `boost` whose post-TryBoost table contained a positive
+    /// (resp. negative) entry. Cleared when the holder leaves the field and
+    /// at turn rollover. Lash Out reads the lowered flag.
+    #[serde(default)]
+    pub stats_raised_this_turn: bool,
+    #[serde(default)]
+    pub stats_lowered_this_turn: bool,
 }
 
 /// Reference `moveThisTurnResult` / `moveLastTurnResult`. `Undefined` is the
@@ -308,6 +322,9 @@ impl PokemonState {
             times_attacked: 0,
             move_this_turn_result: MoveResult::Undefined,
             move_last_turn_result: MoveResult::Undefined,
+            hurt_this_turn: false,
+            stats_raised_this_turn: false,
+            stats_lowered_this_turn: false,
         }
     }
 }
@@ -359,7 +376,7 @@ impl Outcome {
 /// Current snapshot schema. Bump when the persisted world shape changes; the
 /// restore path rejects every other value, and tests read this constant so a
 /// bump cannot leave a stale hard-coded expectation behind.
-pub const SNAPSHOT_SCHEMA: u32 = 11;
+pub const SNAPSHOT_SCHEMA: u32 = 12;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BattleState {
@@ -618,7 +635,11 @@ impl BattleState {
             let condition = usize::from(e.id) < dex.names["conditions"].len();
             let charge_marker = usize::from(e.id) < dex.moves.len()
                 && dex.moves[e.id as usize].charge.is_some();
-            (condition || charge_marker) && e.source.is_none_or(|(_, roster)| roster < 6)
+            // `cantusetwice` markers are also keyed by their move id.
+            let twice_marker = usize::from(e.id) < dex.moves.len()
+                && dex.moves[e.id as usize].cant_use_twice;
+            (condition || charge_marker || twice_marker)
+                && e.source.is_none_or(|(_, roster)| roster < 6)
         };
         let valid_moves = |moves: &[MoveState]| {
             (1..=4).contains(&moves.len())
@@ -974,6 +995,15 @@ impl BattleState {
                         duration_ok
                             && effect.values.len() == 1
                             && (-2..=2).contains(&effect.values[0])
+                    } else if usize::from(id) < dex.moves.len()
+                        && dex.moves[id as usize].cant_use_twice
+                    {
+                        // `cantusetwice` marker: `pokemon.addVolatile(move.id)`
+                        // creates a duration-less, payload-less volatile keyed
+                        // by the move id just before a forced repeat executes;
+                        // the move's own `removeVolatile` clears it before the
+                        // action completes, so it is only ever transient.
+                        effect.duration.is_none() && effect.values.is_empty()
                     } else {
                         return Err(EngineError::Unsupported(format!("snapshot volatile {id}")));
                     };

@@ -78,6 +78,17 @@ pub mod hook {
     /// party members that are the user or are healthy and status-free, and
     /// each hit's power comes from the next such member's set species.
     pub const BEAT_UP: u32 = 1 << 25;
+    /// `moves:lashout.onBasePower` (priority 0): doubles when the user's
+    /// `statsLoweredThisTurn` flag is set.
+    pub const LASH_OUT: u32 = 1 << 26;
+    /// `moves:steelroller.onTry|onHit|onAfterSubDamage`: fails outright
+    /// without an active terrain, and clears the terrain once the hit lands
+    /// or a Substitute takes the damage.
+    pub const STEEL_ROLLER: u32 = 1 << 27;
+    /// `moves:upperhand.onTry`: only runs when the selected target still has
+    /// a queued move action that is a damaging move with effective priority
+    /// above 0.1. The 100% flinch secondary stays declarative.
+    pub const UPPER_HAND: u32 = 1 << 28;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -938,6 +949,12 @@ pub enum BasePowerKind {
     /// `beatup`: `5 + floor(setSpecies.baseStats.atk / 10)` of the ally the
     /// current hit consumes from the move's captured party list.
     BeatUp,
+    /// `assurance`: doubles when `target.hurtThisTurn` is truthy, i.e. the
+    /// target already lost HP this turn and is still alive.
+    Assurance,
+    /// `temperflare`: doubles when `pokemon.moveLastTurnResult === false`
+    /// (a genuinely failed move, not a skipped recharge/charge turn).
+    TemperFlare,
 }
 
 impl BasePowerKind {
@@ -967,6 +984,8 @@ impl BasePowerKind {
             }
             "moves:risingvoltage.basePowerCallback" => Self::RisingVoltage,
             "moves:beatup.basePowerCallback" => Self::BeatUp,
+            "moves:assurance.basePowerCallback" => Self::Assurance,
+            "moves:temperflare.basePowerCallback" => Self::TemperFlare,
             _ => return None,
         })
     }
