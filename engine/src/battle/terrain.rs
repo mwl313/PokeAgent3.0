@@ -21,6 +21,11 @@ impl BattleState {
         if self.mon(e).volatiles.contains_key(&dex.effects.smack_down) {
             return true;
         }
+        // `conditions:gravity`: while the pseudo-weather is up every active
+        // Pokémon is grounded (`BattlePokemon#isGrounded`).
+        if self.field.contains_key(&dex.effects.gravity) {
+            return true;
+        }
         !self.effective_types(dex, e).contains(&dex.effects.flying)
             && dex.effects.abilities[self.mon(e).ability as usize] != Ability::Levitate
     }

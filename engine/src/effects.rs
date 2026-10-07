@@ -861,6 +861,9 @@ pub enum MoveBehavior {
     /// through `tryMoveHit`). Its queued `priorityChargeCallback` action adds
     /// the move's one-turn volatile before any move of the turn.
     ChillyReception,
+    /// `gravity`: the five-turn pseudo-weather (grounding, accuracy and the
+    /// `flags.gravity` refusal).
+    Gravity,
     TrickRoom,
     Terrain,
     /// `trick` / `switcheroo`: item swap with the reference TakeItem refusal
@@ -1043,6 +1046,7 @@ impl MoveBehavior {
             "substitute" => Self::Substitute,
             "shedtail" => Self::ShedTail,
             "chillyreception" => Self::ChillyReception,
+            "gravity" => Self::Gravity,
             "sleeptalk" => Self::SleepTalk,
             "trickroom" => Self::TrickRoom,
             "electricterrain" | "grassyterrain" | "mistyterrain" | "psychicterrain" => {
@@ -1239,6 +1243,13 @@ pub struct NativeEffects {
     /// `moves:shedtail`: the `selfSwitch: 'shedtail'` pivot whose replacement
     /// receives only the outgoing Pokémon's decoy.
     pub shed_tail_move: Id,
+    /// `moves:gravity.condition`: the five-turn pseudo-weather that grounds
+    /// every active Pokémon, raises accuracy by 6840/4096 and refuses
+    /// `flags.gravity` moves.
+    pub gravity: Id,
+    /// The two aerial charge moves whose markers Gravity removes on start.
+    pub fly_move: Id,
+    pub bounce_move: Id,
     /// `moves:chillyreception.condition`: the one-turn volatile added by the
     /// queued move's `priorityChargeCallback` action.
     pub chilly_reception: Id,

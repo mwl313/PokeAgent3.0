@@ -1238,6 +1238,7 @@ impl BattleState {
                 dex.effects.sand,
                 dex.effects.snow,
                 dex.effects.trick_room,
+                dex.effects.gravity,
                 dex.effects.electric_terrain,
                 dex.effects.grassy_terrain,
                 dex.effects.misty_terrain,
@@ -1293,6 +1294,16 @@ impl BattleState {
         {
             return Err(EngineError::InvalidInput(
                 "snapshot Trick Room duration/source".into(),
+            ));
+        }
+        if state.field.get(&dex.effects.gravity).is_some_and(|effect| {
+            effect
+                .duration
+                .is_none_or(|duration| !(1..=5).contains(&duration))
+                || effect.source.is_none()
+        }) {
+            return Err(EngineError::InvalidInput(
+                "snapshot Gravity duration/source".into(),
             ));
         }
         let terrain_ids = [

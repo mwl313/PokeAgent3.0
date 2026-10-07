@@ -2537,6 +2537,19 @@ impl BattleState {
             self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
             return Ok(());
         }
+        if behavior == MoveBehavior::Gravity {
+            // Reference `useMoveInner`: an `all`-target move goes through
+            // `tryMoveHit`, so the pseudo-weather is added by `runMoveEffects`
+            // without the move-loop Update pair. A second cast while Gravity is
+            // up fails without touching state.
+            let started = self.start_gravity(dex, actor)?;
+            self.mon_mut(actor).move_this_turn_result = if started {
+                MoveResult::Success
+            } else {
+                MoveResult::Failed
+            };
+            return Ok(());
+        }
         if behavior == MoveBehavior::Weather {
             self.start_weather(dex, actor, m.weather, false)?;
             self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
@@ -3331,6 +3344,7 @@ impl BattleState {
             } else if m.move_type == dex.effects.ground
                 && ability == Ability::Levitate
                 && !self.suppressing_ability(dex, actor, target, m)
+                && !self.grounded(dex, target)
             {
                 self.emit(
                     EventKind::Ability,
@@ -3342,6 +3356,10 @@ impl BattleState {
                 )?;
                 None
             } else {
+                // `Pokemon#runImmunity`: for a Ground move the immunity is
+                // decided by `isGrounded`, so a grounded target's Flying type
+                // no longer blocks the move (Gravity, Smack Down, Ingrain).
+                let grounded = self.grounded(dex, target);
                 self.effective_types(dex, target)
                     .iter()
                     .try_fold(0i8, |total, &kind| {
@@ -3353,10 +3371,14 @@ impl BattleState {
                         {
                             value = 1;
                         }
-                        if value == -127 {
+                        if value == -127
+                            && !(m.move_type == dex.effects.ground
+                                && kind == dex.effects.flying
+                                && grounded)
+                        {
                             None
                         } else {
-                            Some(total + value)
+                            Some(total + if value == -127 { 0 } else { value })
                         }
                     })
                     .map(|total| total.clamp(-6, 6))
@@ -4736,6 +4758,7 @@ impl BattleState {
             } else if m.move_type == dex.effects.ground
                 && ability == Ability::Levitate
                 && !self.suppressing_ability(dex, actor, target, m)
+                && !self.grounded(dex, target)
             {
                 self.emit(
                     EventKind::Ability,
@@ -4747,15 +4770,23 @@ impl BattleState {
                 )?;
                 None
             } else {
+                // `Pokemon#runImmunity`: for a Ground move the immunity is
+                // decided by `isGrounded`, so a grounded target's Flying type
+                // no longer blocks the move (Gravity, Smack Down, Ingrain).
+                let grounded = self.grounded(dex, target);
                 self.mon(target)
                     .types
                     .iter()
                     .try_fold(0i8, |total, &kind| {
                         let value = dex.type_chart[m.move_type as usize][kind as usize];
-                        if value == -127 {
+                        if value == -127
+                            && !(m.move_type == dex.effects.ground
+                                && kind == dex.effects.flying
+                                && grounded)
+                        {
                             None
                         } else {
-                            Some(total + value)
+                            Some(total + if value == -127 { 0 } else { value })
                         }
                     })
                     .map(|total| total.clamp(-6, 6))
@@ -5581,6 +5612,13 @@ impl BattleState {
                     .volatiles
                     .contains_key(&dex.effects.heal_block))
         {
+            return Ok(Some(MoveResult::Failed));
+        }
+        // `moves:gravity.condition.onBeforeMove` (priority 6, the same band as
+        // Throat Chop and Heal Block): a `flags.gravity` move is refused while
+        // the pseudo-weather is up. The condition's `onModifyMove` guard is the
+        // same rule one phase later and is unreachable once this refuses.
+        if m.gravity && self.field.contains_key(&dex.effects.gravity) {
             return Ok(Some(MoveResult::Failed));
         }
         // `moves:disable.condition.onBeforeMove` (priority 7).
@@ -7676,6 +7714,18 @@ impl BattleState {
                 },
             ));
         }
+        if self.field.contains_key(&dex.effects.gravity) {
+            handlers.push((
+                Entity { side: 0, roster: 0 },
+                dex.effects.gravity,
+                15,
+                Priority {
+                    order: 27,
+                    sub_order: 2,
+                    ..Default::default()
+                },
+            ));
+        }
         let terrain = self.terrain_id(dex);
         if terrain != 0 {
             handlers.push((
@@ -7817,6 +7867,13 @@ impl BattleState {
             }
             if status == 5 {
                 self.weather_upkeep(dex, id)?;
+                if self.outcome.terminated {
+                    return Ok(());
+                }
+                continue;
+            }
+            if status == 15 {
+                self.gravity_upkeep(dex)?;
                 if self.outcome.terminated {
                     return Ok(());
                 }
@@ -8572,6 +8629,14 @@ impl BattleState {
         if let Some(&sub_order) = dex.effects.disable_move_items.get(&mon.item) {
             push(sub_order, mon.cached_speed);
         }
+        // `moves:gravity.condition.onDisableMove`: a field condition, so the
+        // reference collects it through the field handlers (`findEventHandlers`
+        // line for `findFieldEventHandlers`) rather than from the holder.
+        if self.field.contains_key(&dex.effects.gravity)
+            && let Some(&sub_order) = dex.effects.disable_move_conditions.get(&dex.effects.gravity)
+        {
+            push(sub_order, mon.cached_speed);
+        }
         // Reference `findEventHandlers` collects the prefixed foe handlers
         // after the target's own; `foes()` keeps only live actives.
         for slot in self.sides[(1 - e.side) as usize].active.iter().flatten() {
@@ -8709,6 +8774,9 @@ impl BattleState {
                 // `moves:taunt.condition.onDisableMove`: Status moves only,
                 // with Me First exempt.
                 let taunted = mon.volatiles.contains_key(&dex.effects.taunt);
+                // `moves:gravity.condition.onDisableMove`: every `flags.gravity`
+                // move is disabled in the request while Gravity is up.
+                let gravity_up = self.field.contains_key(&dex.effects.gravity);
                 // `moves:torment.condition.onDisableMove`: the last used move.
                 let tormented = mon.volatiles.contains_key(&dex.effects.torment);
                 let last_move = mon.last_move;
@@ -8718,7 +8786,8 @@ impl BattleState {
                             && (mv.id == dex.effects.fake_out
                                 || mv.id == dex.effects.first_impression))
                         || (throat_chop && dex.moves[mv.id as usize].sound)
-                        || (heal_block && dex.moves[mv.id as usize].heal);
+                        || (heal_block && dex.moves[mv.id as usize].heal)
+                        || (gravity_up && dex.moves[mv.id as usize].gravity);
                     if let Some(id) = encore {
                         disabled |= i64::from(mv.id) != id;
                     }

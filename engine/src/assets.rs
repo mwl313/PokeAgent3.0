@@ -223,6 +223,9 @@ pub struct Move {
     pub force_switch: bool,
     /// Reference `flags.failencore`: the move can never be Encored.
     pub fail_encore: bool,
+    /// `flags.gravity`: the move is refused (and disabled in the request)
+    /// while the Gravity pseudo-weather is up.
+    pub gravity: bool,
     /// Reference `flags.futuremove`: deferred attacks (Future Sight family).
     pub future_move: bool,
     /// Ported two-turn charge callback (`onTryMove`) plus the move's own
@@ -815,6 +818,9 @@ const HANDLED_MOVE_FLAGS: &[&str] = &[
     // `cantusetwice` disables the move in the holder's next request while it
     // is still the last used move (Gigaton Hammer).
     "cantusetwice",
+    // `gravity` moves are refused (and disabled in the request) while the
+    // Gravity pseudo-weather is up.
+    "gravity",
     // Cold / AI-facing flags.
     "allyanim",
     "distance",
@@ -1679,6 +1685,7 @@ impl Dex {
                 self_switch: SelfSwitch::None,
                 force_switch: false,
                 fail_encore: false,
+                gravity: false,
                 future_move: false,
                 priority_charge: false,
                 charge: None,
@@ -1883,6 +1890,7 @@ impl Dex {
                 },
                 force_switch: d["forceSwitch"].as_bool().unwrap_or(false),
                 fail_encore: d["flags"]["failencore"] == 1,
+                gravity: d["flags"]["gravity"] == 1,
                 future_move: d["flags"]["futuremove"] == 1,
                 priority_charge: d.get("priorityChargeCallback").is_some(),
                 charge: match charge_shape(row["id"].as_str().unwrap(), d) {
@@ -2119,6 +2127,9 @@ impl Dex {
             ally_switch: lookup("conditions", "allyswitch")?,
             stockpile: lookup("conditions", "stockpile")?,
             commanded: lookup("conditions", "commanded")?,
+            gravity: lookup("conditions", "gravity")?,
+            fly_move: lookup("moves", "fly")?,
+            bounce_move: lookup("moves", "bounce")?,
             chilly_reception: lookup("conditions", "chillyreception")?,
             baton_pass_move: lookup("moves", "batonpass")?,
             shed_tail_move: lookup("moves", "shedtail")?,

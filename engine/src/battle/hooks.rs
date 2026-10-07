@@ -404,6 +404,11 @@ impl BattleState {
         if attacker == Ability::Compoundeyes {
             modifier = damage::chain_modifiers(modifier, 5325);
         }
+        // `moves:gravity.condition.onModifyAccuracy`: every numbered accuracy
+        // is raised by 6840/4096 while the pseudo-weather is up.
+        if self.field.contains_key(&dex.effects.gravity) {
+            modifier = damage::chain_modifiers(modifier, 6840);
+        }
         // `abilities:tangledfeet.onModifyAccuracy` (priority -1): a confused
         // holder halves the accuracy of moves aimed at it.
         if defender == Ability::Tangledfeet
