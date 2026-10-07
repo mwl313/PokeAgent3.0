@@ -695,6 +695,64 @@ const TRIALS = [
     probe: session => ({ok: Boolean(session.battle.sides[1].pokemon[0].status) || logHas(session, 'Effect Spore'),
       detail: {foeStatus: session.battle.sides[1].pokemon[0].status}}),
   },
+  {
+    // `imprison` declares `mustpressure`, so the Pressure event names every
+    // live foe even though the move targets the user.
+    name: 'pressure_mustpressure_imprison',
+    ability: 'Pressure',
+    holderPool: ['Iron Head', 'Protect', 'Sucker Punch'],
+    holderPlan: () => ({move: 'protect'}),
+    foe: {move: 'Imprison', ability: 'Sap Sipper'},
+    rounds: 3,
+    probe: session => {
+      const foe = session.battle.sides[1].pokemon[0];
+      const slot = foe.moveSlots.find(m => m.id === 'imprison');
+      // Two uses must cost two PP each: one normal plus one from Pressure.
+      return {ok: Boolean(slot) && slot.pp === slot.maxpp - 4,
+        detail: {pp: slot?.pp, maxpp: slot?.maxpp, moves: foe.moveSlots.map(m => [m.id, m.pp, m.maxpp])}};
+    },
+  },
+  {
+    name: 'frisk_reveals_foe_items',
+    ability: 'Frisk',
+    holderPool: ['Psychic', 'Protect', 'Calm Mind'],
+    holderPlan: () => ({move: 'protect'}),
+    foe: {move: 'Protect', item: 'Leftovers', ability: 'Clear Body'},
+    rounds: 2,
+    probe: session => ({ok: logHas(session, 'ability: Frisk'),
+      detail: {log: session.battle.log.filter(l => l.includes('Frisk'))}}),
+  },
+  {
+    name: 'pressure_extra_pp',
+    ability: 'Pressure',
+    holderPool: ['Iron Head', 'Protect', 'Sucker Punch'],
+    holderPlan: () => ({move: 'protect'}),
+    foe: {move: 'Taunt', ability: 'Levitate'},
+    // The harness counts the teampreview round, so three rounds = two Taunts.
+    rounds: 3,
+    probe: session => {
+      const foe = session.battle.sides[1].pokemon[0];
+      const slot = foe.moveSlots.find(m => m.id === 'taunt');
+      // Two uses must cost two PP each: one normal plus one from Pressure.
+      return {ok: Boolean(slot) && slot.pp === slot.maxpp - 4,
+        detail: {pp: slot?.pp, maxpp: slot?.maxpp, moves: foe.moveSlots.map(m => [m.id, m.pp, m.maxpp])}};
+    },
+  },
+  {
+    name: 'zerotohero_switch_form',
+    ability: 'Zero to Hero',
+    primary: 'Protect',
+    holderPool: ['Protect', 'Surf', 'Bulk Up'],
+    holderPlan: round => (round === 1 ? {switch: 4} : round === 2 ? {switch: 0} : {move: 'protect'}),
+    foe: {move: 'Protect', ability: 'Clear Body'},
+    rounds: 5,
+    probe: session => {
+      const palafin = session.battle.sides[0].pokemon.find(p => p.baseSpecies.baseSpecies === 'Palafin');
+      return {ok: palafin?.species.forme === 'Hero' && logHas(session, 'ability: Zero to Hero'),
+        detail: {species: palafin?.species.id, forme: palafin?.species.forme,
+          log: session.battle.log.filter(l => l.includes('Zero to Hero') || l.startsWith('|detailschange'))}};
+    },
+  },
 ];
 
 const fixtures = [];

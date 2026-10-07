@@ -304,3 +304,65 @@ fn ability_interactions_match_reference_when_ported() {
     }
     println!("ability interactions: {ported} ported, {pending} pending, {skipped} skipped smoke");
 }
+
+/// The ability-tail fixtures whose effect is public *knowledge* or a
+/// persistent forme change rather than a boundary state delta: Frisk's item
+/// reveal, Pressure's public announcement and Zero to Hero's details change
+/// are invisible to the privileged boundary comparison above, so assert the
+/// native public knowledge directly.
+#[test]
+fn ability_tail_public_knowledge_and_forme() {
+    let dex = Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap();
+    let corpus: Corpus =
+        serde_json::from_str(include_str!("../data/ability-interactions.json")).unwrap();
+    let replay = |name: &str| -> (pa3_engine::state::PlayerView, pa3_engine::state::PlayerView) {
+        let fixture = corpus
+            .fixtures
+            .iter()
+            .find(|f| f.name.starts_with(name))
+            .unwrap_or_else(|| panic!("missing fixture {name}"));
+        let mut state = BattleState::reset(
+            &dex,
+            [&fixture.teams[0], &fixture.teams[1]],
+            fixture.seed,
+            [0, 1],
+        )
+        .unwrap();
+        for step in &fixture.steps {
+            state
+                .step(&dex, step.side, &step.actions)
+                .unwrap_or_else(|e| panic!("{name} step: {e}"));
+        }
+        (state.observe(SideId::P1), state.observe(SideId::P2))
+    };
+
+    // Frisk: the foe's held item becomes public knowledge on the switch-in
+    // that reveals it. Knowledge index 6 is the opponent's lead for P1.
+    let (p1, p2) = replay("frisk_reveals_foe_items");
+    let leftover = dex.id("items", "Leftovers").unwrap();
+    assert!(
+        p1.knowledge.pokemon[6].item.known && p1.knowledge.pokemon[6].item.value == leftover,
+        "Frisk must reveal the foe's item to its own side"
+    );
+    assert!(
+        p2.knowledge.pokemon[0].item.known && p2.knowledge.pokemon[0].item.value == leftover,
+        "Frisk must reveal the foe's item to the opponent as well"
+    );
+
+    // Pressure: the switch-in announcement makes the ability public; the
+    // holder is P1's lead, so the opponent reads it at index 6.
+    let (_, p2) = replay("pressure_extra_pp");
+    let pressure = dex.id("abilities", "Pressure").unwrap();
+    assert!(
+        p2.knowledge.pokemon[6].ability.known
+            && p2.knowledge.pokemon[6].ability.value == pressure,
+        "Pressure must be publicly known after its switch-in announcement"
+    );
+
+    // Zero to Hero: the switch-out details change updates both players'
+    // known species to the Hero forme.
+    let (p1, p2) = replay("zerotohero_switch_form");
+    let hero = dex.id("species", "Palafin-Hero").unwrap();
+    assert_eq!(p1.knowledge.pokemon[0].species, hero, "owner sees the Hero forme");
+    assert_eq!(p2.knowledge.pokemon[6].species, hero, "opponent sees the Hero forme");
+}

@@ -71,6 +71,10 @@ pub(super) struct MoveUse {
     pub called: bool,
     pub bounced: bool,
     pub priority: Option<i8>,
+    /// Move slot that pays a nested move's Pressure `DeductPP` cost: the
+    /// caller's slot for a move called by another move, `NO_SLOT` for a
+    /// reflection whose source effect is an ability rather than a move.
+    pub caller_slot: u8,
     /// `BattleActions#useMove` was given an explicit `target`: the reference
     /// skips its `getRandomTarget` fallback entirely (one fewer draw for a
     /// spread class, whose target list is rebuilt from the move anyway).
@@ -1356,7 +1360,17 @@ impl BattleState {
     }
 
     fn use_move(&mut self, dex: &Dex, actor: Entity, slot: u8, move_id: Id, loc: i8) -> Result<()> {
-        self.use_move_inner(dex, actor, slot, move_id, loc, MoveUse::default())
+        self.use_move_inner(
+            dex,
+            actor,
+            slot,
+            move_id,
+            loc,
+            MoveUse {
+                caller_slot: slot,
+                ..Default::default()
+            },
+        )
     }
 
     /// `BattleActions#useMove`: a move invoked by another move (Sleep Talk
@@ -1364,7 +1378,13 @@ impl BattleState {
     /// target through `Battle#getRandomTarget` (one RNG sample when the target
     /// class needs one) and never pays PP, so it enters the ordinary move
     /// pipeline with `slot = NO_SLOT` and `calls_move` set.
-    fn use_called_move(&mut self, dex: &Dex, actor: Entity, move_id: Id) -> Result<()> {
+    fn use_called_move(
+        &mut self,
+        dex: &Dex,
+        actor: Entity,
+        move_id: Id,
+        caller_slot: u8,
+    ) -> Result<()> {
         let target = dex.moves[move_id as usize].target;
         let loc = self.random_target_location(actor, target);
         self.use_move_inner(
@@ -1375,6 +1395,7 @@ impl BattleState {
             loc,
             MoveUse {
                 called: true,
+                caller_slot,
                 ..Default::default()
             },
         )
@@ -1572,8 +1593,12 @@ impl BattleState {
         // apparent targets (after redirection) and charges one extra PP per
         // opposing Pressure holder among them (`pressureTargets`; `foeSide`
         // moves resolve none, `mustpressure` moves use every foe). The base PP
-        // deduction in `runMove` already happened; nested callers pay nothing.
-        if slot != NO_SLOT && !locked {
+        // deduction in `runMove` already happened; a move invoked by another
+        // move charges the caller's slot (`callerMoveForPressure`), while a
+        // Magic Bounce reflection has an ability source effect and pays
+        // nothing.
+        let pp_slot = if call.called { call.caller_slot } else { slot };
+        if pp_slot != NO_SLOT && !locked {
             let pressure_targets: SmallVec<[Entity; 4]> = if m.must_pressure {
                 self.active_entities(false)
                     .into_iter()
@@ -1595,9 +1620,9 @@ impl BattleState {
                 .count() as u8;
             if extra > 0 {
                 let mon = self.mon_mut(actor);
-                let pp = mon.moves[slot as usize].pp;
-                mon.moves[slot as usize].pp = pp.saturating_sub(extra);
-                mon.base_moves[slot as usize].pp = pp.saturating_sub(extra);
+                let pp = mon.moves[pp_slot as usize].pp;
+                mon.moves[pp_slot as usize].pp = pp.saturating_sub(extra);
+                mon.base_moves[pp_slot as usize].pp = pp.saturating_sub(extra);
             }
         }
         self.emit(
@@ -1770,7 +1795,7 @@ impl BattleState {
                 return Ok(());
             }
             let pick = candidates[self.rng.below(candidates.len() as u32) as usize];
-            return self.use_called_move(dex, actor, pick);
+            return self.use_called_move(dex, actor, pick, slot);
         }
         if behavior == MoveBehavior::TrickRoom {
             self.toggle_trick_room(dex, actor)?;
