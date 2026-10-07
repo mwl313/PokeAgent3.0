@@ -273,6 +273,22 @@ and Poltergeist. Perish Song and Poltergeist also carry knowledge-boundary cover
 (`engine/tests/poltergeist.rs`) for effects whose only visible trace is an event,
 not a state delta.
 
+### Status snapshot (2026-10-07, post-Substitute/Steel Beam checkpoint, verified)
+
+| Area | Value |
+|---|---|
+| Moves executable | **370/515** (Substitute and Steel Beam landed after the previous checkpoint) |
+| Abilities executable | **135/223**; Magic Bounce is the batch in flight |
+| Items executable | **165/166**; the Metronome item is the last entry and is being ported |
+| Training pool | **945/1136 teams complete at least one natural battle (83.2%)**; 876 teams statically complete |
+| Differential corpus | **659 complete legal battles / 14,144 decision boundaries**, zero mismatches, independently re-verified by `node engine/tests/verify_turn_fixtures.mjs` |
+| Tests / lint | 21 test binaries green on the merged Substitute + Steel Beam tree |
+| First blockers in the trajectory probe | disguise 11, magicbounce 10, moldbreaker 10, illusion 7, stancechange 7, Beat Up 7, Psychic Noise 6, Revival Blessing 6, Frisk 5 |
+
+This checkpoint was re-measured on the merged HEAD (`32daf3e`) by the root agent
+after integrating Substitute; the Beat Up / Metronome-item batch was still being
+applied in the working tree, so its numbers are not included here.
+
 ## Remaining implementation
 
 ## 2026-10-07 continuation: ability batches, support moves and the interaction corpus
