@@ -545,13 +545,17 @@ impl BattleState {
             // A `selfSwitch` pivot already ran `BeforeSwitchOut` when the
             // switch request was issued, which flags the reference to skip the
             // pre-switch Update inside `switchIn` as well.
-            let pivot_switch = self.mon(old).switch_flag.is_some();
+            let pivot_switch =
+                self.mon(old).switch_flag.is_some() || self.mon(old).plain_switch_flag;
             if self.mon(old).hp > 0 {
                 // Reference `switchIn` runs BeforeSwitchOut plus a full Update
                 // for a voluntary switch only.
                 if !drag && !pivot_switch {
                     self.each_update(dex)?;
                 }
+                // Reference `switchIn`: a Pokémon leaving the field (pivot,
+                // emergency exit, drag) cannot use its queued move any more.
+                self.queue.retain(|q| q.actor != Some(old));
                 self.ability_switch_out(dex, old)?;
                 self.ability_end(dex, old)?;
             }
@@ -559,6 +563,7 @@ impl BattleState {
             // Reference `clearVolatile` also drops the pending switch flags of
             // the Pokémon leaving the field.
             self.mon_mut(old).switch_flag = None;
+            self.mon_mut(old).plain_switch_flag = false;
             self.mon_mut(old).force_switch_flag = false;
             self.mon_mut(old).active_slot = None;
             // Reference `switchIn` swaps the outgoing Pokémon into the incoming
@@ -571,6 +576,7 @@ impl BattleState {
         self.sides[incoming.side as usize].active[slot as usize] = Some(incoming.roster);
         self.mon_mut(incoming).active_slot = Some(slot);
         self.mon_mut(incoming).switch_flag = None;
+        self.mon_mut(incoming).plain_switch_flag = false;
         self.mon_mut(incoming).force_switch_flag = false;
         self.mon_mut(incoming).ability_ending = false;
         let ability_order = if self.mon(incoming).ability != 0 {
@@ -851,6 +857,11 @@ impl BattleState {
                 self.update_speed(dex);
                 for i in 0..self.queue.len() {
                     if let Some(e) = self.queue[i].actor {
+                        // An action can only be re-resolved while its actor is
+                        // still on the field; a mid-turn switch cancels it.
+                        if self.mon(e).active_slot.is_none() {
+                            continue;
+                        }
                         self.queue[i].priority.speed = self.speed(dex, e);
                         if self.queue[i].kind == QueuedKind::Move {
                             // Reference re-resolves priority through
@@ -1989,13 +2000,19 @@ impl BattleState {
         }
         let mut total_damage = 0u32;
         let mut hit_any = false;
+        // Reference `hitStepMoveHitLoop` passes `hurtThisTurn + curDamage`,
+        // i.e. each damaged target's HP before this move's damage, into the
+        // Emergency Exit check at the end of the action.
+        let mut hit_before: SmallVec<[(Entity, u16); 4]> = SmallVec::new();
         for (target, damage) in damages {
             // `endure` clamps after item/berry damage modification and before
             // the damage is applied (reference `onDamage` priority -10).
             let damage = self.sturdy_clamp(dex, target, damage)?;
             let damage = self.damage_item(dex, target, damage)?;
             let damage = self.endure_clamp(dex, target, damage);
-            let actual = damage.min(self.mon(target).hp);
+            let hp_before = self.mon(target).hp;
+            hit_before.push((target, hp_before));
+            let actual = damage.min(hp_before);
             total_damage += u32::from(actual);
             hit_any = true;
             self.mon_mut(target).hp -= actual;
@@ -2151,7 +2168,14 @@ impl BattleState {
         if let Some(effect) = &m.self_boost {
             self.hit_effect(dex, actor, actor, effect, false)?;
         }
+        // Reference `spreadMoveHit` (Champions): the user's own Emergency Exit
+        // check runs right after the DamagingHit event, with the HP it had
+        // before that event (Rough Skin-style recoil can drop it under half).
+        let user_hp_before_damaging_hit = self.mon(actor).hp;
         self.damaging_hit(dex, actor, &hit_targets, m)?;
+        if !hit_targets.is_empty() {
+            self.emergency_exit_check(dex, actor, user_hp_before_damaging_hit)?;
+        }
         // `moves:knockoff.onAfterHit`: after the DamagingHit event, an alive
         // user removes the item of every target the move damaged.
         if m.hooks & crate::effects::hook::KNOCK_OFF != 0 && self.mon(actor).hp > 0 {
@@ -2162,15 +2186,23 @@ impl BattleState {
         self.each_update(dex)?;
         self.process_faints(dex, self.mon(actor).hp == 0)?;
         self.each_update(dex)?;
+        // Reference `hitStepMoveHitLoop` tail: every damaged target that is
+        // still alive checks Emergency Exit against its pre-move HP.
+        for &(target, hp_before) in &hit_before {
+            self.emergency_exit_check(dex, target, hp_before)?;
+        }
         if total_damage > 0 {
             if behavior == MoveBehavior::Struggle {
                 let recoil =
                     stats::round_fraction(u32::from(self.mon(actor).stats[0]), [1, 4]).max(1);
+                let hp_before = self.mon(actor).hp;
                 self.indirect_damage(dex, actor, actor, recoil, EffectRef::Move(move_id))?;
+                self.emergency_exit_check(dex, actor, hp_before)?;
             } else if let Some(fraction) = m.recoil
                 && dex.effects.abilities[self.mon(actor).ability as usize] != Ability::RockHead
             {
                 let recoil = stats::round_fraction(total_damage, fraction).max(1);
+                let hp_before = self.mon(actor).hp;
                 self.indirect_damage(
                     dex,
                     actor,
@@ -2178,6 +2210,7 @@ impl BattleState {
                     recoil,
                     EffectRef::Condition(dex.effects.recoil),
                 )?;
+                self.emergency_exit_check(dex, actor, hp_before)?;
             }
         }
         if m.thaws_target {
@@ -2190,7 +2223,9 @@ impl BattleState {
         if m.category != Category::Status
             && dex.effects.items[self.mon(actor).item as usize] == Item::LifeOrb
         {
+            let hp_before = self.mon(actor).hp;
             self.item_damage(dex, actor, actor, self.mon(actor).stats[0] / 10)?;
+            self.emergency_exit_check(dex, actor, hp_before)?;
         }
         self.process_faints(dex, true)?;
         self.check_win(None);
@@ -2299,6 +2334,10 @@ impl BattleState {
         }
         let hit_count = self.multihit_count(m);
         let mut total_damage = 0u32;
+        // Reference `hitStepMoveHitLoop` reads `hurtThisTurn + move.totalDamage`
+        // for the end-of-action Emergency Exit checks, i.e. each damaged
+        // target's HP before this move started resolving.
+        let mut hit_before: SmallVec<[(Entity, u16); 4]> = SmallVec::new();
         for hit in 1..=hit_count {
             if hit > 1
                 && (self.mon(actor).hp == 0
@@ -2309,6 +2348,9 @@ impl BattleState {
             for &(target, effectiveness) in &connected {
                 if self.mon(target).hp == 0 {
                     continue;
+                }
+                if hit == 1 {
+                    hit_before.push((target, self.mon(target).hp));
                 }
                 let damage = self.resolve_hit_damage(dex, actor, target, m, effectiveness, spread)?;
                 let damage = self.sturdy_clamp(dex, target, damage)?;
@@ -2368,13 +2410,18 @@ impl BattleState {
                         }
                     }
                 }
+                let user_hp_before_damaging_hit = self.mon(actor).hp;
                 self.damaging_hit(dex, actor, std::slice::from_ref(&target), m)?;
+                self.emergency_exit_check(dex, actor, user_hp_before_damaging_hit)?;
             }
             self.each_update(dex)?;
         }
         self.process_faints(dex, self.mon(actor).hp == 0)?;
         if self.outcome.terminated {
             return Ok(());
+        }
+        for &(target, hp_before) in &hit_before {
+            self.emergency_exit_check(dex, target, hp_before)?;
         }
         // `selfBoost` applies once after the whole hit sequence (reference
         // `useMoveInner`) and only when the move connected with a target.
@@ -2388,6 +2435,7 @@ impl BattleState {
             && dex.effects.abilities[self.mon(actor).ability as usize] != Ability::RockHead
         {
             let recoil = stats::round_fraction(total_damage, fraction).max(1);
+            let hp_before = self.mon(actor).hp;
             self.indirect_damage(
                 dex,
                 actor,
@@ -2395,6 +2443,7 @@ impl BattleState {
                 recoil,
                 EffectRef::Condition(dex.effects.recoil),
             )?;
+            self.emergency_exit_check(dex, actor, hp_before)?;
         }
         self.each_update(dex)?;
         if m.thaws_target {
@@ -2405,7 +2454,9 @@ impl BattleState {
             }
         }
         if dex.effects.items[self.mon(actor).item as usize] == Item::LifeOrb {
+            let hp_before = self.mon(actor).hp;
             self.item_damage(dex, actor, actor, self.mon(actor).stats[0] / 10)?;
+            self.emergency_exit_check(dex, actor, hp_before)?;
         }
         self.process_faints(dex, true)?;
         self.check_win(None);
@@ -3729,6 +3780,14 @@ impl BattleState {
         if dbg {
             eprintln!("RNG residual start draws {}", self.rng.draws);
         }
+        // Reference `runAction` captures each active Pokémon's HP before the
+        // residual `fieldEvent` and checks Emergency Exit against that value
+        // once the phase finishes.
+        let residual_before: SmallVec<[(Entity, u16); 4]> = self
+            .active_entities(false)
+            .into_iter()
+            .map(|e| (e, self.mon(e).hp))
+            .collect();
         self.update_speed(dex);
         let mut handlers = SmallVec::<[(Entity, Id, u8, Priority); 16]>::new();
         // Reference sorts handlers from occupied slots, including fainted
@@ -4170,6 +4229,11 @@ impl BattleState {
                 }
             }
         }
+        // Reference `runAction` end-of-turn switch checks: each active Pokémon
+        // checks Emergency Exit against its pre-residual HP.
+        for &(target, hp_before) in &residual_before {
+            self.emergency_exit_check(dex, target, hp_before)?;
+        }
         Ok(())
     }
 
@@ -4206,6 +4270,39 @@ impl BattleState {
     /// Reference `canSwitch`: a selected, unfainted reserve exists.
     fn can_switch(&self, side: usize) -> bool {
         !self.bench(side).is_empty()
+    }
+
+    /// Reference `abilities:emergencyexit.onEmergencyExit` (the pinned
+    /// Champions override): the holder marks itself to leave the field when a
+    /// single damage event drops it from above half HP to half HP or below,
+    /// provided the side still has a reserve and no switch is already pending.
+    /// `original_hp` is the relay value the reference passes — the holder's HP
+    /// before the damage event being resolved. The handler list holds at most
+    /// one handler in the pinned data (the ability itself), so the reference's
+    /// speed sort consumes no RNG; only the flag and the reveal are visible.
+    fn emergency_exit_check(
+        &mut self,
+        dex: &Dex,
+        target: Entity,
+        original_hp: u16,
+    ) -> Result<()> {
+        if dex.effects.abilities[self.mon(target).ability as usize] != Ability::Emergencyexit {
+            return Ok(());
+        }
+        let half = self.mon(target).stats[0] / 2;
+        if self.mon(target).hp == 0
+            || self.mon(target).hp > half
+            || original_hp <= half
+            || self.mon(target).force_switch_flag
+            || self.mon(target).switch_flag.is_some()
+            || self.mon(target).plain_switch_flag
+            || !self.can_switch(target.side as usize)
+        {
+            return Ok(());
+        }
+        self.mon_mut(target).plain_switch_flag = true;
+        self.reveal_ability(target)?;
+        Ok(())
     }
 
     /// Reference post-action `switchFlag` handling. `selfSwitch` pivots flag
@@ -4260,7 +4357,10 @@ impl BattleState {
                 .active
                 .iter()
                 .flatten()
-                .any(|r| self.sides[side].pokemon[*r as usize].switch_flag.is_some());
+                .any(|r| {
+                    let p = &self.sides[side].pokemon[*r as usize];
+                    p.switch_flag.is_some() || p.plain_switch_flag
+                });
             if !flagged {
                 continue;
             }
@@ -4269,6 +4369,7 @@ impl BattleState {
             } else {
                 for r in self.sides[side].active.iter().flatten() {
                     self.sides[side].pokemon[*r as usize].switch_flag = None;
+                    self.sides[side].pokemon[*r as usize].plain_switch_flag = false;
                 }
             }
         }
@@ -4285,7 +4386,8 @@ impl BattleState {
                     present: !p.fainted,
                     // A `selfSwitch` pivot is alive and keeps its move list;
                     // only `forceSwitch` marks the slot as actionable.
-                    requires_replacement: needed && p.switch_flag.is_some(),
+                    requires_replacement: needed
+                        && (p.switch_flag.is_some() || p.plain_switch_flag),
                     // The reference's switch request carries no `active` entry,
                     // so it advertises no Mega availability for the swapper.
                     can_mega: false,

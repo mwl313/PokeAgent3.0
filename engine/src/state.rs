@@ -164,6 +164,11 @@ pub struct PokemonState {
     /// leave the field as soon as the current action finishes (`selfSwitch`
     /// pivots). Cleared when the switch is resolved.
     pub switch_flag: Option<Id>,
+    /// Reference `switchFlag = true`: a pending switch that is not tied to a
+    /// pivot move (Emergency Exit / Wimp Out). The request boundary treats it
+    /// exactly like `switch_flag`.
+    #[serde(default)]
+    pub plain_switch_flag: bool,
     /// Reference `forceSwitchFlag`: `roar`/`whirlwind`/`dragontail`/
     /// `circlethrow` mark the target and the post-action phazing step drags a
     /// random reserve in.
@@ -285,6 +290,7 @@ impl PokemonState {
             transformed: false,
             active_move_actions: 0,
             switch_flag: None,
+            plain_switch_flag: false,
             force_switch_flag: false,
             last_move: 0,
             times_attacked: 0,
@@ -341,7 +347,7 @@ impl Outcome {
 /// Current snapshot schema. Bump when the persisted world shape changes; the
 /// restore path rejects every other value, and tests read this constant so a
 /// bump cannot leave a stale hard-coded expectation behind.
-pub const SNAPSHOT_SCHEMA: u32 = 7;
+pub const SNAPSHOT_SCHEMA: u32 = 8;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BattleState {
@@ -680,6 +686,7 @@ impl BattleState {
                                 != crate::assets::SelfSwitch::Switch
                     })
                     || m.switch_flag.is_some() && (m.fainted || m.active_slot.is_none())
+                    || m.plain_switch_flag && (m.fainted || m.active_slot.is_none())
                     || m.force_switch_flag && (m.fainted || m.active_slot.is_none())
                     || m.last_move != 0
                         && (usize::from(m.last_move) >= dex.moves.len()

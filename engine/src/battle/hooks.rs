@@ -1909,7 +1909,6 @@ impl Ability {
             | Ability::Embodyaspecthearthflame
             | Ability::Embodyaspectteal
             | Ability::Embodyaspectwellspring
-            | Ability::Emergencyexit
             | Ability::Firemane
             | Ability::Forecast
             | Ability::Forewarn
