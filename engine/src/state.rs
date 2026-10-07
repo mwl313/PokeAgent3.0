@@ -139,6 +139,10 @@ pub struct PokemonState {
     pub base_ability: Id,
     pub ability: Id,
     pub ability_ending: bool,
+    /// `abilities:protean|libero.onPrepareHit` one-shot flag: the holder only
+    /// changes type once per switch-in. Reset when it enters the field.
+    #[serde(default)]
+    pub protean_used: bool,
     pub ability_effect_order: Option<u32>,
     pub item_effect_order: Option<u32>,
     pub item: Id,
@@ -267,6 +271,7 @@ impl PokemonState {
             base_ability: set.ability,
             ability: set.ability,
             ability_ending: false,
+            protean_used: false,
             ability_effect_order: None,
             item_effect_order: None,
             item: set.item,
@@ -347,7 +352,7 @@ impl Outcome {
 /// Current snapshot schema. Bump when the persisted world shape changes; the
 /// restore path rejects every other value, and tests read this constant so a
 /// bump cannot leave a stale hard-coded expectation behind.
-pub const SNAPSHOT_SCHEMA: u32 = 9;
+pub const SNAPSHOT_SCHEMA: u32 = 10;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BattleState {

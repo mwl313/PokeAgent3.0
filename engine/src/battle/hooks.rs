@@ -2072,7 +2072,6 @@ impl Ability {
             | Ability::Keeneye
             | Ability::Klutz
             | Ability::Leafguard
-            | Ability::Libero
             | Ability::Lightmetal
             | Ability::Longreach
             | Ability::Magicbounce
@@ -2091,7 +2090,6 @@ impl Ability {
             | Ability::Plus
             | Ability::Poisonpoint
             | Ability::Pressure
-            | Ability::Protean
             | Ability::Quickdraw
             | Ability::Rattled
             | Ability::Receiver

@@ -173,6 +173,32 @@ const sawBoosts = (fixture, side, rosterIndex, boosts) =>
 
 const TRIALS = [
   {
+    name: 'protean_type_change_once_per_switch_in',
+    p1: [offensive('Greninja', 'Protean', ['Surf', 'Ice Beam', 'Dark Pulse', 'Protect']),
+      ...fillerTeam().slice(0, 5)],
+    p2: [offensive('Metagross', 'Clear Body', ['Meteor Mash', 'Protect']), ...fillerTeam().slice(1),
+      offensive('Reuniclus', 'Overcoat', ['Iron Defense', 'Protect'])],
+    seeds: [[6, 12, 24, 48], [11, 22, 44, 88], [13, 26, 52, 104]],
+    script: [
+      {p1: ['surf', 'protect'], p2: ['meteormash', 'protect']},
+      {p1: ['icebeam', 'protect'], p2: ['protect', 'protect']},
+      {p1: ['darkpulse', 'protect'], p2: ['protect', 'protect']},
+    ],
+    coverage: {move: 'surf'},
+    verify(fixture) {
+      const water = ids.types.water;
+      const types = fixture.steps.map(step =>
+        step.expected.sides[0].pokemon.find(p => p.roster === 0).types.join('/'));
+      if (!types.includes(String(water))) return 'Protean never turned the user into its Water move type';
+      // The later Dark Pulse must not change the type again: pure Dark never
+      // appears while the holder stays in (the one-shot gate holds).
+      if (types.includes(String(ids.types.dark))) {
+        return 'Protean changed type again after its one-shot use';
+      }
+      return null;
+    },
+  },
+  {
     name: 'moody_residual_stat_samples',
     p1: [bulky('Glalie', 'Moody', ['Protect', 'Ice Beam', 'Body Slam']), ...fillerTeam().slice(0, 5)],
     p2: [offensive('Metagross', 'Clear Body', ['Meteor Mash', 'Protect']), ...fillerTeam().slice(1),

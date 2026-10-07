@@ -605,6 +605,7 @@ impl BattleState {
         self.mon_mut(incoming).plain_switch_flag = false;
         self.mon_mut(incoming).force_switch_flag = false;
         self.mon_mut(incoming).ability_ending = false;
+        self.mon_mut(incoming).protean_used = false;
         let ability_order = if self.mon(incoming).ability != 0 {
             Some(self.allocate_effect_order()?)
         } else {
@@ -1793,6 +1794,23 @@ impl BattleState {
         // resolution, accuracy check or absorption callback.
         if m.self_destruct == crate::assets::SelfDestructMode::Always {
             self.faint_now(actor);
+        }
+        // `abilities:protean|libero.onPrepareHit`: once per switch-in the user
+        // becomes the action's (post-ModifyType) type before the hit steps,
+        // even when the action later misses.
+        if matches!(
+            dex.effects.abilities[self.mon(actor).ability as usize],
+            Ability::Protean | Ability::Libero
+        ) && !self.mon(actor).protean_used
+            && !m.future_move
+            && m.move_type != 0
+        {
+            let kinds = self.effective_types(dex, actor);
+            if kinds.as_slice() != [m.move_type] {
+                self.set_type(dex, actor, &[m.move_type])?;
+                self.mon_mut(actor).protean_used = true;
+                self.reveal_ability(actor)?;
+            }
         }
         // TryHit callbacks share the action accuracy sentinel across every
         // recipient. Resolve that sentinel before any spread accuracy draws.
