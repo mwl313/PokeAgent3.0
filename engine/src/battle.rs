@@ -4131,7 +4131,8 @@ impl BattleState {
                             id: mv.id,
                             slot: slot as u8,
                             target: dex.moves[mv.id as usize].target,
-                            disabled: mv.disabled,
+                            disabled: mv.disabled || mv.hidden,
+                            hidden: mv.hidden,
                             pp: mv.pp,
                         })
                         .collect(),
@@ -4299,13 +4300,12 @@ impl BattleState {
                     if tormented && last_move != 0 && mv.id == last_move {
                         disabled = true;
                     }
-                    if imprisoned_moves.contains(&mv.id) {
-                        // `onFoeDisableMove` marks the move `'hidden'`; the
-                        // served choice legality rejects it even though
-                        // `Pokemon#getMoves` can display `false` to the last
-                        // active slot. The legal mask must exclude it.
-                        disabled = true;
-                    }
+                    // `moves:imprison.condition.onFoeDisableMove` marks the
+                    // move `'hidden'`: `getMoves(restrictData)` reports it as
+                    // disabled in the served request, while `Side#chooseMove`
+                    // reads the unrestricted list (hidden -> false) and still
+                    // accepts the choice; `onFoeBeforeMove` then refuses it.
+                    mv.hidden = imprisoned_moves.contains(&mv.id);
                     mv.disabled = disabled;
                 }
             }
@@ -4332,6 +4332,7 @@ impl BattleState {
                             slot: slot as u8,
                             target: dex.moves[mv.id as usize].target,
                             disabled: false,
+                            hidden: false,
                             pp: mv.pp,
                         })
                         .collect()
@@ -4343,7 +4344,11 @@ impl BattleState {
                             id: mv.id,
                             slot: slot as u8,
                             target: dex.moves[mv.id as usize].target,
-                            disabled: mv.disabled,
+                            // The served request reports a hidden (Imprison)
+                            // disable as disabled, while the choice legality
+                            // still accepts it and `onFoeBeforeMove` refuses it.
+                            disabled: mv.disabled || mv.hidden,
+                            hidden: mv.hidden,
                             pp: mv.pp,
                         })
                         .collect()

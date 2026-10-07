@@ -119,6 +119,13 @@ pub struct MoveState {
     pub pp: u8,
     pub max_pp: u8,
     pub disabled: bool,
+    /// Reference `moveSlot.disabled === 'hidden'`: the served request reports
+    /// the move as disabled, but `Side#chooseMove` still accepts the choice and
+    /// the move fails in `onFoeBeforeMove` instead. Kept separate from
+    /// `disabled` so the request mask and the choice legality can differ the way
+    /// the pinned reference does.
+    #[serde(default)]
+    pub hidden: bool,
     pub used: bool,
 }
 
@@ -219,6 +226,7 @@ impl PokemonState {
                     pp,
                     max_pp: pp,
                     disabled: false,
+                    hidden: false,
                     used: false,
                 }
             })
@@ -1210,6 +1218,7 @@ impl BattleState {
                                         slot: slot as u8,
                                         target: dex.moves[m.id as usize].target,
                                         disabled: false,
+                                        hidden: false,
                                         pp: m.pp,
                                     })
                                     .collect()
@@ -1221,7 +1230,11 @@ impl BattleState {
                                         id: m.id,
                                         slot: slot as u8,
                                         target: dex.moves[m.id as usize].target,
-                                        disabled: m.disabled,
+                                        // Mirror the request builder: a hidden
+                                        // (Imprison) disable is reported as
+                                        // disabled in the served request.
+                                        disabled: m.disabled || m.hidden,
+                                        hidden: m.hidden,
                                         pp: m.pp,
                                     })
                                     .collect()
