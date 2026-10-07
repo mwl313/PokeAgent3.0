@@ -629,6 +629,9 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     // Endeavor: the user-must-be-lower immunity gate; the fixed damage itself
     // runs through the ported `FixedDamage::Endeavor` primitive.
     "moves:endeavor.onTryImmunity",
+    // Bug Bite / Pluck: the berry steal-and-eat hit effect.
+    "moves:bugbite.onHit",
+    "moves:pluck.onHit",
     // Haze and Psych Up: field-wide and copied boost stages.
     "moves:haze.onHitField",
     "moves:psychup.onHit",
@@ -1754,7 +1757,11 @@ impl Dex {
                 .map(|id| crate::effects::Ability::compile(id)),
         );
         let mut mega_stones = vec![vec![]; names["items"].len()];
+        let mut berry_items = vec![false; names["items"].len()];
         for row in tables["items"].as_array().unwrap() {
+            if row["data"]["isBerry"].as_bool() == Some(true) {
+                berry_items[row["numeric_id"].as_u64().unwrap() as usize] = true;
+            }
             if let Some(mapping) = row["data"]["megaStone"].as_object() {
                 mega_stones[row["numeric_id"].as_u64().unwrap() as usize] = mapping
                     .iter()
@@ -1842,6 +1849,7 @@ impl Dex {
             move_hooks: native_move_hooks,
             fake_out: lookup("moves", "fakeout")?,
             mega_stones,
+            berry_items,
             protect: lookup("conditions", "protect")?,
             stall: lookup("conditions", "stall")?,
             spiky_shield: lookup("conditions", "spikyshield")?,

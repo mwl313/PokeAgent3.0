@@ -859,6 +859,9 @@ pub enum MoveBehavior {
     /// `endeavor`: fixed damage equal to the target's HP minus the user's,
     /// refused outright unless the user is strictly lower.
     Endeavor,
+    /// `bugbite` / `pluck`: eat the target's held Berry through the reference
+    /// `takeItem` + `Eat` sequence, applying its `onEat` effect to the user.
+    ItemSteal,
 }
 
 /// Cold payload of a ported two-turn move. Every field is transcribed from
@@ -976,6 +979,7 @@ impl MoveBehavior {
             "healpulse" => Self::HealPulse,
             "painsplit" => Self::PainSplit,
             "endeavor" => Self::Endeavor,
+            "bugbite" | "pluck" => Self::ItemSteal,
             _ => Self::Unimplemented,
         }
     }
@@ -1100,6 +1104,9 @@ pub struct NativeEffects {
     pub disable_move_items: std::collections::BTreeMap<Id, i32>,
     /// Exact Champions base-form -> Mega-form mappings, indexed by held item.
     pub mega_stones: Vec<Vec<(Id, Id)>>,
+    /// `items[*].isBerry`: the reference's `takeItem`-then-`Eat` steal moves
+    /// (Bug Bite, Pluck) only act on berries.
+    pub berry_items: Vec<bool>,
     pub protect: Id,
     pub stall: Id,
     /// Additional Protect-family volatiles that block hits in the same

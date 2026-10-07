@@ -3410,6 +3410,28 @@ impl BattleState {
                 self.set_hp_by(dex, target, actor, move_id, average)?;
                 self.set_hp_by(dex, actor, actor, move_id, average)?;
                 did_anything = true;
+            } else if behavior == MoveBehavior::ItemSteal {
+                // `moves:bugbite.onHit` / `moves:pluck.onHit`: while the user
+                // is alive, a Berry held by the target is taken through the
+                // reference `TakeItem` refusal pipeline and immediately eaten
+                // by the user. Any other item refuses the whole branch.
+                let item = self.mon(target).item;
+                if self.mon(actor).hp > 0
+                    && item != 0
+                    && dex.effects.berry_items[item as usize]
+                    && let crate::battle::hooks::TakeOutcome::Taken(item) =
+                        self.take_item_checked(dex, target)?
+                {
+                    self.emit(
+                        EventKind::EndItem,
+                        target,
+                        Some(actor),
+                        EffectRef::Item(item),
+                        0,
+                        false,
+                    )?;
+                    self.eat_berry(dex, actor, item)?;
+                }
             } else if m.force_switch {
                 // Reference `runMoveEffects`: a force-switch move's only
                 // contribution to `didAnything` is
