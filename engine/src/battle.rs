@@ -45,6 +45,8 @@ pub struct StepResult {
 pub(crate) struct HitPhase {
     pub spread: bool,
     pub hit: u32,
+    /// `abilities:parentalbond`: the second hit is quarter power.
+    pub parental_bond_second_hit: bool,
 }
 
 impl BattleState {
@@ -1786,22 +1788,15 @@ impl BattleState {
             self.each_update(dex)?;
             return Ok(());
         }
-        if m.multihit.is_some() {
-            return self.use_multihit_move(dex, actor, move_id, m, targets);
-        }
         let spread = targets.len() > 1;
-        // `selfdestruct: 'always'` faints the user before any target
-        // resolution, accuracy check or absorption callback.
-        if m.self_destruct == crate::assets::SelfDestructMode::Always {
-            self.faint_now(actor);
-        }
+        // PrepareHit abilities run once per action, before both the multi-hit
+        // dispatch and the single-hit steps.
+        let preparer = dex.effects.abilities[self.mon(actor).ability as usize];
         // `abilities:protean|libero.onPrepareHit`: once per switch-in the user
         // becomes the action's (post-ModifyType) type before the hit steps,
         // even when the action later misses.
-        if matches!(
-            dex.effects.abilities[self.mon(actor).ability as usize],
-            Ability::Protean | Ability::Libero
-        ) && !self.mon(actor).protean_used
+        if matches!(preparer, Ability::Protean | Ability::Libero)
+            && !self.mon(actor).protean_used
             && !m.future_move
             && m.move_type != 0
         {
@@ -1811,6 +1806,26 @@ impl BattleState {
                 self.mon_mut(actor).protean_used = true;
                 self.reveal_ability(actor)?;
             }
+        }
+        // `abilities:parentalbond.onPrepareHit`: a single-target, non-status,
+        // non-charge, non-future, non-multi-hit damaging move gains a second
+        // hit at a quarter power.
+        let parental_bond = preparer == Ability::Parentalbond
+            && m.category != Category::Status
+            && m.multihit.is_none()
+            && !m.no_parental_bond
+            && m.charge.is_none()
+            && !m.future_move
+            && !spread
+            && !m.is_z
+            && !m.is_max;
+        if m.multihit.is_some() || parental_bond {
+            return self.use_multihit_move(dex, actor, move_id, m, targets, parental_bond);
+        }
+        // `selfdestruct: 'always'` faints the user before any target
+        // resolution, accuracy check or absorption callback.
+        if m.self_destruct == crate::assets::SelfDestructMode::Always {
+            self.faint_now(actor);
         }
         // TryHit callbacks share the action accuracy sentinel across every
         // recipient. Resolve that sentinel before any spread accuracy draws.
@@ -2589,6 +2604,7 @@ impl BattleState {
         move_id: Id,
         m: &ActiveMove<'_>,
         targets: SmallVec<[Entity; 4]>,
+        parental_bond: bool,
     ) -> Result<()> {
         let mut action_accuracy = m.accuracy.map(u16::from);
         let spread = targets.len() > 1;
@@ -2677,7 +2693,12 @@ impl BattleState {
         if connected.is_empty() {
             return Ok(());
         }
-        let hit_count = self.multihit_count(m);
+        // Parental Bond overrides the move's own hit count with exactly two.
+        let hit_count = if parental_bond {
+            2
+        } else {
+            self.multihit_count(m)
+        };
         let mut total_damage = 0u32;
         // Reference `hitStepMoveHitLoop` reads `hurtThisTurn + move.totalDamage`
         // for the end-of-action Emergency Exit checks, i.e. each damaged
@@ -2714,7 +2735,11 @@ impl BattleState {
                     target,
                     m,
                     effectiveness,
-                    HitPhase { spread, hit },
+                    HitPhase {
+                        spread,
+                        hit,
+                        parental_bond_second_hit: parental_bond && hit == 2,
+                    },
                 )?;
                 let damage = self.sturdy_clamp(dex, target, damage)?;
                 let damage = self.damage_item(dex, target, damage)?;
@@ -3077,7 +3102,7 @@ impl BattleState {
                 attack,
                 defense,
                 spread: phase.spread,
-                parental_bond_second_hit: false,
+                parental_bond_second_hit: phase.parental_bond_second_hit,
                 weather_modifier: self.weather_damage_modifier(dex, m.move_type),
                 critical,
                 stab_modifier: if self.effective_types(dex, actor).contains(&m.move_type) {

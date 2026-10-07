@@ -260,6 +260,30 @@ const TRIALS = [
     },
   },
   {
+    name: 'mega_parentalbond_second_hit',
+    p1: [MEGA('Kangaskhan', 'Scrappy', 'Kangaskhanite', ['Body Slam', 'Crunch', 'Protect']),
+      ...fillerTeam().slice(0, 5)],
+    p2: [offensive('Metagross', 'Clear Body', ['Meteor Mash', 'Protect']), ...fillerTeam().slice(1),
+      offensive('Reuniclus', 'Overcoat', ['Iron Defense', 'Protect'])],
+    seeds: [[14, 28, 56, 112], [37, 74, 148, 296], [41, 82, 164, 328]],
+    script: [
+      {p1: [{move: 'bodyslam', mega: true}, 'protect'], p2: ['meteormash', 'protect']},
+      {p1: ['crunch', 'protect'], p2: ['protect', 'protect']},
+      {p1: ['bodyslam', 'protect'], p2: ['protect', 'protect']},
+    ],
+    coverage: {move: 'bodyslam'},
+    verify(fixture, session) {
+      const log = session.battle.log;
+      if (!log.some(line => line.startsWith('|-mega|'))) return 'the holder never Mega-evolved';
+      if (!log.some(line => line.includes('|-hitcount|') && line.endsWith('|2'))) {
+        return 'Parental Bond never split the move into two hits';
+      }
+      const holder = fixture.steps.at(-1).expected.sides[0].pokemon.find(p => p.roster === 0);
+      if (holder.ability !== ids.abilities.parentalbond) return 'the Mega ability was not Parental Bond';
+      return null;
+    },
+  },
+  {
     name: 'mega_shadowtag_traps_foes',
     p1: [MEGA('Gengar', 'Cursed Body', 'Gengarite', ['Sludge Bomb', 'Protect', 'Shadow Ball']),
       ...fillerTeam().slice(0, 5)],
