@@ -67,54 +67,95 @@ impl BattleState {
             && dex.effects.breakable_abilities[self.mon(target).ability as usize]
     }
 
-    /// Sap Sipper onAllyTryHitSide exists for every side move, even when
-    /// predicates fail. Unlike TryHit, this event sorts speed ties with RNG.
+    /// `TryHitSide` handlers for the side a foe-targeted move reaches:
+    /// Sap Sipper boosts on a Grass move without blocking it, and Magic Bounce
+    /// reflects a reflectable hazard back at the original user and refuses the
+    /// original. The reference sorts this event by speed with tie shuffles, so
+    /// the handler list (including conditional no-ops) drives RNG parity.
     pub(super) fn ally_try_hit_side(
         &mut self,
         dex: &Dex,
         actor: Entity,
         target: Entity,
-        move_type: Id,
-    ) -> Result<()> {
-        let mut handlers: SmallVec<[(Entity, Priority); 4]> = self
+        m: &ActiveMove<'_>,
+    ) -> Result<bool> {
+        // `SapSipper` and `MagicBounce` are mutually exclusive per Pokémon;
+        // the kind is tracked so one sorted list reproduces the reference
+        // handler order.
+        let mut handlers: SmallVec<[(Entity, u8, Priority); 4]> = self
             .active_entities(false)
             .into_iter()
-            .filter(|&e| {
-                e.side == target.side
-                    && self.mon(e).hp > 0
-                    && dex.effects.abilities[self.mon(e).ability as usize] == Ability::SapSipper
-            })
-            .map(|e| {
-                (
+            .filter_map(|e| {
+                if e.side != target.side || self.mon(e).hp == 0 {
+                    return None;
+                }
+                let kind = match dex.effects.abilities[self.mon(e).ability as usize] {
+                    Ability::SapSipper => 0u8,
+                    Ability::Magicbounce if !self.suppressing_ability(dex, actor, e, m) => 1,
+                    _ => return None,
+                };
+                Some((
                     e,
+                    kind,
                     Priority {
                         speed: self.mon(e).cached_speed,
                         sub_order: 7,
                         ..Default::default()
                     },
-                )
+                ))
             })
             .collect();
-        speed_sort(&mut handlers, &mut self.rng, |(_, priority)| *priority);
-        for (holder, _) in handlers {
-            if actor != holder
-                && target.side == actor.side
-                && move_type == dex.effects.grass
-                && self.mon(holder).boosts[0] < 6
+        speed_sort(&mut handlers, &mut self.rng, |(_, _, priority)| *priority);
+        for (holder, kind, _) in handlers {
+            if kind == 0 {
+                if actor != holder
+                    && target.side == actor.side
+                    && m.move_type == dex.effects.grass
+                    && self.mon(holder).boosts[0] < 6
+                {
+                    // This side hook has no immunity message when its boost is
+                    // capped, so a failed boost must not reveal a hidden
+                    // ability.
+                    self.reveal_ability(holder)?;
+                    self.boost(
+                        dex,
+                        holder,
+                        actor,
+                        [1, 0, 0, 0, 0, 0, 0],
+                        BoostCause::Ability(Ability::SapSipper),
+                    )?;
+                }
+                continue;
+            }
+            // `abilities:magicbounce.onAllyTryHitSide`: the first (fastest)
+            // holder reflects the hazard with a nested `useMove` back at the
+            // original user and refuses the original move (a null return ends
+            // the single-target handler loop).
+            if m.reflectable
+                && !m.has_bounced
+                && actor != holder
+                && target.side != actor.side
+                && let Some(loc) = self.location_of(holder, actor)
             {
-                // This side hook has no immunity message when its boost is
-                // capped, so a failed boost must not reveal a hidden ability.
                 self.reveal_ability(holder)?;
-                self.boost(
+                self.use_move_inner(
                     dex,
                     holder,
-                    actor,
-                    [1, 0, 0, 0, 0, 0, 0],
-                    BoostCause::Ability(Ability::SapSipper),
+                    crate::actions::NO_SLOT,
+                    m.id,
+                    loc,
+                    crate::battle::MoveUse {
+                        called: true,
+                        bounced: true,
+                        priority: m.priority,
+                        explicit_target: true,
+                        caller_slot: crate::actions::NO_SLOT,
+                    },
                 )?;
+                return Ok(true);
             }
         }
-        Ok(())
+        Ok(false)
     }
     /// Non-redirection TryHit absorbers. Return true for reference null, even
     /// when healing fails at full HP or a boost is already capped.

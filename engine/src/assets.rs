@@ -469,6 +469,20 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     // Ability exchange: the fail gates, End/Start ordering and announcement
     // are native (`Battle#skillSwap`).
     "moves:skillswap.onHit",
+    // Entry hazards: the side-condition start/restart/switch-in callbacks are
+    // executed by the native hazard primitive.
+    "moves:spikes.condition.onSideStart",
+    "moves:spikes.condition.onSideRestart",
+    "moves:spikes.condition.onSwitchIn",
+    "moves:stealthrock.condition.onSideStart",
+    "moves:stealthrock.condition.onSwitchIn",
+    "moves:toxicspikes.condition.onSideStart",
+    "moves:toxicspikes.condition.onSideRestart",
+    "moves:toxicspikes.condition.onSwitchIn",
+    "moves:stickyweb.condition.onSideStart",
+    "moves:stickyweb.condition.onSwitchIn",
+    // Defog's own hit callback (evasion drop, removal, terrain clear).
+    "moves:defog.onHit",
     // Dire Claw's Champions secondary samples one of three major statuses and
     // applies it with `trySetStatus`; the 30% chance stays declarative.
     "moves:direclaw.secondary.onHit",
@@ -1803,6 +1817,9 @@ impl Dex {
             wide_guard: lookup("conditions", "wideguard")?,
             quick_guard: lookup("conditions", "quickguard")?,
             toxic_spikes: lookup("conditions", "toxicspikes")?,
+            spikes: lookup("conditions", "spikes")?,
+            stealth_rock: lookup("conditions", "stealthrock")?,
+            sticky_web: lookup("conditions", "stickyweb")?,
             helping_hand: lookup("conditions", "helpinghand")?,
             follow_me: lookup("conditions", "followme")?,
             rage_powder: lookup("conditions", "ragepowder")?,

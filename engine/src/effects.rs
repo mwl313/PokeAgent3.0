@@ -821,6 +821,12 @@ pub enum MoveBehavior {
     /// `skillswap`: exchange both Pokémon's abilities through the reference
     /// `Battle#skillSwap` helper (End, direct assignment, Start).
     SkillSwap,
+    /// `spikes` / `stealthrock` / `toxicspikes` / `stickyweb`: a foe-side
+    /// entry hazard with its reference layer cap and restart rules.
+    FoeHazard,
+    /// `defog`: evasion drop, hazard/screen removal on both sides and
+    /// `field.clearTerrain()`.
+    Defog,
     /// `stockpile`: layered self volatile that raises Defense and Special
     /// Defense by one stage per layer and stores the successful raises so
     /// `onEnd` can reverse them.
@@ -933,6 +939,8 @@ impl MoveBehavior {
             "ragepowder" => Self::RagePowder,
             "allyswitch" => Self::AllySwitch,
             "skillswap" => Self::SkillSwap,
+            "spikes" | "stealthrock" | "toxicspikes" | "stickyweb" => Self::FoeHazard,
+            "defog" => Self::Defog,
             "stockpile" => Self::Stockpile,
             "swallow" => Self::Swallow,
             _ => Self::Unimplemented,
@@ -1075,6 +1083,10 @@ pub struct NativeEffects {
     /// condition (no duration) that poisons or badly poisons grounded
     /// switch-ins and is absorbed by Poison types.
     pub toxic_spikes: Id,
+    /// `spikes` / `stealthrock` / `stickyweb` entry-hazard condition ids.
+    pub spikes: Id,
+    pub stealth_rock: Id,
+    pub sticky_web: Id,
     /// Snow-only screen that halves both damage categories.
     pub aurora_veil: Id,
     /// Single-turn redirection / support volatiles.

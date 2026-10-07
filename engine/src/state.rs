@@ -1102,7 +1102,10 @@ impl BattleState {
                     dex.effects.aurora_veil,
                     dex.effects.wide_guard,
                     dex.effects.quick_guard,
+                    dex.effects.spikes,
+                    dex.effects.stealth_rock,
                     dex.effects.toxic_spikes,
+                    dex.effects.sticky_web,
                 ]
                 .contains(&id)
                 {
@@ -1110,13 +1113,30 @@ impl BattleState {
                         "snapshot side condition {id}"
                     )));
                 }
-                if id == dex.effects.toxic_spikes {
+                if id == dex.effects.spikes
+                    || id == dex.effects.toxic_spikes
+                    || id == dex.effects.stealth_rock
+                    || id == dex.effects.sticky_web
+                {
                     // Entry hazards store their layer count in `values` and
                     // mirror it in the duration slot for the fixture contract.
                     // Their source is the Pokémon that scattered them (the
                     // Toxic Debris holder), which sits on either side.
-                    if !matches!(effect.values.as_slice(), [1] | [2])
-                        || effect.duration != effect.values.first().map(|layers| *layers as u16)
+                    let cap = if id == dex.effects.spikes {
+                        3
+                    } else if id == dex.effects.toxic_spikes {
+                        2
+                    } else {
+                        1
+                    };
+                    let duration = if cap > 1 {
+                        effect.values.first().map(|layers| *layers as u16)
+                    } else {
+                        None
+                    };
+                    if effect.values.len() != 1
+                        || !(1..=cap).contains(&effect.values[0])
+                        || effect.duration != duration
                         || effect.source.is_none()
                     {
                         return Err(EngineError::InvalidInput("snapshot hazard layers".into()));

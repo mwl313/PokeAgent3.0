@@ -309,7 +309,10 @@ impl Knowledge {
         if event.kind == EventKind::SideEffectStart {
             let effect = self.sides[side].entry(event.effect).or_default();
             effect.present = true;
-            if event.value > 0 {
+            // The owning side always knows the condition's (possibly zero)
+            // duration; the emit zeroes the value for the opposing viewer, so
+            // only a positive public value reveals it there.
+            if event.value > 0 || event.subject < 6 {
                 effect.duration = Known::new(event.value as i16);
             }
         } else if event.kind == EventKind::SideEffectEnd {
