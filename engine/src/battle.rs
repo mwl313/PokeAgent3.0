@@ -1799,6 +1799,11 @@ impl BattleState {
             self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
             return Ok(());
         }
+        // `moves:spitup.onTry`: the move needs the user's stockpile volatile.
+        if hooks & crate::effects::hook::SPIT_UP != 0 && self.stockpile_layers(dex, actor) == 0 {
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+            return Ok(());
+        }
         // `items:metronome.condition.onTryMove` (priority -2, the last TryMove
         // handler): a lost item removes the counter volatile here; otherwise
         // the consecutive-use counter advances only when the previous turn
@@ -2008,6 +2013,41 @@ impl BattleState {
             self.ally_try_hit_side(dex, actor, actor, m.move_type)?;
             self.start_side_condition(dex, actor, m.side_condition)?;
             self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
+            return Ok(());
+        }
+        if behavior == MoveBehavior::Stockpile {
+            // `moves:stockpile.onTry`: a fourth layer fails before any hit
+            // step. Otherwise the volatile starts (layers 1) or restarts
+            // (layers + 1), announces itself and raises Defense and Special
+            // Defense one stage each, recording every raise that actually
+            // changed a stage so `onEnd` can reverse exactly those.
+            if self.stockpile_layers(dex, actor) >= 3 {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                return Ok(());
+            }
+            self.start_stockpile(dex, actor)?;
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
+            self.each_update(dex)?;
+            self.each_update(dex)?;
+            return Ok(());
+        }
+        if behavior == MoveBehavior::Swallow {
+            // `moves:swallow.onTry|onHit`: requires a stored stockpile, heals
+            // a quarter, half or all of the user's maximum HP and always
+            // consumes the volatile. A refused heal (full HP or Heal Block)
+            // still consumes it and leaves `moveThisTurnResult` null.
+            if self.stockpile_layers(dex, actor) == 0 {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                return Ok(());
+            }
+            let healed = self.swallow_heal(dex, actor)?;
+            self.mon_mut(actor).move_this_turn_result = if healed {
+                MoveResult::Success
+            } else {
+                MoveResult::Undefined
+            };
+            self.each_update(dex)?;
+            self.each_update(dex)?;
             return Ok(());
         }
         if behavior == MoveBehavior::AllySwitch {
@@ -2657,6 +2697,12 @@ impl BattleState {
                 let hp_before = self.mon(actor).hp;
                 self.indirect_damage(dex, actor, actor, recoil, EffectRef::Move(move_id))?;
                 self.emergency_exit_check(dex, actor, hp_before)?;
+            }
+            // `moves:spitup.onAfterMove`: `runMove` always fires AfterMove
+            // once `useMove` was reached, so a missed or blocked Spit Up still
+            // consumes the user's stockpile.
+            if m.hooks & crate::effects::hook::SPIT_UP != 0 {
+                self.remove_stockpile(dex, actor)?;
             }
             return Ok(());
         }
@@ -3418,6 +3464,12 @@ impl BattleState {
         }
         self.process_faints(dex, true)?;
         self.check_win(None);
+        // `moves:spitup.onAfterMove`: the reference fires the move's AfterMove
+        // event after the whole `useMove` sequence, which is where Spit Up
+        // consumes the user's stockpile.
+        if m.hooks & crate::effects::hook::SPIT_UP != 0 {
+            self.remove_stockpile(dex, actor)?;
+        }
         Ok(())
     }
 
@@ -4513,6 +4565,168 @@ impl BattleState {
                 ..Default::default()
             },
         )
+    }
+
+    /// `moves:stockpile.condition` payload readers. The volatile stores
+    /// `[layers, def, spd]`, where `def`/`spd` count the successful stage
+    /// changes (stored negative) that `onEnd` reverses.
+    fn stockpile_layers(&self, dex: &Dex, e: Entity) -> u32 {
+        self.mon(e)
+            .volatiles
+            .get(&dex.effects.stockpile)
+            .and_then(|state| state.values.first())
+            .copied()
+            .unwrap_or(0)
+            .clamp(0, 3) as u32
+    }
+
+    /// `moves:stockpile.condition.onStart|onRestart`: create or advance the
+    /// layered volatile, announce it and apply the Defense/Special Defense
+    /// raise. Returns `false` only for the unreachable restart-at-three case.
+    fn start_stockpile(&mut self, dex: &Dex, actor: Entity) -> Result<bool> {
+        let volatile = dex.effects.stockpile;
+        let existing = self.mon(actor).volatiles.get(&volatile).cloned();
+        let (layers, mut def, mut spd, order) = match existing {
+            Some(state) => {
+                let layers = state.values.first().copied().unwrap_or(1).max(1);
+                if layers >= 3 {
+                    return Ok(false);
+                }
+                (
+                    layers + 1,
+                    state.values.get(1).copied().unwrap_or(0),
+                    state.values.get(2).copied().unwrap_or(0),
+                    state.effect_order,
+                )
+            }
+            None => (1, 0, 0, self.allocate_effect_order()?),
+        };
+        // The reference `onStart`/`onRestart` announce the new layer before
+        // running the boost.
+        self.mon_mut(actor).volatiles.insert(
+            volatile,
+            EffectState {
+                id: volatile,
+                duration: None,
+                source: Some((
+                    if actor.side == 0 {
+                        SideId::P1
+                    } else {
+                        SideId::P2
+                    },
+                    actor.roster,
+                )),
+                effect_order: order,
+                effect_order_assigned: true,
+                values: vec![layers, def, spd],
+            },
+        );
+        self.emit(
+            EventKind::EffectStart,
+            actor,
+            Some(actor),
+            EffectRef::Condition(volatile),
+            layers as i32,
+            false,
+        )?;
+        let before = [self.mon(actor).boosts[1], self.mon(actor).boosts[3]];
+        self.boost(
+            dex,
+            actor,
+            actor,
+            [0, 1, 0, 1, 0, 0, 0],
+            BoostCause::Move { secondary: false },
+        )?;
+        let after = [self.mon(actor).boosts[1], self.mon(actor).boosts[3]];
+        if after[0] != before[0] {
+            def -= 1;
+        }
+        if after[1] != before[1] {
+            spd -= 1;
+        }
+        if let Some(state) = self.mon_mut(actor).volatiles.get_mut(&volatile) {
+            state.values = vec![layers, def, spd];
+        }
+        Ok(true)
+    }
+
+    /// `moves:stockpile.condition.onEnd`: reverse the recorded stage raises and
+    /// remove the volatile. Returns whether the volatile existed.
+    fn remove_stockpile(&mut self, dex: &Dex, e: Entity) -> Result<bool> {
+        let volatile = dex.effects.stockpile;
+        let Some(state) = self.mon_mut(e).volatiles.remove(&volatile) else {
+            return Ok(false);
+        };
+        let def = state.values.get(1).copied().unwrap_or(0).clamp(-3, 0) as i8;
+        let spd = state.values.get(2).copied().unwrap_or(0).clamp(-3, 0) as i8;
+        if def != 0 || spd != 0 {
+            self.boost(
+                dex,
+                e,
+                e,
+                [0, def, 0, spd, 0, 0, 0],
+                BoostCause::Move { secondary: false },
+            )?;
+        }
+        self.emit(
+            EventKind::EffectEnd,
+            e,
+            None,
+            EffectRef::Condition(volatile),
+            0,
+            false,
+        )?;
+        Ok(true)
+    }
+
+    /// `moves:swallow.onHit`: `this.heal(this.modify(maxhp, healAmount[layers-1]))`
+    /// followed by the stockpile removal. Returns whether any HP was restored;
+    /// a refused heal (full HP or Heal Block) still consumes the volatile.
+    fn swallow_heal(&mut self, dex: &Dex, actor: Entity) -> Result<bool> {
+        let layers = self.stockpile_layers(dex, actor).clamp(1, 3);
+        let [numerator, denominator] = [[1u32, 4u32], [1, 2], [1, 1]][(layers - 1) as usize];
+        let amount = Self::modify_fraction(u32::from(self.mon(actor).stats[0]), numerator, denominator);
+        let healed = self.heal_for_move(dex, actor, amount)?;
+        self.remove_stockpile(dex, actor)?;
+        Ok(healed > 0)
+    }
+
+    /// Reference `Battle#modify`: `trunc((trunc(value * trunc(numerator *
+    /// 4096 / denominator)) + 2047) / 4096)`. Swallow is the only ported
+    /// caller that depends on this exact truncation (an odd maximum HP heals
+    /// `floor(maxhp / 2)` at two layers).
+    fn modify_fraction(value: u32, numerator: u32, denominator: u32) -> u32 {
+        let modifier = numerator * 4096 / denominator;
+        (value * modifier + 2047) / 4096
+    }
+
+    /// Reference `Battle#heal` for a move-driven self heal: the TryHeal gate
+    /// (Heal Block), the dead/inactive/full-HP refusals and the capped
+    /// restoration. Returns the HP actually restored.
+    fn heal_for_move(&mut self, dex: &Dex, target: Entity, amount: u32) -> Result<u32> {
+        if amount == 0
+            || self.mon(target).hp == 0
+            || self.mon(target).active_slot.is_none()
+            || self.heal_blocked(dex, target)
+        {
+            return Ok(0);
+        }
+        let p = self.mon(target);
+        let missing = u32::from(p.stats[0] - p.hp);
+        if missing == 0 {
+            return Ok(0);
+        }
+        let healed = amount.min(missing);
+        self.mon_mut(target).hp += healed as u16;
+        self.emit(
+            EventKind::Heal,
+            target,
+            Some(target),
+            EffectRef::None,
+            healed as i32,
+            true,
+        )?;
+        Ok(healed)
     }
 
     /// `moves:substitute.condition.onTryPrimaryHit`: a primary hit whose source
