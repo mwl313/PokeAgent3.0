@@ -1550,8 +1550,8 @@ impl BattleState {
             if let Some(spec) = self.charging_spec(dex, target)
                 && spec.semi_invulnerable
                 && !spec.invuln_exceptions.contains(&move_id)
-                && move_id != dex.effects.helping_hand
-                && !(move_id == dex.effects.toxic
+                && move_id != dex.effects.helping_hand_move
+                && !(move_id == dex.effects.toxic_move
                     && self.mon(actor).types.contains(&dex.effects.poison_type))
             {
                 failed_otherwise = true;
@@ -1559,7 +1559,7 @@ impl BattleState {
             }
             // `moves:yawn.onTryHit`: the target must be status-free and able to
             // fall asleep, or the move fails against it before any hit step.
-            if move_id == dex.effects.yawn
+            if move_id == dex.effects.yawn_move
                 && (self.mon(target).status != 0
                     || self
                         .status_immune_ability(dex, target, dex.effects.sleep)

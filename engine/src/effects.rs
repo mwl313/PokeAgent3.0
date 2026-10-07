@@ -966,6 +966,15 @@ pub struct NativeEffects {
     pub two_turn_move: Id,
     /// `moves:yawn.condition`: two-turn countdown that ends in sleep.
     pub yawn: Id,
+    /// `moves:yawn` (the move, not the volatile condition): `onTryHit` refuses
+    /// a target that already has a status or cannot fall asleep.
+    pub yawn_move: Id,
+    /// `moves:toxic` (the move, not the `tox` status): a Poison-type attacker
+    /// hits through semi-invulnerability.
+    pub toxic_move: Id,
+    /// `moves:helpinghand` (the move, not the volatile condition): the
+    /// invulnerability step short-circuits for it.
+    pub helping_hand_move: Id,
     /// `moves:roost.condition`: one-turn Flying removal for the caster.
     pub roost: Id,
     /// Volatile that disables and refuses sound moves for two turns.
