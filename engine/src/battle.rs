@@ -676,9 +676,16 @@ impl BattleState {
                 self.ability_end(dex, old)?;
                 // Reference `switchIn` -> `copyVolatileFrom`: a Baton Pass
                 // replacement adopts the outgoing Pokémon's boosts and every
-                // non-`noCopy` volatile before the outgoing set is cleared.
-                if self.mon(old).switch_flag == Some(dex.effects.baton_pass_move) {
-                    self.copy_volatiles(dex, old, incoming)?;
+                // non-`noCopy` volatile, a Shed Tail replacement only the
+                // decoy; both run before the outgoing set is cleared.
+                match self.mon(old).switch_flag {
+                    Some(id) if id == dex.effects.baton_pass_move => {
+                        self.copy_volatiles(dex, old, incoming, crate::assets::SelfSwitch::CopyVolatile)?;
+                    }
+                    Some(id) if id == dex.effects.shed_tail_move => {
+                        self.copy_volatiles(dex, old, incoming, crate::assets::SelfSwitch::ShedTail)?;
+                    }
+                    _ => {}
                 }
             }
             self.clear_volatile(dex, old);
@@ -1219,15 +1226,25 @@ impl BattleState {
         Ok(())
     }
 
-    /// Reference `Pokemon#copyVolatileFrom` for `selfSwitch: 'copyvolatile'`
-    /// (Baton Pass): the incoming Pokémon clears its own volatile state, adopts
-    /// the outgoing Pokémon's boost stages, then receives a shallow copy of
-    /// every volatile whose condition does not declare `noCopy`. A condition
-    /// with an `onCopy` callback is unreachable from a ported effect today and
-    /// stays an explicit operational error instead of a silent no-op.
-    fn copy_volatiles(&mut self, dex: &Dex, from: Entity, to: Entity) -> Result<()> {
+    /// Reference `Pokemon#copyVolatileFrom`: the incoming Pokémon clears its
+    /// own volatile state and then receives a shallow copy of the outgoing
+    /// set. `copyvolatile` (Baton Pass) also adopts the boost stages and every
+    /// volatile whose condition does not declare `noCopy`; `shedtail` moves
+    /// only the decoy and no boosts. A condition with an `onCopy` callback is
+    /// unreachable from a ported effect today and stays an explicit
+    /// operational error instead of a silent no-op.
+    fn copy_volatiles(
+        &mut self,
+        dex: &Dex,
+        from: Entity,
+        to: Entity,
+        cause: crate::assets::SelfSwitch,
+    ) -> Result<()> {
+        let shed_tail = cause == crate::assets::SelfSwitch::ShedTail;
         self.clear_volatile(dex, to);
-        self.mon_mut(to).boosts = self.mon(from).boosts;
+        if !shed_tail {
+            self.mon_mut(to).boosts = self.mon(from).boosts;
+        }
         let copied: Vec<(Id, EffectState)> = self
             .mon(from)
             .volatiles
@@ -1235,6 +1252,9 @@ impl BattleState {
             .map(|(id, state)| (*id, state.clone()))
             .collect();
         for (id, state) in copied {
+            if shed_tail && id != dex.effects.substitute {
+                continue;
+            }
             if dex.effects.no_copy_conditions.contains(&id) {
                 continue;
             }
@@ -2995,6 +3015,82 @@ impl BattleState {
             self.each_update(dex)?;
             return Ok(());
         }
+        if behavior == MoveBehavior::ShedTail {
+            // `moves:shedtail.onTryHit`: the move fails before any hit step
+            // when the user cannot switch, is commanded, already carries a
+            // decoy, or cannot pay half its maximum HP (the check is `<=
+            // ceil(maxHP/2)`, so exactly half is refused).
+            let max_hp = u32::from(self.mon(actor).stats[0]);
+            let hp = u32::from(self.mon(actor).hp);
+            if !self.can_switch(actor.side as usize)
+                || self.mon(actor).volatiles.contains_key(&dex.effects.commanded)
+                || self.mon(actor).volatiles.contains_key(&dex.effects.substitute)
+                || hp <= max_hp.div_ceil(2)
+            {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                return Ok(());
+            }
+            // `volatileStatus: 'substitute'` runs first: the shared condition's
+            // `onStart` stores floor(maxHP/4) as the decoy's HP and ends any
+            // `partiallytrapped` volatile.
+            let sub_hp = max_hp / 4;
+            let order = self.allocate_effect_order()?;
+            self.mon_mut(actor).volatiles.insert(
+                dex.effects.substitute,
+                EffectState {
+                    id: dex.effects.substitute,
+                    effect_order: order,
+                    effect_order_assigned: true,
+                    values: vec![i64::from(sub_hp)],
+                    ..Default::default()
+                },
+            );
+            self.emit(
+                EventKind::EffectStart,
+                actor,
+                None,
+                EffectRef::Condition(dex.effects.substitute),
+                0,
+                false,
+            )?;
+            if self
+                .mon_mut(actor)
+                .volatiles
+                .remove(&dex.effects.partially_trapped)
+                .is_some()
+            {
+                self.emit(
+                    EventKind::EffectEnd,
+                    actor,
+                    None,
+                    EffectRef::Condition(dex.effects.partially_trapped),
+                    0,
+                    false,
+                )?;
+            }
+            // `moves:shedtail.onHit`: `directDamage(ceil(maxHP/2))`, a raw
+            // subtraction with no Damage-event clamps. The gate proved
+            // `hp > ceil(maxHP/2)`, so this cannot faint the user.
+            let cost = max_hp.div_ceil(2).min(hp);
+            if cost > 0 {
+                self.mon_mut(actor).hp -= cost as u16;
+                self.emit(
+                    EventKind::Damage,
+                    actor,
+                    Some(actor),
+                    EffectRef::Move(move_id),
+                    -(cost as i32),
+                    true,
+                )?;
+            }
+            // `selfSwitch: 'shedtail'`: the pivot flag; the replacement copy
+            // carries only the decoy across.
+            self.mon_mut(actor).switch_flag = Some(move_id);
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
+            self.each_update(dex)?;
+            self.each_update(dex)?;
+            return Ok(());
+        }
         let spread = targets.len() > 1;
         // PrepareHit abilities run once per action, before both the multi-hit
         // dispatch and the single-hit steps. (Protean/Libero already ran at
@@ -3428,7 +3524,28 @@ impl BattleState {
         // `runMoveEffects`/`selfDrops`/`forceSwitch` null-target handling.
         let mut sub_absorbed = SmallVec::<[Entity; 4]>::new();
         let mut damages = SmallVec::<[(Entity, u16); 4]>::new();
-        for (target, effectiveness) in hit {
+        // Reference `spreadMoveHit` runs `tryPrimaryHitEvent` before
+        // `getSpreadDamage`: every decoy handler resolves its damage in a
+        // pre-pass over the whole target list, so a decoy-absorbed target's
+        // crit/randomizer draws are spent before the other targets'. Iterating
+        // those targets first reproduces the draw order without changing any
+        // per-target computation.
+        let decoys: SmallVec<[Entity; 4]> = hit
+            .iter()
+            .filter(|(target, _)| self.decoy_absorbs(dex, actor, *target, m))
+            .map(|(target, _)| *target)
+            .collect();
+        let ordered: SmallVec<[(Entity, i8); 4]> = hit
+            .iter()
+            .copied()
+            .filter(|(target, _)| decoys.contains(target))
+            .chain(
+                hit.iter()
+                    .copied()
+                    .filter(|(target, _)| !decoys.contains(target)),
+            )
+            .collect();
+        for (target, effectiveness) in ordered {
             if m.category == Category::Status {
                 continue;
             }
@@ -5863,6 +5980,24 @@ impl BattleState {
         Ok(healed)
     }
 
+    /// Predicate for both the pre-pass ordering and the interception below:
+    /// a decoy consumes a primary hit whose source differs from its holder
+    /// unless the action carries `flags.bypasssub`.
+    fn decoy_absorbs(
+        &self,
+        dex: &Dex,
+        source: Entity,
+        target: Entity,
+        m: &crate::assets::Move,
+    ) -> bool {
+        target != source
+            && !m.bypass_sub
+            && self
+                .mon(target)
+                .volatiles
+                .contains_key(&dex.effects.substitute)
+    }
+
     /// `moves:substitute.condition.onTryPrimaryHit`: a primary hit whose source
     /// differs from the target and whose action does not carry
     /// `flags.bypasssub` is consumed by the target's decoy. `damage` is the
@@ -5878,13 +6013,7 @@ impl BattleState {
         m: &crate::assets::Move,
         damage: u16,
     ) -> Result<bool> {
-        if target == source
-            || m.bypass_sub
-            || !self
-                .mon(target)
-                .volatiles
-                .contains_key(&dex.effects.substitute)
-        {
+        if !self.decoy_absorbs(dex, source, target, m) {
             return Ok(false);
         }
         let sub_hp = self

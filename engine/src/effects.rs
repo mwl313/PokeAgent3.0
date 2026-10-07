@@ -848,6 +848,9 @@ pub enum MoveBehavior {
     /// `substitute`: pays a quarter of the user's maximum HP for a decoy
     /// whose remaining HP lives in the volatile's single value.
     Substitute,
+    /// `shedtail`: pays half the user's maximum HP for the same decoy, then
+    /// leaves the field; the replacement receives only that decoy.
+    ShedTail,
     TrickRoom,
     Terrain,
     /// `trick` / `switcheroo`: item swap with the reference TakeItem refusal
@@ -1028,6 +1031,7 @@ impl MoveBehavior {
             "perishsong" => Self::PerishSong,
             "haze" => Self::Haze,
             "substitute" => Self::Substitute,
+            "shedtail" => Self::ShedTail,
             "sleeptalk" => Self::SleepTalk,
             "trickroom" => Self::TrickRoom,
             "electricterrain" | "grassyterrain" | "mistyterrain" | "psychicterrain" => {
@@ -1221,6 +1225,9 @@ pub struct NativeEffects {
     /// `moves:batonpass`: the `selfSwitch: 'copyvolatile'` pivot whose
     /// replacement copies the outgoing Pokémon's boosts and volatiles.
     pub baton_pass_move: Id,
+    /// `moves:shedtail`: the `selfSwitch: 'shedtail'` pivot whose replacement
+    /// receives only the outgoing Pokémon's decoy.
+    pub shed_tail_move: Id,
     /// Conditions declaring `noCopy`: `copyVolatileFrom` refuses to transfer
     /// them (Disable, Encore, Yawn, Smack Down, Stockpile, ...).
     pub no_copy_conditions: Vec<Id>,

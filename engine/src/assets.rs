@@ -710,6 +710,11 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     // itself is the `selfSwitch: 'copyvolatile'` payload.
     "moves:batonpass.onHit",
     "moves:batonpass.self.onHit",
+    // Shed Tail: the canSwitch/commanded/decoy/HP gates and its own direct
+    // damage; the decoy comes from the shared `substitute` volatileStatus.
+    "moves:shedtail.onTryHit",
+    "moves:shedtail.onHit",
+    "moves:shedtail.self.onHit",
     // Focus Energy / Dragon Cheer: the mutual-exclusion start gate and the
     // crit-ratio modifier.
     "moves:focusenergy.condition.onStart",
@@ -1320,12 +1325,13 @@ pub(crate) fn classify_move(id: &str, data: &Value) -> crate::effects::MoveBehav
     if explicit != Behavior::Unimplemented {
         return explicit;
     }
-    // `selfSwitch: 'shedtail'` transfers the user's substitute HP to the
-    // incoming Pokémon through the same copy path with its own filter; that
-    // payload is not ported, so it stays an explicit operational error.
-    // `copyvolatile` (Baton Pass) is ported: the replacement copies the
-    // outgoing Pokémon's boosts and copyable volatiles.
-    if data["selfSwitch"].as_str() == Some("shedtail") {
+    // The two string `selfSwitch` payloads are ported: `copyvolatile`
+    // (Baton Pass) copies the outgoing boosts and copyable volatiles, and
+    // `shedtail` moves only the user's decoy to the replacement. Anything
+    // else stays an explicit operational error.
+    if data["selfSwitch"].as_str().is_some_and(|cause| {
+        cause != "copyvolatile" && cause != "shedtail"
+    }) {
         return Behavior::Unimplemented;
     }
     let mut callbacks = Vec::new();
@@ -2100,6 +2106,7 @@ impl Dex {
             stockpile: lookup("conditions", "stockpile")?,
             commanded: lookup("conditions", "commanded")?,
             baton_pass_move: lookup("moves", "batonpass")?,
+            shed_tail_move: lookup("moves", "shedtail")?,
             no_copy_conditions: condition_id_set(&tables["conditions"], None, true, NO_COPY_CONDITIONS)?,
             copy_callback_conditions: condition_id_set(
                 &tables["conditions"],

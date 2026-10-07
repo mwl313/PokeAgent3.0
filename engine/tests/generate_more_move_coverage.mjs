@@ -67,9 +67,10 @@ function executable(id) {
   if ((encoded.secondaries || []).some(entry => !payloadHandled(entry))) return false;
   if (encoded.status && !HANDLED_STATUSES.has(encoded.status)) return false;
   if (encoded.volatileStatus && !HANDLED_VOLATILES.has(encoded.volatileStatus)) return false;
-  // Plain `selfSwitch` pivots and Baton Pass's `copyvolatile` payload are
-  // native; `selfSwitch: 'shedtail'` and `forceSwitch` phazing are not ported.
-  if ((typeof encoded.selfSwitch === 'string' && encoded.selfSwitch !== 'copyvolatile') ||
+  // Plain `selfSwitch` pivots plus the `copyvolatile` (Baton Pass) and
+  // `shedtail` (Shed Tail) payloads are native; `forceSwitch` phazing is not.
+  if ((typeof encoded.selfSwitch === 'string' &&
+       encoded.selfSwitch !== 'copyvolatile' && encoded.selfSwitch !== 'shedtail') ||
       encoded.forceSwitch ||
       encoded.pseudoWeather || encoded.slotCondition ||
       encoded.stallingMove || encoded.sleepUsable || encoded.mindBlownRecoil ||
