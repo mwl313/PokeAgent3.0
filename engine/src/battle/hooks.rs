@@ -2640,7 +2640,9 @@ impl BattleState {
         // priority-0 `onBasePower`), and a charged target's condition doubles
         // Bounce's BasePower from Gust/Twister (`onSourceBasePower`).
         if matches!(event, ModifierEvent::BasePower) {
-            let weather = self.effective_weather(dex);
+            // The handler runs while the move is the current effect, so
+            // `pokemon.effectiveWeather()` takes the Mega Sol override.
+            let weather = self.mon_weather(dex, actor);
             if let Some(spec) = m.charge.as_ref()
                 && spec.half_in_weak_weather
                 && matches!(

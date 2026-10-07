@@ -292,27 +292,26 @@ impl BattleState {
         }
     }
 
-    /// `conditions:sunnyday|raindance.onWeatherModifyDamage` are keyed on the
-    /// *defender's* effective weather, and `abilities:megasol` runs the sun
-    /// handler first with a fast exit (so a Mega Sol attacker's moves only ever
-    /// see the sun rule).
+    /// `conditions:sunnyday|raindance.onWeatherModifyDamage` gate on the
+    /// defender's `effectiveWeather`, but `Pokemon#effectiveWeather` keys its
+    /// Mega Sol override on `battle.activePokemon` - the move's user - and on
+    /// the effect currently running, so under a Mega Sol attacker *both* the
+    /// attacker's and the defender's query resolve to sun. `abilities:megasol`
+    /// relays the sun handler inside a `priorityEvent`, whose fast exit keeps
+    /// the field weather's own handler from running alongside it, so the rule
+    /// is exactly the move user's `effectiveWeather` view.
     pub(super) fn weather_damage_modifier(
         &self,
         dex: &Dex,
         actor: Entity,
-        defender: Entity,
+        _defender: Entity,
         move_type: Id,
     ) -> u32 {
-        let attacker_sol =
-            dex.effects.abilities[self.mon(actor).ability as usize] == Ability::Megasol;
-        let rule = if attacker_sol {
-            dex.effects.sun
-        } else {
-            self.effective_weather(dex)
-        };
-        if self.mon_weather(dex, defender) != rule {
-            return 4096;
-        }
+        // The handler's `defender.effectiveWeather() != <own id>` gate cannot
+        // reject under the modeled item set: both sides read the same
+        // `mon_weather` view (a Utility Umbrella holder would flip it, and is
+        // still an explicit gap).
+        let rule = self.mon_weather(dex, actor);
         if (rule == dex.effects.rain && move_type == dex.effects.water)
             || (rule == dex.effects.sun && move_type == dex.effects.fire)
         {
