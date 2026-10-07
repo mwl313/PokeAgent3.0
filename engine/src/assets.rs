@@ -1670,6 +1670,7 @@ impl Dex {
             partially_trapped: lookup("conditions", "partiallytrapped")?,
             perish_song: lookup("conditions", "perishsong")?,
             leech_seed: lookup("conditions", "leechseed")?,
+            metronome: lookup("conditions", "metronome")?,
             throat_chop: lookup("conditions", "throatchop")?,
             encore: lookup("conditions", "encore")?,
             taunt: lookup("conditions", "taunt")?,

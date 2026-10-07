@@ -1531,6 +1531,46 @@ impl BattleState {
                 return Ok(());
             }
         }
+        // `items:metronome.condition.onTryMove` (priority -2, the last TryMove
+        // handler): a lost item removes the counter volatile here; otherwise
+        // the consecutive-use counter advances only when the previous turn
+        // used the same move successfully. A two-turn release counts its
+        // charge turn as one step, exactly like the reference branch.
+        if self
+            .mon(actor)
+            .volatiles
+            .contains_key(&dex.effects.metronome)
+        {
+            if dex.effects.items[self.mon(actor).item as usize] != Item::Metronome {
+                self.mon_mut(actor).volatiles.remove(&dex.effects.metronome);
+            } else {
+                let charged = self
+                    .mon(actor)
+                    .volatiles
+                    .contains_key(&dex.effects.two_turn_move);
+                let (num, last) = {
+                    let state = &self.mon(actor).volatiles[&dex.effects.metronome];
+                    (state.values[0], state.values[1])
+                };
+                let same = last == i64::from(move_id);
+                let previous_succeeded =
+                    self.mon(actor).move_last_turn_result == MoveResult::Success;
+                let next = if same && previous_succeeded {
+                    num + 1
+                } else if charged {
+                    if same { num + 1 } else { 1 }
+                } else {
+                    0
+                };
+                let state = self
+                    .mon_mut(actor)
+                    .volatiles
+                    .get_mut(&dex.effects.metronome)
+                    .expect("metronome volatile present");
+                state.values[0] = next;
+                state.values[1] = i64::from(move_id);
+            }
+        }
         if behavior == MoveBehavior::Terrain {
             self.start_terrain(dex, actor, m.terrain, false)?;
             self.mon_mut(actor).move_this_turn_result = MoveResult::Success;

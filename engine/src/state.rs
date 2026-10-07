@@ -892,6 +892,18 @@ impl BattleState {
                             && effect.values[0] < dex.moves.len() as i64
                             && dex.moves[effect.values[0] as usize].charge.is_some()
                             && (-2..=2).contains(&effect.values[1])
+                    } else if id == dex.effects.metronome {
+                        // `conditions:metronome`: `[numConsecutive, lastMove]`,
+                        // duration-less while the item is held. A fresh start
+                        // is `[0, 0]`; after a use `lastMove` is a move id and
+                        // the counter grows without a cap (it is clamped to 5
+                        // only inside the damage modifier).
+                        effect.duration.is_none()
+                            && effect.values.len() == 2
+                            && effect.values[0] >= 0
+                            && effect.values[1] >= 0
+                            && (effect.values[1] == 0
+                                || (effect.values[1] as usize) < dex.moves.len())
                     } else if usize::from(id) < dex.moves.len()
                         && dex.moves[id as usize].charge.is_some()
                     {

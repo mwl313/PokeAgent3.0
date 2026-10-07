@@ -1716,6 +1716,15 @@ impl BattleState {
                 if attacking == Ability::Sniper {
                     add(actor, 0, if critical { 6144 } else { 4096 });
                 }
+                // `items:metronome.condition.onModifyDamage`: the attacker's
+                // consecutive-use counter scales every damaging move it uses
+                // (4096, 4915, 5734, 6553, 7372, 8192 for stacks 0..5+, and
+                // the handler also participates at zero).
+                if let Some(state) = self.mon(actor).volatiles.get(&dex.effects.metronome) {
+                    const METRONOME_MODS: [u32; 6] = [4096, 4915, 5734, 6553, 7372, 8192];
+                    let index = state.values[0].clamp(0, 5) as usize;
+                    add(actor, 0, METRONOME_MODS[index]);
+                }
             }
             // `abilities:furcoat|marvelscale|grasspelt.onModifyDef` all carry
             // priority 6 and chain with the holder's item modifiers.

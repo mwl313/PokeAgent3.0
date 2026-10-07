@@ -566,6 +566,9 @@ pub enum Item {
     RockyHelmet,
     ExpertBelt,
     BigRoot,
+    /// Metronome: consecutive uses of the same move raise its damage
+    /// (`conditions:metronome.onModifyDamage`, 4096..8192 over six steps).
+    Metronome,
     LightClay,
     DampRock,
     HeatRock,
@@ -665,6 +668,7 @@ impl Item {
             "rockyhelmet" => Self::RockyHelmet,
             "expertbelt" => Self::ExpertBelt,
             "bigroot" => Self::BigRoot,
+            "metronome" => Self::Metronome,
             "lightclay" => Self::LightClay,
             "damprock" => Self::DampRock,
             "heatrock" => Self::HeatRock,
@@ -1039,6 +1043,8 @@ pub struct NativeEffects {
     pub perish_song: Id,
     /// `leechseed` condition: drains the holder into the seeding slot.
     pub leech_seed: Id,
+    /// `conditions:metronome` volatile: the held-item consecutive-use counter.
+    pub metronome: Id,
     /// Volatile that disables and refuses sound moves for two turns.
     pub throat_chop: Id,
     /// `move:encore` volatile: locks the holder into its last move.

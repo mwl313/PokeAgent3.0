@@ -296,6 +296,22 @@ pub(super) fn start(state: &mut BattleState, dex: &Dex, e: Entity) -> Result<()>
     if item == Item::WhiteHerb {
         white_herb(state, dex, e)?;
     }
+    // `items:metronome.onStart`: the item adds its counter volatile. The
+    // volatile has no `onRestart`, so a re-add while it already exists is a
+    // silent no-op (reference `Pokemon#addVolatile`).
+    if item == Item::Metronome && !state.mon(e).volatiles.contains_key(&dex.effects.metronome) {
+        let order = state.allocate_effect_order()?;
+        state.mon_mut(e).volatiles.insert(
+            dex.effects.metronome,
+            EffectState {
+                id: dex.effects.metronome,
+                values: vec![0, 0],
+                effect_order: order,
+                effect_order_assigned: true,
+                ..Default::default()
+            },
+        );
+    }
     Ok(())
 }
 
