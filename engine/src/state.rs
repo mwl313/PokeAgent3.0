@@ -1140,6 +1140,7 @@ impl BattleState {
                     dex.effects.reflect,
                     dex.effects.light_screen,
                     dex.effects.aurora_veil,
+                    dex.effects.safeguard,
                     dex.effects.wide_guard,
                     dex.effects.quick_guard,
                     dex.effects.spikes,
@@ -1190,6 +1191,8 @@ impl BattleState {
                 }
                 let maximum = if id == dex.effects.tailwind {
                     Some(4)
+                } else if id == dex.effects.safeguard {
+                    Some(5)
                 } else if id == dex.effects.reflect
                     || id == dex.effects.light_screen
                     || id == dex.effects.aurora_veil

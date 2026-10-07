@@ -163,6 +163,33 @@ const TRIALS = [
       return null;
     },
   },
+  {
+    name: 'safeguard_refuses_foe_status_and_yawn',
+    p1: () => team(setOf('Milotic', 'Competitive', ['Safeguard', 'Protect', 'Ice Beam'])),
+    p2: () => team(
+      setOf('Ampharos', 'Static', ['Thunder Wave', 'Protect', 'Dragon Pulse']),
+      setOf('Chimecho', 'Levitate', ['Yawn', 'Protect', 'Psychic']),
+    ),
+    script: [
+      {p1: ['safeguard', 'protect'], p2: ['protect', 'protect']},
+      {p1: ['protect', 'protect'], p2: [{move: 'thunderwave', target: 1}, {move: 'yawn', target: 1}]},
+      {p1: ['protect', 'protect'], p2: ['protect', 'protect']},
+      {p1: ['protect', 'protect'], p2: ['protect', 'protect']},
+    ],
+    coverage: {move: 'safeguard'},
+    verify(fixture, session) {
+      if (!logHas(session, /\|move\|p1a: s0\|Safeguard\|/)) return 'Safeguard never executed';
+      if (!monAt(fixture, 0, 0).every(p => p.status === 0)) return 'a foe status landed under Safeguard';
+      if (monAt(fixture, 0, 0).some(p => p.volatiles.includes('yawn'))) {
+        return 'the Yawn countdown was added under Safeguard';
+      }
+      const conditions = fixture.steps.map(step => step.expected.sides[0].conditions.map(c => c[0]));
+      if (!conditions.some(list => list.includes(ids.conditions.safeguard))) {
+        return 'the Safeguard side condition was never recorded';
+      }
+      return null;
+    },
+  },
 ];
 
 runTrials(TRIALS, {seedBase: 26000, artifact: 'more_spinfamily.json', debugEnv: 'DEBUG_SPIN'});

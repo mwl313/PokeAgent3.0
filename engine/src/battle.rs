@@ -6117,6 +6117,21 @@ impl BattleState {
             if immune || terrain_blocks {
                 return Ok(false);
             }
+            // `conditions:safeguard.onSetStatus`: a status applied by another
+            // Pokémon is refused while the target's side holds Safeguard.
+            // (Yawn cannot reach this stage: its volatile is refused when the
+            // side is protected.)
+            if !suppressing
+                && source != target
+                && self.sides[target.side as usize]
+                    .conditions
+                    .contains_key(&dex.effects.safeguard)
+            {
+                if !secondary && ability_source.is_none() {
+                    self.reveal_ability(target)?;
+                }
+                return Ok(false);
+            }
             // `onSetStatus` refusals for the ported status-immunity abilities.
             // The public immunity message only appears when the source effect
             // carries a `status` field, i.e. not for ability-sourced statuses.
@@ -6318,6 +6333,16 @@ impl BattleState {
                 // `abilities:leafguard.onTryAddVolatile`: the attempted Yawn is
                 // refused and the immunity message reveals the ability.
                 self.reveal_ability(target)?;
+            } else if (volatile == dex.effects.yawn || volatile == dex.effects.confusion)
+                && target != source
+                && self.sides[target.side as usize]
+                    .conditions
+                    .contains_key(&dex.effects.safeguard)
+            {
+                // `conditions:safeguard.onTryAddVolatile`: Yawn and confusion
+                // from another Pokémon are refused while the target's side
+                // holds Safeguard.
+                changed |= false;
             } else if volatile == dex.effects.encore
                 || volatile == dex.effects.taunt
                 || volatile == dex.effects.disable
@@ -7130,6 +7155,10 @@ impl BattleState {
                     (26, 5)
                 } else if id == dex.effects.aurora_veil {
                     (26, 10)
+                } else if id == dex.effects.safeguard {
+                    // `conditions:safeguard.onSideResidualOrder: 26`,
+                    // `SubOrder: 3` (between Light Screen and Tailwind).
+                    (26, 3)
                 } else if [
                     dex.effects.spikes,
                     dex.effects.stealth_rock,

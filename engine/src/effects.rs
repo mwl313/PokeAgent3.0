@@ -1014,7 +1014,9 @@ impl MoveBehavior {
             // Duration-one side conditions that block spread/priority moves.
             "wideguard" | "quickguard" => Self::Guard,
             "struggle" => Self::Struggle,
-            "tailwind" | "reflect" | "lightscreen" | "auroraveil" => Self::SideCondition,
+            "tailwind" | "reflect" | "lightscreen" | "auroraveil" | "safeguard" => {
+                Self::SideCondition
+            }
             "brickbreak" | "psychicfangs" => Self::ScreenBreak,
             "raindance" | "sunnyday" | "sandstorm" | "snowscape" => Self::Weather,
             "weatherball" => Self::WeatherBall,
@@ -1205,6 +1207,8 @@ pub struct NativeEffects {
     pub charge_move: Id,
     /// `noretreat`: the self-trap marker volatile.
     pub no_retreat: Id,
+    /// `safeguard`: the side condition that refuses foe-sourced statuses.
+    pub safeguard: Id,
     /// Additional Protect-family volatiles that block hits in the same
     /// `hitStepTryHitEvent` phase (priority 3).
     pub spiky_shield: Id,

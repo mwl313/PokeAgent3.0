@@ -429,6 +429,8 @@ impl BattleState {
         }
         let duration = if id == dex.effects.tailwind {
             4
+        } else if id == dex.effects.safeguard {
+            5
         } else if id == dex.effects.reflect
             || id == dex.effects.light_screen
             || id == dex.effects.aurora_veil

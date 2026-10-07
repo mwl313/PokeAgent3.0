@@ -661,6 +661,11 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:charge.condition.onMoveAborted",
     "moves:charge.condition.onAfterMove",
     "moves:charge.condition.onEnd",
+    // Safeguard: the side condition's start/end and its status/volatile gates.
+    "moves:safeguard.condition.onSideStart",
+    "moves:safeguard.condition.onSideEnd",
+    "moves:safeguard.condition.onSetStatus",
+    "moves:safeguard.condition.onTryAddVolatile",
     // No Retreat: the self-marker Try gate and its condition lifecycle.
     "moves:noretreat.onTry",
     "moves:noretreat.condition.onStart",
@@ -1977,6 +1982,7 @@ impl Dex {
             dragon_cheer: lookup("conditions", "dragoncheer")?,
             charge: lookup("conditions", "charge")?,
             no_retreat: lookup("conditions", "noretreat")?,
+            safeguard: lookup("conditions", "safeguard")?,
             charge_move: lookup("moves", "charge")?,
             spiky_shield: lookup("conditions", "spikyshield")?,
             baneful_bunker: lookup("conditions", "banefulbunker")?,
