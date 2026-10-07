@@ -857,6 +857,12 @@ impl BattleState {
                             .is_some_and(|duration| (1..=4).contains(&duration))
                             && effect.values.is_empty()
                             && effect.source.is_some()
+                    } else if id == dex.effects.leech_seed {
+                        // `moves:leechseed.condition`: a duration-less drain
+                        // volatile that records the seeding slot.
+                        effect.duration.is_none()
+                            && effect.values.is_empty()
+                            && effect.source.is_some()
                     } else if id == dex.effects.partially_trapped {
                         // `partiallytrapped`: a 5-or-6 turn bind that stores its
                         // damage divisor and keeps the binding source.

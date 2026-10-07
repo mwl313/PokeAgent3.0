@@ -1012,6 +1012,8 @@ pub struct NativeEffects {
     pub partially_trapped: Id,
     /// `perishsong` condition: four-tick countdown that ends in a faint.
     pub perish_song: Id,
+    /// `leechseed` condition: drains the holder into the seeding slot.
+    pub leech_seed: Id,
     /// Volatile that disables and refuses sound moves for two turns.
     pub throat_chop: Id,
     /// `move:encore` volatile: locks the holder into its last move.

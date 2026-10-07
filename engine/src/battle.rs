@@ -1929,6 +1929,14 @@ impl BattleState {
                 failed_otherwise = true;
                 continue;
             }
+            // `moves:leechseed.onTryImmunity`: Grass-type targets refuse the
+            // seed before any accuracy roll.
+            if m.hit.volatile == dex.effects.leech_seed
+                && self.mon(target).types.contains(&dex.effects.grass)
+            {
+                failed_otherwise = true;
+                continue;
+            }
             if let Some(effectiveness) = effectiveness {
                 hit.push((target, effectiveness));
             } else {
@@ -3767,6 +3775,7 @@ impl BattleState {
                 || volatile == dex.effects.roost
                 || volatile == dex.effects.glaive_rush
                 || volatile == dex.effects.partially_trapped
+                || volatile == dex.effects.leech_seed
             {
                 changed |= self.start_selection_volatile(
                     dex,
@@ -3921,6 +3930,34 @@ impl BattleState {
                     effect_order: order,
                     effect_order_assigned: true,
                     values: vec![i64::from(last)],
+                },
+            );
+            self.emit(
+                EventKind::EffectStart,
+                target,
+                source,
+                EffectRef::Condition(volatile),
+                0,
+                false,
+            )?;
+            return Ok(true);
+        }
+        if volatile == dex.effects.leech_seed {
+            // `moves:leechseed.condition`: no duration; the residual drains the
+            // holder into the recorded slot. Grass-type targets are refused by
+            // the move's `onTryImmunity` before this point.
+            if self.mon(target).types.contains(&dex.effects.grass) {
+                return Ok(false);
+            }
+            let order = self.allocate_effect_order()?;
+            self.mon_mut(target).volatiles.insert(
+                volatile,
+                EffectState {
+                    id: volatile,
+                    source: source_slot,
+                    effect_order: order,
+                    effect_order_assigned: true,
+                    ..Default::default()
                 },
             );
             self.emit(
@@ -4309,7 +4346,9 @@ impl BattleState {
                 ));
             }
             for (&id, state) in &self.mon(e).volatiles {
-                if state.duration.is_some() {
+                // Timed volatiles tick in this sweep; Leech Seed is the one
+                // duration-less volatile with its own residual handler.
+                if state.duration.is_some() || id == dex.effects.leech_seed {
                     // Reference `onResidualOrder`: Taunt 15, Encore 16, Disable
                     // 17, Throat Chop 22; other timed volatiles stay unordered.
                     let (order, sub_order) = if id == dex.effects.taunt {
@@ -4328,6 +4367,8 @@ impl BattleState {
                         (13, 0)
                     } else if id == dex.effects.perish_song {
                         (24, 0)
+                    } else if id == dex.effects.leech_seed {
+                        (8, 0)
                     } else {
                         (0, 0)
                     };
@@ -4434,6 +4475,60 @@ impl BattleState {
             );
         }
         for (e, id, status, _) in handlers {
+            if status == 0 && id == dex.effects.leech_seed {
+                // `moves:leechseed.condition.onResidual` (order 8): drain an
+                // eighth of the holder's maximum HP into the seeding slot.
+                let Some(state) = self.mon(e).volatiles.get(&id) else {
+                    continue;
+                };
+                let Some((side, roster)) = state.source else {
+                    continue;
+                };
+                let source = Entity {
+                    side: side.index() as u8,
+                    roster,
+                };
+                if self.mon(source).fainted || self.mon(source).hp == 0 {
+                    continue;
+                }
+                let amount = (u32::from(self.mon(e).stats[0]) / 8).max(1);
+                let actual = amount.min(u32::from(self.mon(e).hp)) as u16;
+                if actual == 0 {
+                    continue;
+                }
+                self.mon_mut(e).hp -= actual;
+                if self.mon(e).hp == 0 {
+                    self.faint_queue.push(FaintData {
+                        target: e,
+                        source: Some(source),
+                        from_move: false,
+                    });
+                }
+                self.emit(
+                    EventKind::Damage,
+                    e,
+                    Some(source),
+                    EffectRef::Condition(id),
+                    -i32::from(actual),
+                    true,
+                )?;
+                // `this.heal(damage, target, pokemon)`: a plain heal that fails
+                // silently at full HP.
+                let room = self.mon(source).stats[0] - self.mon(source).hp;
+                let healed = actual.min(room);
+                if healed > 0 {
+                    self.mon_mut(source).hp += healed;
+                    self.emit(
+                        EventKind::Heal,
+                        source,
+                        Some(e),
+                        EffectRef::Condition(id),
+                        i32::from(healed),
+                        true,
+                    )?;
+                }
+                continue;
+            }
             if status == 0 && id == dex.effects.partially_trapped {
                 // `moves:partiallytrapped.condition.onResidual` (order 13): the
                 // bind ends silently when its source left the field or has not

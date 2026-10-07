@@ -523,6 +523,10 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:perishsong.onHitField",
     "moves:perishsong.condition.onEnd",
     "moves:perishsong.condition.onResidual",
+    // Leech Seed: the Grass-type immunity gate and the residual drain.
+    "moves:leechseed.onTryImmunity",
+    "moves:leechseed.condition.onStart",
+    "moves:leechseed.condition.onResidual",
 ];
 
 /// Ported action-local callbacks, keyed by move id. Every entry must have its
@@ -768,8 +772,9 @@ const HANDLED_VOLATILES: &[&str] = &[
     "glaiverush",
     // Binding moves' damage/trap volatile.
     "partiallytrapped",
-    // Perish Song's three-turn countdown.
+    // Perish Song's three-turn countdown and Leech Seed's drain.
     "perishsong",
+    "leechseed",
     "mustrecharge",
     // Volatile selection-lock family: each id is declared by exactly one move
     // (encore, taunt, disable, imprison, torment) whose callbacks are below.
@@ -1634,6 +1639,7 @@ impl Dex {
             glaive_rush: lookup("conditions", "glaiverush")?,
             partially_trapped: lookup("conditions", "partiallytrapped")?,
             perish_song: lookup("conditions", "perishsong")?,
+            leech_seed: lookup("conditions", "leechseed")?,
             throat_chop: lookup("conditions", "throatchop")?,
             encore: lookup("conditions", "encore")?,
             taunt: lookup("conditions", "taunt")?,
