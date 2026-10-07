@@ -38,8 +38,10 @@ const requestDetail = (session, side) => {
     const info = req.active?.[slot];
     const forced = Boolean(req.forceSwitch?.[slot]);
     if (!p) return {present: false, requires_replacement: forced, can_mega: false, moves: []};
+    // World move list and raw disable flag: the served choice legality.
     return {present: !p.fainted, requires_replacement: forced, can_mega: Boolean(info?.canMegaEvo),
-      moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp, disabled: Boolean(m.disabled), target: m.target}))};
+      moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp,
+        disabled: Boolean(m.disabled), target: m.target}))};
   });
   const bench = side.pokemon.map((p, i) => [p, i])
     .filter(([p]) => !p.fainted && !side.active.includes(p)).map(([p]) => roster(p));
@@ -67,21 +69,63 @@ function sets(team, side) {
 
 verifyReference();
 const corpus = JSON.parse(fs.readFileSync(new URL('engine/data/turn-fixtures.json', root), 'utf8'));
+
+// Report the first divergent JSON path instead of a 500-line deep diff, so a
+// one-value regression names the side/roster/move it came from.
+function firstDiff(actual, expected, path = '$') {
+  if (Object.is(actual, expected)) return null;
+  if (Array.isArray(actual) && Array.isArray(expected)) {
+    if (actual.length !== expected.length) {
+      return `${path}.length: actual ${actual.length} vs expected ${expected.length}`;
+    }
+    for (let i = 0; i < actual.length; i++) {
+      const found = firstDiff(actual[i], expected[i], `${path}[${i}]`);
+      if (found) return found;
+    }
+    return null;
+  }
+  if (actual && expected && typeof actual === 'object' && typeof expected === 'object') {
+    const actualOnly = Object.keys(actual).filter(key => !(key in expected));
+    const expectedOnly = Object.keys(expected).filter(key => !(key in actual));
+    if (actualOnly.length || expectedOnly.length) {
+      return `${path}: key mismatch actual-only=${JSON.stringify(actualOnly)} expected-only=${JSON.stringify(expectedOnly)}`;
+    }
+    const keys = new Set([...Object.keys(actual), ...Object.keys(expected)]);
+    for (const key of keys) {
+      const found = firstDiff(actual[key], expected[key], `${path}.${key}`);
+      if (found) return found;
+    }
+    return null;
+  }
+  return `${path}: actual ${JSON.stringify(actual)} vs expected ${JSON.stringify(expected)}`;
+}
+
+function compare(label, actual, expected) {
+  const diff = firstDiff(actual, expected);
+  if (diff) throw new Error(`${label}: first divergence at ${diff}`);
+}
+
 let checkedSteps = 0;
+let checkedFixtures = 0;
 for (const fixture of corpus.fixtures) {
   const session = new ReferenceSession({
     teams: [sets(fixture.teams[0], 0), sets(fixture.teams[1], 1)], seed: fixture.seed,
   });
   try {
-    assert.deepStrictEqual(compact(session), fixture.initial, `${fixture.name}: initial`);
-    for (const step of fixture.steps) {
+    compare(`${fixture.name}: initial`, compact(session), fixture.initial);
+    for (const [stepIndex, step] of fixture.steps.entries()) {
       const result = session.choose(step.side === 'P1' ? 'p1' : 'p2', step.command);
       assert.ok(result.accepted, `${fixture.name}: rejected ${step.command}`);
-      assert.deepStrictEqual(compact(session), step.expected, `${fixture.name}: ${step.command}`);
+      compare(
+        `${fixture.name}: step ${stepIndex} (${step.command})`,
+        compact(session),
+        step.expected,
+      );
       checkedSteps++;
     }
+    checkedFixtures++;
   } finally {
     session.destroy();
   }
 }
-console.log(`verified ${corpus.fixtures.length} fixtures / ${checkedSteps} decision boundaries against the pinned reference`);
+console.log(`verified ${checkedFixtures}/${corpus.fixtures.length} fixtures / ${checkedSteps} decision boundaries against the pinned reference`);

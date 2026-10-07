@@ -96,6 +96,73 @@ def test_fixed_batch(engine):
         assert rows["move_effects"].tobytes() == single["move_effects"].tobytes()
 
 
+def test_batched_request_expansion(engine):
+    """Batched introspection/mask calls must equal the per-request walk exactly.
+
+    This is the batch-first hot path used by `pa3_actor.py`: one
+    `request_info_batch` and one `candidates_batch` crossing per branch level,
+    instead of two crossings per environment.
+    """
+    handles = engine.reset_batch(
+        [3, 7, 11, 17], [5, 9, 13, 19],
+        [(5, 6, 7, 8), (9, 10, 11, 12), (13, 14, 15, 16), (17, 18, 19, 20)],
+        [(0, 1), (1, 0), (0, 1), (1, 0)],
+    )
+    for _ in range(6):
+        specs = [(handle[0], handle[1], side) for handle in handles for side in (0, 1)]
+        info = engine.request_info_batch(specs)
+        singles = [
+            (
+                engine.request_kind(slot, generation, side),
+                engine.request_branches(slot, generation, side),
+            )
+            for slot, generation, side in specs
+        ]
+        assert info == singles, "request_info_batch diverged from per-request calls"
+
+        # Walk every pending request through all branch levels in lockstep,
+        # comparing the batched expansion against the single-request call.
+        walk = [
+            {"spec": spec, "branches": len(branches), "prefix": []}
+            for spec, (kind, branches) in zip(specs, info)
+            if kind in (0, 1, 2) and branches
+        ]
+        while walk:
+            rows = engine.candidates_batch(
+                [(*entry["spec"], list(entry["prefix"])) for entry in walk]
+            )
+            assert len(rows) == len(walk)
+            still = []
+            for entry, candidates in zip(walk, rows):
+                slot, generation, side = entry["spec"]
+                single = engine.candidates(slot, generation, side, list(entry["prefix"]))
+                assert candidates == single, "candidates_batch diverged from candidates"
+                assert candidates, "live branch without a legal candidate"
+                entry["prefix"].append(candidates[0])
+                if len(entry["prefix"]) < entry["branches"]:
+                    still.append(entry)
+            walk = still
+        submissions = []
+        for handle in handles:
+            sides = []
+            for side in (0, 1):
+                kind = engine.request_kind(handle[0], handle[1], side)
+                if kind not in (0, 1, 2):
+                    continue
+                prefix = []
+                while True:
+                    candidates = engine.candidates(handle[0], handle[1], side, prefix)
+                    if not candidates:
+                        break
+                    prefix.append(candidates[0])
+                sides.append((side, prefix))
+            if sides:
+                submissions.append((handle[0], handle[1], sides))
+        if not submissions:
+            break
+        engine.step_batch(submissions)
+
+
 def test_determinism(envs=8, rounds=40):
     """Two engines with identical seeds/teams/actions must match byte for byte."""
     specs = []
@@ -181,6 +248,8 @@ def main():
     print("layout ok")
     test_fixed_batch(engine)
     print("fixed batch ok")
+    test_batched_request_expansion(engine)
+    print("batched request expansion ok")
     digest = test_determinism()
     print(f"determinism ok: {digest[:16]}")
     test_snapshot_restore()

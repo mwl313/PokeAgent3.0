@@ -91,3 +91,42 @@ fn every_executable_move_has_a_differential_fixture() {
         );
     }
 }
+
+/// Every executable move that can be reached *dynamically* (it calls, copies,
+/// transforms into or transfers another effect) must also carry a differential
+/// witness; otherwise closure callers could be enabled without proof that they
+/// interact with the rest of the move set correctly. Closure membership is
+/// generated from the pinned reference by `scripts/dynamic_closure.mjs`.
+#[test]
+fn every_executable_dynamic_caller_has_a_differential_fixture() {
+    let dex = Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap();
+    let corpus: Corpus =
+        serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap();
+    let covered: BTreeSet<String> = corpus
+        .fixtures
+        .iter()
+        .filter(|fixture| !fixture.coverage.move_id.is_empty())
+        .map(|fixture| fixture.coverage.move_id.clone())
+        .collect();
+    let exempt: BTreeSet<&str> = EXEMPT.iter().map(|(id, _)| *id).collect();
+    let closure: serde_json::Value =
+        serde_json::from_str(include_str!("../data/dynamic-closure.json")).unwrap();
+    let mut missing = Vec::new();
+    for entry in closure["entries"].as_array().expect("closure entries") {
+        if entry["kind"].as_str() != Some("move") {
+            continue;
+        }
+        let id = entry["id"].as_str().expect("closure id");
+        let numeric = dex.id("moves", id).expect("closure move in catalogue");
+        if dex.effects.moves[numeric as usize] == MoveBehavior::Unimplemented {
+            continue;
+        }
+        if !covered.contains(id) && !exempt.contains(id) {
+            missing.push(id.to_string());
+        }
+    }
+    assert!(
+        missing.is_empty(),
+        "executable dynamic callers without a differential fixture: {missing:?}"
+    );
+}

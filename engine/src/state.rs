@@ -164,6 +164,9 @@ pub struct PokemonState {
     /// `circlethrow` mark the target and the post-action phazing step drags a
     /// random reserve in.
     pub force_switch_flag: bool,
+    /// Reference `lastMove`: the move this Pokémon most recently used while
+    /// active (0 = none). Encore, Disable, Torment and Cursed Body read it.
+    pub last_move: Id,
 }
 
 impl PokemonState {
@@ -231,6 +234,7 @@ impl PokemonState {
             active_move_actions: 0,
             switch_flag: None,
             force_switch_flag: false,
+            last_move: 0,
         }
     }
 }
@@ -282,7 +286,7 @@ impl Outcome {
 /// Current snapshot schema. Bump when the persisted world shape changes; the
 /// restore path rejects every other value, and tests read this constant so a
 /// bump cannot leave a stale hard-coded expectation behind.
-pub const SNAPSHOT_SCHEMA: u32 = 6;
+pub const SNAPSHOT_SCHEMA: u32 = 7;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BattleState {
@@ -617,6 +621,14 @@ impl BattleState {
                     })
                     || m.switch_flag.is_some() && (m.fainted || m.active_slot.is_none())
                     || m.force_switch_flag && (m.fainted || m.active_slot.is_none())
+                    || m.last_move != 0
+                        && (usize::from(m.last_move) >= dex.moves.len()
+                            || (m.last_move != dex.effects.struggle
+                                && !m
+                                    .base_moves
+                                    .iter()
+                                    .chain(m.moves.iter())
+                                    .any(|mv| mv.id == m.last_move)))
                 {
                     return Err(EngineError::InvalidInput("invalid snapshot Pokémon".into()));
                 }
@@ -705,6 +717,37 @@ impl BattleState {
                             .is_some_and(|duration| (1..=2).contains(&duration))
                             && effect.values.is_empty()
                             && effect.source.is_some()
+                    } else if id == dex.effects.encore {
+                        // Locks the holder into a move still in its repertoire;
+                        // base duration 3, +1 when no action was queued yet.
+                        effect
+                            .duration
+                            .is_some_and(|duration| (1..=4).contains(&duration))
+                            && effect.values.len() == 1
+                            && effect.values[0] > 0
+                            && effect.values[0] < dex.moves.len() as i64
+                            && m.moves.iter().any(|mv| i64::from(mv.id) == effect.values[0])
+                    } else if id == dex.effects.disable {
+                        // Base duration 5, one decrement when the target had not
+                        // yet acted (or the ability fired mid-move).
+                        effect
+                            .duration
+                            .is_some_and(|duration| (1..=5).contains(&duration))
+                            && effect.values.len() == 1
+                            && effect.values[0] > 0
+                            && effect.values[0] < dex.moves.len() as i64
+                            && m.moves.iter().any(|mv| i64::from(mv.id) == effect.values[0])
+                    } else if id == dex.effects.taunt {
+                        effect
+                            .duration
+                            .is_some_and(|duration| (1..=4).contains(&duration))
+                            && effect.values.is_empty()
+                    } else if id == dex.effects.torment {
+                        effect.duration.is_none() && effect.values.is_empty()
+                    } else if id == dex.effects.imprison {
+                        effect.duration.is_none()
+                            && effect.values.is_empty()
+                            && effect.source == Some((if side_index == 0 { SideId::P1 } else { SideId::P2 }, roster as u8))
                     } else {
                         return Err(EngineError::Unsupported(format!("snapshot volatile {id}")));
                     };

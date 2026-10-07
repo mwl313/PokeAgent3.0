@@ -35,6 +35,7 @@ class Request:
         "handle",
         "counter",
         "timer",
+        "prefix",
     )
 
     def __init__(
@@ -50,6 +51,7 @@ class Request:
         self.branches = branches
         self.counter = counter
         self.timer = timer
+        self.prefix = []
 
     def observation_view(self):
         """Zero-copy numpy slices of this request's observation, if needed."""
@@ -126,6 +128,41 @@ class Policy:
             actions.append(action)
         return actions
 
+    def choose_batch(self, engine, requests, counter=None, timer=None):
+        """One `candidates_batch` crossing per branch level for the whole round.
+
+        Legal sets match the per-request `Request.complete` walk exactly. Draw
+        order is depth-major (all requests' branch 0, then branch 1, ...) rather
+        than request-major, so a seeded random policy stays deterministic for a
+        given code revision without consuming draws in the old order.
+        """
+        active = list(requests)
+        while active:
+            specs = [
+                (request.handle[0], request.handle[1], request.side, list(request.prefix))
+                for request in active
+            ]
+            start = time.perf_counter()
+            results = engine.candidates_batch(specs)
+            elapsed = time.perf_counter() - start
+            if counter is not None:
+                counter["calls"] += 1
+                counter["returned"] += sum(len(row) for row in results)
+            if timer is not None:
+                timer["candidates_seconds"] += elapsed
+            nxt = []
+            for request, candidates in zip(active, results):
+                if not candidates:
+                    raise RuntimeError(
+                        f"request without legal completion at branch {len(request.prefix)}"
+                    )
+                pick = self.random.choice(candidates) if self.mode == "random" else candidates[0]
+                request.prefix.append(pick)
+                if len(request.prefix) < len(request.branches):
+                    nxt.append(request)
+            active = nxt
+        return [list(request.prefix) for request in requests]
+
 
 class ActorRunner:
     def __init__(
@@ -179,19 +216,28 @@ class ActorRunner:
         self.pending = self.envs
 
     def _collect_round(self, policy):
-        requests = []
-        handles = []
-        sides = []
+        pending = []
         for index in range(self.envs):
             if self.finished[index]:
                 continue
             handle = self.handles[index]
             for side in (0, 1):
-                kind = self.engine.request_kind(handle[0], handle[1], side)
-                if kind in (0, 1, 2):
-                    requests.append((index, handle, side, kind))
-                    handles.append((handle[0], handle[1]))
-                    sides.append(side)
+                pending.append((index, handle, side))
+        if not pending:
+            return None
+        info = self.engine.request_info_batch(
+            [(handle[0], handle[1], side) for _, handle, side in pending]
+        )
+        requests = []
+        handles = []
+        sides = []
+        branches = []
+        for (index, handle, side), (kind, branch_slots) in zip(pending, info):
+            if kind in (0, 1, 2):
+                requests.append((index, handle, side, kind))
+                handles.append((handle[0], handle[1]))
+                sides.append(side)
+                branches.append(branch_slots)
         if not requests:
             return None
         start = time.perf_counter()
@@ -216,13 +262,13 @@ class ActorRunner:
                 kind,
                 batch if batch is not None else blobs[offset],
                 offset if batch is not None else 0,
-                self.engine.request_branches(handle[0], handle[1], side),
+                branches[offset],
                 self.counter,
                 self.timer,
             )
             payload.append(request)
         start = time.perf_counter()
-        chosen = policy(payload)
+        chosen = policy.choose_batch(self.engine, payload, self.counter, self.timer)
         self.metrics["policy_seconds"] += time.perf_counter() - start
         self.metrics["candidates_seconds"] = self.timer["candidates_seconds"]
         self.metrics["candidate_calls"] = self.counter["calls"]

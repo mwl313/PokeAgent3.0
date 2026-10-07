@@ -49,6 +49,65 @@ fn main() {
     );
     println!("blocked_moves={}", blocked.join(","));
 
+    // Witnessed coverage: an executable move still needs a differential fixture
+    // that actually ran it, otherwise "executable" overstates readiness.
+    let corpus: serde_json::Value = serde_json::from_slice(
+        &std::fs::read(Path::new(&dir).join("turn-fixtures.json")).unwrap_or_default(),
+    )
+    .unwrap_or(serde_json::Value::Null);
+    let witnessed: BTreeSet<String> = corpus["fixtures"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|fixture| fixture["coverage"]["move"].as_str().map(str::to_string))
+        .collect();
+    let witnessed_moves = allowed_moves
+        .iter()
+        .filter(|id| witnessed.contains(*id))
+        .count();
+    println!(
+        "moves_witnessed={witnessed_moves}/{executable} (differential fixtures that actually ran the move)"
+    );
+    // Dynamic-reachability closure, generated from the pinned reference by
+    // `scripts/dynamic_closure.mjs` (never hand-maintained): callers that can
+    // execute, copy, transform into or transfer effects not written on a team
+    // sheet. Readiness additionally requires every reachable universe to be
+    // complete. Ability witnesses are reported by `ability_fixture_report`.
+    let closure: serde_json::Value = serde_json::from_slice(
+        &std::fs::read(Path::new(&dir).join("dynamic-closure.json")).unwrap_or_default(),
+    )
+    .unwrap_or(serde_json::Value::Null);
+    let closure_entries = closure["entries"].as_array().cloned().unwrap_or_default();
+    let mut closure_blocked: Vec<String> = Vec::new();
+    for entry in &closure_entries {
+        let kind = entry["kind"].as_str().unwrap_or_default();
+        let id = entry["id"].as_str().unwrap_or_default();
+        let numeric = match kind {
+            "move" => dex.id("moves", id).unwrap_or(0),
+            "ability" => dex.id("abilities", id).unwrap_or(0),
+            "item" => dex.id("items", id).unwrap_or(0),
+            _ => continue,
+        };
+        let implemented = match kind {
+            "move" => dex.effects.moves[numeric as usize] != MoveBehavior::Unimplemented,
+            "ability" => dex.effects.abilities[numeric as usize].is_ported(),
+            "item" => {
+                dex.effects.items[numeric as usize] != Item::Unimplemented
+                    || !dex.effects.mega_stones[numeric as usize].is_empty()
+            }
+            _ => false,
+        };
+        if !implemented {
+            closure_blocked.push(format!("{kind}:{id}"));
+        }
+    }
+    println!(
+        "dynamic_closure: callers={} blocked={} [{}]",
+        closure_entries.len(),
+        closure_blocked.len(),
+        closure_blocked.join(",")
+    );
+
     let mut legal_abilities: BTreeSet<Id> = BTreeSet::new();
     let mut legal_items: BTreeSet<Id> = BTreeSet::new();
     for (index, legal) in dex.legal_starting_species.iter().enumerate() {

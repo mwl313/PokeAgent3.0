@@ -176,13 +176,49 @@ fn main() {
             }
         }
     }
+    // Static mechanic completeness is a different question from "finished one
+    // battle": a team can complete a trajectory in which its unsupported
+    // mechanic never had to fire. Both numbers are reported, and only the
+    // static one supports a claim about arbitrary legal play.
+    let statically_complete = teams
+        .iter()
+        .filter(|team| {
+            team.members.iter().all(|member| {
+                // The starting ability, the held item, the moves, and — when a
+                // Mega Stone is held — the Mega form's fixed ability, which the
+                // engine activates on Mega Evolution and which a team-sheet-only
+                // scan would otherwise miss.
+                let mega_ability_ok = dex.effects.mega_stones[member.item as usize]
+                    .iter()
+                    .find_map(|(base, mega)| {
+                        (*base == dex.species[member.species as usize].base_species)
+                            .then_some(*mega)
+                    })
+                    .map(|mega| {
+                        let ability = dex.species[mega as usize].abilities[0];
+                        dex.effects.abilities[ability as usize].is_ported()
+                    })
+                    .unwrap_or(true);
+                dex.effects.abilities[member.ability as usize].is_ported()
+                    && mega_ability_ok
+                    && (member.item == 0
+                        || dex.effects.items[member.item as usize] != pa3_engine::effects::Item::Unimplemented
+                        || !dex.effects.mega_stones[member.item as usize].is_empty())
+                    && member.moves.iter().all(|mv| {
+                        dex.effects.moves[*mv as usize] != pa3_engine::effects::MoveBehavior::Unimplemented
+                    })
+            })
+        })
+        .count();
+    println!("training pool: {} teams", teams.len());
     println!(
-        "training pool: {} teams, {} complete natural battles ({:.1}%), {} blocked",
-        teams.len(),
-        complete,
+        "  trajectory completions: {complete} teams completed >=1 natural battle ({:.1}%) - not proof of full support",
         complete as f64 * 100.0 / teams.len().max(1) as f64,
-        teams.len() - complete
     );
+    println!(
+        "  static mechanic completeness: {statically_complete} teams have every member move/ability/item implemented (arbitrary legal play)"
+    );
+    println!("  blocked in this trajectory probe: {}", teams.len() - complete);
     if complete > 0 {
         println!(
             "mean completed battle length: {:.1} turns, {decisive} decisive (decision cap {decision_cap})",

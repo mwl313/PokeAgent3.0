@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
+import {computeDynamicClosure} from './dynamic_closure.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ref = path.join(root, 'vendor/pokemon-showdown');
@@ -241,6 +242,7 @@ probe.runEvent = originalRunEvent; probe.priorityEvent = originalPriorityEvent;
 probe.destroy();
 const files = {
   'dex.json': {schema: 'pa3-dex-v1', rules, tables}, 'scope.json': scope,
+  'dynamic-closure.json': computeDynamicClosure(dex, scope),
   'callbacks.json': callbacks, 'training-teams.json': trainingTeams,
   'reference-fixtures.json': {oracle_commit: pin, rng, stats: statFixtures, pp, targeting, modifiers, recoil_rounding: recoilRounding, action_speed: actionSpeed, ordering, left_to_right_ordering: leftToRightOrdering, health, damage_kernel: damageKernel, initialization},
 };

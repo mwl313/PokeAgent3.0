@@ -261,6 +261,70 @@ Transform/called moves, Magic Bounce, Mold Breaker, Emergency Exit, Trace,
 Disguise, Illusion, Protean/Libero, Stance Change, Ice Face, Zero to Hero and
 the rest) remain explicit operational errors.
 
+## 2026-10-07 continuation: the volatile selection-lock family (Encore, Taunt, Disable, Imprison, Torment, Cursed Body)
+
+The held-item/pivot/guard work left `encore` as the single largest
+training-pool blocker (247 of 1,136 teams). The whole selection-lock family is
+now native and differentially verified; nothing else was touched.
+
+- **Volatile lifecycle.** `NativeEffects` carries the five pinned condition IDs
+  plus `mefirst` and `mentalherb`. `PokemonState.last_move` mirrors the
+  reference `Pokemon#lastMove` (set in `moveUsed`, i.e. after BeforeMove and
+  after PP deduction, including a failed or missed move and Struggle) and is
+  cleared by `clearVolatile` on switch-out and faint. `SNAPSHOT_SCHEMA` is now
+  7; restore validates each new volatile's shape (Encore/Disable hold a move
+  that is still in the repertoire, Taunt 1..4, Imprison self-sourced and
+  untimed, Torment untimed) and rejects malformed payloads.
+- **`onStart` semantics.** `BattleState::start_selection_volatile` transcribes
+  each reference `onStart`: Encore fails on no last move, `failencore`,
+  Z/Max or 0 PP, stores the move and extends its duration by one when no action
+  is queued; Taunt extends when the holder is already active and has not queued
+  an action; Disable drops one tick when the target has not acted yet or when
+  Cursed Body fires mid-move, and fails without a recorded move or with 0 PP;
+  Imprison and Torment only record state. `addVolatile`'s no-`onRestart`
+  failure and the resulting move failure are preserved.
+- **Champions Encore queue change.** When the encored target already queued a
+  different move (and holds no Mental Herb), `BattleState::change_action`
+  reproduces `BattleQueue#changeAction`/`insertChoice`: cancel the actor's
+  queued actions, rebuild the move action with `getActionSpeed`, re-resolve its
+  target with `getRandomTarget`, then insert it by `comparePriority` with the
+  reference's `random(first, last+1)` tie-break draw. Both draws are visible in
+  the corpus RNG comparison.
+- **Request masks.** `end_turn`'s disable pass now also applies the reference
+  `onDisableMove`/`onFoeDisableMove` handlers: Encore disables every other move
+  while the encored move is still known, Taunt every Status move except Me
+  First, Disable and Torment their recorded move, and an active opposing
+  Imprison hides every move the imprisoning Pokémon knows. Imprison's hidden
+  marker keeps the served choice illegal (`disabled: true`); the reference's
+  client-side `getMoves` can display it as enabled to the last active slot, but
+  the server rejects that choice, so the legal mask excludes it.
+- **BeforeMove ordering.** The refusals run in reference priority order:
+  mustrecharge 11, sleep/freeze 10, flinch 8, Disable 7, Throat Chop 6, Taunt 5,
+  Imprison 4, confusion 3, paralysis 1. Imprison's foe-side gate refuses a move
+  that was committed before Imprison landed, which the corpus now exercises.
+- **Cursed Body.** `Ability::CursedBody` is ported: an exact 3/10 draw during
+  the DamagingHit phase disables the attacker, the roll is skipped while the
+  attacker already holds Disable or when the hit was Struggle/Max/future, and
+  the ability is revealed.
+- **Fixtures.** `engine/tests/generate_more_disable_family.mjs` (7 complete
+  legal battles, one per move: Encore after and before the target's action,
+  Taunt, Disable, Imprison with the mid-turn refusal, Torment, Cursed Body)
+  writes `engine/data/more_disable_family.json`, which the exporter merges.
+  Every fixture carries its `coverage.move` witness for `fixture_coverage.rs`.
+  `generate_turn_fixtures.mjs` and `verify_turn_fixtures.mjs` now document the
+  stored convention: the world move list with the raw disable flag (served
+  choice legality), not the client-side display value.
+
+Verified: `bash scripts/cargo.sh test --locked --release --no-fail-fast` (69
+tests, 0 failures), `clippy --all-targets -D warnings` clean with and without
+`--features python`, `node engine/tests/verify_turn_fixtures.mjs` re-verifies
+558 fixtures / 12,160 decision boundaries against a freshly booted pinned
+Showdown with 0 mismatches, and the coverage instrument reports 326/515 moves,
+119/223 abilities, 165/166 items. The training pool's first blockers are now
+led by the charge/recharge and Mega-ability families; 265 teams complete at
+least one natural battle. No readiness claim is made and no training has
+started.
+
 ## Local reproduction
 
 ```bash

@@ -181,6 +181,10 @@ pub struct Move {
     /// Reference `forceSwitch`: the target is dragged out at the end of the
     /// action (`roar`, `whirlwind`, `dragontail`, `circlethrow`).
     pub force_switch: bool,
+    /// Reference `flags.failencore`: the move can never be Encored.
+    pub fail_encore: bool,
+    /// Reference `flags.futuremove`: deferred attacks (Future Sight family).
+    pub future_move: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -434,6 +438,29 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:auroraveil.condition.onAnyModifyDamage",
     "moves:auroraveil.condition.onSideStart",
     "moves:auroraveil.condition.onSideEnd",
+    // Volatile selection-lock family (Encore / Taunt / Disable / Imprison /
+    // Torment). Each block is the exact pinned Champions declaration; the
+    // volatile lifecycle, request-level disable pass and BeforeMove refusals
+    // live in battle.rs.
+    "moves:encore.condition.onStart",
+    "moves:encore.condition.onDisableMove",
+    "moves:encore.condition.onResidual",
+    "moves:encore.condition.onEnd",
+    "moves:taunt.condition.onStart",
+    "moves:taunt.condition.onDisableMove",
+    "moves:taunt.condition.onBeforeMove",
+    "moves:taunt.condition.onEnd",
+    "moves:disable.onTryHit",
+    "moves:disable.condition.onStart",
+    "moves:disable.condition.onDisableMove",
+    "moves:disable.condition.onBeforeMove",
+    "moves:disable.condition.onEnd",
+    "moves:imprison.condition.onStart",
+    "moves:imprison.condition.onFoeDisableMove",
+    "moves:imprison.condition.onFoeBeforeMove",
+    "moves:torment.condition.onStart",
+    "moves:torment.condition.onDisableMove",
+    "moves:torment.condition.onEnd",
 ];
 
 /// Ported action-local callbacks, keyed by move id. Every entry must have its
@@ -486,6 +513,10 @@ const HANDLED_MOVE_FLAGS: &[&str] = &[
     "nonsky",
     "noparentalbond",
     "wind",
+    // `mustpressure` is only read by the Pressure ability, which is itself an
+    // explicit operational error until ported, so it cannot change an
+    // implemented mechanic.
+    "mustpressure",
 ];
 
 fn move_hooks(id: &str) -> u16 {
@@ -504,6 +535,7 @@ fn move_hooks(id: &str) -> u16 {
         "throatchop" => hook::THROAT_CHOP,
         "expandingforce" => hook::EXPANDING_FORCE,
         "auroraveil" => hook::AURORA_VEIL,
+        "disable" => hook::DISABLE_TARGET_GATE,
         _ => 0,
     }
 }
@@ -522,7 +554,18 @@ fn stat_index(name: Option<&str>) -> Option<u8> {
 }
 
 const HANDLED_STATUSES: &[&str] = &["brn", "par", "slp", "frz", "psn", "tox"];
-const HANDLED_VOLATILES: &[&str] = &["flinch", "confusion", "mustrecharge"];
+const HANDLED_VOLATILES: &[&str] = &[
+    "flinch",
+    "confusion",
+    "mustrecharge",
+    // Volatile selection-lock family: each id is declared by exactly one move
+    // (encore, taunt, disable, imprison, torment) whose callbacks are below.
+    "encore",
+    "taunt",
+    "disable",
+    "imprison",
+    "torment",
+];
 
 /// Status/volatile payloads of every declared effect must already have native
 /// behaviour; otherwise the whole move stays an explicit operational error.
@@ -907,6 +950,8 @@ impl Dex {
                 multihit: None,
                 self_switch: SelfSwitch::None,
                 force_switch: false,
+                fail_encore: false,
+                future_move: false,
             }];
         let mut native_moves = vec![crate::effects::MoveBehavior::Unimplemented];
         let mut native_move_hooks = vec![0u16];
@@ -1089,6 +1134,8 @@ impl Dex {
                     _ => SelfSwitch::None,
                 },
                 force_switch: d["forceSwitch"].as_bool().unwrap_or(false),
+                fail_encore: d["flags"]["failencore"] == 1,
+                future_move: d["flags"]["futuremove"] == 1,
             });
         }
         let mut natures = vec![Nature::default()];
@@ -1205,6 +1252,13 @@ impl Dex {
             ],
             must_recharge: lookup("conditions", "mustrecharge")?,
             throat_chop: lookup("conditions", "throatchop")?,
+            encore: lookup("conditions", "encore")?,
+            taunt: lookup("conditions", "taunt")?,
+            disable: lookup("conditions", "disable")?,
+            imprison: lookup("conditions", "imprison")?,
+            torment: lookup("conditions", "torment")?,
+            me_first: lookup("moves", "mefirst")?,
+            mental_herb: lookup("items", "mentalherb")?,
             aurora_veil: lookup("conditions", "auroraveil")?,
             confusion: lookup("conditions", "confusion")?,
             sticky_hold: lookup("abilities", "stickyhold")?,

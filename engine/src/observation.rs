@@ -465,7 +465,89 @@ impl<'a> Encoder<'a> {
         }
         Ok(())
     }
+
+    /// Compile-time completeness audit for the player-knowledge contract.
+    ///
+    /// Every field of `Knowledge`, `PublicPokemon`, `EffectKnowledge` and
+    /// `SemanticEvent` is destructured exhaustively (no `..`), so adding a
+    /// knowledge field fails compilation until its author classifies it here:
+    /// encoded by `encode_into`, or deliberately excluded with a reason.
+    ///
+    /// ENCODED: `mega_used`, `pokemon`, `events`, `field`, `sides`; every
+    /// `PublicPokemon` field except `revealed_move_repertoire`; every
+    /// `EffectKnowledge` field; every `SemanticEvent` field.
+    ///
+    /// DELIBERATELY NOT ENCODED: `PublicPokemon::revealed_move_repertoire`
+    /// (folded into the fixed repertoire rows by `encode_into`).
+    fn knowledge_field_audit(view: &crate::knowledge::Knowledge) {
+        let crate::knowledge::Knowledge {
+            ref mega_used,
+            ref pokemon,
+            ref events,
+            ref field,
+            ref sides,
+        } = *view;
+        let _ = (mega_used, pokemon, events, field, sides);
+        for mon in pokemon {
+            let crate::knowledge::PublicPokemon {
+                ref species,
+                ref types,
+                ref gender,
+                ref health,
+                ref status,
+                ref boosts,
+                ref ability,
+                ref item,
+                ref previous_item,
+                ref selected,
+                ref active_slot,
+                ref fainted,
+                ref current_moves,
+                ref revealed_move_repertoire,
+                ref effects,
+            } = *mon;
+            let _ = (
+                species,
+                types,
+                gender,
+                health,
+                status,
+                boosts,
+                ability,
+                item,
+                previous_item,
+                selected,
+                active_slot,
+                fainted,
+                current_moves,
+                revealed_move_repertoire,
+                effects,
+            );
+        }
+        for effect in field.values().chain(sides.iter().flat_map(|side| side.values())) {
+            let crate::knowledge::EffectKnowledge {
+                present,
+                ref duration,
+                ref stacks,
+                ref source,
+            } = *effect;
+            let _ = (present, duration, stacks, source);
+        }
+        for event in events {
+            let crate::knowledge::SemanticEvent {
+                kind,
+                subject,
+                target,
+                effect,
+                effect_kind,
+                value,
+                ref health,
+            } = *event;
+            let _ = (kind, subject, target, effect, effect_kind, value, health);
+        }
+    }
     fn validate(&self, view: &PlayerView) -> Result<()> {
+        Self::knowledge_field_audit(&view.knowledge);
         view.request.validate()?;
         if view.knowledge.events.len() > 24 {
             return Err(EngineError::InvalidInput(

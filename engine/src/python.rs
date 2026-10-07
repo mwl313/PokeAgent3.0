@@ -505,6 +505,54 @@ impl NativeEngine {
         Ok(candidates.iter().map(action_tuple).collect())
     }
 
+    /// Batched request introspection: `(kind, branch_slots)` for each
+    /// `(slot, generation, side)` entry. One crossing per round replaces the
+    /// per-environment `request_kind` / `request_branches` calls.
+    fn request_info_batch(
+        &self,
+        specs: Vec<(u32, u32, u8)>,
+    ) -> PyResult<Vec<(u8, Vec<u8>)>> {
+        let mut out = Vec::with_capacity(specs.len());
+        for (slot, generation, side) in specs {
+            let side = parse_side(side).map_err(to_py)?;
+            let request = self
+                .batch
+                .request(Handle { slot, generation }, side)
+                .map_err(to_py)?;
+            out.push((request_kind_id(request.kind), request.branch_slots()));
+        }
+        Ok(out)
+    }
+
+    /// Batched legal-completion expansion. Each entry carries the actions the
+    /// policy already chose for that request's branches (prefixes may differ in
+    /// length), so one crossing expands every pending request one branch level.
+    /// This is the batch-first mask path: the actor never calls `candidates`
+    /// per environment.
+    fn candidates_batch(
+        &self,
+        specs: Vec<(u32, u32, u8, Vec<ActionTuple>)>,
+    ) -> PyResult<Vec<Vec<ActionTuple>>> {
+        let mut out = Vec::with_capacity(specs.len());
+        for (slot, generation, side, prefix) in specs {
+            let side = parse_side(side).map_err(to_py)?;
+            let request = self
+                .batch
+                .request(Handle { slot, generation }, side)
+                .map_err(to_py)?;
+            let mut parsed = Vec::with_capacity(prefix.len());
+            for (kind, own_slot, move_slot, target, destination, resource) in prefix {
+                parsed.push(
+                    parse_action(kind, own_slot, move_slot, target, destination, resource)
+                        .map_err(to_py)?,
+                );
+            }
+            let candidates = request.candidates(&parsed).map_err(to_py)?;
+            out.push(candidates.iter().map(action_tuple).collect());
+        }
+        Ok(out)
+    }
+
     fn request_kind(&self, slot: u32, generation: u32, side: u8) -> PyResult<u8> {
         let side = parse_side(side).map_err(to_py)?;
         let request = self

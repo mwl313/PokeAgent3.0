@@ -707,6 +707,9 @@ impl BattleState {
         mon.boosts = [0; 7];
         mon.volatiles.clear();
         mon.transformed = false;
+        // Reference `clearVolatile` also clears the recorded last move; Encore,
+        // Disable and Torment read it after the Pokémon re-enters.
+        mon.last_move = 0;
         mon.ability = mon.base_ability;
         mon.species = mon.base_species;
         mon.types = dex.species[mon.species as usize].types.clone();
@@ -998,6 +1001,10 @@ impl BattleState {
             mon.moves[slot as usize].used = true;
             mon.base_moves[slot as usize].pp = pp - 1;
         }
+        // Reference `Pokemon#moveUsed` records the move before any hit steps,
+        // so a missed, failed or status-refused move still becomes `lastMove`
+        // for Encore, Disable, Torment and Cursed Body.
+        self.mon_mut(actor).last_move = move_id;
         if m.defrost && self.mon(actor).status == dex.effects.freeze {
             self.cure_status(actor)?;
         }
@@ -1118,6 +1125,21 @@ impl BattleState {
         // nullify their own result after a failed pivot attempt.
         if hooks & crate::effects::hook::TELEPORT != 0 && !self.can_switch(actor.side as usize) {
             return Ok(());
+        }
+        // `moves:disable.onTryHit`: before accuracy and before any hit step,
+        // Disable fails when the target has no recorded last move, or its last
+        // move was Struggle / a Z or Max move.
+        if hooks & crate::effects::hook::DISABLE_TARGET_GATE != 0 {
+            let blocked = redirected.or(selected).is_none_or(|target| {
+                let last = self.mon(target).last_move;
+                last == 0
+                    || last == dex.effects.struggle
+                    || dex.moves[last as usize].is_z
+                    || dex.moves[last as usize].is_max
+            });
+            if blocked {
+                return Ok(());
+            }
         }
         if behavior == MoveBehavior::Terrain {
             self.start_terrain(dex, actor, m.terrain, false)?;
@@ -2379,6 +2401,63 @@ impl BattleState {
         Ok(damage::finish_damage(damage, final_modifier, false))
     }
 
+    /// Reference `BattleQueue#changeAction` + `insertChoice`: replace the
+    /// Pokémon's queued action with the encored move, re-resolving its target
+    /// and re-inserting it in priority order. Both the target resolution and
+    /// the insertion tie-break can consume reference RNG draws.
+    fn change_action(&mut self, dex: &Dex, actor: Entity, move_id: Id) -> Result<()> {
+        self.queue.retain(|q| q.actor != Some(actor));
+        let Some(slot) = self.mon(actor).moves.iter().position(|mv| mv.id == move_id) else {
+            return Ok(());
+        };
+        self.update_speed(dex);
+        let m = &dex.moves[move_id as usize];
+        let mut action = QueuedAction {
+            kind: QueuedKind::Move,
+            actor: Some(actor),
+            move_slot: slot as u8,
+            move_id,
+            target_location: 0,
+            destination: NO_SLOT,
+            priority: Priority {
+                order: 200,
+                priority: i32::from(self.effective_priority(dex, actor, move_id)) * 10000,
+                speed: self.speed(dex, actor),
+                ..Default::default()
+            },
+        };
+        // `resolveAction`: an action without a chosen location samples a random
+        // valid target; `getActionSpeed` then resolves it again exactly as the
+        // commit-time queue builder does.
+        action.target_location = self.random_target_location(actor, m.target);
+        self.resolve_target_location(actor, m.target, action.target_location);
+        let mut first = None;
+        let mut last = None;
+        for (index, current) in self.queue.iter().enumerate() {
+            let compared = action.priority.compare(&current.priority);
+            if compared != Ordering::Greater && first.is_none() {
+                first = Some(index);
+            }
+            if compared == Ordering::Less {
+                last = Some(index);
+                break;
+            }
+        }
+        match first {
+            None => self.queue.push(action),
+            Some(first) => {
+                let last = last.unwrap_or(self.queue.len());
+                let index = if first == last {
+                    first
+                } else {
+                    self.rng.range(first as u32, last as u32 + 1) as usize
+                };
+                self.queue.insert(index, action);
+            }
+        }
+        Ok(())
+    }
+
     fn before_move(&mut self, dex: &Dex, e: Entity, m: &crate::assets::Move) -> Result<bool> {
         // Reference BeforeMove ordering by handler priority:
         // mustrecharge (11) > sleep/freeze (10) > flinch (8) > confusion (3) >
@@ -2422,6 +2501,35 @@ impl BattleState {
                 .mon(e)
                 .volatiles
                 .contains_key(&dex.effects.throat_chop)
+        {
+            return Ok(false);
+        }
+        // `moves:disable.condition.onBeforeMove` (priority 7).
+        if let Some(state) = self.mon(e).volatiles.get(&dex.effects.disable)
+            && state.values.first() == Some(&i64::from(m.id))
+        {
+            return Ok(false);
+        }
+        // `moves:taunt.condition.onBeforeMove` (priority 5): Status moves are
+        // refused outright, with Me First exempt.
+        if self.mon(e).volatiles.contains_key(&dex.effects.taunt)
+            && m.category == Category::Status
+            && m.id != dex.effects.me_first
+        {
+            return Ok(false);
+        }
+        // `moves:imprison.condition.onFoeBeforeMove` (priority 4): a foe's
+        // Imprison refuses any non-Struggle move the imprisoning Pokémon knows.
+        if m.id != dex.effects.struggle
+            && self.active_entities(false).into_iter().any(|foe| {
+                foe.side != e.side
+                    && self.mon(foe).volatiles.contains_key(&dex.effects.imprison)
+                    && self
+                        .mon(foe)
+                        .moves
+                        .iter()
+                        .any(|mv| mv.id == m.id)
+            })
         {
             return Ok(false);
         }
@@ -2994,12 +3102,199 @@ impl BattleState {
                 }
                 // A failed re-add contributes nothing; an earlier successful
                 // boost or status in the same effect still counts.
+            } else if volatile == dex.effects.encore
+                || volatile == dex.effects.taunt
+                || volatile == dex.effects.disable
+                || volatile == dex.effects.imprison
+                || volatile == dex.effects.torment
+            {
+                changed |= self.start_selection_volatile(
+                    dex,
+                    target,
+                    Some(source),
+                    volatile,
+                    false,
+                )?;
             } else {
                 return Err(EngineError::Unsupported(format!("volatile {volatile}")));
             }
         }
         Ok(changed
             || (!has_boost && effect.heal.is_none() && effect.status == 0 && effect.volatile == 0))
+    }
+
+    /// Reference `onStart` for the volatile selection-lock family (Encore,
+    /// Taunt, Disable, Imprison, Torment). Returns the `addVolatile` result:
+    /// `false` when the reference refuses the state and the move reports
+    /// failure, `true` when the volatile was created.
+    ///
+    /// `mid_move` is the reference's
+    /// `pokemon === this.activePokemon && this.activeMove && !isExternal`
+    /// branch, which Cursed Body triggers while the attacker's move is active.
+    fn start_selection_volatile(
+        &mut self,
+        dex: &Dex,
+        target: Entity,
+        source: Option<Entity>,
+        volatile: Id,
+        mid_move: bool,
+    ) -> Result<bool> {
+        // `addVolatile` fails when the volatile already exists and declares no
+        // `onRestart`; none of this family restarts.
+        if self.mon(target).volatiles.contains_key(&volatile) {
+            return Ok(false);
+        }
+        let source_slot = source.map(|e| {
+            (
+                if e.side == 0 { SideId::P1 } else { SideId::P2 },
+                e.roster,
+            )
+        });
+        let will_move = self
+            .queue
+            .iter()
+            .any(|q| q.kind == QueuedKind::Move && q.actor == Some(target));
+        if volatile == dex.effects.encore {
+            let last = self.mon(target).last_move;
+            if last == 0 {
+                return Ok(false);
+            }
+            let Some(slot) = self.mon(target).moves.iter().position(|mv| mv.id == last) else {
+                return Ok(false);
+            };
+            if self.mon(target).moves[slot].pp == 0
+                || dex.moves[last as usize].fail_encore
+                || dex.moves[last as usize].is_z
+                || dex.moves[last as usize].is_max
+            {
+                return Ok(false);
+            }
+            let mut duration = 3u16;
+            let queued = self
+                .queue
+                .iter()
+                .find(|q| q.kind == QueuedKind::Move && q.actor == Some(target))
+                .map(|q| q.move_id);
+            if queued.is_none() {
+                duration += 1;
+            } else if queued != Some(last) && self.mon(target).item != dex.effects.mental_herb {
+                // Champions Encore replaces the target's queued action with the
+                // encored move, which re-resolves its target and re-inserts the
+                // action in speed order (both can consume RNG).
+                self.change_action(dex, target, last)?;
+            }
+            let order = self.allocate_effect_order()?;
+            self.mon_mut(target).volatiles.insert(
+                volatile,
+                EffectState {
+                    id: volatile,
+                    duration: Some(duration),
+                    source: source_slot,
+                    effect_order: order,
+                    effect_order_assigned: true,
+                    values: vec![i64::from(last)],
+                },
+            );
+            self.emit(
+                EventKind::EffectStart,
+                target,
+                source,
+                EffectRef::Condition(volatile),
+                0,
+                false,
+            )?;
+            return Ok(true);
+        }
+        if volatile == dex.effects.taunt {
+            // `onStart`: an already-active Pokémon that has not queued an action
+            // this turn keeps the volatile one turn longer.
+            let mut duration = 3u16;
+            if self.mon(target).active_turns > 0 && !will_move {
+                duration += 1;
+            }
+            let order = self.allocate_effect_order()?;
+            self.mon_mut(target).volatiles.insert(
+                volatile,
+                EffectState {
+                    id: volatile,
+                    duration: Some(duration),
+                    source: source_slot,
+                    effect_order: order,
+                    effect_order_assigned: true,
+                    values: vec![],
+                },
+            );
+            self.emit(
+                EventKind::EffectStart,
+                target,
+                source,
+                EffectRef::Condition(volatile),
+                0,
+                false,
+            )?;
+            return Ok(true);
+        }
+        if volatile == dex.effects.disable {
+            // The duration drops one tick when the target has not acted yet
+            // this turn, or when Cursed Body fires during the attacker's move.
+            let mut duration = 5u16;
+            if will_move || mid_move {
+                duration -= 1;
+            }
+            let last = self.mon(target).last_move;
+            if last == 0 {
+                return Ok(false);
+            }
+            let Some(slot) = self.mon(target).moves.iter().position(|mv| mv.id == last) else {
+                return Ok(false);
+            };
+            if self.mon(target).moves[slot].pp == 0 {
+                return Ok(false);
+            }
+            let order = self.allocate_effect_order()?;
+            self.mon_mut(target).volatiles.insert(
+                volatile,
+                EffectState {
+                    id: volatile,
+                    duration: Some(duration),
+                    source: source_slot,
+                    effect_order: order,
+                    effect_order_assigned: true,
+                    values: vec![i64::from(last)],
+                },
+            );
+            self.emit(
+                EventKind::EffectStart,
+                target,
+                source,
+                EffectRef::Condition(volatile),
+                0,
+                false,
+            )?;
+            return Ok(true);
+        }
+        // Imprison and Torment have no duration; their `onStart` only records
+        // the state (and the source, which Imprison's foe-side handlers read).
+        let order = self.allocate_effect_order()?;
+        self.mon_mut(target).volatiles.insert(
+            volatile,
+            EffectState {
+                id: volatile,
+                source: source_slot,
+                effect_order: order,
+                effect_order_assigned: true,
+                ..Default::default()
+            },
+        );
+        self.emit(
+            EventKind::EffectStart,
+            target,
+            source,
+            EffectRef::Condition(volatile),
+            0,
+            false,
+        )?;
+        Ok(true)
     }
 
     fn emit(
@@ -3219,9 +3514,15 @@ impl BattleState {
             }
             for (&id, state) in &self.mon(e).volatiles {
                 if state.duration.is_some() {
-                    // `moves:throatchop.condition` declares `onResidualOrder: 22`
-                    // for its expiry tick; other timed volatiles stay unordered.
-                    let (order, sub_order) = if id == dex.effects.throat_chop {
+                    // Reference `onResidualOrder`: Taunt 15, Encore 16, Disable
+                    // 17, Throat Chop 22; other timed volatiles stay unordered.
+                    let (order, sub_order) = if id == dex.effects.taunt {
+                        (15, 0)
+                    } else if id == dex.effects.encore {
+                        (16, 0)
+                    } else if id == dex.effects.disable {
+                        (17, 0)
+                    } else if id == dex.effects.throat_chop {
                         (22, 0)
                     } else {
                         (0, 0)
@@ -3472,6 +3773,35 @@ impl BattleState {
                     return Ok(());
                 }
             } else {
+                // `moves:encore.condition.onResidual` (order 16): the volatile
+                // ends early when the encored move is gone or out of PP.
+                if id == dex.effects.encore {
+                    let move_id = self
+                        .mon(e)
+                        .volatiles
+                        .get(&id)
+                        .and_then(|state| state.values.first())
+                        .copied();
+                    let lost = move_id.is_none_or(|move_id| {
+                        !self
+                            .mon(e)
+                            .moves
+                            .iter()
+                            .any(|mv| i64::from(mv.id) == move_id && mv.pp > 0)
+                    });
+                    if lost {
+                        self.mon_mut(e).volatiles.remove(&id);
+                        self.emit(
+                            EventKind::EffectEnd,
+                            e,
+                            None,
+                            EffectRef::Condition(id),
+                            0,
+                            false,
+                        )?;
+                        continue;
+                    }
+                }
                 let expired = if let Some(state) = self.mon_mut(e).volatiles.get_mut(&id) {
                     let duration = state.duration.as_mut().unwrap();
                     *duration = duration.saturating_sub(1);
@@ -3481,7 +3811,13 @@ impl BattleState {
                 };
                 if expired {
                     self.mon_mut(e).volatiles.remove(&id);
-                    if id == dex.effects.protect || id == dex.effects.throat_chop {
+                    if id == dex.effects.protect
+                        || id == dex.effects.throat_chop
+                        || id == dex.effects.taunt
+                        || id == dex.effects.encore
+                        || id == dex.effects.disable
+                        || id == dex.effects.torment
+                    {
                         self.emit(
                             EventKind::EffectEnd,
                             e,
@@ -3702,7 +4038,21 @@ impl BattleState {
             }
             return Ok(());
         }
-        for side in 0..2 {
+        // Reference `onFoeDisableMove`: an active foe's Imprison hides every
+        // move the imprisoning Pokémon also knows from this side's requests.
+        // Collected before the mutable per-Pokémon pass.
+        let imprisoned: [SmallVec<[Id; 8]>; 2] = std::array::from_fn(|side| {
+            let foe = 1 - side;
+            let mut moves: SmallVec<[Id; 8]> = SmallVec::new();
+            for roster in self.sides[foe].active.iter().flatten() {
+                let p = &self.sides[foe].pokemon[*roster as usize];
+                if !p.fainted && p.volatiles.contains_key(&dex.effects.imprison) {
+                    moves.extend(p.moves.iter().map(|mv| mv.id));
+                }
+            }
+            moves
+        });
+        for (side, imprisoned_moves) in imprisoned.iter().enumerate() {
             for mon in &mut self.sides[side].pokemon {
                 // Reference `makeRequest` only resets and re-applies disabled
                 // move flags for Pokémon currently on the field; a benched
@@ -3736,10 +4086,53 @@ impl BattleState {
                 let throat_chop = mon
                     .volatiles
                     .contains_key(&dex.effects.throat_chop);
+                // `moves:encore.condition.onDisableMove`: every move except the
+                // encored one is disabled while the holder still has it.
+                let encore = mon
+                    .volatiles
+                    .get(&dex.effects.encore)
+                    .and_then(|state| state.values.first())
+                    .copied()
+                    .filter(|id| mon.moves.iter().any(|mv| i64::from(mv.id) == *id));
+                // `moves:disable.condition.onDisableMove` / `onEnd`.
+                let disabled_move = mon
+                    .volatiles
+                    .get(&dex.effects.disable)
+                    .and_then(|state| state.values.first())
+                    .copied();
+                // `moves:taunt.condition.onDisableMove`: Status moves only,
+                // with Me First exempt.
+                let taunted = mon.volatiles.contains_key(&dex.effects.taunt);
+                // `moves:torment.condition.onDisableMove`: the last used move.
+                let tormented = mon.volatiles.contains_key(&dex.effects.torment);
+                let last_move = mon.last_move;
                 for mv in &mut mon.moves {
-                    mv.disabled = locked.is_some_and(|id| id != i64::from(mv.id))
+                    let mut disabled = locked.is_some_and(|id| id != i64::from(mv.id))
                         || (fake_out_disabled && mv.id == dex.effects.fake_out)
                         || (throat_chop && dex.moves[mv.id as usize].sound);
+                    if let Some(id) = encore {
+                        disabled |= i64::from(mv.id) != id;
+                    }
+                    if taunted
+                        && dex.moves[mv.id as usize].category == Category::Status
+                        && mv.id != dex.effects.me_first
+                    {
+                        disabled = true;
+                    }
+                    if disabled_move.is_some_and(|id| id == i64::from(mv.id)) {
+                        disabled = true;
+                    }
+                    if tormented && last_move != 0 && mv.id == last_move {
+                        disabled = true;
+                    }
+                    if imprisoned_moves.contains(&mv.id) {
+                        // `onFoeDisableMove` marks the move `'hidden'`; the
+                        // served choice legality rejects it even though
+                        // `Pokemon#getMoves` can display `false` to the last
+                        // active slot. The legal mask must exclude it.
+                        disabled = true;
+                    }
+                    mv.disabled = disabled;
                 }
             }
             let slots = std::array::from_fn(|slot| {

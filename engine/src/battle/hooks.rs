@@ -236,6 +236,16 @@ impl BattleState {
         accuracy: Option<u16>,
     ) -> Option<u16> {
         let accuracy = accuracy?;
+        // No Guard (`onAnyAccuracyPriority: 0`): while an unsuppressed holder is
+        // active, moves used by or against it never miss. The reference returns
+        // `true` from the handler, which bypasses the accuracy roll entirely.
+        for e in self.active_entities(false) {
+            if dex.effects.abilities[self.mon(e).ability as usize] == Ability::Noguard
+                && (e == actor || e == target)
+            {
+                return None;
+            }
+        }
         let attacker = dex.effects.abilities[self.mon(actor).ability as usize];
         let defender = dex.effects.abilities[self.mon(target).ability as usize];
         let mut modifier = 4096;
@@ -822,6 +832,19 @@ impl BattleState {
                     index,
                 ));
             }
+            // Cursed Body uses the default `onDamagingHit` order/sub-order.
+            if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Cursedbody {
+                handlers.push((
+                    target,
+                    12,
+                    Priority {
+                        sub_order: 7,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
             if dex.effects.items[self.mon(target).item as usize] == Item::RockyHelmet {
                 handlers.push((
                     target,
@@ -989,6 +1012,26 @@ impl BattleState {
                         BoostCause::Ability(Ability::Thermalexchange),
                     )?;
                 }
+            } else if kind == 12 {
+                // Cursed Body: a 3/10 roll disables the attacker's last move.
+                // The roll is skipped entirely when the attacker is already
+                // disabled or the hit was Struggle, Max or a future move.
+                if !self.mon(actor).volatiles.contains_key(&dex.effects.disable)
+                    && !m.is_max
+                    && !m.future_move
+                    && m.id != dex.effects.struggle
+                    && self.rng.chance(3, 10)
+                {
+                    self.reveal_ability(target)?;
+                    self.start_selection_volatile(
+                        dex,
+                        actor,
+                        Some(target),
+                        dex.effects.disable,
+                        // The disable lands while the attacker's move is active.
+                        true,
+                    )?;
+                }
             } else if m.move_type == dex.effects.fire {
                 self.cure_status(target)?;
             }
@@ -1006,6 +1049,8 @@ impl BattleState {
             false,
         )
     }
+
+
 
     pub(super) fn ability_switch_in(&mut self, dex: &Dex, e: Entity) -> Result<()> {
         if self.mon(e).hp > 0
@@ -1586,6 +1631,42 @@ impl BattleState {
                 self.terrain_power_modifier(dex, context),
             ));
         }
+        // Global aura abilities (`onAnyBasePowerPriority: 20`). Exactly one
+        // holder applies the boost — the reference marks the first handler to
+        // run as `move.auraBooster` — while every other holder keeps a no-op
+        // entry so the handler set (and therefore tie ordering) matches.
+        if matches!(event, ModifierEvent::BasePower) {
+            let fairy = dex.effects.fairy;
+            let mut aura: SmallVec<[(Entity, i32); 4]> = SmallVec::new();
+            for e in self.active_entities(false) {
+                // The pinned `fairyaura` handlers do not consult
+                // `suppressingAbility`; only the onStart message does.
+                if dex.effects.abilities[self.mon(e).ability as usize] == Ability::Fairyaura {
+                    aura.push((e, self.mon(e).cached_speed));
+                }
+            }
+            if !aura.is_empty() {
+                let mut best = 0usize;
+                for (index, (_, speed)) in aura.iter().enumerate() {
+                    if *speed > aura[best].1 {
+                        best = index;
+                    }
+                }
+                let relevant = m.category != Category::Status && m.move_type == fairy && target != actor;
+                for (index, (holder, speed)) in aura.iter().enumerate() {
+                    hooks.push((
+                        Priority {
+                            priority: 20 * 10000,
+                            speed: *speed,
+                            sub_order: 7,
+                            ..Default::default()
+                        },
+                        if relevant && index == best { 5448 } else { 4096 },
+                    ));
+                    let _ = holder;
+                }
+            }
+        }
         // `moves:expandingforce.onBasePower` (priority 0): 1.5x for a grounded
         // user in Psychic Terrain. It chains after the terrain's own 1.3x
         // boost, mirroring the reference's handler priority order.
@@ -1775,7 +1856,6 @@ impl Ability {
             | Ability::Corrosion
             | Ability::Cudchew
             | Ability::Curiousmedicine
-            | Ability::Cursedbody
             | Ability::Cutecharm
             | Ability::Disguise
             | Ability::Earlybird
@@ -1786,7 +1866,6 @@ impl Ability {
             | Ability::Embodyaspectteal
             | Ability::Embodyaspectwellspring
             | Ability::Emergencyexit
-            | Ability::Fairyaura
             | Ability::Firemane
             | Ability::Forecast
             | Ability::Forewarn
@@ -1820,7 +1899,6 @@ impl Ability {
             | Ability::Moody
             | Ability::Moxie
             | Ability::Mummy
-            | Ability::Noguard
             | Ability::Opportunist
             | Ability::Parentalbond
             | Ability::Pickpocket

@@ -44,6 +44,9 @@ pub mod hook {
     pub const EXPANDING_FORCE: u16 = 1 << 12;
     /// `moves:auroraveil.onTry`: the screen only starts while snow is falling.
     pub const AURORA_VEIL: u16 = 1 << 13;
+    /// `moves:disable.onTryHit`: the move fails before accuracy when the target
+    /// has no recorded last move (or last used Struggle).
+    pub const DISABLE_TARGET_GATE: u16 = 1 << 14;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -906,6 +909,21 @@ pub struct NativeEffects {
     pub must_recharge: Id,
     /// Volatile that disables and refuses sound moves for two turns.
     pub throat_chop: Id,
+    /// `move:encore` volatile: locks the holder into its last move.
+    pub encore: Id,
+    /// `move:taunt` volatile: refuses Status moves.
+    pub taunt: Id,
+    /// `move:disable` volatile: refuses one recorded move. Also applied by the
+    /// Cursed Body ability.
+    pub disable: Id,
+    /// `move:imprison` volatile: hides moves shared with the user from foes.
+    pub imprison: Id,
+    /// `move:torment` volatile: refuses the holder's last move.
+    pub torment: Id,
+    /// `Mefirst` move id, exempt from Taunt's disable pass.
+    pub me_first: Id,
+    /// Mental Herb item id, the Champions Encore queue-change gate.
+    pub mental_herb: Id,
     /// Volatile with a 2..5 turn timer and a 33% self-hit chance.
     pub confusion: Id,
     /// Ability id for the Trick/Switcheroo `onTryImmunity` refusal.

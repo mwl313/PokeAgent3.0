@@ -346,8 +346,13 @@ const requestDetail = (session, side) => {
     const info = req.active?.[slot];
     const forced = Boolean(req.forceSwitch?.[slot]);
     if (!p) return {present: false, requires_replacement: forced, can_mega: false, moves: []};
+    // The stored list is the world move list and the raw disable flag: that is
+    // the served choice legality. `Pokemon#getMoves` can display a `'hidden'`
+    // disable as enabled for the last active slot, but the server rejects that
+    // choice, so the legal mask must keep the raw flag.
     return {present: !p.fainted, requires_replacement: forced, can_mega: Boolean(info?.canMegaEvo),
-      moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp, disabled: Boolean(m.disabled), target: m.target}))};
+      moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp,
+        disabled: Boolean(m.disabled), target: m.target}))};
   });
   // Reference switch destinations are positions in the request team order,
   // which after preview is the pick order. The native request reports stable
