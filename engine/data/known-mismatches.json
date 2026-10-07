@@ -100445,7 +100445,7 @@
   {
    "name": "move_eeriespell_29346",
    "status": "open",
-   "observed": "Eerie Spell coverage scene exposed by the stable-seed re-roll. At decision 5 the reference's target has [12, 8] PP where the native has [15, 8]: the reference drained three PP from the target's last move and the native did not. Both engines agree on every other recorded field at that boundary. The native's eerie_spell_secondary requires a non-zero target last_move and a matching move slot with PP left, so the next step is to dump the target's lastMove in both engines at that boundary (the reference reads the ActiveMove object, which can differ from the native's recorded move id when the target has not yet acted or acted with a called/queued move).",
+   "observed": "Eerie Spell coverage scene, stable seed. At decision 5 the reference's P2 slot-1 Torterra has [12, 8] PP where the native has [15, 8]: the reference drained three PP from the target's last move (Seed Bomb). Instrumenting `eerie_spell_secondary` shows the native DOES reach the helper with the right entity and state (target P2 roster 1, hp above zero, last_move = seedbomb, pp [15, 8]), so the drain is applied to the moveset yet the compared decision-5 boundary still shows the undrained value - the remaining question is which entity/PP copy the served boundary reads versus the one the secondary mutates (the helper runs before the damage step in the patched loop, and the target may have been replaced/fainted in the same turn boundary). Next step: print the target's PP immediately after the deduction and reconcile it with the boundary's recorded mon (roster 1) before deciding whether the fix is the drain ordering or the PP the recorder reads.",
    "fixture": "move_eeriespell_29346"
   }
  ],
