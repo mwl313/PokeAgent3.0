@@ -1107,6 +1107,12 @@ impl BattleState {
         if self.mon(e).hp == 0 {
             return Ok(());
         }
+        // `abilities:trace.onStart`: arm the one-shot seek and immediately run
+        // the same `Update` callback. The pinned regulation has no `noability`
+        // or Ability Shield, so only the `notrace` filter can refuse a copy.
+        if dex.effects.abilities[self.mon(e).ability as usize] == Ability::Trace {
+            self.trace_update(dex, e)?;
+        }
         if matches!(
             dex.effects.abilities[self.mon(e).ability as usize],
             Ability::CloudNine | Ability::AirLock
@@ -1181,6 +1187,48 @@ impl BattleState {
             }
         }
         Ok(())
+    }
+
+    /// Reference `abilities:trace.onUpdate`: sample one adjacent live foe whose
+    /// ability is not flagged `notrace` and copy it through `setAbility`.
+    fn trace_update(&mut self, dex: &Dex, e: Entity) -> Result<()> {
+        let foes: SmallVec<[Entity; 2]> = self
+            .active_entities(false)
+            .into_iter()
+            .filter(|p| {
+                p.side != e.side
+                    && self.mon(*p).hp > 0
+                    && !dex.effects.no_trace_abilities[self.mon(*p).ability as usize]
+            })
+            .collect();
+        if foes.is_empty() {
+            return Ok(());
+        }
+        // In doubles every foe is adjacent; `battle.sample` always draws.
+        let index = self.rng.below(foes.len() as u32) as usize;
+        let target = foes[index];
+        let ability = self.mon(target).ability;
+        self.set_ability(dex, e, ability)?;
+        Ok(())
+    }
+
+    /// Reference `Pokemon#setAbility`: end the outgoing ability, reset the
+    /// holder's ability state (a fresh effect order), reveal the incoming
+    /// ability and run its `Start` callbacks. The reference's `[of]` source
+    /// attribution is a message detail the native event model does not carry.
+    pub(super) fn set_ability(&mut self, dex: &Dex, e: Entity, ability: Id) -> Result<bool> {
+        if self.mon(e).ability == ability {
+            return Ok(false);
+        }
+        self.ability_end(dex, e)?;
+        let order = self.allocate_effect_order()?;
+        let mon = self.mon_mut(e);
+        mon.ability = ability;
+        mon.ability_ending = false;
+        mon.ability_effect_order = Some(order);
+        self.reveal_ability(e)?;
+        self.ability_start(dex, e)?;
+        Ok(true)
     }
 
     pub(super) fn ability_switch_out(&mut self, dex: &Dex, e: Entity) -> Result<()> {
@@ -2020,7 +2068,6 @@ impl Ability {
             | Ability::Sweetveil
             | Ability::Symbiosis
             | Ability::Tangledfeet
-            | Ability::Trace
             | Ability::Unseenfist
             | Ability::Vitalspirit
             | Ability::Wanderingspirit

@@ -1540,9 +1540,19 @@ impl Dex {
             native_items[row["numeric_id"].as_u64().unwrap() as usize] =
                 crate::items::classify(id, &row["data"]);
         }
+        // Reference `abilities:trace.onUpdate` skips every ability flagged
+        // `notrace` (Trace itself among them). The flag is data, not a native
+        // port gate: an excluded ability may still be unimplemented.
+        let mut no_trace_abilities = vec![false; names["abilities"].len()];
+        for row in tables["abilities"].as_array().unwrap() {
+            if row["data"]["flags"]["notrace"] == 1 {
+                no_trace_abilities[row["numeric_id"].as_u64().unwrap() as usize] = true;
+            }
+        }
         let effects = crate::effects::NativeEffects {
             abilities: native_abilities,
             items: native_items,
+            no_trace_abilities,
             choice_lock: lookup("conditions", "choicelock")?,
             disable_move_conditions: disable_move_handler_ids(
                 &tables["conditions"],

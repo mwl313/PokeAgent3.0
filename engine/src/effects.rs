@@ -924,6 +924,9 @@ pub struct NativeEffects {
     pub abilities: Vec<Ability>,
     pub moves: Vec<MoveBehavior>,
     pub items: Vec<Item>,
+    /// Pinned `flags.notrace` abilities: Trace never copies them (Trace itself
+    /// carries the flag, so a Trace holder cannot copy another Trace).
+    pub no_trace_abilities: Vec<bool>,
     pub choice_lock: Id,
     /// Pinned `onDisableMove` condition declarations (id -> reference
     /// `resolvePriority` sub-order). `endTurn`'s `runEvent('DisableMove')`
