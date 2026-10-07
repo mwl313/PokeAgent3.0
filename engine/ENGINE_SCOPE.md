@@ -509,3 +509,35 @@ complete. The top remaining pool blockers are Magic Bounce (10), Mold Breaker
 (10), Illusion (7), Stance Change (7) and Psychic Noise (6).
 
 No readiness claim is made and no training has started.
+
+### Small ability batch (Poison Point, Surge Surfer, Screen Cleaner, Rivalry)
+
+Four more pool-blocking abilities, each a direct transcription of its pinned
+declaration:
+
+- **Poison Point**: the contact gate plus the exact 3/10 roll, consumed on
+  contact even when the attacker cannot be poisoned, applied through the same
+  status path as Static/Flame Body with the holder as the source.
+- **Surge Surfer**: `onModifySpe` doubles Speed while the field terrain is
+  Electric Terrain. The reference reads `field.isTerrain`, so grounding is not
+  required and an absent/expired terrain is a no-op.
+- **Screen Cleaner**: `onStart` removes Reflect, Light Screen and Aurora Veil
+  from the holder's side and then from each opposing side, iterating the
+  condition ids outermost and announcing the ability once before the first
+  removal.
+- **Rivalry**: `onBasePower` priority 24; same gender multiplies by 5120/4096,
+  opposite by 3072/4096, and a genderless partner on either side leaves the
+  power at 4096 (the engine stores the reference genderless `''` as 0).
+
+`engine/tests/generate_more_small_abilities.mjs` adds six complete legal
+battles: the contact poison and a non-contact control that must stay clean,
+Raichu-Alola's doubled Speed under Pincurchin's Electric Surge, Mr. Rime
+clearing both sides' screens on switch-in, and Luxray's same- and
+opposite-gender Wild Charge damage. Verified on the integrated tree: **682
+fixtures / 14,648 decision boundaries** against a freshly booted pinned
+Showdown with zero mismatches, 21 test binaries green, clippy clean with and
+without `--features python`; legal coverage **372/515 moves, 140/223
+abilities, 166/166 items**; the pool's distinct ability blockers drop from 29
+to 25.
+
+No readiness claim is made and no training has started.
