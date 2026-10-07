@@ -996,6 +996,16 @@ impl BattleState {
                             && (3..=729).contains(&effect.values[0])
                             && 729 % effect.values[0] == 0
                             && effect.source.is_some()
+                    } else if id == dex.effects.stockpile {
+                        // `moves:stockpile.condition`: `[layers, def, spd]`
+                        // with no duration; the two counters record the
+                        // successful stage raises as negative deltas.
+                        effect.duration.is_none()
+                            && effect.values.len() == 3
+                            && (1..=3).contains(&effect.values[0])
+                            && (-3..=0).contains(&effect.values[1])
+                            && (-3..=0).contains(&effect.values[2])
+                            && effect.source.is_some()
                     } else if usize::from(id) < dex.moves.len()
                         && dex.moves[id as usize].charge.is_some()
                     {

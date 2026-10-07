@@ -183,6 +183,10 @@ impl BattleState {
                     u32::from(dex.species[self.mon(member).base_species as usize].base_stats[1]);
                 5 + base_atk / 10
             }
+            // `moves:spitup.basePowerCallback`: `layers * 100`; the callback
+            // returns false without a stockpile, which the Try gate already
+            // refuses, so the zero-power guard covers the reserved case.
+            BasePowerKind::Stockpile => self.stockpile_layers(dex, actor) * 100,
         }
     }
 

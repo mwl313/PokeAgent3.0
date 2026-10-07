@@ -384,6 +384,7 @@ const HANDLED_MOVE_FIELDS: &[&str] = &[
     "onDisableMove",
     "onTryHit",
     "onAfterSubDamage",
+    "onAfterMove",
     "onModifyMove",
     "onModifyPriority",
     "onEffectiveness",
@@ -614,6 +615,19 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:steelroller.onTry",
     "moves:steelroller.onHit",
     "moves:steelroller.onAfterSubDamage",
+    // The Stockpile family. Stockpile and Swallow run through their own
+    // native behaviors; Spit Up is declarative with a stockpile-derived base
+    // power, a stockpile-presence Try gate and the always-running AfterMove
+    // consumption.
+    "moves:stockpile.onTry",
+    "moves:stockpile.condition.onStart",
+    "moves:stockpile.condition.onRestart",
+    "moves:stockpile.condition.onEnd",
+    "moves:swallow.onTry",
+    "moves:swallow.onHit",
+    "moves:spitup.basePowerCallback",
+    "moves:spitup.onTry",
+    "moves:spitup.onAfterMove",
 ];
 
 /// Ported action-local callbacks, keyed by move id. Every entry must have its
@@ -705,6 +719,7 @@ fn move_hooks(id: &str) -> u32 {
         "doubleshock" => hook::DOUBLE_SHOCK,
         "beatup" => hook::BEAT_UP,
         "steelroller" => hook::STEEL_ROLLER,
+        "spitup" => hook::SPIT_UP,
         _ => 0,
     }
 }
@@ -1781,6 +1796,7 @@ impl Dex {
             follow_me: lookup("conditions", "followme")?,
             rage_powder: lookup("conditions", "ragepowder")?,
             ally_switch: lookup("conditions", "allyswitch")?,
+            stockpile: lookup("conditions", "stockpile")?,
             damp_moves: [
                 lookup("moves", "explosion")?,
                 lookup("moves", "mindblown")?,

@@ -82,6 +82,10 @@ pub mod hook {
     /// an active terrain and clears it once the hit lands, including a hit a
     /// substitute absorbs.
     pub const STEEL_ROLLER: u32 = 1 << 26;
+    /// `moves:spitup.onTry|onAfterMove`: the move needs the user's stockpile
+    /// volatile and always removes it once the move has run, even when the
+    /// hit is blocked or missed.
+    pub const SPIT_UP: u32 = 1 << 27;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -809,6 +813,13 @@ pub enum MoveBehavior {
     /// `skillswap`: exchange both Pokémon's abilities through the reference
     /// `Battle#skillSwap` helper (End, direct assignment, Start).
     SkillSwap,
+    /// `stockpile`: layered self volatile that raises Defense and Special
+    /// Defense by one stage per layer and stores the successful raises so
+    /// `onEnd` can reverse them.
+    Stockpile,
+    /// `swallow`: heals a quarter, half or all of the user's maximum HP from
+    /// the stockpile layer count and always consumes the volatile.
+    Swallow,
 }
 
 /// Cold payload of a ported two-turn move. Every field is transcribed from
@@ -914,6 +925,8 @@ impl MoveBehavior {
             "ragepowder" => Self::RagePowder,
             "allyswitch" => Self::AllySwitch,
             "skillswap" => Self::SkillSwap,
+            "stockpile" => Self::Stockpile,
+            "swallow" => Self::Swallow,
             _ => Self::Unimplemented,
         }
     }
@@ -955,6 +968,8 @@ pub enum BasePowerKind {
     /// `beatup`: `5 + floor(setSpecies.baseStats.atk / 10)` of the ally the
     /// current hit consumes from the move's captured party list.
     BeatUp,
+    /// `spitup`: 100 power per stored stockpile layer.
+    Stockpile,
 }
 
 impl BasePowerKind {
@@ -984,6 +999,7 @@ impl BasePowerKind {
             }
             "moves:risingvoltage.basePowerCallback" => Self::RisingVoltage,
             "moves:beatup.basePowerCallback" => Self::BeatUp,
+            "moves:spitup.basePowerCallback" => Self::Stockpile,
             _ => return None,
         })
     }
@@ -1055,6 +1071,9 @@ pub struct NativeEffects {
     /// value is the escalating consecutive-use success counter (3 -> 9 -> ...
     /// -> 729).
     pub ally_switch: Id,
+    /// `moves:stockpile.condition`: the layered Defense/Special Defense
+    /// volatile consumed by Spit Up and Swallow.
+    pub stockpile: Id,
     /// The four self-destructing moves refused by `abilities:damp`.
     pub damp_moves: [Id; 4],
     /// Volatile that skips the holder's next action.
