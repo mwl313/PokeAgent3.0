@@ -1120,6 +1120,12 @@ pub struct NativeEffects {
     /// `moves:helpinghand` (the move, not the volatile condition): the
     /// invulnerability step short-circuits for it.
     pub helping_hand_move: Id,
+    /// `moves:ceaselessedge.onAfterHit|onAfterSubDamage`: scatters one Spikes
+    /// layer onto the foe side when the hit lands or a decoy absorbs it.
+    pub ceaseless_edge: Id,
+    /// `moves:stoneaxe.onAfterHit|onAfterSubDamage`: sets Stealth Rock on the
+    /// foe side when the hit lands or a decoy absorbs it.
+    pub stone_axe: Id,
     /// `moves:roost.condition`: one-turn Flying removal for the caster.
     pub roost: Id,
     /// `moves:glaiverush.condition`: the user's next move always lands, and
