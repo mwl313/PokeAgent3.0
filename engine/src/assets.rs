@@ -164,7 +164,7 @@ pub struct Move {
     /// Ported `basePowerCallback` formula, if any.
     pub bp_callback: Option<crate::effects::BasePowerKind>,
     /// Ported action-local callbacks (see `crate::effects::hook`).
-    pub hooks: u16,
+    pub hooks: u32,
     /// `overrideOffensiveStat` / `overrideDefensiveStat` as `stats` indices.
     pub override_offensive_stat: Option<u8>,
     pub override_defensive_stat: Option<u8>,
@@ -358,6 +358,8 @@ const HANDLED_MOVE_FIELDS: &[&str] = &[
     "selfBoost",
     "breaksProtect",
     "multihit",
+    // Per-hit accuracy re-rolls (`multiaccuracy`) with the native hook.
+    "multiaccuracy",
     "selfSwitch",
     "forceSwitch",
     // Embedded condition declaration (e.g. `throatchop`). The condition's own
@@ -386,6 +388,7 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:lowkick.basePowerCallback",
     // Rage Fist / Stomping Tantrum: hit-count and last-move-result formulas.
     "moves:ragefist.basePowerCallback",
+    "moves:tripleaxel.basePowerCallback",
     "moves:stompingtantrum.basePowerCallback",
     "moves:powertrip.basePowerCallback",
     "moves:reversal.basePowerCallback",
@@ -579,7 +582,7 @@ const HANDLED_MOVE_FLAGS: &[&str] = &[
     "mustpressure",
 ];
 
-fn move_hooks(id: &str) -> u16 {
+fn move_hooks(id: &str) -> u32 {
     use crate::effects::hook;
     match id {
         "fakeout" => hook::FAKE_OUT_FIRST_TURN,
@@ -597,6 +600,7 @@ fn move_hooks(id: &str) -> u16 {
         "auroraveil" => hook::AURORA_VEIL,
         "disable" => hook::DISABLE_TARGET_GATE,
         "clangoroussoul" => hook::CLANGOROUS_SOUL,
+        "populationbomb" | "tripleaxel" => hook::MULTI_ACCURACY,
         _ => 0,
     }
 }
@@ -1262,7 +1266,7 @@ impl Dex {
                 charge: None,
             }];
         let mut native_moves = vec![crate::effects::MoveBehavior::Unimplemented];
-        let mut native_move_hooks = vec![0u16];
+        let mut native_move_hooks = vec![0u32];
         for row in tables["moves"].as_array().unwrap() {
             let d = &row["data"];
             let behavior = classify_move(row["id"].as_str().unwrap(), d);

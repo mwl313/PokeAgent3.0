@@ -9,48 +9,51 @@ use serde::{Deserialize, Serialize};
 /// ported, so an unsupported variant stays an explicit operational error.
 pub mod hook {
     /// `moves:fakeout.onTry` plus the Champions `onDisableMove` override.
-    pub const FAKE_OUT_FIRST_TURN: u16 = 1 << 0;
+    pub const FAKE_OUT_FIRST_TURN: u32 = 1 << 0;
     /// `moves:suckerpunch.onTry`.
-    pub const SUCKER_PUNCH: u16 = 1 << 1;
+    pub const SUCKER_PUNCH: u32 = 1 << 1;
     /// `moves:hurricane|thunder.onModifyMove`: rain makes the move always hit,
     /// sun sets 50% accuracy.
-    pub const ACCURACY_RAIN_SUN: u16 = 1 << 2;
+    pub const ACCURACY_RAIN_SUN: u32 = 1 << 2;
     /// `moves:blizzard.onModifyMove`: snow makes the move always hit.
-    pub const ACCURACY_SNOW: u16 = 1 << 3;
+    pub const ACCURACY_SNOW: u32 = 1 << 3;
     /// `moves:grassyglide.onModifyPriority`.
-    pub const PRIORITY_GRASSY_GLIDE: u16 = 1 << 4;
+    pub const PRIORITY_GRASSY_GLIDE: u32 = 1 << 4;
     /// `moves:freezedry.onEffectiveness`.
-    pub const FREEZE_DRY: u16 = 1 << 5;
+    pub const FREEZE_DRY: u32 = 1 << 5;
     /// `moves:lowkick|grassknot.onTryHit`: the Dynamax branch cannot be reached
     /// in the pinned regulation, so a Dynamax volatile is an explicit error.
-    pub const DYNAMAX_GUARD: u16 = 1 << 6;
+    pub const DYNAMAX_GUARD: u32 = 1 << 6;
     /// `moves:knockoff.onBasePower` plus its `onAfterHit` item removal: the
     /// 1.5x boost only applies when the item can actually be taken.
-    pub const KNOCK_OFF: u16 = 1 << 7;
+    pub const KNOCK_OFF: u32 = 1 << 7;
     /// `moves:teleport.onTry`: Teleport fails outright, before any hit step,
     /// when the user has no switchable reserve.
-    pub const TELEPORT: u16 = 1 << 8;
+    pub const TELEPORT: u32 = 1 << 8;
     /// `moves:partingshot.onHit`: the pivot is cancelled when the Attack and
     /// Special Attack drop fails.
-    pub const PARTING_SHOT: u16 = 1 << 9;
+    pub const PARTING_SHOT: u32 = 1 << 9;
     /// `moves:direclaw.secondary.onHit`: the secondary samples one of
     /// poison/paralysis/sleep and applies it through `trySetStatus`.
-    pub const DIRE_CLAW: u16 = 1 << 10;
+    pub const DIRE_CLAW: u32 = 1 << 10;
     /// `moves:throatchop.secondary.onHit`: adds the two-turn volatile that
     /// disables and refuses sound moves.
-    pub const THROAT_CHOP: u16 = 1 << 11;
+    pub const THROAT_CHOP: u32 = 1 << 11;
     /// `moves:expandingforce.onModifyMove|onBasePower`: Psychic Terrain turns
     /// the move into a spread move and boosts it 1.5x for grounded users.
-    pub const EXPANDING_FORCE: u16 = 1 << 12;
+    pub const EXPANDING_FORCE: u32 = 1 << 12;
     /// `moves:auroraveil.onTry`: the screen only starts while snow is falling.
-    pub const AURORA_VEIL: u16 = 1 << 13;
+    pub const AURORA_VEIL: u32 = 1 << 13;
     /// `moves:disable.onTryHit`: the move fails before accuracy when the target
     /// has no recorded last move (or last used Struggle).
-    pub const DISABLE_TARGET_GATE: u16 = 1 << 14;
+    pub const DISABLE_TARGET_GATE: u32 = 1 << 14;
     /// `moves:clangoroussoul.onTry|onTryHit|onHit`: the user must be above a
     /// third of its maximum HP, the five-stat self boost must change something
     /// and the move then costs a third of the user's maximum HP.
-    pub const CLANGOROUS_SOUL: u16 = 1 << 15;
+    pub const CLANGOROUS_SOUL: u32 = 1 << 15;
+    /// `multiaccuracy`: the move re-rolls accuracy for every hit after the
+    /// first and stops on the first miss (Population Bomb, Triple Axel).
+    pub const MULTI_ACCURACY: u32 = 1 << 16;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -891,6 +894,8 @@ pub enum BasePowerKind {
     LowKick,
     /// `ragefist`: `min(350, 50 + 50 * timesAttacked)`.
     RageFist,
+    /// `tripleaxel`: `20 * move.hit` (the current hit number).
+    TripleAxel,
     /// `stompingtantrum`: doubles when the user's previous move failed.
     StompingTantrum,
     PowerTrip,
@@ -917,6 +922,7 @@ impl BasePowerKind {
             "moves:lastrespects.basePowerCallback" => Self::LastRespects,
             "moves:lowkick.basePowerCallback" => Self::LowKick,
             "moves:ragefist.basePowerCallback" => Self::RageFist,
+            "moves:tripleaxel.basePowerCallback" => Self::TripleAxel,
             "moves:stompingtantrum.basePowerCallback" => Self::StompingTantrum,
             "moves:powertrip.basePowerCallback" | "moves:storedpower.basePowerCallback" => {
                 Self::PowerTrip
@@ -1072,7 +1078,7 @@ pub struct NativeEffects {
     pub dragon: Id,
     pub quake_moves: [Id; 3],
     /// Ported action-local callbacks per move id (see `hook`).
-    pub move_hooks: Vec<u16>,
+    pub move_hooks: Vec<u32>,
     /// Fake Out move id, used by the ported Champions `onDisableMove`.
     pub fake_out: Id,
 }

@@ -21,11 +21,14 @@ impl BattleState {
         declared: u32,
         actor: Entity,
         target: Entity,
+        hit: u32,
     ) -> u32 {
         let Some(kind) = kind else {
             return declared;
         };
         match kind {
+            // `moves:tripleaxel.basePowerCallback`: `20 * move.hit`.
+            BasePowerKind::TripleAxel => declared * hit.max(1),
             BasePowerKind::Acrobatics => {
                 if self.mon(actor).item == 0 {
                     declared * 2

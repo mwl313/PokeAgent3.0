@@ -73,7 +73,7 @@ function executable(id) {
   // and `forceSwitch` phazing are not ported yet.
   if (typeof encoded.selfSwitch === 'string' || encoded.forceSwitch ||
       encoded.pseudoWeather || encoded.slotCondition ||
-      encoded.stallingMove || encoded.sleepUsable || encoded.multiaccuracy || encoded.mindBlownRecoil ||
+      encoded.stallingMove || encoded.sleepUsable || encoded.mindBlownRecoil ||
       encoded.hasCrashDamage) return false;
   return true;
 }

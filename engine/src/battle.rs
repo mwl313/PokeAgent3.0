@@ -39,6 +39,14 @@ pub struct StepResult {
     pub request_kinds: [RequestKind; 2],
 }
 
+/// One hit of a hit phase: the spread flag and the 1-based hit number
+/// (`multiaccuracy` and `basePowerCallback` formulas read the hit index).
+#[derive(Clone, Copy)]
+pub(crate) struct HitPhase {
+    pub spread: bool,
+    pub hit: u32,
+}
+
 impl BattleState {
     fn mon(&self, e: Entity) -> &PokemonState {
         &self.sides[e.side as usize].pokemon[e.roster as usize]
@@ -2144,7 +2152,7 @@ impl BattleState {
             };
             // A callback base power of exactly zero means the reference returns
             // `undefined`: no damage is dealt and the damage stages are skipped.
-            let base_power = self.base_power(dex, m.bp_callback, u32::from(m.power), actor, target);
+            let base_power = self.base_power(dex, m.bp_callback, u32::from(m.power), actor, target, 1);
             if base_power == 0 {
                 continue;
             }
@@ -2601,6 +2609,9 @@ impl BattleState {
         // for the end-of-action Emergency Exit checks, i.e. each damaged
         // target's HP before this move started resolving.
         let mut hit_before: SmallVec<[(Entity, u16); 4]> = SmallVec::new();
+        // `multiaccuracy`: hits after the first roll accuracy again and the
+        // first miss ends the remaining hits (Population Bomb, Triple Axel).
+        let multi_accuracy = m.hooks & crate::effects::hook::MULTI_ACCURACY != 0;
         for hit in 1..=hit_count {
             if hit > 1
                 && (self.mon(actor).hp == 0
@@ -2608,14 +2619,29 @@ impl BattleState {
             {
                 break;
             }
+            let mut missed = false;
             for &(target, effectiveness) in &connected {
                 if self.mon(target).hp == 0 {
                     continue;
                 }
+                if hit > 1
+                    && multi_accuracy
+                    && !self.roll_move_accuracy(dex, actor, target, m, m.accuracy.map(u16::from))
+                {
+                    missed = true;
+                    break;
+                }
                 if hit == 1 {
                     hit_before.push((target, self.mon(target).hp));
                 }
-                let damage = self.resolve_hit_damage(dex, actor, target, m, effectiveness, spread)?;
+                let damage = self.resolve_hit_damage(
+                    dex,
+                    actor,
+                    target,
+                    m,
+                    effectiveness,
+                    HitPhase { spread, hit },
+                )?;
                 let damage = self.sturdy_clamp(dex, target, damage)?;
                 let damage = self.damage_item(dex, target, damage)?;
                 let damage = self.endure_clamp(dex, target, damage);
@@ -2680,6 +2706,9 @@ impl BattleState {
                 let user_hp_before_damaging_hit = self.mon(actor).hp;
                 self.damaging_hit(dex, actor, std::slice::from_ref(&target), m)?;
                 self.emergency_exit_check(dex, actor, user_hp_before_damaging_hit)?;
+            }
+            if missed {
+                break;
             }
             self.each_update(dex)?;
         }
@@ -2872,7 +2901,7 @@ impl BattleState {
         target: Entity,
         m: &ActiveMove<'_>,
         effectiveness: i8,
-        spread: bool,
+        phase: HitPhase,
     ) -> Result<u16> {
         let crit_ratio = self.crit_ratio(
             dex,
@@ -2938,7 +2967,8 @@ impl BattleState {
             effectiveness,
             critical,
         };
-        let base_power = self.base_power(dex, m.bp_callback, u32::from(m.power), actor, target);
+        let base_power =
+            self.base_power(dex, m.bp_callback, u32::from(m.power), actor, target, phase.hit);
         if base_power == 0 {
             return Ok(0);
         }
@@ -2972,7 +3002,7 @@ impl BattleState {
                 power_den: 1,
                 attack,
                 defense,
-                spread,
+                spread: phase.spread,
                 parental_bond_second_hit: false,
                 weather_modifier: self.weather_damage_modifier(dex, m.move_type),
                 critical,
