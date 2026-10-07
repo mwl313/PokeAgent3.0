@@ -91,8 +91,9 @@ export function createScaffold() {
   const select = (kind, own_slot, destination = 255) => ({
     kind, own_slot, move_slot: 255, target_location: 0, switch_destination: destination, resource: 'None',
   });
-  const moveAction = (slot, moveSlot, target = 0) => ({
-    kind: 'Move', own_slot: slot, move_slot: moveSlot, target_location: target, switch_destination: 255, resource: 'None',
+  const moveAction = (slot, moveSlot, target = 0, mega = false) => ({
+    kind: 'Move', own_slot: slot, move_slot: moveSlot, target_location: target, switch_destination: 255,
+    resource: mega ? 'Mega' : 'None',
   });
 
   // `wanted` entries are a move id, `null` for the auto choice, `{move, target}`
@@ -179,8 +180,9 @@ export function createScaffold() {
       const chosenMove = preferred.find(({index}) => (wish?.target ?? targetFor(index)) !== null) ?? preferred[0];
       const index = chosenMove ? chosenMove.index : 0;
       const target = chosenMove ? (wish?.target ?? targetFor(chosenMove.index)) : 0;
-      actions.push(moveAction(slot, index, target ?? 0));
-      commands.push(`move ${index + 1}${target ? ` ${target}` : ''}`);
+      const mega = Boolean(wish?.mega);
+      actions.push(moveAction(slot, index, target ?? 0, mega));
+      commands.push(`move ${index + 1}${target ? ` ${target}` : ''}${mega ? ' mega' : ''}`);
     }
     return {actions, command: commands.join(', ')};
   }

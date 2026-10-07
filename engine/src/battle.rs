@@ -3247,7 +3247,7 @@ impl BattleState {
             // `hitStepTryHitEvent` runs whole-spread with handlers ordered by
             // priority: the priority-4 side guards and the priority-3
             // protection volatiles both precede every ability TryHit.
-            if m.protect && !m.breaks_protect {
+            if m.protect && !m.breaks_protect && !self.ability_bypasses_protect(dex, actor, m) {
                 if self.guard_blocks(dex, target, m, effective_priority) {
                     blocked_by_protection = true;
                     continue;
@@ -3816,7 +3816,11 @@ impl BattleState {
                 &mut self.rng,
             )?;
             let final_modifier = self.damage_modifier(dex, context)?;
-            let damage = damage::finish_damage(damage, final_modifier, false);
+            // `abilities:piercingdrill|unseenfist` quarter the damage of a hit
+            // whose protection was bypassed.
+            let bypassed =
+                self.protection_bypassed(dex, actor, target, m, effective_priority);
+            let damage = damage::finish_damage(damage, final_modifier, bypassed);
             // The decoy call in the reference still resolves the full damage
             // (identical RNG draws) and then eats it instead of the target.
             if self.intercept_substitute(dex, actor, target, m, damage, m.infiltrates || pollen_ally)? {
@@ -4679,7 +4683,7 @@ impl BattleState {
         let mut kept = SmallVec::<[Entity; 4]>::new();
         for e in targets {
             self.validate_effects(dex, e)?;
-            if m.protect && !m.breaks_protect {
+            if m.protect && !m.breaks_protect && !self.ability_bypasses_protect(dex, actor, m) {
                 if self.guard_blocks(dex, e, m, effective_priority) {
                     at_least_one_failure = true;
                     continue;
@@ -5411,7 +5415,13 @@ impl BattleState {
             &mut self.rng,
         )?;
         let final_modifier = self.damage_modifier(dex, context)?;
-        Ok(damage::finish_damage(damage, final_modifier, false))
+        // `abilities:piercingdrill|unseenfist` quarter the damage of a hit
+        // whose protection was bypassed.
+        let priority = m
+            .priority
+            .unwrap_or_else(|| self.effective_priority(dex, actor, m.id));
+        let bypassed = self.protection_bypassed(dex, actor, target, m, priority);
+        Ok(damage::finish_damage(damage, final_modifier, bypassed))
     }
 
     /// Reference `BattleQueue#changeAction` + `insertChoice`: replace the
@@ -5735,6 +5745,40 @@ impl BattleState {
             .protection_volatiles()
             .into_iter()
             .find(|id| volatiles.contains_key(id))
+    }
+
+    /// `abilities:piercingdrill|unseenfist.onHitProtect`: a contact move from
+    /// the holder cancels the target's protection. The reference sets the
+    /// hit's `bypassProtect` marker at the same time, which `modifyDamage`
+    /// turns into a quarter-damage modifier.
+    fn ability_bypasses_protect(
+        &self,
+        dex: &Dex,
+        actor: Entity,
+        m: &crate::assets::Move,
+    ) -> bool {
+        m.contact
+            && matches!(
+                dex.effects.abilities[self.mon(actor).ability as usize],
+                Ability::Piercingdrill | Ability::Unseenfist
+            )
+    }
+
+    /// Whether this action's protection gate was actually bypassed for the
+    /// target. The reference only marks `bypassProtect` when a blocking
+    /// condition (a protection volatile or a Guard side condition) consulted
+    /// the `HitProtect` event, so an unprotected target is not quartered.
+    fn protection_bypassed(
+        &self,
+        dex: &Dex,
+        actor: Entity,
+        target: Entity,
+        m: &ActiveMove<'_>,
+        effective_priority: i8,
+    ) -> bool {
+        self.ability_bypasses_protect(dex, actor, m)
+            && (self.blocking_protection(dex, target).is_some()
+                || self.guard_blocks(dex, target, m, effective_priority))
     }
 
     /// Reference priority-4 side-condition guards (Wide Guard, Quick Guard).

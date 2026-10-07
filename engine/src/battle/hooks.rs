@@ -2871,7 +2871,6 @@ impl Ability {
             | Ability::Mimicry
             | Ability::Opportunist
             | Ability::Pickup
-            | Ability::Piercingdrill
             | Ability::Quickdraw
             | Ability::Rattled
             | Ability::Receiver
@@ -2891,7 +2890,6 @@ impl Ability {
             | Ability::Supersweetsyrup
             | Ability::Sweetveil
             | Ability::Symbiosis
-            | Ability::Unseenfist
             | Ability::Vitalspirit
             | Ability::Whitesmoke
         )
