@@ -1596,7 +1596,7 @@ impl BattleState {
         loc: i8,
         source_effect: Id,
     ) -> Result<()> {
-        self.use_move_inner(
+        let result = self.use_move_inner(
             dex,
             actor,
             slot,
@@ -1607,7 +1607,11 @@ impl BattleState {
                 source_effect,
                 ..Default::default()
             },
-        )
+        );
+        // `conditions:charge.onAfterMove|onMoveAborted`: an Electric attempt
+        // consumes the volatile whether it resolved or was aborted.
+        self.charge_after_move(dex, actor, move_id)?;
+        result
     }
 
     /// `BattleActions#useMove`: a move invoked by another move (Sleep Talk
@@ -1624,7 +1628,7 @@ impl BattleState {
     ) -> Result<()> {
         let target = dex.moves[move_id as usize].target;
         let loc = self.random_target_location(actor, target);
-        self.use_move_inner(
+        let result = self.use_move_inner(
             dex,
             actor,
             NO_SLOT,
@@ -1635,7 +1639,10 @@ impl BattleState {
                 caller_slot,
                 ..Default::default()
             },
-        )
+        );
+        // A called Electric move consumes the Charge volatile as well.
+        self.charge_after_move(dex, actor, move_id)?;
+        result
     }
 
     fn use_move_inner(
@@ -6174,6 +6181,8 @@ impl BattleState {
                     false,
                     suppressing,
                 )?;
+            } else if volatile == dex.effects.charge {
+                changed |= self.add_charge_volatile(dex, target, Some(source))?;
             } else if volatile == dex.effects.focus_energy || volatile == dex.effects.dragon_cheer {
                 // Focus Energy / Dragon Cheer: no duration and no restart. The
                 // `onStart` gate refuses the new volatile while the other crit
@@ -7462,6 +7471,71 @@ impl BattleState {
             self.sides[side].slot_conditions[*slot as usize]
                 .contains_key(&dex.effects.revival_blessing)
         })
+    }
+
+    /// `conditions:charge`: the Electric-doubling volatile. `onStart` and
+    /// `onRestart` both announce it (naming the granting ability when
+    /// Electromorphosis added it), and the marker carries no duration or
+    /// payload beyond its source.
+    fn add_charge_volatile(
+        &mut self,
+        dex: &Dex,
+        target: Entity,
+        source: Option<Entity>,
+    ) -> Result<bool> {
+        if !self.mon(target).volatiles.contains_key(&dex.effects.charge) {
+            let order = self.allocate_effect_order()?;
+            self.mon_mut(target).volatiles.insert(
+                dex.effects.charge,
+                EffectState {
+                    id: dex.effects.charge,
+                    effect_order: order,
+                    effect_order_assigned: true,
+                    source: source.map(|s| {
+                        (
+                            if s.side == 0 { SideId::P1 } else { SideId::P2 },
+                            s.roster,
+                        )
+                    }),
+                    ..Default::default()
+                },
+            );
+        }
+        self.emit(
+            EventKind::EffectStart,
+            target,
+            source,
+            EffectRef::Condition(dex.effects.charge),
+            0,
+            false,
+        )?;
+        Ok(true)
+    }
+
+    /// `moves:charge.condition.onAfterMove|onMoveAborted`: any Electric-type
+    /// move other than Charge itself consumes the volatile (silently ending).
+    fn charge_after_move(&mut self, dex: &Dex, actor: Entity, move_id: Id) -> Result<()> {
+        if move_id == 0
+            || move_id == dex.effects.charge_move
+            || !self.mon(actor).volatiles.contains_key(&dex.effects.charge)
+        {
+            return Ok(());
+        }
+        let declared = dex.moves[move_id as usize].move_type;
+        let (kind, _) = self.converted_move_type(dex, actor, &dex.moves[move_id as usize], declared);
+        if kind != dex.effects.electric {
+            return Ok(());
+        }
+        self.mon_mut(actor).volatiles.remove(&dex.effects.charge);
+        self.emit(
+            EventKind::EffectEnd,
+            actor,
+            None,
+            EffectRef::Condition(dex.effects.charge),
+            0,
+            false,
+        )?;
+        Ok(())
     }
 
     /// Reference `Battle#runAction` case `'revivalblessing'`: the chosen

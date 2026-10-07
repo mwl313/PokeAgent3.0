@@ -1241,6 +1241,23 @@ impl BattleState {
                     index,
                 ));
             }
+            // `abilities:electromorphosis.onDamagingHit` carries
+            // `onDamagingHitOrder: 1`, so it sorts with Rough Skin's bucket.
+            if dex.effects.abilities[self.mon(target).ability as usize]
+                == Ability::Electromorphosis
+            {
+                handlers.push((
+                    target,
+                    19,
+                    Priority {
+                        order: 1,
+                        sub_order: 7,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
             if dex.effects.items[self.mon(target).item as usize] == Item::RockyHelmet {
                 handlers.push((
                     target,
@@ -1545,6 +1562,11 @@ impl BattleState {
                 if m.contact {
                     self.skill_swap(dex, actor, target)?;
                 }
+            } else if kind == 19 {
+                // `abilities:electromorphosis.onDamagingHit`: the holder gains
+                // the Charge volatile (no boost), named in the start message.
+                self.reveal_ability(target)?;
+                self.add_charge_volatile(dex, target, Some(target))?;
             } else if m.move_type == dex.effects.fire {
                 self.cure_status(target)?;
             }
@@ -2243,6 +2265,14 @@ impl BattleState {
                 {
                     add(actor, 0, 8192);
                 }
+                // `moves:charge.condition.onBasePower` (`onBasePowerPriority:
+                // 9`): the Charge volatile doubles the holder's Electric moves.
+                if a.volatiles.contains_key(&dex.effects.charge)
+                    && m.move_type == dex.effects.electric
+                    && m.id != dex.effects.charge_move
+                {
+                    add(actor, 9, 8192);
+                }
             }
             ModifierEvent::Attack | ModifierEvent::SpecialAttack => {
                 if matches!(
@@ -2805,7 +2835,6 @@ impl Ability {
             | Ability::Cudchew
             | Ability::Cutecharm
             | Ability::Earlybird
-            | Ability::Electromorphosis
             | Ability::Embodyaspectcornerstone
             | Ability::Embodyaspecthearthflame
             | Ability::Embodyaspectteal

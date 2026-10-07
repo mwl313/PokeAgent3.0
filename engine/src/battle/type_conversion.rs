@@ -158,12 +158,34 @@ impl BattleState {
         if ability == Ability::Scrappy {
             action.scrappy = true;
         }
+        let (move_type, type_changer_boosted) =
+            self.converted_move_type(dex, actor, data, action.move_type);
+        action.move_type = move_type;
+        action.type_changer_boosted = type_changer_boosted;
+        // These callbacks do not emit an ability reveal or draw RNG. Other
+        // ordered ModifyType participants remain explicitly unsupported.
+        action
+    }
+
+    /// The action's effective type after the ported `ModifyType` abilities:
+    /// Pixilate/Aerilate/Refrigerate/Galvanize/Dragonize convert Normal moves,
+    /// Normalize converts everything outside its exclusion list, and Liquid
+    /// Voice converts sound moves to Water. Returns the resulting type and the
+    /// ability that converted it (the BasePower boost key).
+    pub(super) fn converted_move_type(
+        &self,
+        dex: &Dex,
+        actor: Entity,
+        data: &crate::assets::Move,
+        current_type: Id,
+    ) -> (Id, Option<Ability>) {
+        let ability = dex.effects.abilities[self.mon(actor).ability as usize];
         if ability == Ability::LiquidVoice {
             // Dynamax is not a legal Champions state and remains unsupported.
             if data.sound {
-                action.move_type = dex.effects.water;
+                return (dex.effects.water, None);
             }
-            return action;
+            return (current_type, None);
         }
         let destination = match ability {
             Ability::Pixilate => dex.effects.fairy,
@@ -172,22 +194,20 @@ impl BattleState {
             Ability::Galvanize => dex.effects.electric,
             Ability::Dragonize => dex.effects.dragon,
             Ability::Normalize => dex.effects.normal,
-            _ => return action,
+            _ => return (current_type, None),
         };
         let excluded = if ability == Ability::Normalize {
             data.normalize_excluded
         } else {
             data.conversion_excluded
         };
-        if (ability == Ability::Normalize || action.move_type == dex.effects.normal)
+        if (ability == Ability::Normalize || current_type == dex.effects.normal)
             && (!excluded || data.is_max)
             && !(data.is_z && data.category != Category::Status)
         {
-            action.move_type = destination;
-            action.type_changer_boosted = Some(ability);
+            (destination, Some(ability))
+        } else {
+            (current_type, None)
         }
-        // These callbacks do not emit an ability reveal or draw RNG. Other
-        // ordered ModifyType participants remain explicitly unsupported.
-        action
     }
 }

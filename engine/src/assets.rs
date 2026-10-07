@@ -647,6 +647,14 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:rest.onHit",
     // Snore: the asleep-only gate (its flinch secondary is data-driven).
     "moves:snore.onTry",
+    // Charge: the condition lifecycle (start/restart/end messages, the
+    // Electric base-power doubling, and the after-move/aborted consumption).
+    "moves:charge.condition.onStart",
+    "moves:charge.condition.onRestart",
+    "moves:charge.condition.onBasePower",
+    "moves:charge.condition.onMoveAborted",
+    "moves:charge.condition.onAfterMove",
+    "moves:charge.condition.onEnd",
     // Tri Attack: the sampled-status secondary, executed by the native hook.
     "moves:triattack.secondary.onHit",
     "moves:triattack.secondaries.0.onHit",
@@ -995,6 +1003,8 @@ const HANDLED_VOLATILES: &[&str] = &[
     // Focus Energy / Dragon Cheer: mutually exclusive crit-ratio volatiles.
     "focusenergy",
     "dragoncheer",
+    // Charge's Electric base-power doubling volatile.
+    "charge",
     // Volatile selection-lock family: each id is declared by exactly one move
     // (encore, taunt, disable, imprison, torment) whose callbacks are below.
     "encore",
@@ -1902,6 +1912,8 @@ impl Dex {
             revival_blessing: lookup("conditions", "revivalblessing")?,
             focus_energy: lookup("conditions", "focusenergy")?,
             dragon_cheer: lookup("conditions", "dragoncheer")?,
+            charge: lookup("conditions", "charge")?,
+            charge_move: lookup("moves", "charge")?,
             spiky_shield: lookup("conditions", "spikyshield")?,
             baneful_bunker: lookup("conditions", "banefulbunker")?,
             kings_shield: lookup("conditions", "kingsshield")?,

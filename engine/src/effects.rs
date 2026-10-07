@@ -1162,6 +1162,10 @@ pub struct NativeEffects {
     /// `focusenergy` / `dragoncheer`: the two crit-ratio volatiles.
     pub focus_energy: Id,
     pub dragon_cheer: Id,
+    /// The `charge` volatile (move Charge / Electromorphosis) and the move id
+    /// it is consumed by.
+    pub charge: Id,
+    pub charge_move: Id,
     /// Additional Protect-family volatiles that block hits in the same
     /// `hitStepTryHitEvent` phase (priority 3).
     pub spiky_shield: Id,
