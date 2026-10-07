@@ -858,6 +858,19 @@ impl BattleState {
                     index,
                 ));
             }
+            // Spicy Spray burns the attacker on every damaging hit.
+            if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Spicyspray {
+                handlers.push((
+                    target,
+                    14,
+                    Priority {
+                        sub_order: 7,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
             if dex.effects.items[self.mon(target).item as usize] == Item::RockyHelmet {
                 handlers.push((
                     target,
@@ -1071,6 +1084,14 @@ impl BattleState {
                         )?;
                     }
                 }
+            } else if kind == 14 {
+                // `abilities:spicyspray.onDamagingHit`: the attacker is burned
+                // outright by any damaging hit, with the holder as its source.
+                let effect = crate::effects::HitEffect {
+                    status: dex.effects.burn,
+                    ..Default::default()
+                };
+                self.hit_effect_with_ability(dex, actor, target, &effect, false, Some(target))?;
             } else if m.move_type == dex.effects.fire {
                 self.cure_status(target)?;
             }
@@ -1534,6 +1555,19 @@ impl BattleState {
                 if matches!(event, ModifierEvent::Attack) && attacking == Ability::HugePower {
                     add(actor, 5, 8192);
                 }
+                // `abilities:firemane.onModifyAtk|onModifySpA` (priority 5):
+                // Fire-type moves are boosted 1.5x unconditionally.
+                if attacking == Ability::Firemane {
+                    add(
+                        actor,
+                        5,
+                        if m.move_type == dex.effects.fire {
+                            6144
+                        } else {
+                            4096
+                        },
+                    );
+                }
                 if matches!(event, ModifierEvent::SpecialAttack) && attacking == Ability::SolarPower
                 {
                     // The handler exists outside sun too. Keep the no-op entry
@@ -1648,6 +1682,9 @@ impl BattleState {
                     }
                     // `abilities:punkrock.onSourceModifyDamage`.
                     Ability::Punkrock => add(target, 0, if m.sound { 2048 } else { 4096 }),
+                    // `abilities:auraguard.onSourceModifyDamage`: contact moves
+                    // deal half damage to the holder.
+                    Ability::Auraguard => add(target, 0, if m.contact { 2048 } else { 4096 }),
                     _ => (),
                 }
                 // `abilities:sniper.onModifyDamage` is attacker-owned: the
@@ -1979,7 +2016,6 @@ impl Ability {
             | Ability::Angerpoint
             | Ability::Anticipation
             | Ability::Aromaveil
-            | Ability::Auraguard
             | Ability::Battlebond
             | Ability::Berserk
             | Ability::Bigpecks
@@ -1996,7 +2032,6 @@ impl Ability {
             | Ability::Embodyaspecthearthflame
             | Ability::Embodyaspectteal
             | Ability::Embodyaspectwellspring
-            | Ability::Firemane
             | Ability::Forecast
             | Ability::Forewarn
             | Ability::Frisk
@@ -2052,7 +2087,6 @@ impl Ability {
             | Ability::Shielddust
             | Ability::Shieldsdown
             | Ability::Skilllink
-            | Ability::Spicyspray
             | Ability::Stakeout
             | Ability::Stall
             | Ability::Stalwart
