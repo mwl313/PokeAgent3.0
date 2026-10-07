@@ -4119,6 +4119,19 @@ impl BattleState {
                 }
             }
         }
+        // `moves:icespinner.onAfterHit`: a landed hit clears the active terrain.
+        if hooks & crate::effects::hook::ICE_SPINNER != 0 && self.mon(actor).hp > 0 {
+            self.clear_terrain(dex, actor)?;
+        }
+        // `moves:mortalspin.onAfterHit`: the user sheds Leech Seed, its own
+        // entry hazards and partial trapping unless Sheer Force suppressed the
+        // action's effects.
+        if hooks & crate::effects::hook::MORTAL_SPIN != 0
+            && !m.sheer_force
+            && self.mon(actor).hp > 0
+        {
+            self.mortal_spin_shed(dex, actor)?;
+        }
         if !hit_targets.is_empty() {
             self.emergency_exit_check(dex, actor, user_hp_before_damaging_hit)?;
         }
@@ -5842,12 +5855,24 @@ impl BattleState {
         if m.hooks & crate::effects::hook::STEEL_ROLLER != 0 {
             self.clear_terrain(dex, source)?;
         }
+        // `moves:icespinner.onAfterSubDamage`: a decoy hit still clears the
+        // terrain while the user is alive.
+        if m.hooks & crate::effects::hook::ICE_SPINNER != 0 && self.mon(source).hp > 0 {
+            self.clear_terrain(dex, source)?;
+        }
         // `moves:ceaselessedge.onAfterSubDamage` / `stoneaxe.onAfterSubDamage`:
         // a decoy hit still scatters the hazard while the user is alive and
         // Sheer Force did not consume the secondary. The asset-level `Move`
         // cannot see the action marker, so recompute the `onModifyMove` rule.
         let sheer_force = !m.secondaries.is_empty()
             && dex.effects.abilities[self.mon(source).ability as usize] == Ability::Sheerforce;
+        // `moves:mortalspin.onAfterSubDamage`: the same shed as `onAfterHit`.
+        if m.hooks & crate::effects::hook::MORTAL_SPIN != 0
+            && !sheer_force
+            && self.mon(source).hp > 0
+        {
+            self.mortal_spin_shed(dex, source)?;
+        }
         if !sheer_force && self.mon(source).hp > 0 {
             let hazard = if m.id == dex.effects.ceaseless_edge {
                 Some(dex.effects.spikes)
@@ -5875,6 +5900,31 @@ impl BattleState {
             ..Default::default()
         };
         self.hit_effect(dex, target, source, &effect, true)?;
+        Ok(())
+    }
+
+    /// `moves:mortalspin.onAfterHit|onAfterSubDamage`: drop the user's Leech
+    /// Seed, partial trapping and its own entry hazards.
+    fn mortal_spin_shed(&mut self, dex: &Dex, user: Entity) -> Result<()> {
+        self.mon_mut(user).volatiles.remove(&dex.effects.leech_seed);
+        self.mon_mut(user).volatiles.remove(&dex.effects.partially_trapped);
+        for id in [
+            dex.effects.spikes,
+            dex.effects.toxic_spikes,
+            dex.effects.stealth_rock,
+            dex.effects.sticky_web,
+        ] {
+            if self.sides[user.side as usize].conditions.remove(&id).is_some() {
+                self.emit(
+                    EventKind::SideEffectEnd,
+                    user,
+                    Some(user),
+                    EffectRef::Condition(id),
+                    0,
+                    false,
+                )?;
+            }
+        }
         Ok(())
     }
 

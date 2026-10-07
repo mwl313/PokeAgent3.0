@@ -118,6 +118,12 @@ pub mod hook {
     pub const ROLE_PLAY: u64 = 1 << 41;
     /// `moves:simplebeam.onTryHit|onHit`: the target's ability becomes Simple.
     pub const SIMPLE_BEAM: u64 = 1 << 42;
+    /// `moves:icespinner.onAfterHit|onAfterSubDamage`: a landed hit clears the
+    /// active terrain.
+    pub const ICE_SPINNER: u64 = 1 << 43;
+    /// `moves:mortalspin.onAfterHit|onAfterSubDamage`: the user sheds Leech
+    /// Seed, its own entry hazards and partial trapping.
+    pub const MORTAL_SPIN: u64 = 1 << 44;
     /// `moves:burnup.onTryMove|self.onHit`: fails without the Fire type and
     /// strips it from the user on a landed hit.
     pub const BURN_UP: u64 = 1 << 35;

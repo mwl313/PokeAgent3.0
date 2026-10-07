@@ -655,6 +655,11 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:charge.condition.onMoveAborted",
     "moves:charge.condition.onAfterMove",
     "moves:charge.condition.onEnd",
+    // Rapid-Spin-family after-hit payloads (terrain clear, hazard/seed shed).
+    "moves:icespinner.onAfterHit",
+    "moves:icespinner.onAfterSubDamage",
+    "moves:mortalspin.onAfterHit",
+    "moves:mortalspin.onAfterSubDamage",
     // Ability-transfer moves: the gates and the setAbility payloads.
     "moves:entrainment.onTryHit",
     "moves:entrainment.onHit",
@@ -843,6 +848,8 @@ fn move_hooks(id: &str) -> u64 {
         "entrainment" => hook::ENTRAINMENT,
         "roleplay" => hook::ROLE_PLAY,
         "simplebeam" => hook::SIMPLE_BEAM,
+        "icespinner" => hook::ICE_SPINNER,
+        "mortalspin" => hook::MORTAL_SPIN,
         "eeriespell" => hook::EERIE_SPELL,
         "burnup" => hook::BURN_UP,
         "triattack" => hook::TRI_ATTACK,
