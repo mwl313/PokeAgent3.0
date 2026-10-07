@@ -2359,7 +2359,9 @@ impl BattleState {
                 }
                 return self.rng.below(100) < accuracy;
             }
-            let Some(accuracy) = self.modify_accuracy(dex, actor, *target, action_accuracy) else {
+            let Some(accuracy) =
+                self.modify_accuracy(dex, actor, *target, action_accuracy, m.minimize)
+            else {
                 return true;
             };
             let attacker_accuracy = if defender_unaware {
@@ -3498,7 +3500,9 @@ impl BattleState {
         m: &ActiveMove<'_>,
         action_accuracy: Option<u16>,
     ) -> bool {
-        let Some(accuracy) = self.modify_accuracy(dex, actor, target, action_accuracy) else {
+        let Some(accuracy) =
+            self.modify_accuracy(dex, actor, target, action_accuracy, m.minimize)
+        else {
             return true;
         };
         let attacker_unaware =
@@ -4619,6 +4623,7 @@ impl BattleState {
                 || volatile == dex.effects.yawn
                 || volatile == dex.effects.roost
                 || volatile == dex.effects.glaive_rush
+                || volatile == dex.effects.minimize
                 || volatile == dex.effects.partially_trapped
                 || volatile == dex.effects.leech_seed
                 || volatile == dex.effects.heal_block
@@ -4655,7 +4660,9 @@ impl BattleState {
         mid_move: bool,
     ) -> Result<bool> {
         // `addVolatile` fails when the volatile already exists and declares no
-        // `onRestart`; none of this family restarts.
+        // `onRestart`; the rest of this family does not restart, and
+        // `moves:minimize.condition.onRestart` returns null, which is refused
+        // the same way (the caller has already applied the move's boosts).
         if self.mon(target).volatiles.contains_key(&volatile) {
             return Ok(false);
         }

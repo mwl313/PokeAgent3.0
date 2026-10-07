@@ -1057,6 +1057,10 @@ pub struct NativeEffects {
     /// `moves:glaiverush.condition`: the user's next move always lands, and
     /// incoming damage is doubled until the volatile is consumed.
     pub glaive_rush: Id,
+    /// `moves:minimize.condition`: the evasion volatile whose
+    /// `onSourceModifyDamage` doubles the damage of `flags.minimize` moves and
+    /// whose `onAccuracy` makes those moves bypass the accuracy roll.
+    pub minimize: Id,
     /// `partiallytrapped` condition: binding moves' damage/trap volatile.
     pub partially_trapped: Id,
     /// `perishsong` condition: four-tick countdown that ends in a faint.

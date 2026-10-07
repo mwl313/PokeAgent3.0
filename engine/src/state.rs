@@ -872,6 +872,13 @@ impl BattleState {
                         effect.duration.is_none()
                             && effect.values.is_empty()
                             && effect.source.is_some()
+                    } else if id == dex.effects.minimize {
+                        // `moves:minimize.condition`: a duration-less evasion
+                        // volatile with the caster recorded as its source and
+                        // no payload.
+                        effect.duration.is_none()
+                            && effect.values.is_empty()
+                            && effect.source.is_some()
                     } else if id == dex.effects.perish_song {
                         // `moves:perishsong.condition`: a four-tick countdown
                         // that ends in a faint.
