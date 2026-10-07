@@ -3276,6 +3276,33 @@ impl BattleState {
                 // `field.clearTerrain()`; only the drop and the hazard
                 // removals count as success.
                 did_anything |= self.defog(dex, actor, target)?;
+            } else if behavior == MoveBehavior::CorrosiveGas {
+                // `moves:corrosivegas.onHit`: destroy the target's held item.
+                // The silent take runs first; a successful destruction is
+                // public and counts as the move doing something.
+                let crate::battle::hooks::TakeOutcome::Taken(item) =
+                    self.take_item_checked(dex, target)?
+                else {
+                    continue;
+                };
+                self.emit(
+                    EventKind::EndItem,
+                    target,
+                    Some(actor),
+                    EffectRef::Item(item),
+                    0,
+                    false,
+                )?;
+                did_anything = true;
+            } else if behavior == MoveBehavior::Recycle {
+                // `moves:recycle.onHit`: with empty hands, restore the last
+                // consumed item (clearing `lastItem` first, then `setItem`).
+                if self.mon(actor).item == 0 && self.mon(actor).previous_item != 0 {
+                    let item = self.mon(actor).previous_item;
+                    self.mon_mut(actor).previous_item = 0;
+                    self.give_item(dex, actor, actor, item)?;
+                    did_anything = true;
+                }
             } else if m.force_switch {
                 // Reference `runMoveEffects`: a force-switch move's only
                 // contribution to `didAnything` is
@@ -3544,6 +3571,39 @@ impl BattleState {
         if m.hooks & crate::effects::hook::KNOCK_OFF != 0 && self.mon(actor).hp > 0 {
             for &target in &effect_targets {
                 self.take_item(dex, target, actor)?;
+            }
+        }
+        // `moves:thief|covet.onAfterHit`: an empty-handed, alive user takes the
+        // first damaged target's item. The reference re-checks the user's item
+        // per target, so only one steal can land; a refused give returns the
+        // item to its original holder.
+        if (m.id == dex.effects.thief_move || m.id == dex.effects.covet_move)
+            && self.mon(actor).hp > 0
+        {
+            for &target in &effect_targets {
+                if target == actor || self.mon(actor).item != 0 {
+                    continue;
+                }
+                let crate::battle::hooks::TakeOutcome::Taken(item) =
+                    self.take_item_checked(dex, target)?
+                else {
+                    continue;
+                };
+                if self.mon(actor).hp == 0 || self.mon(actor).active_slot.is_none() {
+                    self.mon_mut(target).item = item;
+                    continue;
+                }
+                // Thief's reference log carries a silent `-enditem`; both
+                // moves still make the removal public state.
+                self.emit(
+                    EventKind::EndItem,
+                    target,
+                    Some(actor),
+                    EffectRef::Item(item),
+                    0,
+                    false,
+                )?;
+                self.give_item(dex, actor, target, item)?;
             }
         }
         self.each_update(dex)?;

@@ -483,6 +483,12 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:stickyweb.condition.onSwitchIn",
     // Defog's own hit callback (evasion drop, removal, terrain clear).
     "moves:defog.onHit",
+    // Item moves: the after-hit steal, the destroy-on-hit and the self
+    // restore are native item primitives.
+    "moves:thief.onAfterHit",
+    "moves:covet.onAfterHit",
+    "moves:corrosivegas.onHit",
+    "moves:recycle.onHit",
     // Dire Claw's Champions secondary samples one of three major statuses and
     // applies it with `trySetStatus`; the 30% chance stays declarative.
     "moves:direclaw.secondary.onHit",
@@ -1820,6 +1826,8 @@ impl Dex {
             spikes: lookup("conditions", "spikes")?,
             stealth_rock: lookup("conditions", "stealthrock")?,
             sticky_web: lookup("conditions", "stickyweb")?,
+            thief_move: lookup("moves", "thief")?,
+            covet_move: lookup("moves", "covet")?,
             helping_hand: lookup("conditions", "helpinghand")?,
             follow_me: lookup("conditions", "followme")?,
             rage_powder: lookup("conditions", "ragepowder")?,

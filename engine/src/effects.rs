@@ -827,6 +827,10 @@ pub enum MoveBehavior {
     /// `defog`: evasion drop, hazard/screen removal on both sides and
     /// `field.clearTerrain()`.
     Defog,
+    /// `corrosivegas`: destroy every adjacent target's held item.
+    CorrosiveGas,
+    /// `recycle`: restore the user's last consumed item.
+    Recycle,
     /// `stockpile`: layered self volatile that raises Defense and Special
     /// Defense by one stage per layer and stores the successful raises so
     /// `onEnd` can reverse them.
@@ -941,6 +945,8 @@ impl MoveBehavior {
             "skillswap" => Self::SkillSwap,
             "spikes" | "stealthrock" | "toxicspikes" | "stickyweb" => Self::FoeHazard,
             "defog" => Self::Defog,
+            "corrosivegas" => Self::CorrosiveGas,
+            "recycle" => Self::Recycle,
             "stockpile" => Self::Stockpile,
             "swallow" => Self::Swallow,
             _ => Self::Unimplemented,
@@ -1087,6 +1093,9 @@ pub struct NativeEffects {
     pub spikes: Id,
     pub stealth_rock: Id,
     pub sticky_web: Id,
+    /// `thief` / `covet`: the two `onAfterHit` item-stealing moves.
+    pub thief_move: Id,
+    pub covet_move: Id,
     /// Snow-only screen that halves both damage categories.
     pub aurora_veil: Id,
     /// Single-turn redirection / support volatiles.
