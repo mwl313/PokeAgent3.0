@@ -2101,7 +2101,6 @@ impl Ability {
             | Ability::Sandspit
             | Ability::Screencleaner
             | Ability::Seedsower
-            | Ability::Shadowtag
             | Ability::Shedskin
             | Ability::Shielddust
             | Ability::Shieldsdown

@@ -1615,6 +1615,7 @@ impl Dex {
             helping_hand_move: lookup("moves", "helpinghand")?,
             roost: lookup("conditions", "roost")?,
             glaive_rush: lookup("conditions", "glaiverush")?,
+            partially_trapped: lookup("conditions", "partiallytrapped")?,
             throat_chop: lookup("conditions", "throatchop")?,
             encore: lookup("conditions", "encore")?,
             taunt: lookup("conditions", "taunt")?,

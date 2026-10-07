@@ -238,6 +238,8 @@ pub enum Ability {
     Screencleaner,
     Seedsower,
     Shadowtag,
+    Arenatrap,
+    Magnetpull,
     Shedskin,
     Sheerforce,
     Shielddust,
@@ -471,6 +473,8 @@ impl Ability {
             "screencleaner" => Self::Screencleaner,
             "seedsower" => Self::Seedsower,
             "shadowtag" => Self::Shadowtag,
+            "arenatrap" => Self::Arenatrap,
+            "magnetpull" => Self::Magnetpull,
             "shedskin" => Self::Shedskin,
             "sheerforce" => Self::Sheerforce,
             "shielddust" => Self::Shielddust,
@@ -991,6 +995,8 @@ pub struct NativeEffects {
     /// `moves:glaiverush.condition`: the user's next move always lands, and
     /// incoming damage is doubled until the volatile is consumed.
     pub glaive_rush: Id,
+    /// `partiallytrapped` condition: binding moves' damage/trap volatile.
+    pub partially_trapped: Id,
     /// Volatile that disables and refuses sound moves for two turns.
     pub throat_chop: Id,
     /// `move:encore` volatile: locks the holder into its last move.

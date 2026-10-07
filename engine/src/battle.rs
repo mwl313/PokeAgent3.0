@@ -4569,6 +4569,70 @@ impl BattleState {
         !self.bench(side).is_empty()
     }
 
+    /// Reference request-time `TrapPokemon` / `MaybeTrapPokemon` pass for one
+    /// active Pokémon. Returns the holder's trap state as `Some(hidden)` when a
+    /// trapping effect holds it (Shadow Tag/Arena Trap/Magnet Pull mark hidden
+    /// traps, a live `partiallytrapped` source a real one) and whether any
+    /// foe's trapping ability merely *might* hold it. Ghost types are immune
+    /// through the `trapped` pseudo-type, and a Shadow Tag holder ignores
+    /// another Shadow Tag. In doubles every active is adjacent, so the
+    /// reference's adjacency filter never excludes a foe.
+    pub(crate) fn trap_flags(&self, dex: &Dex, e: Entity) -> (Option<bool>, bool) {
+        // The pinned `trapped` pseudo-type only marks Ghost types immune.
+        let immune = self.mon(e).types.contains(&dex.effects.ghost);
+        let mut trapped: Option<bool> = None;
+        let mut maybe = false;
+        if immune {
+            return (None, false);
+        }
+        // `moves:partiallytrapped.condition.onTrapPokemon`: the volatile's
+        // source must still be on the field.
+        if self
+            .mon(e)
+            .volatiles
+            .contains_key(&dex.effects.partially_trapped)
+        {
+            let source_active = self.mon(e).volatiles[&dex.effects.partially_trapped]
+                .source
+                .is_some_and(|(side, roster)| {
+                    let source = Entity {
+                        side: side.index() as u8,
+                        roster,
+                    };
+                    self.mon(source).hp > 0 && self.mon(source).active_slot.is_some()
+                });
+            if source_active {
+                trapped = Some(false);
+            }
+        }
+        let ability = dex.effects.abilities[self.mon(e).ability as usize];
+        for roster in self.sides[(1 - e.side) as usize].active.iter().flatten() {
+            let foe = Entity {
+                side: 1 - e.side,
+                roster: *roster,
+            };
+            if self.mon(foe).hp == 0 {
+                continue;
+            }
+            match dex.effects.abilities[self.mon(foe).ability as usize] {
+                Ability::Shadowtag if ability != Ability::Shadowtag => {
+                    trapped = Some(true);
+                    maybe = true;
+                }
+                Ability::Arenatrap if self.grounded(dex, e) => {
+                    trapped = Some(true);
+                    maybe = true;
+                }
+                Ability::Magnetpull if self.mon(e).types.contains(&dex.effects.steel) => {
+                    trapped = Some(true);
+                    maybe = true;
+                }
+                _ => (),
+            }
+        }
+        (trapped, maybe)
+    }
+
     /// Reference `abilities:emergencyexit.onEmergencyExit` (the pinned
     /// Champions override): the holder marks itself to leave the field when a
     /// single damage event drops it from above half HP to half HP or below,
@@ -4965,6 +5029,29 @@ impl BattleState {
                 // A locked slot refuses switches and offers no Mega.
                 let (locked_move, locked_recharge, locked_target_location) = p.locked_state(dex);
                 let locked = locked_move.is_some() || locked_recharge;
+                // Reference request data: `TrapPokemon`/`MaybeTrapPokemon` run
+                // for every active Pokémon; only the side's last active slot
+                // exposes `maybeTrapped`, and a hidden trap is served as
+                // `trapped` for every other slot.
+                let (trap_state, trap_maybe) = self.trap_flags(
+                    dex,
+                    Entity {
+                        side: side as u8,
+                        roster,
+                    },
+                );
+                let can_switch_in = self.can_switch(side);
+                let (slot_trapped, slot_maybe) = if locked {
+                    // `getMoveRequestData` marks any locked Pokémon trapped.
+                    (true, false)
+                } else if last_active {
+                    (
+                        can_switch_in && trap_state == Some(false),
+                        can_switch_in && trap_state != Some(false) && trap_maybe,
+                    )
+                } else {
+                    (can_switch_in && trap_state.is_some(), false)
+                };
                 let moves = if locked_recharge {
                     Vec::new()
                 } else if let Some(id) = locked_move {
@@ -5009,7 +5096,8 @@ impl BattleState {
                             )
                             .is_some(),
                     moves,
-                    trapped: locked,
+                    trapped: slot_trapped,
+                    maybe_trapped: slot_maybe,
                     locked_move,
                     locked_recharge,
                     locked_target_location,

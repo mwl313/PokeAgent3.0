@@ -78,14 +78,16 @@ const requestDetail = (session, side) => {
     if (!p) return {present: false, requires_replacement: forced, can_mega: false, moves: []};
     const locked = p.getLockedMove();
     if (locked === 'recharge') {
-      return {present: !p.fainted, requires_replacement: forced, can_mega: false, locked_recharge: true, trapped: true, moves: []};
+      return {present: !p.fainted, requires_replacement: forced, can_mega: false, locked_recharge: true, trapped: true, maybe_trapped: false, moves: []};
     }
     if (locked) {
       const slotData = p.moveSlots.find(m => m.id === locked);
       return {present: !p.fainted, requires_replacement: forced, can_mega: false, locked: ids.moves[locked], trapped: true,
+        maybe_trapped: false,
         moves: [{id: ids.moves[locked], pp: slotData?.pp ?? 0, disabled: false, target: slotData?.target ?? 'normal'}]};
     }
     return {present: !p.fainted, requires_replacement: forced, can_mega: Boolean(info?.canMegaEvo),
+      trapped: Boolean(info?.trapped), maybe_trapped: Boolean(info?.maybeTrapped),
       moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp, disabled: Boolean(m.disabled), target: m.target}))};
   });
   const bench = side.pokemon.map((p, i) => [p, i]).filter(([p]) => !p.fainted && !side.active.includes(p)).map(([p]) => roster(p));

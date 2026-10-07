@@ -53,6 +53,7 @@ const requestDetail = (session, side) => {
     const forced = Boolean(req.forceSwitch?.[slot]);
     if (!p) return {present: false, requires_replacement: forced, can_mega: false, moves: []};
     return {present: !p.fainted, requires_replacement: forced, can_mega: Boolean(info?.canMegaEvo),
+      trapped: Boolean(info?.trapped), maybe_trapped: Boolean(info?.maybeTrapped),
       moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp,
         disabled: Boolean(m.disabled), target: m.target}))};
   });
@@ -255,6 +256,30 @@ const TRIALS = [
           after.filter((value, i) => value === before[i] + 1).length === 1;
       });
       if (!best) return 'Eelevate never raised exactly one stat after the faint';
+      return null;
+    },
+  },
+  {
+    name: 'mega_shadowtag_traps_foes',
+    p1: [MEGA('Gengar', 'Cursed Body', 'Gengarite', ['Sludge Bomb', 'Protect', 'Shadow Ball']),
+      ...fillerTeam().slice(0, 5)],
+    p2: [offensive('Metagross', 'Clear Body', ['Meteor Mash', 'Protect']), ...fillerTeam().slice(1),
+      offensive('Reuniclus', 'Overcoat', ['Iron Defense', 'Protect'])],
+    seeds: [[2, 4, 8, 16], [27, 54, 108, 216], [33, 66, 132, 264]],
+    script: [
+      {p1: [{move: 'sludgebomb', mega: true}, 'protect'], p2: ['meteormash', 'protect']},
+      {p1: ['protect', 'protect'], p2: ['protect', 'protect']},
+      {p1: ['protect', 'protect'], p2: ['protect', 'protect']},
+    ],
+    coverage: {move: 'sludgebomb'},
+    verify(fixture, session) {
+      const log = session.battle.log;
+      if (!log.some(line => line.startsWith('|-mega|'))) return 'the holder never Mega-evolved';
+      const trapped = fixture.steps.some(step => {
+        const detail = step.expected.sides[1].request_detail;
+        return detail && detail.slots.some(slot => slot.trapped || slot.maybe_trapped);
+      });
+      if (!trapped) return 'Shadow Tag never marked the opposing actives';
       return null;
     },
   },

@@ -72,6 +72,9 @@ struct ExpectedSlotRequest {
     locked_recharge: Option<bool>,
     #[serde(default)]
     trapped: Option<bool>,
+    /// Reference `maybeTrapped`: only the side's last active slot exposes it.
+    #[serde(default)]
+    maybe_trapped: Option<bool>,
 }
 
 #[derive(Deserialize)]
@@ -343,6 +346,12 @@ fn native_battles_match_reference_at_every_decision_boundary() {
                             }
                             if let Some(trapped) = want.trapped {
                                 assert_eq!(got.trapped, trapped, "{place} trapped flag");
+                            }
+                            if let Some(maybe) = want.maybe_trapped {
+                                assert_eq!(
+                                    got.maybe_trapped, maybe,
+                                    "{place} maybe-trapped flag"
+                                );
                             }
                         }
                     }

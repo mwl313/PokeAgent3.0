@@ -351,6 +351,7 @@ const requestDetail = (session, side) => {
     // disable as enabled for the last active slot, but the server rejects that
     // choice, so the legal mask must keep the raw flag.
     return {present: !p.fainted, requires_replacement: forced, can_mega: Boolean(info?.canMegaEvo),
+      trapped: Boolean(info?.trapped), maybe_trapped: Boolean(info?.maybeTrapped),
       moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp,
         disabled: Boolean(m.disabled), target: m.target}))};
   });

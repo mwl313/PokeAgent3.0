@@ -49,6 +49,7 @@ const requestDetail = (session, side) => {
     const forced = Boolean(req.forceSwitch?.[slot]);
     if (!p) return {present: false, requires_replacement: forced, can_mega: false, moves: []};
     return {present: !p.fainted, requires_replacement: forced, can_mega: Boolean(info?.canMegaEvo),
+      trapped: Boolean(info?.trapped), maybe_trapped: Boolean(info?.maybeTrapped),
       moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp, disabled: Boolean(m.disabled), target: m.target}))};
   });
   const bench = side.pokemon.map((p, i) => [p, i])

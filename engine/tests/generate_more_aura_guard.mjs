@@ -63,6 +63,7 @@ const compact = session => ({turn: session.battle.turn, rng_seed: session.battle
         const forced = Boolean(req.forceSwitch?.[slot]);
         if (!p) return {present: false, requires_replacement: forced, can_mega: false, moves: []};
         return {present: !p.fainted, requires_replacement: forced, can_mega: Boolean(info?.canMegaEvo),
+          trapped: Boolean(info?.trapped), maybe_trapped: Boolean(info?.maybeTrapped),
           moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp, disabled: Boolean(m.disabled), target: m.target}))};
       });
       const bench = s.pokemon.map((p, i) => [p, i]).filter(([p]) => !p.fainted && !s.active.includes(p)).map(([p]) => roster(p));

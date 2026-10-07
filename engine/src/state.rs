@@ -1323,6 +1323,24 @@ impl BattleState {
                                     })
                                     .collect()
                             };
+                            let (trap_state, trap_maybe) = state.trap_flags(
+                                dex,
+                                crate::effects::Entity {
+                                    side: side_index as u8,
+                                    roster,
+                                },
+                            );
+                            let can_switch_in = !bench.is_empty();
+                            let (trapped, maybe_trapped) = if locked {
+                                (true, false)
+                            } else if last_active {
+                                (
+                                    can_switch_in && trap_state == Some(false),
+                                    can_switch_in && trap_state != Some(false) && trap_maybe,
+                                )
+                            } else {
+                                (can_switch_in && trap_state.is_some(), false)
+                            };
                             SlotRequest {
                                 present: !p.fainted,
                                 can_mega: !locked
@@ -1332,7 +1350,8 @@ impl BattleState {
                                         .iter()
                                         .any(|(base, _)| *base == p.base_species),
                                 moves,
-                                trapped: locked,
+                                trapped,
+                                maybe_trapped,
                                 locked_move,
                                 locked_recharge,
                                 locked_target_location,

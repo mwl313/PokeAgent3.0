@@ -52,6 +52,7 @@ const requestDetail = (session, side) => {
     // `'hidden'` Imprison disable keeps `disabled: true` here even though the
     // client display can show `false` for the last active slot.
     return {present: !p.fainted, requires_replacement: forced, can_mega: Boolean(info?.canMegaEvo),
+      trapped: Boolean(info?.trapped), maybe_trapped: Boolean(info?.maybeTrapped),
       moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp,
         disabled: Boolean(m.disabled), target: m.target}))};
   });
