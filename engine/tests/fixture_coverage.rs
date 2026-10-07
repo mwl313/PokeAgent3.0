@@ -36,7 +36,6 @@ struct Coverage {
 const EXEMPT: &[(&str, &str)] = &[
     ("bittermalice", "no legal holder with an implemented ability yet"),
     ("decorate", "no legal holder with an implemented ability yet"),
-    ("jetpunch", "no legal holder with an implemented ability yet"),
     ("nightdaze", "no legal holder with an implemented ability yet"),
     ("pound", "no legal holder with an implemented ability yet"),
     ("softboiled", "no legal holder with an implemented ability yet"),
