@@ -541,3 +541,64 @@ abilities, 166/166 items**; the pool's distinct ability blockers drop from 29
 to 25.
 
 No readiness claim is made and no training has started.
+
+### Status snapshot (2026-10-07, machine-handover checkpoint, verified)
+
+| Area | Value |
+|---|---|
+| Regulation scope | 293 starting species, 97 permitted battle forms (82 Mega), 515 allowed moves, 223 legal abilities, 166 legal items, 0 unresolved candidates |
+| Moves executable | **374/515** (special=35 generic=339); 363 carry a differential witness, 1 (Snap Trap) is a documented exemption, Sleep Talk is implemented but its scenes are held out (see below) |
+| Abilities executable | **141/223** |
+| Items executable | **166/166** - Metronome closed the last entry |
+| Dynamic/reachable closure | 33 callers from `scripts/dynamic_closure.mjs`; 28 still blocked (the caller family plus the reachable universes) |
+| Training pool | **978/1136** teams complete at least one natural battle; 927 statically complete; 82 distinct blockers |
+| Differential corpus | **703 fixtures / 15,167 decision boundaries**, zero mismatches, independently re-verified against the freshly booted pinned Showdown and green in the native differential test |
+| Snapshot round-trip | every decision boundary of every fixture restores (`snapshot_probe`: 0 failures) after the replacement-phase and `helpinghand`/`healblock` shape fixes |
+| Tests / lint | 21 test binaries green; clippy clean with and without `--features python` |
+| Readiness | `readiness_check` exits **non-zero (NOT READY)**: criteria 2, 3, 5, 6, 7, 8, 15, 16 fail; 1, 4, 9-14 pass |
+
+Ported this session (each with reference-generated fixtures and the full gate
+set): Substitute, Steel Beam / Mind Blown recoil, the Metronome item (last
+item), Disguise with the multi-hit absorb ordering, Strength Sap, Mold Breaker
+(one suppression primitive covering TryHit immunities, damage modifiers, Sturdy,
+Levitate grounding, the Disguise absorb and the `onSetStatus` refusals),
+Psychic Noise / Heal Block (the shared `TryHeal` pipeline), Poison Point, Surge
+Surfer, Screen Cleaner, Rivalry, and Sleep Talk's called-move primitive.
+
+Engine invariants repaired this session: Leech Seed now drains the *current*
+occupant of the seeding slot (`Battle#getAtSlot`), and the snapshot validator
+pins replacement-phase requests (pivot self-switch, forced switch, fainted slot
+with and without a reserve) instead of rejecting them.
+
+#### Open items recorded in `engine/data/known-mismatches.json`
+
+Three `open` entries, all for Sleep Talk's scenes
+(`sleeptalk_calls_own_move_702`, `sleeptalk_fails_awake_711`,
+`sleeptalk_skips_charge_moves_721`). The Sleep Talk handler itself matches
+(called move, sleep counter, PP, status); the turn that uses a called move
+consumes 16 reference PRNG draws natively where the reference consumes 18. The
+captured reference sites are listed in the ledger; the two missing draws are
+per-hit `eachEvent` handler-set sorts in the called move's hit loop - the same
+`lock_crossfire` family. The fixtures stay out of the merged corpus (the
+exporter asserts that) and replay through
+`debug_fixture --artifact sleeptalk_calls_own_move_702 5`.
+
+#### In-flight work handed over with the machine
+
+- `family/magic-bounce` (worktree `pa3-par-magicbounce`): Magic Bounce + Frisk,
+  clean at the checkpoint commit, nothing committed yet.
+- `family/ability-batch-2` (worktree `pa3-par-abilities2`): Illusion + Stance
+  Change, assigned, nothing committed yet.
+- `family/move-batch-2` (worktree `pa3-par-movebatch2`): Skill Swap / Revival
+  Blessing batch, preserved as the WIP commit `234c01a` and pushed to
+  `origin/family/move-batch-2` (it compiles; unverified fixtures).
+
+#### Next steps, in pool order
+
+Magic Bounce 16 -> Illusion 10 -> Stance Change 8 -> Skill Swap 13 -> Revival
+Blessing 12 -> Minimize 9 -> Ally Switch 8 -> Steel Roller 8 -> Stockpile family
+8 -> Frisk 6 -> Pressure 5 -> Zero to Hero 5, then the 28-caller dynamic closure
+(starting with the called-move sort gap above), the 70 unwitnessed abilities,
+the remaining pool teams, and finally the full-coverage corpus regeneration and
+the 2,048-environment throughput re-measurement. `readiness_check` exiting 0
+across all 16 criteria remains the only acceptable readiness signal.
