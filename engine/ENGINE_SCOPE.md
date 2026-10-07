@@ -509,3 +509,62 @@ complete. The top remaining pool blockers are Magic Bounce (10), Mold Breaker
 (10), Illusion (7), Stance Change (7) and Psychic Noise (6).
 
 No readiness claim is made and no training has started.
+
+### Psychic Noise / Heal Block (move batch 3)
+
+The pinned `healblock` condition is ported on top of the existing timed-volatile
+and TryHeal machinery:
+
+- **The `heal` move flag is now consumed.** `Move.heal` comes from
+  `flags.heal`, and Heal Block both disables those moves in the served request
+  (`onDisableMove`) and refuses one that was already committed
+  (`onBeforeMove`, priority 6, the same slot as Throat Chop). Drain moves carry
+  that flag (Giga Drain, Drain Punch, Bitter Blade) and so does Strength Sap,
+  so a blocked holder cannot use them at all — the refusal is not limited to
+  their healing.
+- **Volatile lifecycle.** Psychic Noise's 100% secondary adds the two-turn
+  volatile (residual order 20, public start/end events). `durationCallback`
+  would return 5 for the past-generation Heal Block move and 7 under
+  Persistent, but neither is legal in the pinned format, so only Psychic
+  Noise's 2 is reachable. The condition declares no restart for a Psychic
+  Noise re-application: a second hit neither refreshes the timer nor emits a
+  failure.
+- **`Battle#heal` TryHeal pipeline.** The pinned scope declares three
+  handlers: Big Root (`onTryHealPriority: 1`, `chainModify` 5324/4096 on the
+  final amount), Liquid Ooze (priority 0, held by the drained slot: it damages
+  the healer by the unmodified relay amount and stops the heal) and Heal Block
+  (priority 0, held by the healer: it refuses the heal outright). The two
+  priority-0 handlers order by cached speed and then by effect order exactly
+  like the reference `speedSort`, and `drain_heal` now implements that order
+  for drain moves, Strength Sap and Leech Seed (previously the Leech Seed
+  residual bypassed both Big Root and Liquid Ooze).
+- **Every ported `this.heal` call site is gated**: item recovery (Leftovers,
+  Black Sludge, terrain seeds and berries — the item is still consumed),
+  Grassy Terrain, Rain Dish/Ice Body/Dry Skin recovery, Poison Heal,
+  Hospitality, the absorption abilities (Water Absorb, Volt Absorb, Earth
+  Eater, Dry Skin) and the Recover family. Regenerator deliberately stays
+  unblocked: it calls the raw `pokemon.heal`, which bypasses TryHeal, and a
+  fixture pins that bypass.
+
+Reference-generated scenes (`generate_more_heal_block.mjs`, merging five):
+Leftovers + Recover (request-level disable, mid-turn refusal, blocked item
+ticks, no timer refresh, and recovery resuming after expiry), a refused Giga
+Drain, Leech Seed's damage landing while its heal is refused, Liquid Ooze
+ordering in both directions on a Leech Seed residual, and the Regenerator
+bypass. Verified on this branch: **682 fixtures / 14,698 decision
+boundaries** re-verified against a freshly booted pinned Showdown with zero
+mismatches; the full Rust suite and clippy (with and without
+`--features python`) are green; legal coverage **373/515 moves, 136/223
+abilities, 166/166 items**; the trajectory probe reports **971/1136 pool teams
+completing at least one natural battle (85.5%)** and 912 teams statically
+complete; `readiness_check` still exits non-zero (NOT READY).
+
+One new fixture is deliberately held out and tracked as an open entry in
+`engine/data/known-mismatches.json`: in a turn whose resolution faints an
+active on each side the reference returns from `turnLoop` as soon as
+`faintMessages()` issues a replacement request (turn counter and remaining
+queue untouched), while the native drains the queue and runs `endTurn` first,
+so it serves a Normal request with a fainted active slot and rejects the
+following replacement submission. The entry carries the reproduction steps
+and the fix direction; it is a faint/replacement-timing bug, not a Heal Block
+semantic.

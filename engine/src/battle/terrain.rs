@@ -126,7 +126,13 @@ impl BattleState {
 
     pub(super) fn grassy_heal(&mut self, dex: &Dex, target: Entity) -> Result<()> {
         let p = self.mon(target);
-        if p.fainted || p.hp == 0 || p.hp == p.stats[0] || !self.grounded(dex, target) {
+        // `moves:grassyterrain.condition.onResidual` heals through `this.heal`.
+        if p.fainted
+            || p.hp == 0
+            || p.hp == p.stats[0]
+            || !self.grounded(dex, target)
+            || self.heal_blocked(dex, target)
+        {
             return Ok(());
         }
         let amount = (p.stats[0] / 16).max(1).min(p.stats[0] - p.hp);

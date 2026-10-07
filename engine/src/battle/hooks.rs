@@ -203,16 +203,21 @@ impl BattleState {
             }] = 1;
             self.boost(dex, target, source, changes, BoostCause::Ability(ability))?;
         } else {
-            self.absorption_heal(target)?;
+            self.absorption_heal(dex, target)?;
         }
         Ok(true)
     }
     /// Common quarter-HP absorption heal. Full HP still blocks
     /// the move and reveals the ability through the reference immunity message.
-    pub(super) fn absorption_heal(&mut self, target: Entity) -> Result<()> {
+    pub(super) fn absorption_heal(&mut self, dex: &Dex, target: Entity) -> Result<()> {
         self.reveal_ability(target)?;
         let p = self.mon(target);
-        if p.hp > 0 && !p.fainted && p.active_slot.is_some() && p.hp < p.stats[0] {
+        if p.hp > 0
+            && !p.fainted
+            && p.active_slot.is_some()
+            && p.hp < p.stats[0]
+            && !self.heal_blocked(dex, target)
+        {
             let amount = (p.stats[0] / 4).max(1).min(p.stats[0] - p.hp);
             self.mon_mut(target).hp += amount;
             self.emit(
@@ -325,9 +330,25 @@ impl BattleState {
         )?;
         Ok(true)
     }
-    /// Drain's TryHeal handlers run even at full HP and before faint messages.
-    /// Big Root chains a modifier, which is applied only after all handlers;
-    /// Liquid Ooze cancels healing and deals the unmodified amount instead.
+    /// `moves:healblock.condition.onTryHeal` returns false for every recovery
+    /// whose source is not a Z-Move, so every ported `Battle#heal` call site
+    /// checks the holder's volatile before restoring HP.
+    pub(super) fn heal_blocked(&self, dex: &Dex, e: Entity) -> bool {
+        self.mon(e).volatiles.contains_key(&dex.effects.heal_block)
+    }
+
+    /// `Battle#heal`'s ported `TryHeal` pipeline. The pinned scope declares
+    /// three handlers: Big Root (`onTryHealPriority: 1`, whose `chainModify`
+    /// scales the final amount), Liquid Ooze (priority 0, held by the drained
+    /// Pokémon: it damages the healer by the *unmodified* relay amount and
+    /// returns 0, which stops the event) and Heal Block (priority 0, held by
+    /// the healer: it returns false and stops the event before any later
+    /// handler). The two priority-0 handlers order exactly like the reference
+    /// `speedSort` — faster cached speed first, then the lower effect order —
+    /// so Heal Block suppresses the heal (and the Ooze damage) only when its
+    /// handler sorts ahead. Ripen is the one other declared `onTryHeal`
+    /// handler and stays an explicit operational error through its unported
+    /// ability.
     pub(super) fn drain_heal(
         &mut self,
         dex: &Dex,
@@ -336,17 +357,53 @@ impl BattleState {
         amount: u32,
         effect: EffectRef,
     ) -> Result<u32> {
-        if dex.effects.abilities[self.mon(target).ability as usize] == Ability::LiquidOoze
-            && !self.mon(target).fainted
+        if amount == 0 {
+            return Ok(0);
+        }
+        // A fainted drained slot keeps the reference behaviour the ported
+        // corpus already pins (the Ooze handler does not fire).
+        let ooze = (dex.effects.abilities[self.mon(target).ability as usize]
+            == Ability::LiquidOoze
+            && !self.mon(target).fainted)
+            .then_some(target);
+        let blocked = self.heal_blocked(dex, actor);
+        if blocked || ooze.is_some() {
+            // Reference `comparePriority`: higher cached speed first, then the
+            // lower `effectOrder` for exact ties.
+            let heal_block_first = match ooze {
+                None => true,
+                Some(ooze_holder) => {
+                    let heal_speed = self.mon(actor).cached_speed;
+                    let ooze_speed = self.mon(ooze_holder).cached_speed;
+                    let heal_order = self
+                        .mon(actor)
+                        .volatiles
+                        .get(&dex.effects.heal_block)
+                        .map_or(0, |state| state.effect_order);
+                    let ooze_order = self.mon(ooze_holder).ability_effect_order.unwrap_or(0);
+                    if !blocked {
+                        false
+                    } else {
+                        heal_speed > ooze_speed
+                            || heal_speed == ooze_speed && heal_order < ooze_order
+                    }
+                }
+            };
+            if heal_block_first {
+                return Ok(0);
+            }
+        }
+        if let Some(ooze_holder) = ooze
+            && !self.mon(ooze_holder).fainted
         {
             if self.mon(actor).hp > 0 {
-                self.reveal_ability(target)?;
+                self.reveal_ability(ooze_holder)?;
                 self.indirect_damage(
                     dex,
                     actor,
-                    target,
+                    ooze_holder,
                     amount,
-                    EffectRef::Ability(self.mon(target).ability),
+                    EffectRef::Ability(self.mon(ooze_holder).ability),
                 )?;
             }
             return Ok(0);
@@ -524,6 +581,11 @@ impl BattleState {
             self.emit(EventKind::Item, e, None, EffectRef::Item(item), 0, false)?;
             item
         };
+        // The reference consumes the item before `this.heal` runs, so a Heal
+        // Block holder still eats the berry and simply recovers nothing.
+        if self.heal_blocked(dex, e) {
+            return Ok(());
+        }
         self.mon_mut(e).hp += amount;
         self.emit(
             EventKind::Heal,
@@ -1187,7 +1249,10 @@ impl BattleState {
                 .collect();
             for ally in partners {
                 let p = self.mon(ally);
-                if p.hp == 0 || p.hp >= p.stats[0] {
+                // `abilities:hospitality.onStart` heals through `this.heal`, so
+                // a Heal Blocked ally recovers nothing (and the ability stays
+                // unrevealed, since only the heal message would name it).
+                if p.hp == 0 || p.hp >= p.stats[0] || self.heal_blocked(dex, ally) {
                     continue;
                 }
                 let amount = (p.stats[0] / 4).max(1).min(p.stats[0] - p.hp);
@@ -1272,6 +1337,9 @@ impl BattleState {
             Ability::Regenerator => {
                 let p = self.mon(e);
                 let amount = (p.stats[0] / 3).min(p.stats[0] - p.hp);
+                // `abilities:regenerator.onSwitchOut` calls the raw
+                // `pokemon.heal`, which bypasses the TryHeal event: Heal Block
+                // does not stop this recovery.
                 if amount > 0 {
                     self.mon_mut(e).hp += amount;
                     self.reveal_ability(e)?;

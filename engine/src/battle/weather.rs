@@ -236,7 +236,10 @@ impl BattleState {
                 || (ability == Ability::DrySkin && id == dex.effects.rain)
             {
                 let p = self.mon(target);
-                if p.hp > 0 && p.hp < p.stats[0] {
+                // Rain Dish / Ice Body / Dry Skin heal through `this.heal`, so
+                // Heal Block refuses the recovery (the ability stays hidden
+                // because only the heal message would name it).
+                if p.hp > 0 && p.hp < p.stats[0] && !self.heal_blocked(dex, target) {
                     let denominator = if ability == Ability::DrySkin { 8 } else { 16 };
                     let amount = (p.stats[0] / denominator).max(1).min(p.stats[0] - p.hp);
                     self.mon_mut(target).hp += amount;

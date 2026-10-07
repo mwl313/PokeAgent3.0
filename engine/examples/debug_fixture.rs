@@ -64,36 +64,43 @@ fn main() {
             serde_json::from_str(include_str!("../data/known-mismatches.json")).unwrap();
         // A ledger entry may point at a fixture by name when the fixture lives
         // in a generator artifact; resolve those from the artifact that
-        // contains them.
-        let artifacts: Vec<serde_json::Value> = [
+        // contains them. Fixed entries whose fixture has since been merged (or
+        // superseded) are skipped instead of aborting the probe, so the open
+        // entries stay replayable.
+        let merged: serde_json::Value =
+            serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap();
+        let mut artifacts: Vec<serde_json::Value> = [
             include_str!("../data/more_interactions.json"),
             include_str!("../data/more_move_coverage.json"),
             include_str!("../data/more_roost_yawn.json"),
             include_str!("../data/more_delayed_status.json"),
+            include_str!("../data/more_heal_block.json"),
         ]
         .into_iter()
         .map(serde_json::from_str)
         .collect::<Result<_, _>>()
         .unwrap();
-        Corpus {
-            fixtures: raw
-                .mismatches
-                .into_iter()
-                .map(|entry| {
-                    let value = if entry.fixture.is_string() {
-                        artifacts
-                            .iter()
-                            .flat_map(|a| a["fixtures"].as_array().unwrap())
-                            .find(|f| f["name"] == entry.fixture)
-                            .unwrap_or_else(|| panic!("{}: fixture not found", entry.name))
-                            .clone()
-                    } else {
-                        entry.fixture
-                    };
-                    serde_json::from_value(value).unwrap_or_else(|e| panic!("{}: {e}", entry.name))
-                })
-                .collect(),
+        artifacts.push(merged);
+        let mut fixtures = Vec::new();
+        for entry in raw.mismatches {
+            let value = if entry.fixture.is_string() {
+                let Some(found) = artifacts
+                    .iter()
+                    .flat_map(|a| a["fixtures"].as_array().unwrap())
+                    .find(|f| f["name"] == entry.fixture)
+                else {
+                    eprintln!("{}: fixture no longer generated; skipped", entry.name);
+                    continue;
+                };
+                found.clone()
+            } else {
+                entry.fixture
+            };
+            fixtures.push(
+                serde_json::from_value(value).unwrap_or_else(|e| panic!("{}: {e}", entry.name)),
+            );
         }
+        Corpus { fixtures }
     } else if std::env::args().any(|a| a == "--ability-corpus") {
         serde_json::from_str(include_str!("../data/ability-interactions.json")).unwrap()
     } else {
