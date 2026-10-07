@@ -1089,6 +1089,11 @@ pub struct NativeEffects {
     pub mimikyu_totem: Id,
     pub mimikyu_busted: Id,
     pub mimikyu_busted_totem: Id,
+    /// Stance Change's two Aegislash formes and the King's Shield move id.
+    /// `aegislash` is the base forme the submitted set always starts in.
+    pub aegislash: Id,
+    pub aegislash_blade: Id,
+    pub kings_shield_move: Id,
     /// `move:encore` volatile: locks the holder into its last move.
     pub encore: Id,
     /// `move:taunt` volatile: refuses Status moves.
