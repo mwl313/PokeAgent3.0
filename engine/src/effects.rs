@@ -78,6 +78,10 @@ pub mod hook {
     /// party members that are the user or are healthy and status-free, and
     /// each hit's power comes from the next such member's set species.
     pub const BEAT_UP: u32 = 1 << 25;
+    /// `moves:steelroller.onTry|onHit|onAfterSubDamage`: the move fails without
+    /// an active terrain and clears it once the hit lands, including a hit a
+    /// substitute absorbs.
+    pub const STEEL_ROLLER: u32 = 1 << 26;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

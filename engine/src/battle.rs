@@ -1793,6 +1793,12 @@ impl BattleState {
                 return Ok(());
             }
         }
+        // `moves:steelroller.onTry`: the move fails outright while no terrain
+        // is active, before protection, immunity and accuracy.
+        if hooks & crate::effects::hook::STEEL_ROLLER != 0 && self.terrain_id(dex) == 0 {
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+            return Ok(());
+        }
         // `items:metronome.condition.onTryMove` (priority -2, the last TryMove
         // handler): a lost item removes the counter volatile here; otherwise
         // the consecutive-use counter advances only when the previous turn
@@ -3060,6 +3066,14 @@ impl BattleState {
                         )?;
                     }
                     did_anything = true;
+                    continue;
+                }
+                // `moves:steelroller.onHit`: a landed hit clears the active
+                // terrain (after damage, before the self/secondary phase).
+                // A decoy hit instead clears through `intercept_substitute`'s
+                // `onAfterSubDamage` dispatch.
+                if hooks & crate::effects::hook::STEEL_ROLLER != 0 {
+                    self.clear_terrain(dex, actor)?;
                     continue;
                 }
                 // `moves:strengthsap.onHit`: a target already at -6 Attack
@@ -4582,6 +4596,13 @@ impl BattleState {
                 amount as u32,
                 EffectRef::Condition(dex.effects.drain),
             )?;
+        }
+        // The substitute condition's own `onTryPrimaryHit` ends by firing the
+        // `AfterSubDamage` event (`moves:steelroller.onAfterSubDamage`), so a
+        // decoy hit still clears the terrain even though the move's `onHit`
+        // never runs for an absorbed hit.
+        if m.hooks & crate::effects::hook::STEEL_ROLLER != 0 {
+            self.clear_terrain(dex, source)?;
         }
         Ok(true)
     }
