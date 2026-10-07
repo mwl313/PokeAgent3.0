@@ -190,6 +190,30 @@ const TRIALS = [
       return null;
     },
   },
+  {
+    name: 'smackdown_grounds_a_flying_target',
+    p1: () => team(setOf('Chesnaught', 'Bulletproof', ['Smack Down', 'Protect', 'Earthquake'])),
+    p2: () => team(
+      setOf('Corviknight', 'Mirror Armor', ['Brave Bird', 'Protect', 'Iron Head']),
+      setOf('Metagross', 'Clear Body', ['Iron Head', 'Protect', 'Psychic']),
+    ),
+    script: [
+      {p1: [{move: 'protect', target: 0}, 'protect'], p2: ['protect', 'protect']},
+      {p1: [{move: 'smackdown', target: 1}, 'protect'], p2: ['protect', 'protect']},
+      {p1: ['earthquake', 'protect'], p2: ['protect', 'protect']},
+      {p1: ['protect', 'protect'], p2: ['protect', 'protect']},
+    ],
+    coverage: {move: 'smackdown'},
+    verify(fixture, session) {
+      if (!logHas(session, /\|move\|p1a: s0\|Smack Down\|/)) return 'Smack Down never executed';
+      if (!monAt(fixture, 1, 0).some(p => p.volatiles.includes('smackdown'))) {
+        return 'the smackdown marker was never recorded';
+      }
+      if (!logHas(session, /\|move\|p1a: s0\|Earthquake\|/)) return 'Earthquake never executed';
+      if (!logHas(session, /\|-damage\|p2a: s0\|/)) return 'the grounded target never took Earthquake damage';
+      return null;
+    },
+  },
 ];
 
 runTrials(TRIALS, {seedBase: 26000, artifact: 'more_spinfamily.json', debugEnv: 'DEBUG_SPIN'});

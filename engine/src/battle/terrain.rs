@@ -16,6 +16,11 @@ impl BattleState {
     }
 
     pub(super) fn grounded(&self, dex: &Dex, e: Entity) -> bool {
+        // `conditions:smackdown`: the marker grounds its holder regardless of
+        // type or ability.
+        if self.mon(e).volatiles.contains_key(&dex.effects.smack_down) {
+            return true;
+        }
         !self.effective_types(dex, e).contains(&dex.effects.flying)
             && dex.effects.abilities[self.mon(e).ability as usize] != Ability::Levitate
     }

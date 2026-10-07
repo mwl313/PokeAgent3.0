@@ -1209,6 +1209,8 @@ pub struct NativeEffects {
     pub no_retreat: Id,
     /// `safeguard`: the side condition that refuses foe-sourced statuses.
     pub safeguard: Id,
+    /// `smackdown`: the marker that grounds an airborne target.
+    pub smack_down: Id,
     /// Additional Protect-family volatiles that block hits in the same
     /// `hitStepTryHitEvent` phase (priority 3).
     pub spiky_shield: Id,

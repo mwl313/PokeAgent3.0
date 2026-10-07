@@ -666,6 +666,9 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:safeguard.condition.onSideEnd",
     "moves:safeguard.condition.onSetStatus",
     "moves:safeguard.condition.onTryAddVolatile",
+    // Smack Down: the marker's start/restart gates.
+    "moves:smackdown.condition.onStart",
+    "moves:smackdown.condition.onRestart",
     // No Retreat: the self-marker Try gate and its condition lifecycle.
     "moves:noretreat.onTry",
     "moves:noretreat.condition.onStart",
@@ -1054,6 +1057,8 @@ const HANDLED_VOLATILES: &[&str] = &[
     "charge",
     // No Retreat's self-trap marker.
     "noretreat",
+    // Smack Down's grounding marker.
+    "smackdown",
     // Volatile selection-lock family: each id is declared by exactly one move
     // (encore, taunt, disable, imprison, torment) whose callbacks are below.
     "encore",
@@ -1983,6 +1988,7 @@ impl Dex {
             charge: lookup("conditions", "charge")?,
             no_retreat: lookup("conditions", "noretreat")?,
             safeguard: lookup("conditions", "safeguard")?,
+            smack_down: lookup("conditions", "smackdown")?,
             charge_move: lookup("moves", "charge")?,
             spiky_shield: lookup("conditions", "spikyshield")?,
             baneful_bunker: lookup("conditions", "banefulbunker")?,

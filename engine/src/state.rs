@@ -1046,6 +1046,11 @@ impl BattleState {
                         effect.duration.is_none()
                             && effect.values.is_empty()
                             && effect.source.is_some()
+                    } else if id == dex.effects.smack_down {
+                        // `moves:smackdown.condition`: the grounding marker.
+                        effect.duration.is_none()
+                            && effect.values.is_empty()
+                            && effect.source.is_some()
                     } else if id == dex.effects.no_retreat {
                         // `moves:noretreat.condition`: the self-trap marker.
                         effect.duration.is_none()

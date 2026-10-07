@@ -6373,6 +6373,49 @@ impl BattleState {
                     false,
                     suppressing,
                 )?;
+            } else if volatile == dex.effects.smack_down {
+                // `moves:smackdown.condition.onStart`: only an airborne target
+                // (Flying type or Levitate) gains the marker. An Iron Ball or
+                // Ingrain holder and an active Gravity field are already
+                // grounded and refuse it; the fly/bounce, Magnet Rise and
+                // Telekinesis cancels are unreachable in this regulation and
+                // stay explicit operational errors upstream.
+                let airborne = self.effective_types(dex, target).contains(&dex.effects.flying)
+                    || dex.effects.abilities[self.mon(target).ability as usize]
+                        == Ability::Levitate;
+                let already_grounded =
+                    dex.effects.items[self.mon(target).item as usize] == Item::IronBall;
+                if airborne && !already_grounded {
+                    if !self.mon(target).volatiles.contains_key(&volatile) {
+                        let order = self.allocate_effect_order()?;
+                        self.mon_mut(target).volatiles.insert(
+                            volatile,
+                            EffectState {
+                                id: volatile,
+                                effect_order: order,
+                                effect_order_assigned: true,
+                                source: Some((
+                                    if source.side == 0 { SideId::P1 } else { SideId::P2 },
+                                    source.roster,
+                                )),
+                                ..Default::default()
+                            },
+                        );
+                        self.emit(
+                            EventKind::EffectStart,
+                            target,
+                            Some(source),
+                            EffectRef::Condition(volatile),
+                            0,
+                            false,
+                        )?;
+                        changed = true;
+                    } else {
+                        changed |= false;
+                    }
+                } else {
+                    changed |= false;
+                }
             } else if volatile == dex.effects.no_retreat {
                 // `moves:noretreat.condition`: a bare marker (no duration, no
                 // payload) that also pins the holder in place.
