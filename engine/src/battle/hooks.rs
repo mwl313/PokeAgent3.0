@@ -1683,7 +1683,51 @@ impl BattleState {
                 6144,
             ));
         }
+        // Two-turn charge recipes that modify this damage: Solar Beam/Solar
+        // Blade halve their BasePower in the weak weathers (the move's own
+        // priority-0 `onBasePower`), and a charged target's condition doubles
+        // Bounce's BasePower from Gust/Twister (`onSourceBasePower`).
+        if matches!(event, ModifierEvent::BasePower) {
+            let weather = self.effective_weather(dex);
+            if let Some(spec) = m.charge.as_ref()
+                && spec.half_in_weak_weather
+                && matches!(
+                    weather,
+                    w if w == dex.effects.rain || w == dex.effects.sand || w == dex.effects.snow
+                )
+            {
+                hooks.push((
+                    Priority {
+                        speed: self.mon(actor).cached_speed,
+                        ..Default::default()
+                    },
+                    2048,
+                ));
+            }
+            if let Some(spec) = self.charging_spec(dex, target)
+                && spec.power_double.contains(&m.id)
+            {
+                hooks.push((
+                    Priority {
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    8192,
+                ));
+            }
+        }
         if matches!(event, ModifierEvent::Damage) {
+            if let Some(spec) = self.charging_spec(dex, target)
+                && spec.damage_double.contains(&m.id)
+            {
+                hooks.push((
+                    Priority {
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    8192,
+                ));
+            }
             // onAny screen hooks exist on both sides, even when their predicate
             // returns no modifier. Side handlers have no Pokémon speed.
             for (side, state) in self.sides.iter().enumerate() {

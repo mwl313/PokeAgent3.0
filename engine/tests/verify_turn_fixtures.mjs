@@ -38,6 +38,21 @@ const requestDetail = (session, side) => {
     const info = req.active?.[slot];
     const forced = Boolean(req.forceSwitch?.[slot]);
     if (!p) return {present: false, requires_replacement: forced, can_mega: false, moves: []};
+    // Reference `getLockedMove()`: a charging or recharging Pokemon is served
+    // exactly one entry and refuses switches; `moveSlots` alone would
+    // over-report the legal mask. Keep this in sync with the charge generator.
+    const locked = p.getLockedMove();
+    if (locked === 'recharge') {
+      return {present: !p.fainted, requires_replacement: forced, can_mega: false,
+        locked_recharge: true, trapped: true, moves: []};
+    }
+    if (locked) {
+      const slotData = p.moveSlots.find(m => m.id === locked);
+      return {present: !p.fainted, requires_replacement: forced, can_mega: false,
+        locked: ids.moves[locked], trapped: true,
+        moves: [{id: ids.moves[locked], pp: slotData?.pp ?? 0, disabled: false,
+          target: slotData?.target ?? 'normal'}]};
+    }
     // World move list and raw disable flag: the served choice legality.
     return {present: !p.fainted, requires_replacement: forced, can_mega: Boolean(info?.canMegaEvo),
       moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp,

@@ -12,6 +12,8 @@ const dex = validator.dex;
 const data = JSON.parse(fs.readFileSync(new URL('../data/dex.json', import.meta.url), 'utf8'));
 const scope = JSON.parse(fs.readFileSync(new URL('../data/scope.json', import.meta.url), 'utf8'));
 const ids = Object.fromEntries(Object.entries(data.tables).map(([k, rows]) => [k, Object.fromEntries(rows.map(r => [r.id, r.numeric_id]))]));
+// Numeric id -> reference string id, for building server commands.
+const moveNames = Object.fromEntries(data.tables.moves.map(r => [r.numeric_id, r.id]));
 const rows = Object.fromEntries(Object.entries(data.tables).map(([k, list]) => [k, new Map(list.map(r => [r.id, r]))]));
 const stats = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
 const limit = Number(process.env.MOVE_FIXTURE_LIMIT || 0);
@@ -123,6 +125,20 @@ const requestDetail = (session, side) => {
     const info = req.active?.[slot];
     const forced = Boolean(req.forceSwitch?.[slot]);
     if (!p) return {present: false, requires_replacement: forced, can_mega: false, moves: []};
+    // Reference `getLockedMove()`: a charging or recharging Pokémon offers
+    // exactly one entry (or none, for the Recharge pseudo-move) and refuses
+    // switches. `p.moveSlots` alone would over-report the legal mask.
+    const locked = p.getLockedMove();
+    if (locked === 'recharge') {
+      return {present: !p.fainted, requires_replacement: forced, can_mega: false,
+        locked_recharge: true, trapped: true, moves: []};
+    }
+    if (locked) {
+      const slotData = p.moveSlots.find(m => m.id === locked);
+      return {present: !p.fainted, requires_replacement: forced, can_mega: false,
+        locked: ids.moves[locked], trapped: true,
+        moves: [{id: ids.moves[locked], pp: slotData?.pp ?? 0, disabled: false, target: slotData?.target ?? 'normal'}]};
+    }
     return {present: !p.fainted, requires_replacement: forced, can_mega: Boolean(info?.canMegaEvo),
       moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp, disabled: Boolean(m.disabled), target: m.target}))};
   });
@@ -165,10 +181,26 @@ function choose(session, sideIndex, plan) {
       continue;
     }
     if (p.fainted) { actions.push(select('Pass', slot)); commands.push('pass'); continue; }
+    // A charging or recharging Pokémon is served one entry (or the no-op
+    // Recharge pseudo-move); anything else is rejected by the reference.
+    const locked = p.getLockedMove();
+    if (locked) {
+      if (locked === 'recharge') {
+        actions.push(move(slot, 255, 0));
+      } else {
+        const recorded = p.volatiles[locked]?.targetLoc ?? p.lastMoveTargetLoc ?? 0;
+        const lockedSlot = Math.max(0, p.moveSlots.findIndex(m => m.id === locked));
+        actions.push(move(slot, lockedSlot, recorded));
+      }
+      commands.push('move 1');
+      continue;
+    }
     const wanted = sideIndex === 0 && slot === 0 ? plan.moveSlot : plan.attackSlot;
-    const slotIndex = p.moveSlots.findIndex(m => m.id === wanted && !m.disabled && m.pp > 0);
+    const wantedName = moveNames[wanted];
+    const slotIndex = wantedName ? p.moveSlots.findIndex(m => m.id === wantedName && !m.disabled && m.pp > 0) : -1;
     const choice = slotIndex >= 0 ? slotIndex : p.moveSlots.findIndex(m => !m.disabled && m.pp > 0);
     const chosen = p.moveSlots[choice];
+    if (!chosen) { actions.push(move(slot, 255, 0)); commands.push('move 1'); continue; }
     // Foe-side locations are relative: positive to the right, negative to the
     // left. Ask the reference which of the two foe slots is a legal target.
     const candidates = sideIndex === 0 ? [2, 1, -1, -2, 0] : [-2, -1, 1, 2, 0];

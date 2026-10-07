@@ -1,0 +1,32 @@
+# Two-actor 2x1,024-environment architectural probe
+#
+# Command (from the repo root, after `bash scripts/build_python.sh`):
+#   .venv/bin/python scripts/run_actor_pair.py --games 1024
+#
+# This is an ARCHITECTURAL metric, not the final throughput baseline. Roughly
+# 44% of the 1,024 environments per rank still retire on an unsupported-mechanic
+# operational error, and those retirements are counted separately from games
+# (they are never counted as completions). The final benchmark must be re-run at
+# full regulation coverage with zero operational errors.
+#
+# Natural games/s is therefore computed only over naturally terminated battles,
+# but the *mix* of battles is biased toward the mechanics that are implemented.
+#
+# 2026-10-08 run (coverage: 326/515 moves, 121/223 abilities, 165/166 items,
+# 361/1136 pool teams completing at least one natural battle):
+#
+# hardware: rank 1: gpu 84:00.0 (expected 84:00.0) pci-numa 1 rank-numa 1 workers 20-35
+# rank 0 numa0: 565 games, 303.0 games/s, 9594 transitions/s, op_errors=459,
+#               obs=19.799 ms/round, step=1.601 ms/round, max_rss=235.6 MB
+# rank 1 numa1: 579 games, 316.2 games/s, 9416 transitions/s, op_errors=445,
+#               obs=19.785 ms/round, step=1.559 ms/round, max_rss=235.9 MB
+# combined: 1144 natural games over 2x1024 envs, 516.9 games/s wall,
+#           max rank wall 1.86s
+#
+# Memory: ~236 MB per rank with 1,024 environments, matching the memory-scale
+# guard (BattleState 6,832 B inline, shared Arc<Dex>, no per-environment dex
+# copy). The inline battle state for 2,048 environments is ~14 MB, so the RSS is
+# dominated by retained buffers, thread stacks and allocator behaviour.
+#
+# Earlier run for comparison (coverage 321/515 moves, 265/1136 pool teams):
+# combined: 920 natural games over 2x1024 envs, 417.8 games/s wall.

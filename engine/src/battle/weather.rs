@@ -209,6 +209,11 @@ impl BattleState {
             let immune = [dex.effects.rock, dex.effects.ground, dex.effects.steel]
                 .iter()
                 .any(|t| p.types.contains(t))
+                // `moves:dig|dive.condition.onImmunity`: a charging user
+                // ignores sandstorm and hail chip damage.
+                || self
+                    .charging_spec(dex, target)
+                    .is_some_and(|spec| spec.weather_immune)
                 || matches!(
                     dex.effects.abilities[p.ability as usize],
                     Ability::SandRush | Ability::SandForce | Ability::SandVeil | Ability::Overcoat

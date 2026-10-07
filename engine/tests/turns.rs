@@ -63,6 +63,15 @@ struct ExpectedSlotRequest {
     requires_replacement: bool,
     can_mega: bool,
     moves: Vec<ExpectedMoveChoice>,
+    /// Reference `getLockedMove()`: the single legal move of a charging
+    /// Pokémon. Absent for ordinary slots.
+    #[serde(default)]
+    locked: Option<u16>,
+    /// `onLockMove: 'recharge'` — the forced Recharge pseudo-move.
+    #[serde(default)]
+    locked_recharge: Option<bool>,
+    #[serde(default)]
+    trapped: Option<bool>,
 }
 
 #[derive(Deserialize)]
@@ -319,6 +328,22 @@ fn native_battles_match_reference_at_every_decision_boundary() {
                                 .map(|m| (m.id, m.pp, m.target.as_str()))
                                 .collect();
                             assert_eq!(actual, reference, "{place} legal move mask");
+                            // Locked slots: the reference request offers the
+                            // charging move (or the Recharge pseudo-move) and
+                            // refuses switches, so the native mask must agree.
+                            assert_eq!(
+                                got.locked_move, want.locked,
+                                "{place} locked move"
+                            );
+                            if let Some(recharge) = want.locked_recharge {
+                                assert_eq!(
+                                    got.locked_recharge, recharge,
+                                    "{place} recharge lock"
+                                );
+                            }
+                            if let Some(trapped) = want.trapped {
+                                assert_eq!(got.trapped, trapped, "{place} trapped flag");
+                            }
                         }
                     }
                 }
@@ -440,7 +465,16 @@ fn native_battles_match_reference_at_every_decision_boundary() {
                         .as_object()
                         .unwrap()
                         .keys()
-                        .map(|id| dex.names["conditions"][id.parse::<usize>().unwrap()].clone())
+                        .map(|id| {
+                            let key = id.parse::<usize>().unwrap();
+                            // A two-turn charge marker is keyed by its move id
+                            // in the reference, not by a condition id.
+                            if key < dex.moves.len() && dex.moves[key].charge.is_some() {
+                                dex.names["moves"][key].clone()
+                            } else {
+                                dex.names["conditions"][key].clone()
+                            }
+                        })
                         .collect();
                     volatiles.sort();
                     assert_eq!(

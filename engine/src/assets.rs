@@ -185,6 +185,9 @@ pub struct Move {
     pub fail_encore: bool,
     /// Reference `flags.futuremove`: deferred attacks (Future Sight family).
     pub future_move: bool,
+    /// Ported two-turn charge callback (`onTryMove`) plus the move's own
+    /// volatile condition, if the move declares one.
+    pub charge: Option<crate::effects::ChargeSpec>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -327,6 +330,8 @@ const HANDLED_MOVE_FIELDS: &[&str] = &[
     "thawsTarget",
     "willCrit",
     "basePowerCallback",
+    // Ported two-turn charge callbacks (`onTryMove` + solar onBasePower).
+    "onTryMove",
     "ignoreDefensive",
     "ignoreEvasion",
     "ohko",
@@ -461,6 +466,37 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:torment.condition.onStart",
     "moves:torment.condition.onDisableMove",
     "moves:torment.condition.onEnd",
+    // Two-turn charge family. Each key is unique to one pinned move and is
+    // resolved to an exact recipe by `charge_shape`; a move declaring any
+    // other charge callback stays an explicit operational error.
+    "moves:solarbeam.onTryMove",
+    "moves:solarbeam.onBasePower",
+    "moves:solarblade.onTryMove",
+    "moves:solarblade.onBasePower",
+    "moves:electroshot.onTryMove",
+    "moves:meteorbeam.onTryMove",
+    "moves:skullbash.onTryMove",
+    "moves:bounce.onTryMove",
+    "moves:bounce.condition.onInvulnerability",
+    "moves:bounce.condition.onSourceBasePower",
+    "moves:dig.onTryMove",
+    "moves:dig.condition.onImmunity",
+    "moves:dig.condition.onInvulnerability",
+    "moves:dig.condition.onSourceModifyDamage",
+    "moves:dive.onTryMove",
+    "moves:dive.condition.onImmunity",
+    "moves:dive.condition.onInvulnerability",
+    "moves:dive.condition.onSourceModifyDamage",
+    "moves:fly.onTryMove",
+    "moves:fly.condition.onInvulnerability",
+    "moves:fly.condition.onSourceModifyDamage",
+    "moves:freezeshock.onTryMove",
+    "moves:geomancy.onTryMove",
+    "moves:iceburn.onTryMove",
+    "moves:phantomforce.onTryMove",
+    "moves:razorwind.onTryMove",
+    "moves:shadowforce.onTryMove",
+    "moves:skyattack.onTryMove",
 ];
 
 /// Ported action-local callbacks, keyed by move id. Every entry must have its
@@ -481,9 +517,10 @@ const HANDLED_MOVE_FLAGS: &[&str] = &[
     "slicing",
     "pulse",
     "defrost",
-    // NOTE: `recharge` stays unhandled until the locked "Recharge" request
-    // entry exists natively; the volatile alone would let a recharging Pokémon
-    // act again, which is a silent approximation.
+    // `charge` is executed by the ported two-turn recipe, and `recharge` by the
+    // locked "Recharge" request entry plus the mustrecharge BeforeMove gate.
+    "charge",
+    "recharge",
     // Cold / AI-facing flags.
     "allyanim",
     "distance",
@@ -538,6 +575,145 @@ fn move_hooks(id: &str) -> u16 {
         "disable" => hook::DISABLE_TARGET_GATE,
         _ => 0,
     }
+}
+
+/// Move-id allowlists of the reference `condition.onInvulnerability` recipes
+/// and their doubled-damage moves. `dig`/`dive` also declare `onImmunity`
+/// (sandstorm/hail chip) and double through `onSourceModifyDamage`; `bounce`
+/// doubles through `onSourceBasePower`. Values are transcribed from the pinned
+/// callback bodies.
+fn charge_condition_recipe(
+    id: &str,
+) -> Option<(&'static [&'static str], &'static [&'static str], bool, bool)> {
+    const FLY: &[&str] = &[
+        "gust",
+        "twister",
+        "skyuppercut",
+        "thunder",
+        "hurricane",
+        "smackdown",
+        "thousandarrows",
+    ];
+    const FLY_DOUBLE: &[&str] = &["gust", "twister"];
+    const DIG: &[&str] = &["earthquake", "magnitude"];
+    const DIVE: &[&str] = &["surf", "whirlpool"];
+    // (invulnerability exceptions, doubled moves, weather immunity, doubles
+    // through onSourceBasePower instead of onSourceModifyDamage)
+    Some(match id {
+        "fly" => (FLY, FLY_DOUBLE, false, false),
+        "bounce" => (FLY, FLY_DOUBLE, false, true),
+        "dig" => (DIG, DIG, true, false),
+        "dive" => (DIVE, DIVE, true, false),
+        _ => return None,
+    })
+}
+
+/// Exact `onTryMove` recipe of a two-turn charge move. Each entry is the pinned
+/// move's own callback key resolved to native behaviour; the cold classifier
+/// additionally verifies the whole declared callback set, so a move whose
+/// reference declaration changes stops being executable instead of silently
+/// running the wrong recipe.
+/// Name-keyed form of `ChargeSpec`, resolved to compact ids by the loader.
+#[derive(Default)]
+pub(crate) struct ChargeShape {
+    pub instant_weather: &'static [&'static str],
+    pub instant_weather_message: bool,
+    pub prepare_boost: [i8; 7],
+    pub semi_invulnerable: bool,
+    pub invuln_exceptions: Vec<&'static str>,
+    pub damage_double: Vec<&'static str>,
+    pub power_double: Vec<&'static str>,
+    pub weather_immune: bool,
+    pub volatile_duration: Option<u16>,
+    pub half_in_weak_weather: bool,
+}
+
+fn charge_instant_weather(id: &str) -> &'static [&'static str] {
+    // `['sunnyday','desolateland']` / `['raindance','primordialsea']` in the
+    // pinned bodies; the Primal weathers are not part of the regulation, so
+    // only the base weather can ever be active.
+    match id {
+        "solarbeam" | "solarblade" => &["sunnyday"],
+        "electroshot" => &["raindance"],
+        _ => &[],
+    }
+}
+
+fn charge_shape(id: &str, data: &Value) -> Option<ChargeShape> {
+    if data["flags"]["charge"].as_u64() != Some(1) {
+        return None;
+    }
+    let mut spec = ChargeShape {
+        instant_weather: charge_instant_weather(id),
+        ..Default::default()
+    };
+    let mut expected: Vec<String> = vec![format!("moves:{id}.onTryMove")];
+    match id {
+        "solarbeam" | "solarblade" => {
+            expected.push(format!("moves:{id}.onBasePower"));
+            // Sun skips the charge turn (read through the message-flag form of
+            // `effectiveWeather`, exact for Mega Sol's activate message).
+            spec.instant_weather_message = true;
+            spec.half_in_weak_weather = true;
+        }
+        // Boost index order is [atk, def, spa, spd, spe, accuracy, evasion].
+        "electroshot" => spec.prepare_boost[2] = 1,
+        "meteorbeam" => spec.prepare_boost[2] = 1,
+        "skullbash" => spec.prepare_boost[1] = 1,
+        "bounce" | "dig" | "dive" | "fly" | "freezeshock" | "geomancy" | "iceburn"
+        | "phantomforce" | "razorwind" | "shadowforce" | "skyattack" => {}
+        _ => return None,
+    }
+    match charge_condition_recipe(id) {
+        Some((exceptions, doubled, immunity, base_power)) => {
+            expected.push(format!("moves:{id}.condition.onInvulnerability"));
+            expected.push(format!(
+                "moves:{id}.condition.{}",
+                if base_power {
+                    "onSourceBasePower"
+                } else {
+                    "onSourceModifyDamage"
+                }
+            ));
+            if immunity {
+                expected.push(format!("moves:{id}.condition.onImmunity"));
+            }
+            if data["condition"]["duration"].as_u64() != Some(2) {
+                return None;
+            }
+            spec.semi_invulnerable = true;
+            spec.volatile_duration = Some(2);
+            spec.invuln_exceptions = exceptions.to_vec();
+            spec.weather_immune = immunity;
+            if base_power {
+                spec.power_double = doubled.to_vec();
+            } else {
+                spec.damage_double = doubled.to_vec();
+            }
+        }
+        None => {
+            if let Some(condition) = data.get("condition").filter(|v| !v.is_null()) {
+                // Phantom Force / Shadow Force: `onInvulnerability: false`
+                // with no exception list, so nothing connects.
+                if condition["duration"].as_u64() != Some(2)
+                    || condition["onInvulnerability"].as_bool() != Some(false)
+                {
+                    return None;
+                }
+                spec.semi_invulnerable = true;
+                spec.volatile_duration = Some(2);
+            }
+        }
+    }
+    let mut declared = Vec::new();
+    collect_callback_keys(data, &mut declared);
+    declared.sort();
+    declared.dedup();
+    expected.sort();
+    if declared.len() != expected.len() || declared.iter().zip(&expected).any(|(a, b)| a != b) {
+        return None;
+    }
+    Some(spec)
 }
 
 /// `overrideOffensiveStat`/`overrideDefensiveStat` names resolved to the
@@ -670,6 +846,11 @@ pub(crate) fn classify_move(id: &str, data: &Value) -> crate::effects::MoveBehav
     {
         return Behavior::Unimplemented;
     }
+    // Two-turn charge moves run through their own ported recipe; anything the
+    // recipe does not match stays an explicit operational error.
+    if data["flags"]["charge"].as_u64() == Some(1) && charge_shape(id, data).is_none() {
+        return Behavior::Unimplemented;
+    }
     if data["category"].as_str() == Some("Status") {
         Behavior::Effect
     } else {
@@ -686,7 +867,9 @@ pub(crate) fn classify_move(id: &str, data: &Value) -> crate::effects::MoveBehav
 /// * `effect:status=<x>` / `effect:volatile=<x>` / `effect:key=<x>` — embedded
 ///   status/volatile payload with no native lifecycle.
 pub fn move_block_reasons(id: &str, data: &Value) -> Vec<String> {
-    if crate::effects::MoveBehavior::compile(id) != crate::effects::MoveBehavior::Unimplemented {
+    // Mirror the real classifier exactly: a move the loader accepts has no
+    // blocking reasons, no matter which raw field the cause list would name.
+    if classify_move(id, data) != crate::effects::MoveBehavior::Unimplemented {
         return Vec::new();
     }
     let mut out = Vec::new();
@@ -695,6 +878,9 @@ pub fn move_block_reasons(id: &str, data: &Value) -> Vec<String> {
     }
     if data["forceSwitch"].as_bool() == Some(true) {
         out.push("field:forceSwitch".into());
+    }
+    if data["flags"]["charge"].as_u64() == Some(1) && charge_shape(id, data).is_none() {
+        out.push("field:charge".into());
     }
     let mut callbacks = Vec::new();
     collect_callback_keys(data, &mut callbacks);
@@ -952,6 +1138,7 @@ impl Dex {
                 force_switch: false,
                 fail_encore: false,
                 future_move: false,
+                charge: None,
             }];
         let mut native_moves = vec![crate::effects::MoveBehavior::Unimplemented];
         let mut native_move_hooks = vec![0u16];
@@ -1136,6 +1323,33 @@ impl Dex {
                 force_switch: d["forceSwitch"].as_bool().unwrap_or(false),
                 fail_encore: d["flags"]["failencore"] == 1,
                 future_move: d["flags"]["futuremove"] == 1,
+                charge: match charge_shape(row["id"].as_str().unwrap(), d) {
+                    Some(shape) => {
+                        let resolve = |names: &[&'static str]| -> Result<Vec<Id>> {
+                            names
+                                .iter()
+                                .map(|name| lookup("moves", name))
+                                .collect()
+                        };
+                        Some(crate::effects::ChargeSpec {
+                            instant_weather: shape
+                                .instant_weather
+                                .iter()
+                                .map(|name| lookup("conditions", name))
+                                .collect::<Result<Vec<Id>>>()?,
+                            instant_weather_message: shape.instant_weather_message,
+                            prepare_boost: shape.prepare_boost,
+                            semi_invulnerable: shape.semi_invulnerable,
+                            invuln_exceptions: resolve(&shape.invuln_exceptions)?,
+                            damage_double: resolve(&shape.damage_double)?,
+                            power_double: resolve(&shape.power_double)?,
+                            weather_immune: shape.weather_immune,
+                            volatile_duration: shape.volatile_duration,
+                            half_in_weak_weather: shape.half_in_weak_weather,
+                        })
+                    }
+                    None => None,
+                },
             });
         }
         let mut natures = vec![Nature::default()];
@@ -1251,6 +1465,7 @@ impl Dex {
                 lookup("moves", "selfdestruct")?,
             ],
             must_recharge: lookup("conditions", "mustrecharge")?,
+            two_turn_move: lookup("conditions", "twoturnmove")?,
             throat_chop: lookup("conditions", "throatchop")?,
             encore: lookup("conditions", "encore")?,
             taunt: lookup("conditions", "taunt")?,

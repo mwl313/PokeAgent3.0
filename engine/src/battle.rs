@@ -238,12 +238,26 @@ impl BattleState {
                         }
                         queued.priority.priority =
                             i32::from(self.effective_priority(dex, actor, m.id)) * 10000;
-                        if queued.target_location == 0 {
-                            queued.target_location = self.random_target_location(actor, m.target);
+                        // Reference `getActionSpeed` reads `getTarget` for the
+                        // queued action. The Recharge pseudo-move has no target
+                        // class, so that read samples a random foe instead of
+                        // resolving the chosen location.
+                        let recharge_lock = self
+                            .mon(actor)
+                            .volatiles
+                            .contains_key(&dex.effects.must_recharge);
+                        if recharge_lock {
+                            self.sample_random_foe(actor);
+                        } else {
+                            if queued.target_location == 0 {
+                                queued.target_location =
+                                    self.random_target_location(actor, m.target);
+                            }
+                            // getActionSpeed resolves a target even for a
+                            // constant priority. That resolution can consume a
+                            // reference RNG draw.
+                            self.resolve_target_location(actor, m.target, queued.target_location);
                         }
-                        // getActionSpeed resolves a target even for a constant
-                        // priority. That resolution can consume a reference RNG draw.
-                        self.resolve_target_location(actor, m.target, queued.target_location);
                         if action.resource == Resource::Mega {
                             self.queue.push(QueuedAction {
                                 kind: QueuedKind::Mega,
@@ -841,6 +855,23 @@ impl BattleState {
         self.end_turn(dex)
     }
 
+    /// Reference `Side#randomFoe`: samples one live foe with `battle.sample`,
+    /// which consumes a draw even when the foe list is empty.
+    fn sample_random_foe(&mut self, actor: Entity) -> Option<Entity> {
+        let foes: SmallVec<[Entity; 2]> = self.sides[(1 - actor.side) as usize]
+            .active
+            .iter()
+            .flatten()
+            .map(|roster| Entity {
+                side: 1 - actor.side,
+                roster: *roster,
+            })
+            .filter(|e| self.mon(*e).hp > 0)
+            .collect();
+        let index = self.rng.below(foes.len() as u32) as usize;
+        foes.get(index).copied()
+    }
+
     fn random_target_location(&mut self, actor: Entity, target: Target) -> i8 {
         let slot = self.mon(actor).active_slot.unwrap();
         if matches!(
@@ -943,7 +974,104 @@ impl BattleState {
             .collect()
     }
 
+    /// Reference `onTryMove` of the two-turn charge family. Returns `true`
+    /// when the move may proceed this turn, `false` after a charge turn.
+    ///
+    /// `runEvent('ChargeMove')` has exactly one handler in the pinned game
+    /// (Power Herb), and Power Herb is not a legal regulation item, so the
+    /// event has no reachable handler. `runEvent('PrepareHit')` is likewise
+    /// only served by Libero / Protean / Parental Bond, all of which stay
+    /// explicit operational errors, so a skipping port cannot go silent.
+    fn charge_try_move(
+        &mut self,
+        dex: &Dex,
+        actor: Entity,
+        m: &crate::assets::Move,
+        move_id: Id,
+        loc: i8,
+    ) -> Result<bool> {
+        let Some(spec) = m.charge.as_ref() else {
+            return Ok(true);
+        };
+        // `if (attacker.removeVolatile(move.id)) return;` — the second turn.
+        if self.mon(actor).volatiles.contains_key(&move_id) {
+            self.mon_mut(actor).volatiles.remove(&move_id);
+            return Ok(true);
+        }
+        // `this.add('-prepare', attacker, move.name)`: the charged move is
+        // public from this point, and `twoturnmove.onStart` records the
+        // player's chosen location for the release turn.
+        if spec.prepare_boost.iter().any(|b| *b != 0) {
+            self.boost(
+                dex,
+                actor,
+                actor,
+                spec.prepare_boost,
+                BoostCause::Move { secondary: false },
+            )?;
+        }
+        if spec.instant_weather.contains(&self.effective_weather(dex)) {
+            return Ok(true);
+        }
+        let target_location = i64::from(loc);
+        let order = self.allocate_effect_order()?;
+        self.mon_mut(actor).volatiles.insert(
+            dex.effects.two_turn_move,
+            EffectState {
+                id: dex.effects.two_turn_move,
+                duration: Some(2),
+                values: vec![i64::from(move_id), target_location],
+                effect_order: order,
+                effect_order_assigned: true,
+                ..Default::default()
+            },
+        );
+        self.emit(
+            EventKind::EffectStart,
+            actor,
+            None,
+            EffectRef::Condition(dex.effects.two_turn_move),
+            0,
+            false,
+        )?;
+        // `attacker.addVolatile(effect.id)`: the move's own marker volatile,
+        // which carries the declared condition (semi-invulnerability) and its
+        // duration when the move declares one.
+        let order = self.allocate_effect_order()?;
+        self.mon_mut(actor).volatiles.insert(
+            move_id,
+            EffectState {
+                id: move_id,
+                duration: spec.volatile_duration,
+                values: vec![target_location],
+                effect_order: order,
+                effect_order_assigned: true,
+                ..Default::default()
+            },
+        );
+        Ok(false)
+    }
+
+    /// The ported charge recipe of the move `e` is currently charging, if any:
+    /// the marker volatile's id is the charging move's own id.
+    pub(super) fn charging_spec<'a>(
+        &self,
+        dex: &'a Dex,
+        e: Entity,
+    ) -> Option<&'a crate::effects::ChargeSpec> {
+        self.mon(e).volatiles.keys().find_map(|id| {
+            let index = *id as usize;
+            (index < dex.moves.len())
+                .then(|| dex.moves[index].charge.as_ref())
+                .flatten()
+        })
+    }
+
     fn use_move(&mut self, dex: &Dex, actor: Entity, slot: u8, move_id: Id, loc: i8) -> Result<()> {
+        // Reference `moveUsed(move, targetLoc)` records the player's chosen
+        // location before `getTarget` resolves it; the two-turn charge
+        // condition stores that value for the release turn.
+        let chosen_location = loc;
         let m = &dex.moves[move_id as usize];
         let behavior = dex.effects.moves[move_id as usize];
         self.validate_effects(dex, actor)?;
@@ -987,11 +1115,35 @@ impl BattleState {
         // a flinched, sleeping or fully paralysed attempt still counts.
         let attempts = self.mon(actor).active_move_actions;
         self.mon_mut(actor).active_move_actions = attempts.saturating_add(1);
-        let loc = self.resolve_target_location(actor, m.target, loc);
+        // Reference `runMove` reads `getTarget` before `BeforeMove` runs. The
+        // Recharge pseudo-move has no target class, so that read falls through
+        // to `getRandomTarget` and samples a random foe (one draw) instead of
+        // resolving the stored location.
+        let recharge_lock = self
+            .mon(actor)
+            .volatiles
+            .contains_key(&dex.effects.must_recharge);
+        let loc = if recharge_lock {
+            self.sample_random_foe(actor);
+            loc
+        } else {
+            self.resolve_target_location(actor, m.target, loc)
+        };
         if !self.before_move(dex, actor, m)? {
             return Ok(());
         }
-        if slot != NO_SLOT {
+        // Reference `useMoveInner` skips PP deduction while the Pokémon is
+        // locked (`getLockedMove()`), i.e. on the release turn of a charge and
+        // on the forced Recharge turn.
+        let locked = self
+            .mon(actor)
+            .volatiles
+            .contains_key(&dex.effects.two_turn_move)
+            || self
+                .mon(actor)
+                .volatiles
+                .contains_key(&dex.effects.must_recharge);
+        if slot != NO_SLOT && !locked {
             let mon = self.mon_mut(actor);
             let pp = mon.moves[slot as usize].pp;
             if pp == 0 {
@@ -1075,6 +1227,12 @@ impl BattleState {
             0,
             false,
         )?;
+        // Reference `useMoveInner` runs the move's own `onTryMove` before any
+        // other TryMove handler. The two-turn charge family spends this turn
+        // preparing (returning `null`) unless its recipe completes early.
+        if !self.charge_try_move(dex, actor, m, move_id, chosen_location)? {
+            return Ok(());
+        }
         // `abilities:armortail|queenlymajesty.onFoeTryMove` (the reference
         // TryMove event) runs after the public move message and before the
         // move-owned `Try` gates. A positive-priority move aimed at the
@@ -1125,21 +1283,6 @@ impl BattleState {
         // nullify their own result after a failed pivot attempt.
         if hooks & crate::effects::hook::TELEPORT != 0 && !self.can_switch(actor.side as usize) {
             return Ok(());
-        }
-        // `moves:disable.onTryHit`: before accuracy and before any hit step,
-        // Disable fails when the target has no recorded last move, or its last
-        // move was Struggle / a Z or Max move.
-        if hooks & crate::effects::hook::DISABLE_TARGET_GATE != 0 {
-            let blocked = redirected.or(selected).is_none_or(|target| {
-                let last = self.mon(target).last_move;
-                last == 0
-                    || last == dex.effects.struggle
-                    || dex.moves[last as usize].is_z
-                    || dex.moves[last as usize].is_max
-            });
-            if blocked {
-                return Ok(());
-            }
         }
         if behavior == MoveBehavior::Terrain {
             self.start_terrain(dex, actor, m.terrain, false)?;
@@ -1352,6 +1495,19 @@ impl BattleState {
         }
         for target in targets {
             self.validate_effects(dex, target)?;
+            // `hitStepInvulnerabilityEvent` (step 0 of the hit pipeline): a
+            // semi-invulnerable target is missed unless the incoming move is
+            // on the recipe's exception list. The reference exempts Helping
+            // Hand and a Poison-type attacker's Toxic.
+            if let Some(spec) = self.charging_spec(dex, target)
+                && spec.semi_invulnerable
+                && !spec.invuln_exceptions.contains(&move_id)
+                && move_id != dex.effects.helping_hand
+                && !(move_id == dex.effects.toxic
+                    && self.mon(actor).types.contains(&dex.effects.poison_type))
+            {
+                continue;
+            }
             // `hitStepTryHitEvent` runs whole-spread with handlers ordered by
             // priority: the priority-4 side guards and the priority-3
             // protection volatiles both precede every ability TryHit.
@@ -1512,6 +1668,19 @@ impl BattleState {
             }
             self.rng.below(100) < accuracy
         });
+        // `moves:disable.onTryHit` is a *move-owned* callback: the reference
+        // runs it inside `spreadMoveHit` after the accuracy step, so the roll
+        // happens even when the move then does nothing. A target with no
+        // recorded last move (or a Struggle / Z / Max last move) is refused.
+        if hooks & crate::effects::hook::DISABLE_TARGET_GATE != 0 {
+            hit.retain(|(target, _)| {
+                let last = self.mon(*target).last_move;
+                last != 0
+                    && last != dex.effects.struggle
+                    && !dex.moves[last as usize].is_z
+                    && !dex.moves[last as usize].is_max
+            });
+        }
         if hit.is_empty() {
             return Ok(());
         }
@@ -2071,7 +2240,12 @@ impl BattleState {
                 if hit == 1
                     && let Some(effect) = m.self_effect.as_ref().filter(|_| !m.sheer_force)
                 {
-                    self.rng.below(100);
+                    // Reference `selfDrops` rolls only for a boosting self
+                    // drop; a pure volatile self effect (mustrecharge) runs
+                    // `moveHit` directly and draws nothing.
+                    if effect.boosts.iter().any(|b| *b != 0) {
+                        self.rng.below(100);
+                    }
                     self.hit_effect(dex, actor, actor, effect, false)?;
                 }
                 for secondary in m.secondaries.iter().filter(|_| !m.sheer_force) {
@@ -4140,20 +4314,29 @@ impl BattleState {
                     return SlotRequest::default();
                 };
                 let p = &self.sides[side].pokemon[roster as usize];
-                SlotRequest {
-                    present: !p.fainted,
-                    can_mega: !p.fainted
-                        && self
-                            .mega_form(
-                                dex,
-                                Entity {
-                                    side: side as u8,
-                                    roster,
-                                },
-                            )
-                            .is_some(),
-                    moves: p
-                        .moves
+                // Reference `getLockedMove()`: `mustrecharge.onLockMove`
+                // returns the Recharge pseudo-move, and `twoturnmove.onLockMove`
+                // the charging move with the location recorded on its start.
+                // A locked slot refuses switches and offers no Mega.
+                let (locked_move, locked_recharge, locked_target_location) = p.locked_state(dex);
+                let locked = locked_move.is_some() || locked_recharge;
+                let moves = if locked_recharge {
+                    Vec::new()
+                } else if let Some(id) = locked_move {
+                    p.moves
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, mv)| mv.id == id)
+                        .map(|(slot, mv)| MoveChoice {
+                            id: mv.id,
+                            slot: slot as u8,
+                            target: dex.moves[mv.id as usize].target,
+                            disabled: false,
+                            pp: mv.pp,
+                        })
+                        .collect()
+                } else {
+                    p.moves
                         .iter()
                         .enumerate()
                         .map(|(slot, mv)| MoveChoice {
@@ -4163,7 +4346,26 @@ impl BattleState {
                             disabled: mv.disabled,
                             pp: mv.pp,
                         })
-                        .collect(),
+                        .collect()
+                };
+                SlotRequest {
+                    present: !p.fainted,
+                    can_mega: !locked
+                        && !p.fainted
+                        && self
+                            .mega_form(
+                                dex,
+                                Entity {
+                                    side: side as u8,
+                                    roster,
+                                },
+                            )
+                            .is_some(),
+                    moves,
+                    trapped: locked,
+                    locked_move,
+                    locked_recharge,
+                    locked_target_location,
                     ..Default::default()
                 }
             });

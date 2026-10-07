@@ -748,6 +748,42 @@ pub enum MoveBehavior {
     RagePowder,
 }
 
+/// Cold payload of a ported two-turn move. Every field is transcribed from
+/// the pinned reference declaration for that move id; the battle path reads
+/// the struct by numeric id and never re-derives it.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ChargeSpec {
+    /// Weather ids that complete the charge immediately (`solarbeam` /
+    /// `solarblade`: sun; `electroshot`: rain).
+    pub instant_weather: Vec<Id>,
+    /// The move reads `attacker.effectiveWeather(undefined, true)` (the
+    /// `message` argument), which only differs from the plain read under Mega
+    /// Sol. Mega Sol itself stays an explicit operational error, so this flag
+    /// exists to keep the recipe exact rather than to approximate it.
+    pub instant_weather_message: bool,
+    /// Self boost applied during the prepare step (`electroshot` / `meteorbeam`
+    /// +1 Sp. Atk, `skullbash` +1 Defense).
+    pub prepare_boost: [i8; 7],
+    /// The charge volatile grants semi-invulnerability (`onInvulnerability`).
+    pub semi_invulnerable: bool,
+    /// Move ids whose `onInvulnerability` handler returns undefined, letting
+    /// the move hit a semi-invulnerable target (Earthquake vs. Dig…).
+    pub invuln_exceptions: Vec<Id>,
+    /// `onSourceModifyDamage` doubles damage from these move ids.
+    pub damage_double: Vec<Id>,
+    /// `onSourceBasePower` doubles base power from these move ids.
+    pub power_double: Vec<Id>,
+    /// `onImmunity`: underground targets ignore sandstorm and hail damage.
+   pub weather_immune: bool,
+    /// The move's own volatile duration (fly/dig/dive/bounce and the Phantom
+    /// Force family declare `duration: 2`; Solar Beam and friends declare no
+    /// condition, so their marker volatile has no duration).
+    pub volatile_duration: Option<u16>,
+    /// `onBasePower`: Solar Beam / Solar Blade are halved while any weak
+    /// weather (rain, sandstorm, snow/hail) is in effect.
+    pub half_in_weak_weather: bool,
+}
+
 /// Reference `Protect`-family contact punishment, executed by the volatile
 /// that actually blocked the hit. Each variant is an exact transcription of
 /// the pinned move condition's `onTryHit` contact branch.
@@ -907,6 +943,9 @@ pub struct NativeEffects {
     pub damp_moves: [Id; 4],
     /// Volatile that skips the holder's next action.
     pub must_recharge: Id,
+    /// `twoturnmove` condition: locks the holder into the charging move and
+    /// carries the stored target location for the second turn.
+    pub two_turn_move: Id,
     /// Volatile that disables and refuses sound moves for two turns.
     pub throat_chop: Id,
     /// `move:encore` volatile: locks the holder into its last move.

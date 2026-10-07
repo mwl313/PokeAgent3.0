@@ -78,6 +78,15 @@ pub struct SlotRequest {
     pub trapped: bool,
     pub maybe_trapped: bool,
     pub can_mega: bool,
+    /// Reference `getLockedMove()` from the `twoturnmove` condition: this
+    /// slot's only legal move, used with `locked_target_location` (the
+    /// location recorded by `twoturnmove.onStart`). The reference request
+    /// lists exactly one entry for it and refuses switches.
+    pub locked_move: Option<Id>,
+    /// `mustrecharge.onLockMove: 'recharge'`: the only legal action is the
+    /// no-op Recharge pseudo-move, which the BeforeMove gate consumes.
+    pub locked_recharge: bool,
+    pub locked_target_location: i8,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -186,6 +195,31 @@ impl Request {
         }
         if !slot.present {
             return smallvec![AtomicAction::pass(slot_id)];
+        }
+        // Reference `chooseMove`: a locked Pokémon ignores the submitted move
+        // entirely. The action is the locked move at the location recorded by
+        // the charge volatile, and switching is refused (`trapped`).
+        if slot.locked_recharge {
+            return smallvec![AtomicAction {
+                kind: ActionKind::Move,
+                own_slot: slot_id,
+                move_slot: NO_SLOT,
+                target_location: 0,
+                switch_destination: NO_SLOT,
+                resource: Resource::None,
+            }];
+        }
+        if let Some(locked) = slot.locked_move
+            && let Some(choice) = slot.moves.iter().find(|m| m.id == locked)
+        {
+            return smallvec![AtomicAction {
+                kind: ActionKind::Move,
+                own_slot: slot_id,
+                move_slot: choice.slot,
+                target_location: slot.locked_target_location,
+                switch_destination: NO_SLOT,
+                resource: Resource::None,
+            }];
         }
         let mut out: SmallVec<[AtomicAction; 64]> = SmallVec::new();
         let mega = slot.can_mega && !prefix.iter().any(|a| a.resource == Resource::Mega);

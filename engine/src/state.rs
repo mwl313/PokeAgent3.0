@@ -170,6 +170,28 @@ pub struct PokemonState {
 }
 
 impl PokemonState {
+    /// Reference `getLockedMove()`: the charging move of a two-turn move
+    /// (`twoturnmove.onLockMove`), the forced Recharge pseudo-move
+    /// (`mustrecharge.onLockMove`) and the location recorded on the charge
+    /// volatile. A locked slot refuses switches.
+    pub fn locked_state(&self, dex: &Dex) -> (Option<Id>, bool, i8) {
+        if self.volatiles.contains_key(&dex.effects.must_recharge) {
+            return (None, true, 0);
+        }
+        match self.volatiles.get(&dex.effects.two_turn_move) {
+            Some(state) => {
+                let id = state.values.first().copied().unwrap_or(0);
+                let loc = state.values.get(1).copied().unwrap_or(0);
+                if id <= 0 || id > i64::from(u16::MAX) {
+                    (None, false, 0)
+                } else {
+                    (Some(id as Id), false, loc as i8)
+                }
+            }
+            None => (None, false, 0),
+        }
+    }
+
     fn initialize(set: &TeamSet, dex: &Dex, rng: &mut BattleRng) -> Self {
         let species = &dex.species[set.species as usize];
         let gender = match set.gender.as_str() {
@@ -527,8 +549,13 @@ impl BattleState {
         }
         let valid_entity = |e: crate::effects::Entity| e.side < 2 && e.roster < 6;
         let valid_effect = |e: &EffectState| {
-            usize::from(e.id) < dex.names["conditions"].len()
-                && e.source.is_none_or(|(_, roster)| roster < 6)
+            // Condition ids name most volatiles; a two-turn charge marker is
+            // keyed by its move id in the reference, so a move with a ported
+            // charge recipe is also a legal volatile identity.
+            let condition = usize::from(e.id) < dex.names["conditions"].len();
+            let charge_marker = usize::from(e.id) < dex.moves.len()
+                && dex.moves[e.id as usize].charge.is_some();
+            (condition || charge_marker) && e.source.is_none_or(|(_, roster)| roster < 6)
         };
         let valid_moves = |moves: &[MoveState]| {
             (1..=4).contains(&moves.len())
@@ -748,6 +775,36 @@ impl BattleState {
                         effect.duration.is_none()
                             && effect.values.is_empty()
                             && effect.source == Some((if side_index == 0 { SideId::P1 } else { SideId::P2 }, roster as u8))
+                    } else if id == dex.effects.two_turn_move {
+                        // `twoturnmove.onStart` records the charging move and
+                        // the player's chosen location; the duration is 2 and
+                        // `onEnd` removes the marker volatile. The residual
+                        // ticks it at the end of each turn, so any retained
+                        // snapshot sees 1 or 2.
+                        effect
+                            .duration
+                            .is_some_and(|duration| (1..=2).contains(&duration))
+                            && effect.values.len() == 2
+                            && effect.values[0] > 0
+                            && effect.values[0] < dex.moves.len() as i64
+                            && dex.moves[effect.values[0] as usize].charge.is_some()
+                            && (-2..=2).contains(&effect.values[1])
+                    } else if usize::from(id) < dex.moves.len()
+                        && dex.moves[id as usize].charge.is_some()
+                    {
+                        // The charge marker: `attacker.addVolatile(move.id)`
+                        // with the move's own condition duration and the
+                        // recorded target location.
+                        let spec = dex.moves[id as usize].charge.as_ref().unwrap();
+                        let duration_ok = match spec.volatile_duration {
+                            Some(declared) => effect
+                                .duration
+                                .is_some_and(|ticked| (1..=declared).contains(&ticked)),
+                            None => effect.duration.is_none(),
+                        };
+                        duration_ok
+                            && effect.values.len() == 1
+                            && (-2..=2).contains(&effect.values[0])
                     } else {
                         return Err(EngineError::Unsupported(format!("snapshot volatile {id}")));
                     };
@@ -1138,15 +1195,26 @@ impl BattleState {
                                 return SlotRequest::default();
                             };
                             let p = &side.pokemon[roster as usize];
-                            SlotRequest {
-                                present: !p.fainted,
-                                can_mega: !p.fainted
-                                    && !side.mega_used
-                                    && dex.effects.mega_stones[p.item as usize]
-                                        .iter()
-                                        .any(|(base, _)| *base == p.base_species),
-                                moves: p
-                                    .moves
+                            let (locked_move, locked_recharge, locked_target_location) =
+                                p.locked_state(dex);
+                            let locked = locked_move.is_some() || locked_recharge;
+                            let moves = if locked_recharge {
+                                Vec::new()
+                            } else if let Some(id) = locked_move {
+                                p.moves
+                                    .iter()
+                                    .enumerate()
+                                    .filter(|(_, m)| m.id == id)
+                                    .map(|(slot, m)| MoveChoice {
+                                        id: m.id,
+                                        slot: slot as u8,
+                                        target: dex.moves[m.id as usize].target,
+                                        disabled: false,
+                                        pp: m.pp,
+                                    })
+                                    .collect()
+                            } else {
+                                p.moves
                                     .iter()
                                     .enumerate()
                                     .map(|(slot, m)| MoveChoice {
@@ -1156,7 +1224,21 @@ impl BattleState {
                                         disabled: m.disabled,
                                         pp: m.pp,
                                     })
-                                    .collect(),
+                                    .collect()
+                            };
+                            SlotRequest {
+                                present: !p.fainted,
+                                can_mega: !locked
+                                    && !p.fainted
+                                    && !side.mega_used
+                                    && dex.effects.mega_stones[p.item as usize]
+                                        .iter()
+                                        .any(|(base, _)| *base == p.base_species),
+                                moves,
+                                trapped: locked,
+                                locked_move,
+                                locked_recharge,
+                                locked_target_location,
                                 ..Default::default()
                             }
                         } else {

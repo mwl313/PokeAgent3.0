@@ -11,6 +11,10 @@
       "sha256": "ce24d9743bdc595ae2865c0297a9bfcd70315fd61ceb41983286e1a0ad472b97",
       "bytes": 314907
     },
+    "dynamic-closure.json": {
+      "sha256": "806ad605a8cc7c5cb73eaaf3b074a3b1d9b32f0fd56a8acc9210d969f7b99442",
+      "bytes": 8850
+    },
     "callbacks.json": {
       "sha256": "69f17c1d04d41b292bfbf5ca5c3260914205a11c3a9dc01d8bcc41592c4281c0",
       "bytes": 921648
@@ -24,12 +28,8 @@
       "bytes": 1358768
     },
     "turn-fixtures.json": {
-      "sha256": "cadadb9b8ced57a1587c39ce1edbe187bdced13143477c4c8d184ee803d0e0fd",
-      "bytes": 61924722
-    },
-    "dynamic-closure.json": {
-      "sha256": "806ad605a8cc7c5cb73eaaf3b074a3b1d9b32f0fd56a8acc9210d969f7b99442",
-      "bytes": 8850
+      "sha256": "7d13ed2341b7a2d9e872054b3dc6d3107fe4f0438605e8a6c17461889cbc4df1",
+      "bytes": 55998996
     }
   }
 }
