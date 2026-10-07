@@ -116,6 +116,9 @@ pub struct Move {
     pub contact: bool,
     pub protect: bool,
     pub sound: bool,
+    /// `flags.reflectable`: the move can be reflected by Magic Bounce. The
+    /// reference checks this flag before any other bounce predicate.
+    pub reflectable: bool,
     /// `flags.heal`: the move recovers HP, so Heal Block disables it in the
     /// request and refuses it when it was committed before the volatile landed.
     pub heal: bool,
@@ -1303,6 +1306,7 @@ impl Dex {
             contact: false,
             protect: false,
             sound: false,
+            reflectable: false,
             heal: false,
             bypass_sub: false,
             bullet: false,
@@ -1401,6 +1405,7 @@ impl Dex {
                 contact: d["flags"]["contact"] == 1,
                 protect: d["flags"]["protect"] == 1,
                 sound: d["flags"]["sound"] == 1,
+                reflectable: d["flags"]["reflectable"] == 1,
                 heal: d["flags"]["heal"] == 1,
                 bypass_sub: d["flags"]["bypasssub"] == 1,
                 bullet: d["flags"]["bullet"] == 1,

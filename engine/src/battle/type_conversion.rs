@@ -29,6 +29,13 @@ pub(super) struct ActiveMove<'a> {
     /// such as the Metronome item's counter read it to tell a called move from
     /// a chosen one.
     pub calls_move: bool,
+    /// Reference `move.hasBounced`: this action was already reflected by Magic
+    /// Bounce, so a second holder must not bounce it again.
+    pub has_bounced: bool,
+    /// The action's effective priority (`battle.queue` writes the
+    /// `ModifyPriority` result back onto the active move). A nested `useMove`
+    /// inherits the outer action's priority; `None` means "not yet resolved".
+    pub priority: Option<i8>,
 }
 impl Deref for ActiveMove<'_> {
     type Target = crate::assets::Move;
@@ -55,6 +62,8 @@ impl BattleState {
             scrappy: false,
             allies: SmallVec::new(),
             calls_move: false,
+            has_bounced: false,
+            priority: None,
         };
         // The move's own callbacks precede the actor's ModifyType event.
         if behavior == MoveBehavior::Struggle {

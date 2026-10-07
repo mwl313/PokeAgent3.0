@@ -134,6 +134,13 @@ impl BattleState {
         } else {
             dex.effects.abilities[self.mon(target).ability as usize]
         };
+        // `abilities:magicbounce.onTryHit` (priority 1): a reflectable move
+        // from another source is used straight back at that source and
+        // refused here. `hitStepTryHitEvent` orders handlers left-to-right
+        // rather than by speed, so this event consumes no tie RNG.
+        if ability == Ability::Magicbounce && m.reflectable && !m.has_bounced {
+            return self.bounce_move(dex, target, source, m).map(|()| true);
+        }
         // `abilities:goodasgold.onTryHit`: any status move from another source
         // is refused outright. The public immunity message reveals the ability.
         if ability == Ability::Goodasgold && m.category == Category::Status {
@@ -235,6 +242,49 @@ impl BattleState {
         }
         Ok(true)
     }
+
+    /// `abilities:magicbounce`: use the incoming reflectable move back at its
+    /// source through the nested `BattleActions#useMove` path. The reflected
+    /// action carries `hasBounced` so a second holder cannot reflect it again,
+    /// and inherits the outer action's stored effective priority exactly as
+    /// `useMoveInner` copies `battle.activeMove.priority`.
+    fn bounce_move(
+        &mut self,
+        dex: &Dex,
+        bouncer: Entity,
+        source: Entity,
+        m: &ActiveMove<'_>,
+    ) -> Result<()> {
+        let Some(loc) = self.location_of(bouncer, source) else {
+            return Ok(());
+        };
+        self.reveal_ability(bouncer)?;
+        self.use_move_inner(
+            dex,
+            bouncer,
+            crate::actions::NO_SLOT,
+            m.id,
+            loc,
+            crate::battle::MoveUse {
+                called: true,
+                bounced: true,
+                priority: m.priority,
+                explicit_target: true,
+            },
+        )
+    }
+
+    /// Location of `target` from `actor`'s perspective: negative for the
+    /// actor's own side, positive for the foe side, 1-based by active slot.
+    fn location_of(&self, actor: Entity, target: Entity) -> Option<i8> {
+        let slot = self.mon(target).active_slot?;
+        Some(if target.side == actor.side {
+            -(slot as i8 + 1)
+        } else {
+            slot as i8 + 1
+        })
+    }
+
     /// Common quarter-HP absorption heal. Full HP still blocks
     /// the move and reveals the ability through the reference immunity message.
     pub(super) fn absorption_heal(&mut self, dex: &Dex, target: Entity) -> Result<()> {
@@ -2316,7 +2366,6 @@ impl Ability {
             | Ability::Leafguard
             | Ability::Lightmetal
             | Ability::Longreach
-            | Ability::Magicbounce
             | Ability::Magician
             | Ability::Megasol
             | Ability::Merciless

@@ -61,6 +61,22 @@ pub(crate) struct HitPhase {
     pub parental_bond_second_hit: bool,
 }
 
+/// How `use_move_inner` was entered. A chosen action runs `runMove`'s outer
+/// phases; a nested `BattleActions#useMove` (Sleep Talk, Magic Bounce) skips
+/// `BeforeMove`, PP deduction, `moveUsed` bookkeeping and the action counter,
+/// and the Magic Bounce reflection additionally inherits the outer action's
+/// priority and carries `hasBounced`.
+#[derive(Clone, Copy, Default)]
+pub(super) struct MoveUse {
+    pub called: bool,
+    pub bounced: bool,
+    pub priority: Option<i8>,
+    /// `BattleActions#useMove` was given an explicit `target`: the reference
+    /// skips its `getRandomTarget` fallback entirely (one fewer draw for a
+    /// spread class, whose target list is rebuilt from the move anyway).
+    pub explicit_target: bool,
+}
+
 impl BattleState {
     fn mon(&self, e: Entity) -> &PokemonState {
         &self.sides[e.side as usize].pokemon[e.roster as usize]
@@ -1340,7 +1356,7 @@ impl BattleState {
     }
 
     fn use_move(&mut self, dex: &Dex, actor: Entity, slot: u8, move_id: Id, loc: i8) -> Result<()> {
-        self.use_move_inner(dex, actor, slot, move_id, loc, false)
+        self.use_move_inner(dex, actor, slot, move_id, loc, MoveUse::default())
     }
 
     /// `BattleActions#useMove`: a move invoked by another move (Sleep Talk
@@ -1351,7 +1367,17 @@ impl BattleState {
     fn use_called_move(&mut self, dex: &Dex, actor: Entity, move_id: Id) -> Result<()> {
         let target = dex.moves[move_id as usize].target;
         let loc = self.random_target_location(actor, target);
-        self.use_move_inner(dex, actor, NO_SLOT, move_id, loc, true)
+        self.use_move_inner(
+            dex,
+            actor,
+            NO_SLOT,
+            move_id,
+            loc,
+            MoveUse {
+                called: true,
+                ..Default::default()
+            },
+        )
     }
 
     fn use_move_inner(
@@ -1361,8 +1387,9 @@ impl BattleState {
         slot: u8,
         move_id: Id,
         loc: i8,
-        called: bool,
+        call: MoveUse,
     ) -> Result<()> {
+        let called = call.called;
         // Reference `moveUsed(move, targetLoc)` records the player's chosen
         // location before `getTarget` resolves it; the two-turn charge
         // condition stores that value for the release turn.
@@ -1412,9 +1439,13 @@ impl BattleState {
         // reads the rolled-over value next turn.
         self.mon_mut(actor).move_this_turn_result = MoveResult::Undefined;
         // Reference `runMove` counts the attempted action before BeforeMove, so
-        // a flinched, sleeping or fully paralysed attempt still counts.
-        let attempts = self.mon(actor).active_move_actions;
-        self.mon_mut(actor).active_move_actions = attempts.saturating_add(1);
+        // a flinched, sleeping or fully paralysed attempt still counts. A move
+        // invoked through `BattleActions#useMove` (Sleep Talk, Magic Bounce)
+        // runs no `runMove`, so the counter stays with the outer action.
+        if !called {
+            let attempts = self.mon(actor).active_move_actions;
+            self.mon_mut(actor).active_move_actions = attempts.saturating_add(1);
+        }
         // Reference `runMove` reads `getTarget` before `BeforeMove` runs. The
         // Recharge pseudo-move has no target class, so that read falls through
         // to `getRandomTarget` and samples a random foe (one draw) instead of
@@ -1423,7 +1454,9 @@ impl BattleState {
             .mon(actor)
             .volatiles
             .contains_key(&dex.effects.must_recharge);
-        let loc = if recharge_lock {
+        let loc = if call.explicit_target {
+            loc
+        } else if recharge_lock {
             self.sample_random_foe(actor);
             loc
         } else {
@@ -1459,8 +1492,11 @@ impl BattleState {
         }
         // Reference `Pokemon#moveUsed` records the move before any hit steps,
         // so a missed, failed or status-refused move still becomes `lastMove`
-        // for Encore, Disable, Torment and Cursed Body.
-        self.mon_mut(actor).last_move = move_id;
+        // for Encore, Disable, Torment and Cursed Body. Only `runMove` calls
+        // `moveUsed`; a nested `useMove` leaves `lastMove` alone.
+        if !called {
+            self.mon_mut(actor).last_move = move_id;
+        }
         if m.defrost && self.mon(actor).status == dex.effects.freeze {
             self.cure_status(actor)?;
         }
@@ -1489,6 +1525,14 @@ impl BattleState {
         let weather = self.effective_weather(dex);
         let mut action = self.active_move(dex, actor, m, behavior);
         action.calls_move = called;
+        action.has_bounced = call.bounced;
+        // Reference `useMoveInner`: a nested caller inherits the outer
+        // action's stored priority (`battle.queue` writes the ModifyPriority
+        // result onto the active move). A chosen action resolves its own.
+        let effective_priority = call
+            .priority
+            .unwrap_or_else(|| self.effective_priority(dex, actor, move_id));
+        action.priority = Some(effective_priority);
         // A move-owned ModifyMove that changes the target class makes the
         // reference re-resolve a random target after both dispatches
         // (`singleEvent` then `runEvent`): two samples that spread moves then
@@ -1552,7 +1596,7 @@ impl BattleState {
                 | Target::Allies
                 | Target::SelfOnly
         ) {
-            let priority = self.effective_priority(dex, actor, move_id);
+            let priority = effective_priority;
             if priority > 0 {
                 let blocked = self.active_entities(false).into_iter().find(|holder| {
                     holder.side != actor.side
@@ -1714,7 +1758,7 @@ impl BattleState {
             // fails outright when no target contributes.
             let mut result = false;
             let mut message = false;
-            let priority = self.effective_priority(dex, actor, move_id);
+            let priority = m.priority.unwrap_or_else(|| self.effective_priority(dex, actor, move_id));
             for target in self.active_entities(false) {
                 if self.mon(target).hp == 0 {
                     continue;
@@ -2103,7 +2147,6 @@ impl BattleState {
         // TryHit callbacks share the action accuracy sentinel across every
         // recipient. Resolve that sentinel before any spread accuracy draws.
         let mut action_accuracy = m.accuracy.map(u16::from);
-        let effective_priority = self.effective_priority(dex, actor, move_id);
         let mut hit = SmallVec::<[(Entity, i8); 4]>::new();
         // Reference `spreadMoveHit` target bookkeeping: a protection block is
         // the `NOT_FAIL` case (recorded as `null`), while a type immunity or a
@@ -3096,7 +3139,9 @@ impl BattleState {
     ) -> Result<()> {
         let mut action_accuracy = m.accuracy.map(u16::from);
         let spread = targets.len() > 1;
-        let effective_priority = self.effective_priority(dex, actor, move_id);
+        let effective_priority = m
+            .priority
+            .unwrap_or_else(|| self.effective_priority(dex, actor, move_id));
         let mut blocked = SmallVec::<[(Entity, Id); 4]>::new();
         let mut kept = SmallVec::<[Entity; 4]>::new();
         for e in targets {
@@ -3126,7 +3171,7 @@ impl BattleState {
             self.validate_effects(dex, target)?;
             let ability = dex.effects.abilities[self.mon(target).ability as usize];
             if self.terrain_id(dex) == dex.effects.psychic_terrain
-                && m.priority > 0
+                && effective_priority > 0
                 && target.side != actor.side
                 && self.grounded(dex, target)
             {
