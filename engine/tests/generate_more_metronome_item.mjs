@@ -224,7 +224,12 @@ function targetLocation(b, p, chosen) {
   for (const loc of candidates) {
     if (!b.validTargetLoc(loc, p, chosen.target)) continue;
     if (chosen.id === undefined) return loc;
-    const target = b.getTarget(p, chosen.id, loc);
+    // Pure position lookup. `Battle.getTarget` falls back to
+    // `Battle.getRandomTarget` when a location is empty, which consumes PRNG
+    // draws during *planning* and would bake a seed the replay can never
+    // reproduce. The sim still resolves an empty location with a random
+    // target inside its own action handling, where the fixture captures it.
+    const target = p.getAtLoc(loc);
     if (target && target.side !== p.side) return loc;
   }
   return candidates.find(loc => b.validTargetLoc(loc, p, chosen.target)) ?? 0;
