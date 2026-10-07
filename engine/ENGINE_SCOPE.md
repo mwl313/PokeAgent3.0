@@ -193,6 +193,43 @@ is 310/515 moves, 75/223 abilities, 165/166 items executable. The engine is
 still not training-ready and no readiness claim is made.
 
 
+### Status snapshot (2026-10-07, Mac long-horizon integration checkpoint, verified)
+
+| Area | Value |
+|---|---|
+| Regulation scope | 293 starting species, 97 permitted battle forms (82 Mega), 515 allowed moves, 223 legal abilities, 166 legal items, 0 unresolved candidates |
+| Moves executable | **375/515** (special=35 generic=340); 367 carry a differential witness, the rest are the documented exemptions in `engine/tests/fixture_coverage.rs` |
+| Abilities executable | **146/223** (runtime gate `Ability::is_ported`) |
+| Items executable | **166/166** |
+| Dynamic/reachable closure | 33 callers from `scripts/dynamic_closure.mjs`; 26 still blocked (the caller family plus the reachable universes) |
+| Training pool | **1009/1136** teams complete at least one natural battle (88.8%); 951 teams statically complete under the `pool_run_report` definition (958 under the narrower `blocker_priority` definition); 77 distinct blockers |
+| Differential corpus | **732 fixtures / 15,766 decision boundaries**, zero mismatches, independently re-verified against the freshly booted pinned Showdown; snapshot round-trip 0 failures |
+| Tests / lint | all test binaries green; clippy clean with and without `--features python` |
+| Readiness (Mac) | `readiness_check` exits **non-zero (NOT READY)**: criteria 2, 3, 5, 6, 7, 8, 15, 16 fail; 1, 4, 9-14 pass. This is a development-machine run, not a readiness claim; the miniDC must re-run the final gates. |
+
+Families landed on this line since the machine-handover checkpoint: Magic
+Bounce (per-target `onTryHit` reflection through the nested `useMove` path;
+the `onAllyTryHitSide` arc stays unimplemented and unreachable until a
+`foeSide`-targeting move is executable), Frisk, Pressure (including the
+caller-slot PP path), Stance Change, Minimize (evasion volatile, accuracy
+bypass and doubled damage for `flags.minimize` moves, refused restart) and
+Zero to Hero, each with reference-generated fixtures. Sleep Talk's
+`sleeptalk_fails_awake_711` scene was promoted into the corpus; the ledger
+now holds only `sleeptalk_calls_own_move_702` and
+`sleeptalk_skips_charge_moves_721`, both waiting on the called-move
+per-hit `eachEvent` handler-set sort. Illusion was scouted and deliberately
+left unported: a faithful port needs per-viewer observed-identity semantics
+that the observation layer does not have yet, written up in
+`engine/NEXT_ILLUSION_REQUIREMENTS.md`; `Ability::Illusion` stays an
+explicit operational error.
+
+Next, in pool order: Skill Swap / Revival Blessing (in flight), Ally Switch,
+Steel Roller, the Stockpile family, the remaining ability tail, the two open
+Sleep Talk sort-gap scenes (which also block most of the 26-caller dynamic
+closure), the unwitnessed-ability witness pass, the remaining pool teams, and
+finally the full-coverage corpus regeneration and the 2,048-environment
+throughput re-measurement on the miniDC.
+
 ### Status snapshot (2026-10-08, second pass, verified)
 
 | Area | Value |
