@@ -30,6 +30,10 @@ impl BattleState {
         match kind {
             // `moves:tripleaxel.basePowerCallback`: `20 * move.hit`.
             BasePowerKind::TripleAxel => declared * hit.max(1),
+            // `moves:watershuriken.basePowerCallback`: the declared power for
+            // every reachable state (the Greninja-Ash branch needs Battle
+            // Bond, which stays an explicit operational error).
+            BasePowerKind::WaterShuriken => declared,
             BasePowerKind::Acrobatics => {
                 if self.mon(actor).item == 0 {
                     declared * 2

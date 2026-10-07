@@ -655,6 +655,10 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:charge.condition.onMoveAborted",
     "moves:charge.condition.onAfterMove",
     "moves:charge.condition.onEnd",
+    // Water Shuriken: the base-power callback degenerates to the declared
+    // power in the pinned regulation (Greninja-Ash + Battle Bond is not a legal
+    // state and remains an explicit error).
+    "moves:watershuriken.basePowerCallback",
     // Tri Attack: the sampled-status secondary, executed by the native hook.
     "moves:triattack.secondary.onHit",
     "moves:triattack.secondaries.0.onHit",
