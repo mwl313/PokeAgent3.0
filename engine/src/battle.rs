@@ -1954,6 +1954,26 @@ impl BattleState {
             targets.clear();
             targets.push(target);
         }
+        // `moves:curse.onModifyMove` (Ghost branch): a Ghost user whose chosen
+        // target is an ally - or that has no target at all - re-samples a
+        // random foe, exactly like the reference's `getRandomTarget` on a
+        // `randomNormal` class.
+        if m.hooks & crate::effects::hook::CURSE != 0
+            && self
+                .effective_types(dex, actor)
+                .contains(&dex.effects.ghost)
+            && targets
+                .first()
+                .is_none_or(|target| target.side == actor.side)
+        {
+            match self.sample_random_foe(actor) {
+                Some(target) => {
+                    targets.clear();
+                    targets.push(target);
+                }
+                None => targets.clear(),
+            }
+        }
         // `abilities:pressure.onDeductPP`: the reference resolves the move's
         // apparent targets (after redirection) and charges one extra PP per
         // opposing Pressure holder among them (`pressureTargets`; `foeSide`
@@ -4153,6 +4173,87 @@ impl BattleState {
                 }
                 // `moves:soak.onHit`: pure-Water targets refuse; anything else
                 // is overwritten with pure Water.
+                // `moves:curse.onTryHit|onHit`: a Ghost user curses the target
+                // (refused while that volatile is already up) and pays half its
+                // own maximum HP; any other user replaces the whole payload
+                // with a self boost and never touches the curse volatile.
+                if hooks & crate::effects::hook::CURSE != 0 {
+                    let ghost = self
+                        .effective_types(dex, actor)
+                        .contains(&dex.effects.ghost);
+                    if !ghost {
+                        // Champions `moves:curse.onHit`: the direct `this.boost`
+                        // call never runs `selfDrops`, so the self boost spends
+                        // no draw, and its result *is* the move's success - a
+                        // fully boosted user fails the move.
+                        did_anything = self.boost(
+                            dex,
+                            actor,
+                            actor,
+                            [1, 1, 0, 0, -1, 0, 0],
+                            BoostCause::Move { secondary: false },
+                        )?;
+                        continue;
+                    }
+                    if self.mon(target).volatiles.contains_key(&dex.effects.curse) {
+                        did_anything = false;
+                        continue;
+                    }
+                    // `moves:curse.onHit`: `directDamage(source.maxhp / 2)` on
+                    // the user, with the move as the effect.
+                    let max_hp = u32::from(self.mon(actor).stats[0]);
+                    let cost = (max_hp / 2).max(1).min(u32::from(self.mon(actor).hp));
+                    if cost > 0 {
+                        self.mon_mut(actor).hp -= cost as u16;
+                        self.emit(
+                            EventKind::Damage,
+                            actor,
+                            Some(actor),
+                            EffectRef::Move(move_id),
+                            -(cost as i32),
+                            true,
+                        )?;
+                        if self.mon(actor).hp == 0 {
+                            self.faint_queue.push(crate::state::FaintData {
+                                target: actor,
+                                source: Some(actor),
+                                from_move: true,
+                            });
+                        }
+                    }
+                    // `onHit`: `delete target.volatiles['curse']` then
+                    // `target.addVolatile('curse')`, i.e. the drain volatile is
+                    // (re)started with the curser as its source.
+                    self.mon_mut(target).volatiles.remove(&dex.effects.curse);
+                    let order = self.allocate_effect_order()?;
+                    self.mon_mut(target).volatiles.insert(
+                        dex.effects.curse,
+                        EffectState {
+                            id: dex.effects.curse,
+                            effect_order: order,
+                            effect_order_assigned: true,
+                            source: Some((
+                                if actor.side == 0 {
+                                    SideId::P1
+                                } else {
+                                    SideId::P2
+                                },
+                                actor.roster,
+                            )),
+                            ..Default::default()
+                        },
+                    );
+                    self.emit(
+                        EventKind::EffectStart,
+                        target,
+                        Some(actor),
+                        EffectRef::Condition(dex.effects.curse),
+                        0,
+                        false,
+                    )?;
+                    did_anything = true;
+                    continue;
+                }
                 if hooks & crate::effects::hook::SOAK != 0
                     && self.effective_types(dex, target).as_slice() != [dex.effects.water]
                 {
@@ -7596,7 +7697,10 @@ impl BattleState {
             for (&id, state) in &self.mon(e).volatiles {
                 // Timed volatiles tick in this sweep; Leech Seed is the one
                 // duration-less volatile with its own residual handler.
-                if state.duration.is_some() || id == dex.effects.leech_seed {
+                if state.duration.is_some()
+                    || id == dex.effects.leech_seed
+                    || id == dex.effects.curse
+                {
                     // Reference `onResidualOrder`: Taunt 15, Encore 16, Disable
                     // 17, Throat Chop 22; other timed volatiles stay unordered.
                     let (order, sub_order) = if id == dex.effects.taunt {
@@ -7619,6 +7723,9 @@ impl BattleState {
                         (24, 0)
                     } else if id == dex.effects.leech_seed {
                         (8, 0)
+                    } else if id == dex.effects.curse {
+                        // `moves:curse.condition.onResidualOrder: 12`.
+                        (12, 0)
                     } else {
                         (0, 0)
                     };
@@ -7748,6 +7855,28 @@ impl BattleState {
             );
         }
         for (e, id, status, _) in handlers {
+            if status == 0 && id == dex.effects.curse {
+                // `moves:curse.condition.onResidual`: the cursed holder loses a
+                // quarter of its maximum HP to the curser. `this.damage` runs
+                // the Damage event, so Magic Guard refuses it.
+                let source = self.mon(e).volatiles.get(&id).and_then(|state| {
+                    state.source.map(|(side, roster)| Entity {
+                        side: side.index() as u8,
+                        roster,
+                    })
+                });
+                if let Some(source) = source
+                    && self.mon(e).hp > 0
+                {
+                    let amount = (u32::from(self.mon(e).stats[0]) / 4).max(1);
+                    self.indirect_damage(dex, e, source, amount, EffectRef::Condition(id))?;
+                    self.process_faints(dex, true)?;
+                    if self.outcome.terminated {
+                        return Ok(());
+                    }
+                }
+                continue;
+            }
             if status == 0 && id == dex.effects.leech_seed {
                 // `moves:leechseed.condition.onResidual` (order 8): drain an
                 // eighth of the holder's maximum HP into the *current occupant*

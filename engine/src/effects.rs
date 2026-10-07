@@ -135,6 +135,10 @@ pub mod hook {
     /// Puff becomes a zero-power heal that ignores the ally's decoy, and Heal
     /// Block on the user refuses that use outright.
     pub const POLLEN_PUFF: u64 = 1 << 47;
+    /// `moves:curse.onModifyMove|onTryHit|onHit`: a Ghost user curses the foe
+    /// (quarter-max-HP drain per residual, half the user's HP paid on use); any
+    /// other user instead boosts itself.
+    pub const CURSE: u64 = 1 << 48;
     /// `moves:burnup.onTryMove|self.onHit`: fails without the Fire type and
     /// strips it from the user on a landed hit.
     pub const BURN_UP: u64 = 1 << 35;
@@ -1250,6 +1254,8 @@ pub struct NativeEffects {
     /// The two aerial charge moves whose markers Gravity removes on start.
     pub fly_move: Id,
     pub bounce_move: Id,
+    /// `moves:curse.condition`: the Ghost curse's quarter-max-HP drain.
+    pub curse: Id,
     /// `moves:chillyreception.condition`: the one-turn volatile added by the
     /// queued move's `priorityChargeCallback` action.
     pub chilly_reception: Id,

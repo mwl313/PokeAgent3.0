@@ -157,6 +157,16 @@ impl BattleState {
                 action.move_type
             };
         }
+        // `moves:curse.onModifyMove`: a non-Ghost user redirects Curse onto
+        // itself (the Ghost branch keeps the chosen foe; an ally or missing
+        // target is re-sampled at resolution time).
+        if hooks & crate::effects::hook::CURSE != 0
+            && !self
+                .effective_types(dex, actor)
+                .contains(&dex.effects.ghost)
+        {
+            action.target = Target::SelfOnly;
+        }
         if hooks & crate::effects::hook::EXPANDING_FORCE != 0
             && self.terrain_id(dex) == dex.effects.psychic_terrain
             && self.grounded(dex, actor)

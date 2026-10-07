@@ -1056,6 +1056,13 @@ impl BattleState {
                         effect.duration.is_none()
                             && effect.values.is_empty()
                             && effect.source.is_some()
+                    } else if id == dex.effects.curse {
+                        // `moves:curse.condition`: the Ghost drain, keyed by the
+                        // curser as its source and running until the holder
+                        // switches out or faints.
+                        effect.duration.is_none()
+                            && effect.values.is_empty()
+                            && effect.source.is_some()
                     } else if id == dex.effects.dragon_cheer {
                         // `moves:dragoncheer.condition`: the single value is
                         // `effectState.hasDragonType`, captured at start.

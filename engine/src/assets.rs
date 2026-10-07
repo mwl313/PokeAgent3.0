@@ -87,6 +87,10 @@ impl Target {
 
     pub fn valid_location(self, own_slot: u8, loc: i8) -> bool {
         if loc == 0 {
+            // The engine's action mask requires an explicit location for every
+            // move that chooses a target; the reference protocol additionally
+            // accepts a location-less choice and resolves it randomly (the
+            // held-out non-Ghost Curse scene records that difference).
             return !self.chooses_target();
         }
         if !self.chooses_target() || own_slot > 1 || !(-2..=2).contains(&loc) {
@@ -719,6 +723,12 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:pollenpuff.onTryHit",
     "moves:pollenpuff.onTryMove",
     "moves:pollenpuff.onHit",
+    // Curse: the Ghost/non-Ghost split and its drain condition.
+    "moves:curse.onModifyMove",
+    "moves:curse.onTryHit",
+    "moves:curse.onHit",
+    "moves:curse.condition.onStart",
+    "moves:curse.condition.onResidual",
     // Baton Pass: the `canSwitch`/commanded gate and the marker that makes the
     // incoming Pokémon skip its BeforeSwitchOut event. The volatile transfer
     // itself is the `selfSwitch: 'copyvolatile'` payload.
@@ -909,6 +919,7 @@ fn move_hooks(id: &str) -> u64 {
         "synthesis" | "moonlight" | "morningsun" => hook::WEATHER_HEAL,
         "ragingbull" => hook::RAGING_BULL,
         "pollenpuff" => hook::POLLEN_PUFF,
+        "curse" => hook::CURSE,
         _ => 0,
     }
 }
@@ -1105,6 +1116,8 @@ const HANDLED_VOLATILES: &[&str] = &[
     // past-generation Heal Block move, which stays an explicit error through
     // its unported callbacks.
     "healblock",
+    // Curse's Ghost drain volatile.
+    "curse",
 ];
 
 /// Status/volatile payloads of every declared effect must already have native
@@ -2128,6 +2141,7 @@ impl Dex {
             stockpile: lookup("conditions", "stockpile")?,
             commanded: lookup("conditions", "commanded")?,
             gravity: lookup("conditions", "gravity")?,
+            curse: lookup("conditions", "curse")?,
             fly_move: lookup("moves", "fly")?,
             bounce_move: lookup("moves", "bounce")?,
             chilly_reception: lookup("conditions", "chillyreception")?,
