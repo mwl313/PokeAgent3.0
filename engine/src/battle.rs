@@ -4836,6 +4836,7 @@ impl BattleState {
                     Some(source),
                     volatile,
                     false,
+                    suppressing,
                 )?;
             } else {
                 return Err(EngineError::Unsupported(format!("volatile {volatile}")));
@@ -4860,7 +4861,34 @@ impl BattleState {
         source: Option<Entity>,
         volatile: Id,
         mid_move: bool,
+        suppressing: bool,
     ) -> Result<bool> {
+        // `abilities:aromaveil.onAllyTryAddVolatile`: a holder on the
+        // recipient's side refuses Taunt, Encore, Disable, Torment and Heal
+        // Block from any source. The public block message (and reveal) only
+        // appears for a move-sourced effect; a Cursed Body disable is refused
+        // silently. Mold Breaker suppresses the breakable gate.
+        if !suppressing
+            && [
+                dex.effects.encore,
+                dex.effects.taunt,
+                dex.effects.disable,
+                dex.effects.torment,
+                dex.effects.heal_block,
+            ]
+            .contains(&volatile)
+        {
+            let holder = self.active_entities(true).into_iter().find(|h| {
+                h.side == target.side
+                    && dex.effects.abilities[self.mon(*h).ability as usize] == Ability::Aromaveil
+            });
+            if let Some(holder) = holder {
+                if !mid_move {
+                    self.reveal_ability(holder)?;
+                }
+                return Ok(false);
+            }
+        }
         // `addVolatile` fails when the volatile already exists and declares no
         // `onRestart`; the rest of this family does not restart, and
         // `moves:minimize.condition.onRestart` returns null, which is refused

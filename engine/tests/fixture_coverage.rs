@@ -35,7 +35,6 @@ struct Coverage {
 /// exercises the move, and never add a move here that a fixture can cover.
 const EXEMPT: &[(&str, &str)] = &[
     ("bittermalice", "no legal holder with an implemented ability yet"),
-    ("decorate", "no legal holder with an implemented ability yet"),
     ("nightdaze", "no legal holder with an implemented ability yet"),
     ("pound", "no legal holder with an implemented ability yet"),
     ("softboiled", "no legal holder with an implemented ability yet"),

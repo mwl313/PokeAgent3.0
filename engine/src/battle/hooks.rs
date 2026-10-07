@@ -1305,6 +1305,7 @@ impl BattleState {
                     && self.rng.chance(3, 10)
                 {
                     self.reveal_ability(target)?;
+                    let suppressing = self.suppressing_ability(dex, actor, target, m);
                     self.start_selection_volatile(
                         dex,
                         actor,
@@ -1312,6 +1313,7 @@ impl BattleState {
                         dex.effects.disable,
                         // The disable lands while the attacker's move is active.
                         true,
+                        suppressing,
                     )?;
                 }
             } else if kind == 13 {
@@ -2609,7 +2611,6 @@ impl Ability {
             | Ability::Aftermath
             | Ability::Angerpoint
             | Ability::Anticipation
-            | Ability::Aromaveil
             | Ability::Battlebond
             | Ability::Berserk
             | Ability::Cheekpouch
