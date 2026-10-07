@@ -351,6 +351,15 @@ impl BattleState {
         {
             modifier = damage::chain_modifiers(modifier, 8192);
         }
+        // `abilities:surgesurfer.onModifySpe`: doubles Speed while the field
+        // terrain is Electric Terrain. The reference reads
+        // `this.field.isTerrain('electricterrain')`, so grounding is not
+        // required and a suppressed/absent terrain simply returns undefined.
+        if ability == Ability::Surgesurfer
+            && self.terrain_id(dex) == dex.effects.electric_terrain
+        {
+            modifier = damage::chain_modifiers(modifier, 8192);
+        }
         // `abilities:unburden` condition `onModifySpe`: doubles Speed while the
         // volatile is present and the holder has no item.
         if ability == Ability::Unburden
