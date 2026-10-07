@@ -48,6 +48,23 @@ impl BattleState {
         if behavior == MoveBehavior::Struggle {
             action.move_type = 0;
         }
+        // `moves:terrainpulse.onModifyType|onModifyMove`: a grounded user's
+        // Terrain Pulse takes the active terrain's type and doubles its power.
+        if behavior == MoveBehavior::TerrainPulse {
+            let terrain = self.terrain_id(dex);
+            if terrain != 0 && self.grounded(dex, actor) {
+                action.power = data.power * 2;
+                action.move_type = if terrain == dex.effects.electric_terrain {
+                    dex.effects.electric
+                } else if terrain == dex.effects.grassy_terrain {
+                    dex.effects.grass
+                } else if terrain == dex.effects.misty_terrain {
+                    dex.effects.fairy
+                } else {
+                    dex.effects.psychic
+                };
+            }
+        }
         let weather = self.effective_weather(dex);
         if behavior == MoveBehavior::WeatherBall && weather != 0 {
             action.power = 100;

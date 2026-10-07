@@ -733,6 +733,9 @@ pub enum MoveBehavior {
     ScreenBreak,
     Weather,
     WeatherBall,
+    /// `terrainpulse`: type and power follow the active terrain for a
+    /// grounded user.
+    TerrainPulse,
     TrickRoom,
     Terrain,
     /// `trick` / `switcheroo`: item swap with the reference TakeItem refusal
@@ -836,6 +839,7 @@ impl MoveBehavior {
             "brickbreak" | "psychicfangs" => Self::ScreenBreak,
             "raindance" | "sunnyday" | "sandstorm" | "snowscape" => Self::Weather,
             "weatherball" => Self::WeatherBall,
+            "terrainpulse" => Self::TerrainPulse,
             "trickroom" => Self::TrickRoom,
             "electricterrain" | "grassyterrain" | "mistyterrain" | "psychicterrain" => {
                 Self::Terrain
