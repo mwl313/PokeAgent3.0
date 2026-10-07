@@ -1215,6 +1215,20 @@ pub struct NativeEffects {
     pub safeguard: Id,
     /// `smackdown`: the marker that grounds an airborne target.
     pub smack_down: Id,
+    /// `conditions:commanded`: a commanded user (Tatsugiri's Commander) never
+    /// sets a `selfSwitch` pivot flag.
+    pub commanded: Id,
+    /// `moves:batonpass`: the `selfSwitch: 'copyvolatile'` pivot whose
+    /// replacement copies the outgoing Pokémon's boosts and volatiles.
+    pub baton_pass_move: Id,
+    /// Conditions declaring `noCopy`: `copyVolatileFrom` refuses to transfer
+    /// them (Disable, Encore, Yawn, Smack Down, Stockpile, ...).
+    pub no_copy_conditions: Vec<Id>,
+    /// Conditions declaring an `onCopy` callback (Gastro Acid, Power Shift,
+    /// Power Trick). None of them is reachable from a ported effect, so a
+    /// transfer stays an explicit operational error rather than a silent
+    /// no-op.
+    pub copy_callback_conditions: Vec<Id>,
     /// Additional Protect-family volatiles that block hits in the same
     /// `hitStepTryHitEvent` phase (priority 3).
     pub spiky_shield: Id,

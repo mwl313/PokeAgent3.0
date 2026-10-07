@@ -674,6 +674,12 @@ impl BattleState {
                 self.queue.retain(|q| q.actor != Some(old));
                 self.ability_switch_out(dex, old)?;
                 self.ability_end(dex, old)?;
+                // Reference `switchIn` -> `copyVolatileFrom`: a Baton Pass
+                // replacement adopts the outgoing Pokémon's boosts and every
+                // non-`noCopy` volatile before the outgoing set is cleared.
+                if self.mon(old).switch_flag == Some(dex.effects.baton_pass_move) {
+                    self.copy_volatiles(dex, old, incoming)?;
+                }
             }
             self.clear_volatile(dex, old);
             // Reference `clearVolatile` also drops the pending switch flags of
@@ -1209,6 +1215,35 @@ impl BattleState {
         for viewer in 0..2 {
             let index = actor.roster as usize + if actor.side as usize == viewer { 0 } else { 6 };
             self.knowledge[viewer].pokemon[index].types = types.clone();
+        }
+        Ok(())
+    }
+
+    /// Reference `Pokemon#copyVolatileFrom` for `selfSwitch: 'copyvolatile'`
+    /// (Baton Pass): the incoming Pokémon clears its own volatile state, adopts
+    /// the outgoing Pokémon's boost stages, then receives a shallow copy of
+    /// every volatile whose condition does not declare `noCopy`. A condition
+    /// with an `onCopy` callback is unreachable from a ported effect today and
+    /// stays an explicit operational error instead of a silent no-op.
+    fn copy_volatiles(&mut self, dex: &Dex, from: Entity, to: Entity) -> Result<()> {
+        self.clear_volatile(dex, to);
+        self.mon_mut(to).boosts = self.mon(from).boosts;
+        let copied: Vec<(Id, EffectState)> = self
+            .mon(from)
+            .volatiles
+            .iter()
+            .map(|(id, state)| (*id, state.clone()))
+            .collect();
+        for (id, state) in copied {
+            if dex.effects.no_copy_conditions.contains(&id) {
+                continue;
+            }
+            if dex.effects.copy_callback_conditions.contains(&id) {
+                return Err(EngineError::Unsupported(format!(
+                    "copied volatile {id} declares onCopy"
+                )));
+            }
+            self.mon_mut(to).volatiles.insert(id, state);
         }
         Ok(())
     }
@@ -3912,6 +3947,19 @@ impl BattleState {
                         self.effective_types(dex, target).as_slice() != [dex.effects.psychic]
                             && self.set_type(dex, target, &[dex.effects.psychic])?;
                 }
+                // `moves:batonpass.onHit` (and the same inline `selfSwitch`
+                // gate in the reference's `spreadMoveHit`): the move fails when
+                // the user's side cannot switch or the user is commanded. That
+                // refusal must discard the generic empty payload's "connected"
+                // result, or the failed move would still run the hit-loop
+                // Update pair and raise the pivot flag.
+                if m.self_switch == crate::assets::SelfSwitch::CopyVolatile {
+                    did_anything = self.can_switch(actor.side as usize)
+                        && !self
+                            .mon(actor)
+                            .volatiles
+                            .contains_key(&dex.effects.commanded);
+                }
                 // `setAbility` payloads of the ability-transfer moves.
                 if hooks & crate::effects::hook::ENTRAINMENT != 0 {
                     let ability = self.mon(actor).ability;
@@ -4039,8 +4087,12 @@ impl BattleState {
         // numeric damage result, including zero), the user is still alive and a
         // reserve exists. Parting Shot deletes its own `selfSwitch` when the
         // Attack/Sp. Atk drop fails.
-        let pivot = m.self_switch == crate::assets::SelfSwitch::Switch
-            && self.mon(actor).hp > 0
+        // `Baton Pass` carries the same flag through its `copyvolatile` payload;
+        // its `canSwitch`/commanded gate is folded into `did_anything` above.
+        let pivot = matches!(
+            m.self_switch,
+            crate::assets::SelfSwitch::Switch | crate::assets::SelfSwitch::CopyVolatile
+        ) && self.mon(actor).hp > 0
             && !hit_targets.is_empty()
             && self.can_switch(actor.side as usize)
             && (hooks & crate::effects::hook::PARTING_SHOT == 0 || did_anything);

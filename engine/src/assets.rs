@@ -705,6 +705,11 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     // Raging Bull: the screen shatter at TryHit and the Paldea-form type.
     "moves:ragingbull.onTryHit",
     "moves:ragingbull.onModifyType",
+    // Baton Pass: the `canSwitch`/commanded gate and the marker that makes the
+    // incoming Pokémon skip its BeforeSwitchOut event. The volatile transfer
+    // itself is the `selfSwitch: 'copyvolatile'` payload.
+    "moves:batonpass.onHit",
+    "moves:batonpass.self.onHit",
     // Focus Energy / Dragon Cheer: the mutual-exclusion start gate and the
     // crit-ratio modifier.
     "moves:focusenergy.condition.onStart",
@@ -1157,6 +1162,85 @@ const FOE_DISABLE_MOVE_CONDITIONS: &[&str] = &["imprison"];
 const DISABLE_MOVE_ABILITIES: &[&str] = &["gorillatactics"];
 const DISABLE_MOVE_ITEMS: &[&str] = &["assaultvest"];
 
+/// Conditions declaring `noCopy`: the reference `copyVolatileFrom` refuses to
+/// carry them across a Baton Pass. Pinned to the exported table so a reference
+/// bump that changes the set fails closed at Dex load.
+const NO_COPY_CONDITIONS: &[&str] = &[
+    "attract",
+    "choicelock",
+    "commanded",
+    "commanding",
+    "counter",
+    "defensecurl",
+    "destinybond",
+    "disable",
+    "dynamax",
+    "encore",
+    "flashfire",
+    "foresight",
+    "glaiverush",
+    "gmaxchistrike",
+    "imprison",
+    "lockon",
+    "minimize",
+    "miracleeye",
+    "mirrorcoat",
+    "nightmare",
+    "protosynthesis",
+    "quarkdrive",
+    "saltcure",
+    "smackdown",
+    "spotlight",
+    "stockpile",
+    "syrupbomb",
+    "torment",
+    "trapped",
+    "trapper",
+    "yawn",
+];
+
+/// Conditions declaring an `onCopy` callback. None is reachable from a ported
+/// effect, so a transfer stays an explicit operational error.
+const COPY_CALLBACK_CONDITIONS: &[&str] = &["gastroacid", "powershift", "powertrick"];
+
+/// Collect the condition rows whose exported declaration satisfies `wanted`
+/// and assert the id set matches the native port exactly.
+fn condition_id_set(
+    table: &Value,
+    suffix: Option<&str>,
+    no_copy: bool,
+    expected: &[&str],
+) -> Result<Vec<Id>> {
+    let mut rows: Vec<(String, Id)> = table
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(|row| {
+            let data = &row["data"];
+            let wanted = match suffix {
+                Some(suffix) => declares_callback(data, suffix),
+                None => no_copy && data["noCopy"].as_bool() == Some(true),
+            };
+            wanted.then(|| {
+                (
+                    row["id"].as_str().unwrap().to_string(),
+                    row["numeric_id"].as_u64().unwrap() as Id,
+                )
+            })
+        })
+        .collect();
+    rows.sort_by(|a, b| a.0.cmp(&b.0));
+    let found: Vec<String> = rows.iter().map(|(id, _)| id.clone()).collect();
+    let mut want: Vec<String> = expected.iter().map(|name| name.to_string()).collect();
+    want.sort();
+    if found != want {
+        return Err(EngineError::AssetMismatch(format!(
+            "condition set {found:?} does not match the native port {want:?}"
+        )));
+    }
+    Ok(rows.into_iter().map(|(_, id)| id).collect())
+}
+
 /// True when the exported declaration carries the callback anywhere: the
 /// exporter replaces every function with a `{callback: "owner"}` marker.
 fn declares_callback(value: &Value, suffix: &str) -> bool {
@@ -1236,10 +1320,12 @@ pub(crate) fn classify_move(id: &str, data: &Value) -> crate::effects::MoveBehav
     if explicit != Behavior::Unimplemented {
         return explicit;
     }
-    // `selfSwitch: 'copyvolatile' | 'shedtail'` moves transfer their volatile
-    // set (and, for Shed Tail, their substitute HP) to the incoming Pokémon.
-    // That payload is not ported, so these stay explicit operational errors.
-    if data["selfSwitch"].as_str().is_some() {
+    // `selfSwitch: 'shedtail'` transfers the user's substitute HP to the
+    // incoming Pokémon through the same copy path with its own filter; that
+    // payload is not ported, so it stays an explicit operational error.
+    // `copyvolatile` (Baton Pass) is ported: the replacement copies the
+    // outgoing Pokémon's boosts and copyable volatiles.
+    if data["selfSwitch"].as_str() == Some("shedtail") {
         return Behavior::Unimplemented;
     }
     let mut callbacks = Vec::new();
@@ -2012,6 +2098,15 @@ impl Dex {
             rage_powder: lookup("conditions", "ragepowder")?,
             ally_switch: lookup("conditions", "allyswitch")?,
             stockpile: lookup("conditions", "stockpile")?,
+            commanded: lookup("conditions", "commanded")?,
+            baton_pass_move: lookup("moves", "batonpass")?,
+            no_copy_conditions: condition_id_set(&tables["conditions"], None, true, NO_COPY_CONDITIONS)?,
+            copy_callback_conditions: condition_id_set(
+                &tables["conditions"],
+                Some(".onCopy"),
+                false,
+                COPY_CALLBACK_CONDITIONS,
+            )?,
             damp_moves: [
                 lookup("moves", "explosion")?,
                 lookup("moves", "mindblown")?,
