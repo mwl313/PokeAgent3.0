@@ -1340,6 +1340,29 @@ impl BattleState {
     }
 
     fn use_move(&mut self, dex: &Dex, actor: Entity, slot: u8, move_id: Id, loc: i8) -> Result<()> {
+        self.use_move_inner(dex, actor, slot, move_id, loc, false)
+    }
+
+    /// `BattleActions#useMove`: a move invoked by another move (Sleep Talk
+    /// today, the rest of the caller family later). The called move resolves its
+    /// target through `Battle#getRandomTarget` (one RNG sample when the target
+    /// class needs one) and never pays PP, so it enters the ordinary move
+    /// pipeline with `slot = NO_SLOT` and `calls_move` set.
+    fn use_called_move(&mut self, dex: &Dex, actor: Entity, move_id: Id) -> Result<()> {
+        let target = dex.moves[move_id as usize].target;
+        let loc = self.random_target_location(actor, target);
+        self.use_move_inner(dex, actor, NO_SLOT, move_id, loc, true)
+    }
+
+    fn use_move_inner(
+        &mut self,
+        dex: &Dex,
+        actor: Entity,
+        slot: u8,
+        move_id: Id,
+        loc: i8,
+        called: bool,
+    ) -> Result<()> {
         // Reference `moveUsed(move, targetLoc)` records the player's chosen
         // location before `getTarget` resolves it; the two-turn charge
         // condition stores that value for the release turn.
@@ -1406,7 +1429,10 @@ impl BattleState {
         } else {
             self.resolve_target_location(actor, m.target, loc)
         };
-        if let Some(result) = self.before_move(dex, actor, m)? {
+        // The reference runs the BeforeMove event once per *action*, before
+        // `useMove`; a move called by another move (Sleep Talk) must not run it
+        // again, or the sleep counter would tick twice in one turn.
+        if !called && let Some(result) = self.before_move(dex, actor, m)? {
             self.mon_mut(actor).move_this_turn_result = result;
             return Ok(());
         }
@@ -1461,7 +1487,8 @@ impl BattleState {
             );
         }
         let weather = self.effective_weather(dex);
-        let action = self.active_move(dex, actor, m, behavior);
+        let mut action = self.active_move(dex, actor, m, behavior);
+        action.calls_move = called;
         // A move-owned ModifyMove that changes the target class makes the
         // reference re-resolve a random target after both dispatches
         // (`singleEvent` then `runEvent`): two samples that spread moves then
@@ -1638,6 +1665,36 @@ impl BattleState {
             self.start_terrain(dex, actor, m.terrain, false)?;
             self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
             return Ok(());
+        }
+        if behavior == MoveBehavior::SleepTalk {
+            // `moves:sleeptalk.onTry`: only a sleeping user (or Comatose, which
+            // no in-scope ability provides) may use the move.
+            if self.mon(actor).status != dex.effects.sleep {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                return Ok(());
+            }
+            // `moves:sleeptalk.onHit`: collect the user's own eligible moves in
+            // slot order, then `this.sample` one of them (one RNG draw) and use
+            // it through `actions.useMove`.
+            let mut candidates: SmallVec<[Id; 4]> = SmallVec::new();
+            for slot in self.mon(actor).moves.iter() {
+                let id = slot.id;
+                if id == 0 || dex.moves[id as usize].no_sleep_talk {
+                    continue;
+                }
+                // `charge` moves are excluded; Z/Max forms do not exist in the
+                // pinned regulation.
+                if dex.moves[id as usize].charge.is_some() {
+                    continue;
+                }
+                candidates.push(id);
+            }
+            if candidates.is_empty() {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                return Ok(());
+            }
+            let pick = candidates[self.rng.below(candidates.len() as u32) as usize];
+            return self.use_called_move(dex, actor, pick);
         }
         if behavior == MoveBehavior::TrickRoom {
             self.toggle_trick_room(dex, actor)?;
@@ -3741,6 +3798,10 @@ impl BattleState {
             let expired = self.mon(e).status_state.values[0] <= 0;
             if expired || (status == dex.effects.freeze && self.rng.chance(1, 4)) {
                 self.cure_status(e)?;
+            } else if status == dex.effects.sleep && m.sleep_usable {
+                // `slp.onBeforeMove` still ticks the counter and prints the
+                // "cant" message, but a `sleepUsable` move (Sleep Talk, Snore)
+                // is not refused by the condition and continues to run.
             } else {
                 return Ok(Some(MoveResult::Failed));
             }

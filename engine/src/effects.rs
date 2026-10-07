@@ -779,6 +779,9 @@ pub enum MoveBehavior {
     PerishSong,
     /// `haze`: the field-wide boost reset.
     Haze,
+    /// `sleeptalk`: only usable while asleep; samples one eligible move from
+    /// the user's own moveset and uses it without paying PP.
+    SleepTalk,
     /// `substitute`: pays a quarter of the user's maximum HP for a decoy
     /// whose remaining HP lives in the volatile's single value.
     Substitute,
@@ -889,6 +892,7 @@ impl MoveBehavior {
             "perishsong" => Self::PerishSong,
             "haze" => Self::Haze,
             "substitute" => Self::Substitute,
+            "sleeptalk" => Self::SleepTalk,
             "trickroom" => Self::TrickRoom,
             "electricterrain" | "grassyterrain" | "mistyterrain" | "psychicterrain" => {
                 Self::Terrain

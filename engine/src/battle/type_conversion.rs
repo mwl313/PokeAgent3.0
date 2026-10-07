@@ -24,6 +24,11 @@ pub(super) struct ActiveMove<'a> {
     /// is always included; every other member only while alive and
     /// status-free.
     pub allies: SmallVec<[u8; 4]>,
+    /// Reference `move.callsMove`: this action was invoked by another move
+    /// (`BattleActions#useMove`) rather than chosen by the player. Handlers
+    /// such as the Metronome item's counter read it to tell a called move from
+    /// a chosen one.
+    pub calls_move: bool,
 }
 impl Deref for ActiveMove<'_> {
     type Target = crate::assets::Move;
@@ -49,6 +54,7 @@ impl BattleState {
             sheer_force: false,
             scrappy: false,
             allies: SmallVec::new(),
+            calls_move: false,
         };
         // The move's own callbacks precede the actor's ModifyType event.
         if behavior == MoveBehavior::Struggle {

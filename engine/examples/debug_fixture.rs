@@ -197,8 +197,9 @@ fn main() {
                 .enumerate()
                 .map(|(roster, p)| {
                     format!(
-                        "{roster}:hp{}fa{}{}",
+                        "{roster}:hp{}st{}fa{}{}",
                         p.hp,
+                        p.status,
                         u8::from(p.fainted),
                         p.active_slot.map(|s| format!("/a{s}")).unwrap_or_default()
                     )

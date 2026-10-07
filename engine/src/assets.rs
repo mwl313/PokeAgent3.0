@@ -138,6 +138,13 @@ pub struct Move {
     /// `ignoreAbility`: the move ignores the target's (breakable) ability, the
     /// same flag Mold Breaker / Teravolt / Turboblaze add at `onModifyMove`.
     pub ignore_ability: bool,
+    /// `flags.nosleeptalk`: excluded from Sleep Talk's candidate list.
+    pub no_sleep_talk: bool,
+    /// `sleepUsable`: the move stays selectable (and is not refused) while the
+    /// user is asleep; only Sleep Talk and Snore declare it in the pinned data.
+    pub sleep_usable: bool,
+    /// `callsMove`: the move invokes another move through `useMove`.
+    pub calls_move: bool,
     /// Cold reference metadata; action callbacks must never mutate shared Dex.
     pub tracks_target: bool,
     pub conversion_excluded: bool,
@@ -325,6 +332,8 @@ const HANDLED_MOVE_FIELDS: &[&str] = &[
     "flags",
     "critRatio",
     "ignoreAbility",
+    "sleepUsable",
+    "callsMove",
     "ignoreDefensive",
     "ignoreImmunity",
     "ignoreAbility",
@@ -561,6 +570,9 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:haze.onHitField",
     "moves:psychup.onHit",
     // Poltergeist: the held-item gate and its public item reveal.
+    // Sleep Talk: the asleep gate and the called-move sample.
+    "moves:sleeptalk.onTry",
+    "moves:sleeptalk.onHit",
     "moves:poltergeist.onTry",
     "moves:poltergeist.onTryHit",
     // Steel Beam: `onMoveFail` is executed by the `mindBlownRecoil` primitive
@@ -1307,6 +1319,9 @@ impl Dex {
             secondaries: vec![],
             ignore_immunity: false,
             ignore_ability: false,
+            no_sleep_talk: false,
+            sleep_usable: false,
+            calls_move: false,
             tracks_target: false,
             conversion_excluded: false,
             normalize_excluded: false,
@@ -1413,6 +1428,9 @@ impl Dex {
                     .collect::<Result<_>>()?,
                 ignore_immunity: d["ignoreImmunity"].as_bool().unwrap_or(false),
                 ignore_ability: d["ignoreAbility"].as_bool().unwrap_or(false),
+                no_sleep_talk: d["flags"]["nosleeptalk"] == 1,
+                sleep_usable: d["sleepUsable"].as_bool().unwrap_or(false),
+                calls_move: d["callsMove"].as_bool().unwrap_or(false),
                 tracks_target: d["tracksTarget"].as_bool().unwrap_or(false),
                 conversion_excluded: matches!(
                     row["id"].as_str().unwrap(),
