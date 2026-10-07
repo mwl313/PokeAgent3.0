@@ -3506,6 +3506,18 @@ impl BattleState {
                 } else if hooks & crate::effects::hook::SOAK == 0 {
                     did_anything |= self.hit_effect_from_move(dex, target, actor, &m.hit, false, m)?;
                 }
+                // `moves:burningjealousy.onHit`: each target whose stats were
+                // raised this turn is burned (silently refused when the
+                // status cannot land, as the move declares no `status` field).
+                if hooks & crate::effects::hook::BURNING_JEALOUSY != 0
+                    && self.mon(target).stats_raised_this_turn
+                {
+                    let burn = crate::effects::HitEffect {
+                        status: dex.effects.burn,
+                        ..Default::default()
+                    };
+                    let _ = self.hit_effect_from_move(dex, target, actor, &burn, true, m)?;
+                }
             }
             // `moves:partingshot.onHit` applies the Attack/Sp. Atk drop itself
             // (the pinned declaration has no `boosts` field) and deletes its

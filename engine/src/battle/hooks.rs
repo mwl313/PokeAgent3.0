@@ -2153,6 +2153,16 @@ impl BattleState {
                 {
                     add(actor, 0, 8192);
                 }
+                // `moves:facade.onBasePower`: doubles while the user carries a
+                // major status (burn, paralysis, poison or bad poison).
+                if m.hooks & crate::effects::hook::FACADE != 0
+                    && (a.status == dex.effects.burn
+                        || a.status == dex.effects.paralysis
+                        || a.status == dex.effects.poison
+                        || a.status == dex.effects.toxic)
+                {
+                    add(actor, 0, 8192);
+                }
             }
             ModifierEvent::Attack | ModifierEvent::SpecialAttack => {
                 if matches!(

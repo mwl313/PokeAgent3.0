@@ -9,94 +9,100 @@ use serde::{Deserialize, Serialize};
 /// ported, so an unsupported variant stays an explicit operational error.
 pub mod hook {
     /// `moves:fakeout.onTry` plus the Champions `onDisableMove` override.
-    pub const FAKE_OUT_FIRST_TURN: u32 = 1 << 0;
+    pub const FAKE_OUT_FIRST_TURN: u64 = 1 << 0;
     /// `moves:suckerpunch.onTry`.
-    pub const SUCKER_PUNCH: u32 = 1 << 1;
+    pub const SUCKER_PUNCH: u64 = 1 << 1;
     /// `moves:hurricane|thunder.onModifyMove`: rain makes the move always hit,
     /// sun sets 50% accuracy.
-    pub const ACCURACY_RAIN_SUN: u32 = 1 << 2;
+    pub const ACCURACY_RAIN_SUN: u64 = 1 << 2;
     /// `moves:blizzard.onModifyMove`: snow makes the move always hit.
-    pub const ACCURACY_SNOW: u32 = 1 << 3;
+    pub const ACCURACY_SNOW: u64 = 1 << 3;
     /// `moves:grassyglide.onModifyPriority`.
-    pub const PRIORITY_GRASSY_GLIDE: u32 = 1 << 4;
+    pub const PRIORITY_GRASSY_GLIDE: u64 = 1 << 4;
     /// `moves:freezedry.onEffectiveness`.
-    pub const FREEZE_DRY: u32 = 1 << 5;
+    pub const FREEZE_DRY: u64 = 1 << 5;
     /// `moves:lowkick|grassknot.onTryHit`: the Dynamax branch cannot be reached
     /// in the pinned regulation, so a Dynamax volatile is an explicit error.
-    pub const DYNAMAX_GUARD: u32 = 1 << 6;
+    pub const DYNAMAX_GUARD: u64 = 1 << 6;
     /// `moves:knockoff.onBasePower` plus its `onAfterHit` item removal: the
     /// 1.5x boost only applies when the item can actually be taken.
-    pub const KNOCK_OFF: u32 = 1 << 7;
+    pub const KNOCK_OFF: u64 = 1 << 7;
     /// `moves:teleport.onTry`: Teleport fails outright, before any hit step,
     /// when the user has no switchable reserve.
-    pub const TELEPORT: u32 = 1 << 8;
+    pub const TELEPORT: u64 = 1 << 8;
     /// `moves:partingshot.onHit`: the pivot is cancelled when the Attack and
     /// Special Attack drop fails.
-    pub const PARTING_SHOT: u32 = 1 << 9;
+    pub const PARTING_SHOT: u64 = 1 << 9;
     /// `moves:direclaw.secondary.onHit`: the secondary samples one of
     /// poison/paralysis/sleep and applies it through `trySetStatus`.
-    pub const DIRE_CLAW: u32 = 1 << 10;
+    pub const DIRE_CLAW: u64 = 1 << 10;
     /// `moves:throatchop.secondary.onHit`: adds the two-turn volatile that
     /// disables and refuses sound moves.
-    pub const THROAT_CHOP: u32 = 1 << 11;
+    pub const THROAT_CHOP: u64 = 1 << 11;
     /// `moves:expandingforce.onModifyMove|onBasePower`: Psychic Terrain turns
     /// the move into a spread move and boosts it 1.5x for grounded users.
-    pub const EXPANDING_FORCE: u32 = 1 << 12;
+    pub const EXPANDING_FORCE: u64 = 1 << 12;
     /// `moves:auroraveil.onTry`: the screen only starts while snow is falling.
-    pub const AURORA_VEIL: u32 = 1 << 13;
+    pub const AURORA_VEIL: u64 = 1 << 13;
     /// `moves:disable.onTryHit`: the move fails before accuracy when the target
     /// has no recorded last move (or last used Struggle).
-    pub const DISABLE_TARGET_GATE: u32 = 1 << 14;
+    pub const DISABLE_TARGET_GATE: u64 = 1 << 14;
     /// `moves:clangoroussoul.onTry|onTryHit|onHit`: the user must be above a
     /// third of its maximum HP, the five-stat self boost must change something
     /// and the move then costs a third of the user's maximum HP.
-    pub const CLANGOROUS_SOUL: u32 = 1 << 15;
+    pub const CLANGOROUS_SOUL: u64 = 1 << 15;
     /// `multiaccuracy`: the move re-rolls accuracy for every hit after the
     /// first and stops on the first miss (Population Bomb, Triple Axel).
-    pub const MULTI_ACCURACY: u32 = 1 << 16;
+    pub const MULTI_ACCURACY: u64 = 1 << 16;
     /// `moves:soak.onHit`: overwrite the target's types with pure Water.
-    pub const SOAK: u32 = 1 << 17;
+    pub const SOAK: u64 = 1 << 17;
     /// `moves:doubleshock.onTryMove|self.onHit`: fails without the Electric
     /// type and removes it from the user on a landed hit.
-    pub const DOUBLE_SHOCK: u32 = 1 << 18;
+    pub const DOUBLE_SHOCK: u64 = 1 << 18;
     /// `moves:firstimpression.onTry` plus the Champions `onDisableMove`
     /// override: only the holder's first action out may use it.
-    pub const FIRST_IMPRESSION: u32 = 1 << 19;
+    pub const FIRST_IMPRESSION: u64 = 1 << 19;
     /// `moves:afteryou.onHit`: the ally's queued move jumps to the queue head.
-    pub const AFTER_YOU: u32 = 1 << 20;
+    pub const AFTER_YOU: u64 = 1 << 20;
     /// `moves:haze.onHitField`: every active Pokémon's boosts are cleared.
-    pub const HAZE: u32 = 1 << 21;
+    pub const HAZE: u64 = 1 << 21;
     /// `moves:psychup.onHit`: the user copies every boost stage of the target.
-    pub const PSYCH_UP: u32 = 1 << 22;
+    pub const PSYCH_UP: u64 = 1 << 22;
     /// `moves:poltergeist.onTry|onTryHit`: the move fails without a held item
     /// and publicly reveals the item when it connects.
-    pub const POLTERGEIST: u32 = 1 << 23;
+    pub const POLTERGEIST: u64 = 1 << 23;
     /// `moves:strengthsap.onHit`: heal by the target's stage-boosted Attack
     /// (no ModifyStat modifiers) and drop the target's Attack one stage.
-    pub const STRENGTH_SAP: u32 = 1 << 24;
+    pub const STRENGTH_SAP: u64 = 1 << 24;
     /// `moves:beatup.onModifyMove`: the action's hit count is the number of
     /// party members that are the user or are healthy and status-free, and
     /// each hit's power comes from the next such member's set species.
-    pub const BEAT_UP: u32 = 1 << 25;
+    pub const BEAT_UP: u64 = 1 << 25;
     /// `moves:steelroller.onTry|onHit|onAfterSubDamage`: the move fails without
     /// an active terrain and clears it once the hit lands, including a hit a
     /// substitute absorbs.
-    pub const STEEL_ROLLER: u32 = 1 << 26;
+    pub const STEEL_ROLLER: u64 = 1 << 26;
     /// `moves:spitup.onTry|onAfterMove`: the move needs the user's stockpile
     /// volatile and always removes it once the move has run, even when the
     /// hit is blocked or missed.
-    pub const SPIT_UP: u32 = 1 << 27;
+    pub const SPIT_UP: u64 = 1 << 27;
     /// `moves:lashout.onBasePower`: doubles while the user's stats were
     /// lowered this turn.
-    pub const LASH_OUT: u32 = 1 << 28;
+    pub const LASH_OUT: u64 = 1 << 28;
     /// `moves:barbbarrage.onBasePower`: doubles against a poisoned target.
-    pub const BARB_BARRAGE: u32 = 1 << 29;
+    pub const BARB_BARRAGE: u64 = 1 << 29;
     /// `moves:alluringvoice.secondary.onHit`: confuses a target whose stats
     /// were raised this turn.
-    pub const ALLURING_VOICE: u32 = 1 << 30;
+    pub const ALLURING_VOICE: u64 = 1 << 30;
     /// `moves:snore.onTry`: the move fails outright unless the user is
     /// asleep (or Comatose, which no in-scope ability provides).
-    pub const SNORE: u32 = 1 << 31;
+    pub const SNORE: u64 = 1 << 31;
+    /// `moves:facade.onBasePower`: doubles while the user carries a major
+    /// status (burn, paralysis or poison).
+    pub const FACADE: u64 = 1 << 32;
+    /// `moves:burningjealousy.onHit`: burns each target whose stats were
+    /// raised this turn.
+    pub const BURNING_JEALOUSY: u64 = 1 << 33;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -906,7 +912,7 @@ impl MoveBehavior {
             | "surf" | "earthquake" | "hypervoice" | "dazzlinggleam" | "powergem" | "tackle"
             | "pound" | "scratch" | "quickattack" | "vinewhip" | "watergun" | "gust"
             | "wingattack" | "peck" | "drillpeck" | "psychocut" | "razorleaf" | "mudslap"
-            | "snore" => {
+            | "snore" | "facade" | "burningjealousy" => {
                 Self::Damage
             }
             "flamethrower" | "icebeam" | "thunderbolt" | "shadowball" | "darkpulse"
@@ -1250,7 +1256,7 @@ pub struct NativeEffects {
     pub dragon: Id,
     pub quake_moves: [Id; 3],
     /// Ported action-local callbacks per move id (see `hook`).
-    pub move_hooks: Vec<u32>,
+    pub move_hooks: Vec<u64>,
     /// Fake Out move id, used by the ported Champions `onDisableMove`.
     pub fake_out: Id,
 }

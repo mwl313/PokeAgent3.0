@@ -195,7 +195,7 @@ pub struct Move {
     /// Ported `basePowerCallback` formula, if any.
     pub bp_callback: Option<crate::effects::BasePowerKind>,
     /// Ported action-local callbacks (see `crate::effects::hook`).
-    pub hooks: u32,
+    pub hooks: u64,
     /// `overrideOffensiveStat` / `overrideDefensiveStat` as `stats` indices.
     pub override_offensive_stat: Option<u8>,
     pub override_defensive_stat: Option<u8>,
@@ -624,6 +624,10 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:rest.onHit",
     // Snore: the asleep-only gate (its flinch secondary is data-driven).
     "moves:snore.onTry",
+    // Facade: the status-doubled base power.
+    "moves:facade.onBasePower",
+    // Burning Jealousy: the burn for targets whose stats were raised.
+    "moves:burningjealousy.onHit",
     "moves:poltergeist.onTry",
     "moves:poltergeist.onTryHit",
     // Steel Beam: `onMoveFail` is executed by the `mindBlownRecoil` primitive
@@ -729,7 +733,7 @@ const HANDLED_MOVE_FLAGS: &[&str] = &[
     "mustpressure",
 ];
 
-fn move_hooks(id: &str) -> u32 {
+fn move_hooks(id: &str) -> u64 {
     use crate::effects::hook;
     match id {
         "fakeout" => hook::FAKE_OUT_FIRST_TURN,
@@ -763,6 +767,8 @@ fn move_hooks(id: &str) -> u32 {
         "barbbarrage" => hook::BARB_BARRAGE,
         "alluringvoice" => hook::ALLURING_VOICE,
         "snore" => hook::SNORE,
+        "facade" => hook::FACADE,
+        "burningjealousy" => hook::BURNING_JEALOUSY,
         _ => 0,
     }
 }
@@ -1449,7 +1455,7 @@ impl Dex {
                 charge: None,
             }];
         let mut native_moves = vec![crate::effects::MoveBehavior::Unimplemented];
-        let mut native_move_hooks = vec![0u32];
+        let mut native_move_hooks = vec![0u64];
         for row in tables["moves"].as_array().unwrap() {
             let d = &row["data"];
             let behavior = classify_move(row["id"].as_str().unwrap(), d);
