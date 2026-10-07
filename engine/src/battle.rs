@@ -2944,6 +2944,19 @@ impl BattleState {
         e: Entity,
         m: &crate::assets::Move,
     ) -> Result<Option<MoveResult>> {
+        // `moves:glaiverush.condition.onBeforeMovePriority: 100`: the drawback
+        // volatile is removed before every other BeforeMove handler.
+        if self.mon(e).volatiles.contains_key(&dex.effects.glaive_rush) {
+            self.mon_mut(e).volatiles.remove(&dex.effects.glaive_rush);
+            self.emit(
+                EventKind::EffectEnd,
+                e,
+                None,
+                EffectRef::Condition(dex.effects.glaive_rush),
+                0,
+                false,
+            )?;
+        }
         // Reference BeforeMove ordering by handler priority:
         // mustrecharge (11) > sleep/freeze (10) > flinch (8) > confusion (3) >
         // paralysis (1). A cancel before a later handler also suppresses that
@@ -3596,6 +3609,7 @@ impl BattleState {
                 || volatile == dex.effects.torment
                 || volatile == dex.effects.yawn
                 || volatile == dex.effects.roost
+                || volatile == dex.effects.glaive_rush
             {
                 changed |= self.start_selection_volatile(
                     dex,
@@ -4003,6 +4017,20 @@ impl BattleState {
                     },
                 ));
             }
+            // `abilities:moody.onResidual` shares Speed Boost's order/sub-order.
+            if dex.effects.abilities[self.mon(e).ability as usize] == Ability::Moody {
+                handlers.push((
+                    e,
+                    self.mon(e).ability,
+                    13,
+                    Priority {
+                        order: 28,
+                        sub_order: 2,
+                        speed: self.mon(e).cached_speed,
+                        ..Default::default()
+                    },
+                ));
+            }
             if dex.effects.items[self.mon(e).item as usize] == Item::Leftovers {
                 handlers.push((
                     e,
@@ -4245,6 +4273,37 @@ impl BattleState {
                         BoostCause::Ability(Ability::SpeedBoost),
                     )?;
                 }
+            } else if status == 13 {
+                // `abilities:moody.onResidual`: sample one stat below +6 to
+                // raise by two, then a different stat above -6 to drop by one.
+                // Both samples draw even when their pool holds one entry.
+                if self.mon(e).ability != id || self.mon(e).hp == 0 {
+                    continue;
+                }
+                let boosts = self.mon(e).boosts;
+                let raisable: SmallVec<[u8; 5]> = (0..5u8)
+                    .filter(|index| boosts[*index as usize] < 6)
+                    .collect();
+                let mut changes = [0i8; 7];
+                let raised = if raisable.is_empty() {
+                    None
+                } else {
+                    Some(raisable[self.rng.below(raisable.len() as u32) as usize])
+                };
+                if let Some(raised) = raised {
+                    changes[raised as usize] = 2;
+                }
+                let lowerable: SmallVec<[u8; 5]> = (0..5u8)
+                    .filter(|index| {
+                        boosts[*index as usize] > -6 && Some(*index) != raised
+                    })
+                    .collect();
+                if !lowerable.is_empty() {
+                    let lowered = lowerable[self.rng.below(lowerable.len() as u32) as usize];
+                    changes[lowered as usize] = -1;
+                }
+                self.reveal_ability(e)?;
+                self.boost(dex, e, e, changes, BoostCause::Ability(Ability::Moody))?;
             } else if status == 1 {
                 if self.mon(e).status != id {
                     continue;

@@ -236,6 +236,11 @@ impl BattleState {
         accuracy: Option<u16>,
     ) -> Option<u16> {
         let accuracy = accuracy?;
+        // `moves:glaiverush.condition.onAccuracy`: while the drawback volatile
+        // is up, moves used against the holder never miss.
+        if self.mon(target).volatiles.contains_key(&dex.effects.glaive_rush) {
+            return None;
+        }
         // No Guard (`onAnyAccuracyPriority: 0`): while an unsuppressed holder is
         // active, moves used by or against it never miss. The reference returns
         // `true` from the handler, which bypasses the accuracy roll entirely.
@@ -1687,6 +1692,15 @@ impl BattleState {
                     Ability::Auraguard => add(target, 0, if m.contact { 2048 } else { 4096 }),
                     _ => (),
                 }
+                // `moves:glaiverush.condition.onSourceModifyDamage`: the holder
+                // of the drawback volatile takes doubled damage.
+                if self
+                    .mon(target)
+                    .volatiles
+                    .contains_key(&dex.effects.glaive_rush)
+                {
+                    add(target, 0, 8192);
+                }
                 // `abilities:sniper.onModifyDamage` is attacker-owned: the
                 // holder's own critical hits deal 1.5x.
                 if attacking == Ability::Sniper {
@@ -2061,7 +2075,6 @@ impl Ability {
             | Ability::Mimicry
             | Ability::Minus
             | Ability::Moldbreaker
-            | Ability::Moody
             | Ability::Moxie
             | Ability::Mummy
             | Ability::Opportunist

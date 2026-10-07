@@ -984,6 +984,9 @@ pub struct NativeEffects {
     pub helping_hand_move: Id,
     /// `moves:roost.condition`: one-turn Flying removal for the caster.
     pub roost: Id,
+    /// `moves:glaiverush.condition`: the user's next move always lands, and
+    /// incoming damage is doubled until the volatile is consumed.
+    pub glaive_rush: Id,
     /// Volatile that disables and refuses sound moves for two turns.
     pub throat_chop: Id,
     /// `move:encore` volatile: locks the holder into its last move.

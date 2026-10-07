@@ -831,6 +831,12 @@ impl BattleState {
                         effect.duration == Some(1)
                             && effect.values.is_empty()
                             && effect.source.is_some()
+                    } else if id == dex.effects.glaive_rush {
+                        // `moves:glaiverush.condition`: a duration-less
+                        // drawback volatile that `onBeforeMove` consumes.
+                        effect.duration.is_none()
+                            && effect.values.is_empty()
+                            && effect.source.is_some()
                     } else if id == dex.effects.two_turn_move {
                         // `twoturnmove.onStart` records the charging move and
                         // the player's chosen location; the duration is 2 and

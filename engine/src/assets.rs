@@ -507,6 +507,11 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:yawn.onTryHit",
     "moves:yawn.condition.onStart",
     "moves:yawn.condition.onEnd",
+    // Glaive Rush: the self volatile's accuracy, damage and cleanup hooks.
+    "moves:glaiverush.condition.onStart",
+    "moves:glaiverush.condition.onAccuracy",
+    "moves:glaiverush.condition.onSourceModifyDamage",
+    "moves:glaiverush.condition.onBeforeMove",
 ];
 
 /// Ported action-local callbacks, keyed by move id. Every entry must have its
@@ -746,6 +751,8 @@ const HANDLED_VOLATILES: &[&str] = &[
     // Roost's one-turn self volatile and Yawn's sleep countdown.
     "roost",
     "yawn",
+    // Glaive Rush's drawback volatile (accuracy, doubled damage, cleanup).
+    "glaiverush",
     "mustrecharge",
     // Volatile selection-lock family: each id is declared by exactly one move
     // (encore, taunt, disable, imprison, torment) whose callbacks are below.
@@ -1607,6 +1614,7 @@ impl Dex {
             toxic_move: lookup("moves", "toxic")?,
             helping_hand_move: lookup("moves", "helpinghand")?,
             roost: lookup("conditions", "roost")?,
+            glaive_rush: lookup("conditions", "glaiverush")?,
             throat_chop: lookup("conditions", "throatchop")?,
             encore: lookup("conditions", "encore")?,
             taunt: lookup("conditions", "taunt")?,
