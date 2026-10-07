@@ -119,6 +119,10 @@ pub struct MoveState {
     pub pp: u8,
     pub max_pp: u8,
     pub disabled: bool,
+    /// `disabled` came from Imprison's `'hidden'` disable, which the served
+    /// request only applies to the side's last active Pokemon.
+    #[serde(default)]
+    pub hidden: bool,
     pub used: bool,
 }
 
@@ -244,6 +248,7 @@ impl PokemonState {
                     pp,
                     max_pp: pp,
                     disabled: false,
+                    hidden: false,
                     used: false,
                 }
             })
@@ -803,6 +808,22 @@ impl BattleState {
                         effect.duration.is_none()
                             && effect.values.is_empty()
                             && effect.source == Some((if side_index == 0 { SideId::P1 } else { SideId::P2 }, roster as u8))
+                    } else if id == dex.effects.yawn {
+                        // `moves:yawn.condition`: a two-turn countdown that
+                        // ends in sleep. The residual ticks it at order 23, so
+                        // any retained snapshot sees 1 or 2. The source is the
+                        // Yawn user recorded at `onStart`.
+                        effect
+                            .duration
+                            .is_some_and(|duration| (1..=2).contains(&duration))
+                            && effect.values.is_empty()
+                            && effect.source.is_some()
+                    } else if id == dex.effects.roost {
+                        // `moves:roost.condition`: a single casting-turn
+                        // volatile with the caster as its source.
+                        effect.duration == Some(1)
+                            && effect.values.is_empty()
+                            && effect.source.is_some()
                     } else if id == dex.effects.two_turn_move {
                         // `twoturnmove.onStart` records the charging move and
                         // the player's chosen location; the duration is 2 and
@@ -1226,6 +1247,10 @@ impl BattleState {
                             let (locked_move, locked_recharge, locked_target_location) =
                                 p.locked_state(dex);
                             let locked = locked_move.is_some() || locked_recharge;
+                            let last_active = (slot + 1..2).all(|later| {
+                                side.active[later]
+                                    .map_or(true, |r| side.pokemon[r as usize].fainted)
+                            });
                             let moves = if locked_recharge {
                                 Vec::new()
                             } else if let Some(id) = locked_move {
@@ -1238,6 +1263,7 @@ impl BattleState {
                                         slot: slot as u8,
                                         target: dex.moves[m.id as usize].target,
                                         disabled: false,
+                                        hidden: false,
                                         pp: m.pp,
                                     })
                                     .collect()
@@ -1250,6 +1276,7 @@ impl BattleState {
                                         slot: slot as u8,
                                         target: dex.moves[m.id as usize].target,
                                         disabled: m.disabled,
+                                        hidden: m.hidden,
                                         pp: m.pp,
                                     })
                                     .collect()
@@ -1267,6 +1294,7 @@ impl BattleState {
                                 locked_move,
                                 locked_recharge,
                                 locked_target_location,
+                                last_active,
                                 ..Default::default()
                             }
                         } else {

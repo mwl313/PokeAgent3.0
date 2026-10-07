@@ -120,7 +120,14 @@ function choose(session, sideIndex, wanted) {
       return foes.find(l => b.validTargetLoc(l, p, target) &&
         (() => { const other = p.getAtLoc(l); return other && other.side !== p.side; })()) ?? null;
     };
-    const noMovesLeft = view.every(m => m.disabled || m.pp <= 0);
+    // Reference `getMoves(lockedMove, restrictData = isLastActive())`: an
+    // Imprison `'hidden'` disable is served as *enabled* for the side's last
+    // active Pokemon (its execution-time `onFoeBeforeMove` gate then refuses
+    // the move), and as disabled for every other slot. The Struggle override
+    // applies only when the served request has no usable entry at all.
+    const lastActive = p.isLastActive();
+    const servedUsable = m => (!m.disabled || (m.disabled === 'hidden' && lastActive)) && m.pp > 0;
+    const noMovesLeft = view.every(m => !servedUsable(m));
     if (noMovesLeft) {
       const target = targetFor(0);
       actions.push(moveAction(slot, 255, 0));
@@ -130,7 +137,7 @@ function choose(session, sideIndex, wanted) {
     const want = (wanted ?? [])[slot];
     const order = view
       .map((m, index) => ({m, index}))
-      .filter(({m}) => !m.disabled && m.pp > 0);
+      .filter(({m}) => servedUsable(m));
     const preferred = want
       ? order.filter(({m}) => m.id === want).concat(order.filter(({m}) => m.id !== want))
       : order.filter(({m}) => dex.moves.get(m.id).category !== 'Status')

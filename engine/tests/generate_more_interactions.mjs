@@ -145,12 +145,19 @@ function choose(session, sideIndex, plan) {
     const requested = slot === 0 ? (plan[Math.max(turn, 0)]?.[sideIndex] ?? 0) : 0;
     // The plan is a hint: a holder may know fewer moves than the script names.
     const wanted = requested < p.moveSlots.length ? requested : 0;
-    const usable = p.moveSlots.findIndex((m, i) => i === wanted && !m.disabled && m.pp > 0);
-    const fallback = p.moveSlots.findIndex(m => !m.disabled && m.pp > 0);
+    // Reference `getMoves(lockedMove, restrictData = isLastActive())`: an
+    // Imprison `'hidden'` disable is served as enabled only for the side's last
+    // active Pokemon; the execution-time onFoeBeforeMove gate refuses it.
+    const lastActive = p.isLastActive();
+    const servedUsable = m => (!m.disabled || (m.disabled === 'hidden' && lastActive)) && m.pp > 0;
+    const usable = p.moveSlots.findIndex((m, i) => i === wanted && servedUsable(m));
+    const fallback = p.moveSlots.findIndex(m => servedUsable(m));
     if (usable < 0 && fallback < 0) {
-      // Every move is disabled: the reference resolves this as Struggle, which
-      // takes no explicit target.
-      actions.push(move(slot, 0, 0));
+      // Every move is disabled: the reference serves the Struggle pseudo-move
+      // (getMoves returns [] -> the request is replaced by Struggle), which the
+      // native action space encodes as the sentinel slot 255 and the reference
+      // command still names as move 1.
+      actions.push(move(slot, 255, 0));
       commands.push('move 1');
       continue;
     }
