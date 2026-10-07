@@ -23,7 +23,7 @@ const TRIALS = [
     p1: () => team(setOf('Gengar', 'Cursed Body', ['Curse', 'Protect', 'Shadow Ball'])),
     p2: () => foeWith(setOf('Milotic', 'Competitive', ['Surf', 'Protect', 'Ice Beam'])),
     script: [
-      {p1: [{move: 'curse', target: 1}, 'protect'], p2: ['protect', 'protect']},
+      {p1: [{move: 'curse'}, 'protect'], p2: ['protect', 'protect']},
     ],
     coverage: {move: 'curse'},
     verify(fixture, session) {
