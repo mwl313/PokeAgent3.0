@@ -985,6 +985,17 @@ impl BattleState {
                         effect.duration == Some(1)
                             && effect.values.as_slice() == [4096]
                             && effect.source.is_some()
+                    } else if id == dex.effects.ally_switch {
+                        // `moves:allyswitch.condition`: a two-turn position
+                        // marker whose single value is the escalating
+                        // consecutive-use success counter (3^n up to 729).
+                        effect
+                            .duration
+                            .is_some_and(|duration| (1..=2).contains(&duration))
+                            && effect.values.len() == 1
+                            && (3..=729).contains(&effect.values[0])
+                            && 729 % effect.values[0] == 0
+                            && effect.source.is_some()
                     } else if usize::from(id) < dex.moves.len()
                         && dex.moves[id as usize].charge.is_some()
                     {

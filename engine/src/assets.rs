@@ -1761,6 +1761,7 @@ impl Dex {
             helping_hand: lookup("conditions", "helpinghand")?,
             follow_me: lookup("conditions", "followme")?,
             rage_powder: lookup("conditions", "ragepowder")?,
+            ally_switch: lookup("conditions", "allyswitch")?,
             damp_moves: [
                 lookup("moves", "explosion")?,
                 lookup("moves", "mindblown")?,
