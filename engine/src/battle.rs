@@ -3818,6 +3818,14 @@ impl BattleState {
                 } else if hooks & crate::effects::hook::SOAK == 0 {
                     did_anything |= self.hit_effect_from_move(dex, target, actor, &m.hit, false, m)?;
                 }
+                // `moves:magicpowder.onHit`: pure-Psychic targets refuse;
+                // anything else is overwritten with pure Psychic.
+                if hooks & crate::effects::hook::MAGIC_POWDER != 0
+                    && self.effective_types(dex, target).as_slice() != [dex.effects.psychic]
+                    && self.mon(target).types.as_slice() != [dex.effects.psychic]
+                {
+                    did_anything |= self.set_type(dex, target, &[dex.effects.psychic])?;
+                }
                 // `moves:burningjealousy.onHit`: each target whose stats were
                 // raised this turn is burned (silently refused when the
                 // status cannot land, as the move declares no `status` field).
@@ -3993,6 +4001,9 @@ impl BattleState {
                     }
                     if hooks & crate::effects::hook::TRI_ATTACK != 0 && !absorbed {
                         self.tri_attack_secondary(dex, actor, target)?;
+                    }
+                    if hooks & crate::effects::hook::EERIE_SPELL != 0 && !absorbed {
+                        self.eerie_spell_secondary(dex, target)?;
                     }
                     if let Some(effect) = &secondary.own {
                         self.hit_effect(dex, actor, actor, effect, true)?;
@@ -5812,6 +5823,33 @@ impl BattleState {
             ..Default::default()
         };
         self.hit_effect(dex, target, source, &effect, true)?;
+        Ok(())
+    }
+
+    /// `moves:eeriespell.secondary.onHit`: deduct up to three PP from the
+    /// target's last move, failing silently when it has none left.
+    fn eerie_spell_secondary(&mut self, _dex: &Dex, target: Entity) -> Result<()> {
+        if self.mon(target).hp == 0 {
+            return Ok(());
+        }
+        let last = self.mon(target).last_move;
+        if last == 0 {
+            return Ok(());
+        }
+        let deducted = {
+            let mon = self.mon_mut(target);
+            match mon.moves.iter_mut().find(|slot| slot.id == last && slot.pp > 0) {
+                Some(slot) => {
+                    let amount = slot.pp.min(3);
+                    slot.pp -= amount;
+                    amount
+                }
+                None => 0,
+            }
+        };
+        // The reference's `-activate` message carries the drained amount but
+        // changes no state beyond the PP deduction above.
+        let _ = deducted;
         Ok(())
     }
 

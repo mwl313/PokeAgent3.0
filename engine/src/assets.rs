@@ -655,6 +655,11 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:charge.condition.onMoveAborted",
     "moves:charge.condition.onAfterMove",
     "moves:charge.condition.onEnd",
+    // Magic Powder: the pure-Psychic type overwrite.
+    "moves:magicpowder.onHit",
+    // Eerie Spell: the three-PP drain on the target's last move.
+    "moves:eeriespell.secondary.onHit",
+    "moves:eeriespell.secondaries.0.onHit",
     // Water Shuriken: the base-power callback degenerates to the declared
     // power in the pinned regulation (Greninja-Ash + Battle Bond is not a legal
     // state and remains an explicit error).
@@ -827,6 +832,8 @@ fn move_hooks(id: &str) -> u64 {
         "facade" => hook::FACADE,
         "burningjealousy" => hook::BURNING_JEALOUSY,
         "acupressure" => hook::ACUPRESSURE,
+        "magicpowder" => hook::MAGIC_POWDER,
+        "eeriespell" => hook::EERIE_SPELL,
         "burnup" => hook::BURN_UP,
         "triattack" => hook::TRI_ATTACK,
         "synthesis" | "moonlight" | "morningsun" => hook::WEATHER_HEAL,

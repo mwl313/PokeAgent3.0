@@ -105,6 +105,12 @@ pub mod hook {
     pub const BURNING_JEALOUSY: u64 = 1 << 33;
     /// `moves:acupressure.onHit`: one sampled stat below +6 rises two stages.
     pub const ACUPRESSURE: u64 = 1 << 34;
+    /// `moves:magicpowder.onHit`: overwrite the target's types with pure
+    /// Psychic, refusing a target that already is pure Psychic.
+    pub const MAGIC_POWDER: u64 = 1 << 38;
+    /// `moves:eeriespell.secondary.onHit`: deduct three PP from the target's
+    /// last move.
+    pub const EERIE_SPELL: u64 = 1 << 39;
     /// `moves:burnup.onTryMove|self.onHit`: fails without the Fire type and
     /// strips it from the user on a landed hit.
     pub const BURN_UP: u64 = 1 << 35;
