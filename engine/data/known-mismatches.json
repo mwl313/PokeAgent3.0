@@ -4,7 +4,7 @@
  "mismatches": [
   {
    "name": "lock_crossfire",
-   "status": "open",
+   "status": "fixed",
    "observed": "Encore/Disable/Taunt crossfire: native RNG seed at decision 5 (P2 turn-3 submission) is 6001,34311,34941,52953 but the reference is 15052,34342,22947,2979 \u2014 the native turn-3 resolution consumes a different number/order of draws. The other three interaction fixtures (imprison_shared_pool, charge_weather_recharge_switch, help_redirect_tie) pass.",
    "fixture": {
     "name": "lock_crossfire",
@@ -4507,7 +4507,7 @@
        {
         "kind": "Move",
         "own_slot": 1,
-        "move_slot": 0,
+        "move_slot": 255,
         "target_location": 0,
         "switch_destination": 255,
         "resource": "None"
@@ -5505,7 +5505,7 @@
        {
         "kind": "Move",
         "own_slot": 1,
-        "move_slot": 0,
+        "move_slot": 255,
         "target_location": 0,
         "switch_destination": 255,
         "resource": "None"
@@ -8979,7 +8979,7 @@
        {
         "kind": "Move",
         "own_slot": 1,
-        "move_slot": 0,
+        "move_slot": 255,
         "target_location": 0,
         "switch_destination": 255,
         "resource": "None"
@@ -14678,7 +14678,8 @@
      "name": "lock_crossfire"
     }
    },
-   "diagnostic": "LAST CLARIFICATION on the two missing turn-2 sorts (source-verified): battle.ts:3016 `queue.sort()` is in commitChoices (the start-of-turn sort, already native) and battle.ts:2923 is the only mid-turn queue.sort - it runs inside runAction when gen>=8 and the next queued action is move/runDynamax, and it first calls updateSpeed() + getActionSpeed for every queued action; the native advance() already performs exactly that block after each action. Therefore the two missing sorts are NOT queue sorts: they are the size-2 `Battle.runEvent <- BattleActions.runMove` handler-set sort (a 2-handler event dispatch inside runMove, e.g. two ability/item handlers on one modifier event) and the size-3 `Battle.fieldEvent <- runAction` handler-collection sort in the residual phase. Next step: instrument the native modifier-hook collection in battle/hooks.rs::modifiers and the residual handler collection to log every (size, event) pair for turn 2, and diff against the reference's runEvent/fieldEvent call list for the same turn."
+   "diagnostic": "RESOLVED (2026-10-08): the two missing turn-2 speedSort calls were identified by stack capture. (1) `size 2 :: Battle.runEvent <- runMove` is the BeforeMove handler list (Taunt priority 5, Disable priority 7): not tied, zero draws, ordering already hand-modeled by the native refusal gates. (2) `size 3 :: Battle.runEvent <- endTurn` is the DisableMove handler list for a holder with Taunt+Encore+Disable volatiles (all order-less Condition handlers at sub-order 2, identical cached speed): fully tied, two shuffle draws, which were the entire divergence. The native now collects that handler set per active Pokemon in side/slot order and speed-sorts it in end_turn before the existing flag pass; the corpus is green and this fixture is merged back. The stale snapshot below was replaced by the current generated fixture (the old copy predated the generator's Struggle sentinel for all-disabled slots).",
+   "fixed_by": "end_turn now reproduces the reference runEvent('DisableMove', pokemon) handler-set collection and speed sort (holder status/volatiles/ability/item plus each live active foe's onFoeDisableMove), so the fully tied Taunt+Encore+Disable set consumes the reference's two shuffle draws; the native flag pass is unchanged. The other candidate sort (size 2 Battle.runEvent <- runMove, BeforeMove with Taunt priority 5 + Disable priority 7) consumes no draws and its ordering is already reproduced by the hand-ordered refusal gates."
   },
   {
    "name": "imprison_shared_pool",

@@ -925,6 +925,18 @@ pub struct NativeEffects {
     pub moves: Vec<MoveBehavior>,
     pub items: Vec<Item>,
     pub choice_lock: Id,
+    /// Pinned `onDisableMove` condition declarations (id -> reference
+    /// `resolvePriority` sub-order). `endTurn`'s `runEvent('DisableMove')`
+    /// handler list is speed-sorted, so membership and sub-order are
+    /// RNG-visible; the loader fails closed if the set changes.
+    pub disable_move_conditions: std::collections::BTreeMap<Id, i32>,
+    /// Pinned `onFoeDisableMove` condition declarations (Imprison), collected
+    /// from each live active foe of the event target.
+    pub foe_disable_move_conditions: std::collections::BTreeMap<Id, i32>,
+    /// Pinned `onDisableMove` ability declarations (Gorilla Tactics).
+    pub disable_move_abilities: std::collections::BTreeMap<Id, i32>,
+    /// Pinned `onDisableMove` item declarations (Assault Vest).
+    pub disable_move_items: std::collections::BTreeMap<Id, i32>,
     /// Exact Champions base-form -> Mega-form mappings, indexed by held item.
     pub mega_stones: Vec<Vec<(Id, Id)>>,
     pub protect: Id,

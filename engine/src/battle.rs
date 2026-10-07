@@ -4358,6 +4358,53 @@ impl BattleState {
         true
     }
 
+    /// Reference `runEvent('DisableMove', pokemon)` handler set for one active
+    /// Pokémon: the holder's status, volatiles (declaration order), ability,
+    /// item, species and slot conditions, plus each live active foe's
+    /// `onFoeDisableMove`. Only the entries the pinned data declares exist
+    /// (`dex.effects.disable_move_*`, validated at load); the priority fields
+    /// are exactly `resolvePriority`'s order/priority/speed/subOrder, so the
+    /// caller's `speed_sort` consumes the reference tie shuffles.
+    fn disable_move_handlers(&self, dex: &Dex, e: Entity) -> SmallVec<[Priority; 4]> {
+        let mon = &self.sides[e.side as usize].pokemon[e.roster as usize];
+        let mut handlers: SmallVec<[Priority; 4]> = SmallVec::new();
+        let mut push = |sub_order: i32, speed: i32| {
+            handlers.push(Priority {
+                sub_order,
+                speed,
+                ..Default::default()
+            });
+        };
+        if let Some(&sub_order) = dex.effects.disable_move_conditions.get(&mon.status) {
+            push(sub_order, mon.cached_speed);
+        }
+        for id in mon.volatiles.keys() {
+            if let Some(&sub_order) = dex.effects.disable_move_conditions.get(id) {
+                push(sub_order, mon.cached_speed);
+            }
+        }
+        if let Some(&sub_order) = dex.effects.disable_move_abilities.get(&mon.ability) {
+            push(sub_order, mon.cached_speed);
+        }
+        if let Some(&sub_order) = dex.effects.disable_move_items.get(&mon.item) {
+            push(sub_order, mon.cached_speed);
+        }
+        // Reference `findEventHandlers` collects the prefixed foe handlers
+        // after the target's own; `foes()` keeps only live actives.
+        for slot in self.sides[(1 - e.side) as usize].active.iter().flatten() {
+            let foe = &self.sides[(1 - e.side) as usize].pokemon[*slot as usize];
+            if foe.hp == 0 {
+                continue;
+            }
+            for id in foe.volatiles.keys() {
+                if let Some(&sub_order) = dex.effects.foe_disable_move_conditions.get(id) {
+                    push(sub_order, foe.cached_speed);
+                }
+            }
+        }
+        handlers
+    }
+
     fn end_turn(&mut self, dex: &Dex) -> Result<()> {
         let dbg = std::env::var("PA3_RNG_DBG").is_ok();
         if dbg {
@@ -4378,6 +4425,27 @@ impl BattleState {
                 r.kind = RequestKind::Finished;
             }
             return Ok(());
+        }
+        // Reference `endTurn` runs `runEvent('DisableMove', pokemon)` for every
+        // active Pokémon before the flags below are applied; the handler list
+        // is speed-sorted, so a fully tied set (Taunt + Encore + Disable on one
+        // holder) consumes a shuffle draw. The flag pass below stays
+        // authoritative for state; this pass reproduces the collection and the
+        // sort's visible draws in side/slot order.
+        for side in 0..2 {
+            for slot in 0..2 {
+                let Some(roster) = self.sides[side].active[slot] else {
+                    continue;
+                };
+                let mut handlers = self.disable_move_handlers(
+                    dex,
+                    Entity {
+                        side: side as u8,
+                        roster,
+                    },
+                );
+                speed_sort(&mut handlers, &mut self.rng, |p| *p);
+            }
         }
         // Reference `onFoeDisableMove`: an active foe's Imprison hides every
         // move the imprisoning Pokémon also knows from this side's requests.

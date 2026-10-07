@@ -815,6 +815,94 @@ fn move_effects_handled(data: &Value) -> bool {
     true
 }
 
+/// Every pinned declaration of the two `DisableMove` callbacks. `endTurn` runs
+/// `runEvent('DisableMove', pokemon)`, whose handler list is speed-sorted, so
+/// the collected membership is RNG-visible (a fully tied set shuffles). A new
+/// declaration in the pinned data must be an explicit port work item; the
+/// loader fails closed instead of silently dropping it.
+const DISABLE_MOVE_CONDITIONS: &[&str] = &[
+    "choicelock",
+    "disable",
+    "encore",
+    "gravity",
+    "healblock",
+    "taunt",
+    "throatchop",
+    "torment",
+];
+const FOE_DISABLE_MOVE_CONDITIONS: &[&str] = &["imprison"];
+const DISABLE_MOVE_ABILITIES: &[&str] = &["gorillatactics"];
+const DISABLE_MOVE_ITEMS: &[&str] = &["assaultvest"];
+
+/// True when the exported declaration carries the callback anywhere: the
+/// exporter replaces every function with a `{callback: "owner"}` marker.
+fn declares_callback(value: &Value, suffix: &str) -> bool {
+    match value {
+        Value::Object(map) => {
+            if let Some(owner) = map.get("callback").and_then(Value::as_str) {
+                return owner.ends_with(suffix);
+            }
+            map.values().any(|nested| declares_callback(nested, suffix))
+        }
+        Value::Array(items) => items.iter().any(|nested| declares_callback(nested, suffix)),
+        _ => false,
+    }
+}
+
+/// Reference `resolvePriority` sub-order for a collected handler, derived from
+/// the effect type. `DisableMove` conditions are Pokémon volatiles, whose
+/// state target is the holder — neither a Side nor the Field — so the reference
+/// Condition branch resolves to 2.
+fn disable_move_sub_order(effect_type: &str, name: &str) -> i32 {
+    match effect_type {
+        "Condition" => 2,
+        "Weather" | "Format" | "Rule" | "Ruleset" => 5,
+        "Ability" => match name {
+            "Poison Touch" | "Perish Body" => 6,
+            "Stall" => 9,
+            _ => 7,
+        },
+        "Item" => 8,
+        _ => 0,
+    }
+}
+
+/// Collect one table's `DisableMove` handlers as id -> reference sub-order,
+/// returning an asset error when the pinned declarations no longer match the
+/// native port's explicit list.
+fn disable_move_handler_ids(
+    table: &Value,
+    kind: &str,
+    suffix: &str,
+    expected: &[&str],
+) -> Result<BTreeMap<Id, i32>> {
+    let mut found = BTreeMap::new();
+    let mut declared = Vec::new();
+    for row in table.as_array().unwrap() {
+        let data = &row["data"];
+        if !declares_callback(data, suffix) {
+            continue;
+        }
+        let id = row["id"].as_str().unwrap();
+        declared.push(id.to_string());
+        let effect_type = data["effectType"].as_str().unwrap_or("Condition");
+        let name = data["name"].as_str().unwrap_or(id);
+        found.insert(
+            row["numeric_id"].as_u64().unwrap() as Id,
+            disable_move_sub_order(effect_type, name),
+        );
+    }
+    declared.sort();
+    let mut want: Vec<String> = expected.iter().map(|name| name.to_string()).collect();
+    want.sort();
+    if declared != want {
+        return Err(EngineError::AssetMismatch(format!(
+            "{kind} {suffix} declarations {declared:?} do not match the native port {want:?}"
+        )));
+    }
+    Ok(found)
+}
+
 /// Cold-path classification for callback-free moves. A move only becomes
 /// executable when every declared field is natively handled; anything else
 /// remains `Unimplemented` (an explicit operational error), never an
@@ -1456,6 +1544,30 @@ impl Dex {
             abilities: native_abilities,
             items: native_items,
             choice_lock: lookup("conditions", "choicelock")?,
+            disable_move_conditions: disable_move_handler_ids(
+                &tables["conditions"],
+                "conditions",
+                ".onDisableMove",
+                DISABLE_MOVE_CONDITIONS,
+            )?,
+            foe_disable_move_conditions: disable_move_handler_ids(
+                &tables["conditions"],
+                "conditions",
+                ".onFoeDisableMove",
+                FOE_DISABLE_MOVE_CONDITIONS,
+            )?,
+            disable_move_abilities: disable_move_handler_ids(
+                &tables["abilities"],
+                "abilities",
+                ".onDisableMove",
+                DISABLE_MOVE_ABILITIES,
+            )?,
+            disable_move_items: disable_move_handler_ids(
+                &tables["items"],
+                "items",
+                ".onDisableMove",
+                DISABLE_MOVE_ITEMS,
+            )?,
             moves: native_moves,
             move_hooks: native_move_hooks,
             fake_out: lookup("moves", "fakeout")?,

@@ -26,12 +26,78 @@ fn main() {
     let dex = Dex::load(Path::new(&dir)).unwrap();
     // The ability-interaction corpus is a separate artifact but shares the
     // fixture shape, so the probe accepts it through an explicit flag.
-    let source = if std::env::args().any(|a| a == "--ability-corpus") {
-        include_str!("../data/ability-interactions.json")
+    let ledger = std::env::args().any(|a| a == "--ledger");
+    let corpus: Corpus = if std::env::args().any(|a| a == "--artifact") {
+        // Generator artifacts hold the current fixture shape even while a
+        // ledger entry still carries the snapshot it was diagnosed from.
+        let artifacts: Vec<serde_json::Value> = [
+            include_str!("../data/more_interactions.json"),
+            include_str!("../data/more_move_coverage.json"),
+            include_str!("../data/more_roost_yawn.json"),
+            include_str!("../data/more_delayed_status.json"),
+        ]
+        .into_iter()
+        .map(serde_json::from_str)
+        .collect::<Result<_, _>>()
+        .unwrap();
+        Corpus {
+            fixtures: artifacts
+                .into_iter()
+                .flat_map(|artifact| artifact["fixtures"].as_array().unwrap().to_vec())
+                .map(|fixture| serde_json::from_value(fixture).unwrap())
+                .collect(),
+        }
+    } else if ledger {
+        // Held-out fixtures stay in the mismatch ledger until they pass;
+        // replay them here so a diagnosis can continue without merging.
+        #[derive(Deserialize)]
+        struct Ledger {
+            mismatches: Vec<LedgerEntry>,
+        }
+        #[derive(Deserialize)]
+        struct LedgerEntry {
+            name: String,
+            fixture: serde_json::Value,
+        }
+        let raw: Ledger =
+            serde_json::from_str(include_str!("../data/known-mismatches.json")).unwrap();
+        // A ledger entry may point at a fixture by name when the fixture lives
+        // in a generator artifact; resolve those from the artifact that
+        // contains them.
+        let artifacts: Vec<serde_json::Value> = [
+            include_str!("../data/more_interactions.json"),
+            include_str!("../data/more_move_coverage.json"),
+            include_str!("../data/more_roost_yawn.json"),
+            include_str!("../data/more_delayed_status.json"),
+        ]
+        .into_iter()
+        .map(serde_json::from_str)
+        .collect::<Result<_, _>>()
+        .unwrap();
+        Corpus {
+            fixtures: raw
+                .mismatches
+                .into_iter()
+                .map(|entry| {
+                    let value = if entry.fixture.is_string() {
+                        artifacts
+                            .iter()
+                            .flat_map(|a| a["fixtures"].as_array().unwrap())
+                            .find(|f| f["name"] == entry.fixture)
+                            .unwrap_or_else(|| panic!("{}: fixture not found", entry.name))
+                            .clone()
+                    } else {
+                        entry.fixture
+                    };
+                    serde_json::from_value(value).unwrap_or_else(|e| panic!("{}: {e}", entry.name))
+                })
+                .collect(),
+        }
+    } else if std::env::args().any(|a| a == "--ability-corpus") {
+        serde_json::from_str(include_str!("../data/ability-interactions.json")).unwrap()
     } else {
-        include_str!("../data/turn-fixtures.json")
+        serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap()
     };
-    let corpus: Corpus = serde_json::from_str(source).unwrap();
     let needle = std::env::args()
         .skip(1)
         .find(|a| !a.starts_with("--"))
