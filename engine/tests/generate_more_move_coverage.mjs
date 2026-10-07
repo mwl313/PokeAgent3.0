@@ -249,8 +249,13 @@ for (const moveId of moves) {
   const teamB = nameSets(fillerTeam().filter(set => dex.species.get(set.species).baseSpecies !== holderBase).slice(0, 6));
   const problems = validator.validateTeam(teamA) || validator.validateTeam(teamB);
   if (problems) { skipped.push({move: moveId, reason: problems.join('; ')}); continue; }
-  const index = fixtures.length;
-  const seed = [2026, 10, 7, 3000 + index];
+  // Stable per-move seed: derive the seed word from the move id so that
+  // adding moves to the regulation no longer renumbers (and re-rolls) every
+  // existing scene. Held-out ledger anchors therefore stay fixed until the
+  // underlying divergence is fixed.
+  let stable = 0;
+  for (const ch of moveId) stable = (stable * 131 + ch.charCodeAt(0)) % 30000;
+  const seed = [2026, 10, 7, 3000 + stable];
   const session = new ReferenceSession({teams: [teamA, teamB], seed});
   const attackSlot = ids.moves.ironhead;
   const plan = {moveSlot: ids.moves[moveId], attackSlot};
