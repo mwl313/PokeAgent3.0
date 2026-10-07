@@ -737,6 +737,67 @@ impl BattleState {
         )
     }
 
+    /// `items:*berry.onEat` for the regulation berries, run by Bug Bite and
+    /// Pluck after the user took the target's berry. The reference calls
+    /// `singleEvent('Eat', ...)` directly there, so `TryEatItem` (and with it
+    /// Unnerve) never applies, and the eater never holds the item.
+    pub(super) fn eat_berry(&mut self, dex: &Dex, eater: Entity, berry: Id) -> Result<()> {
+        let fx = &dex.effects;
+        let status = self.mon(eater).status;
+        let is = |name: &str| dex.id("items", name).map(|id| id == berry).unwrap_or(false);
+        if is("sitrusberry") {
+            return self
+                .heal_for_move(dex, eater, u32::from(self.mon(eater).stats[0]) / 4)
+                .map(|_| ());
+        }
+        if is("oranberry") {
+            return self.heal_for_move(dex, eater, 10).map(|_| ());
+        }
+        if is("leppaberry") {
+            // `onEat`: the first move at 0 PP, otherwise the first below max.
+            let slot = self
+                .mon(eater)
+                .moves
+                .iter()
+                .position(|mv| mv.pp == 0)
+                .or_else(|| self.mon(eater).moves.iter().position(|mv| mv.pp < mv.max_pp));
+            if let Some(slot) = slot {
+                let mon = self.mon_mut(eater);
+                let mv = &mut mon.moves[slot];
+                mv.pp = mv.pp.saturating_add(10).min(mv.max_pp);
+                let pp = mv.pp;
+                mon.base_moves[slot].pp = pp;
+            }
+            return Ok(());
+        }
+        let cures: bool = (is("cheriberry") && status == fx.paralysis)
+            || (is("chestoberry") && status == fx.sleep)
+            || (is("pechaberry") && (status == fx.poison || status == fx.toxic))
+            || (is("rawstberry") && status == fx.burn)
+            || (is("aspearberry") && status == fx.freeze);
+        if cures {
+            return self.cure_status(eater);
+        }
+        if is("persimberry") || is("lumberry") {
+            if is("lumberry") && status != 0 {
+                self.cure_status(eater)?;
+            }
+            if self.mon(eater).volatiles.contains_key(&fx.confusion) {
+                self.mon_mut(eater).volatiles.remove(&fx.confusion);
+                self.emit(
+                    EventKind::EffectEnd,
+                    eater,
+                    None,
+                    EffectRef::Condition(fx.confusion),
+                    0,
+                    false,
+                )?;
+            }
+        }
+        // Type-resist berries declare an empty `onEat`; nothing else happens.
+        Ok(())
+    }
+
     pub(super) fn item_update(&mut self, dex: &Dex, e: Entity) -> Result<()> {
         let p = self.mon(e);
         if p.hp == 0 {

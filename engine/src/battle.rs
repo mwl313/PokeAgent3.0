@@ -3011,6 +3011,14 @@ impl BattleState {
                 failed_otherwise = true;
                 continue;
             }
+            // `moves:endeavor.onTryImmunity`: the move is refused outright
+            // unless the user's HP is strictly below the target's.
+            if m.fixed_damage == Some(crate::assets::FixedDamage::Endeavor)
+                && self.mon(actor).hp >= self.mon(target).hp
+            {
+                failed_otherwise = true;
+                continue;
+            }
             if let Some(effectiveness) = effectiveness {
                 hit.push((target, effectiveness));
             } else {
@@ -3537,6 +3545,48 @@ impl BattleState {
                     self.mon_mut(actor).previous_item = 0;
                     self.give_item(dex, actor, actor, item)?;
                     did_anything = true;
+                }
+            } else if behavior == MoveBehavior::HealPulse {
+                // `moves:healpulse.onHit`: `this.heal(Math.ceil(baseMaxhp/2))`
+                // (Mega Launcher's 0.75 variant has no in-scope holder). A
+                // full-HP target is refused with `NOT_FAIL`, which still
+                // counts as a connected hit; the `heal` flag already refused
+                // the move under Heal Block at BeforeMove.
+                did_anything = true;
+                let amount = u32::from(self.mon(target).stats[0]).div_ceil(2);
+                self.heal_for_move(dex, target, amount)?;
+            } else if behavior == MoveBehavior::PainSplit {
+                // `moves:painsplit.onHit`: both HP values are set to
+                // `Math.floor((targetHP + userHP) / 2) || 1`. `sethp` bypasses
+                // every heal gate, and the handler always counts as a
+                // successful hit.
+                let target_hp = u32::from(self.mon(target).hp);
+                let actor_hp = u32::from(self.mon(actor).hp);
+                let average = ((target_hp + actor_hp) / 2).max(1);
+                self.set_hp_by(dex, target, actor, move_id, average)?;
+                self.set_hp_by(dex, actor, actor, move_id, average)?;
+                did_anything = true;
+            } else if behavior == MoveBehavior::ItemSteal {
+                // `moves:bugbite.onHit` / `moves:pluck.onHit`: while the user
+                // is alive, a Berry held by the target is taken through the
+                // reference `TakeItem` refusal pipeline and immediately eaten
+                // by the user. Any other item refuses the whole branch.
+                let item = self.mon(target).item;
+                if self.mon(actor).hp > 0
+                    && item != 0
+                    && dex.effects.berry_items[item as usize]
+                    && let crate::battle::hooks::TakeOutcome::Taken(item) =
+                        self.take_item_checked(dex, target)?
+                {
+                    self.emit(
+                        EventKind::EndItem,
+                        target,
+                        Some(actor),
+                        EffectRef::Item(item),
+                        0,
+                        false,
+                    )?;
+                    self.eat_berry(dex, actor, item)?;
                 }
             } else if m.force_switch {
                 // Reference `runMoveEffects`: a force-switch move's only
@@ -5391,6 +5441,36 @@ impl BattleState {
     fn modify_fraction(value: u32, numerator: u32, denominator: u32) -> u32 {
         let modifier = numerator * 4096 / denominator;
         (value * modifier + 2047) / 4096
+    }
+
+    /// Reference `Pokemon#sethp`: write an exact HP value, bypassing every
+    /// heal gate (used by Pain Split for both participants). Emits the public
+    /// HP change as a heal or damage event so both observations and the
+    /// knowledge layer track it.
+    fn set_hp_by(
+        &mut self,
+        _dex: &Dex,
+        e: Entity,
+        source: Entity,
+        move_id: Id,
+        value: u32,
+    ) -> Result<()> {
+        let max_hp = u32::from(self.mon(e).stats[0]);
+        let value = value.min(max_hp);
+        let current = u32::from(self.mon(e).hp);
+        if value == current {
+            return Ok(());
+        }
+        self.mon_mut(e).hp = value as u16;
+        let delta = value as i32 - current as i32;
+        self.emit(
+            if delta > 0 { EventKind::Heal } else { EventKind::Damage },
+            e,
+            Some(source),
+            EffectRef::Move(move_id),
+            delta,
+            true,
+        )
     }
 
     /// Reference `Battle#heal` for a move-driven self heal: the TryHeal gate
