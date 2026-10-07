@@ -154,6 +154,19 @@ pub struct PokemonState {
     /// first switch-in that follows it.
     #[serde(default)]
     pub hero_message_displayed: bool,
+    /// Reference `Pokemon#hurtThisTurn`: the HP after the last nonzero damage
+    /// taken this turn (0 while undamaged). Assurance doubles against a
+    /// damaged target; the reference clears it at `nextTurn` and in
+    /// `clearVolatile`.
+    #[serde(default)]
+    pub hurt_this_turn: u16,
+    /// Reference `Pokemon#statsRaisedThisTurn` / `statsLoweredThisTurn`: set
+    /// by an effective positive/negative `boost` and cleared at `nextTurn`
+    /// and on switch-out. Lash Out and Alluring Voice read them.
+    #[serde(default)]
+    pub stats_raised_this_turn: bool,
+    #[serde(default)]
+    pub stats_lowered_this_turn: bool,
     /// `abilities:supremeoverlord`: the fainted-party count captured by
     /// `onStart` (clamped to five). The reference freezes the boost at the
     /// entry value, so later faints during the stint do not change it.
@@ -320,6 +333,9 @@ impl PokemonState {
             times_attacked: 0,
             move_this_turn_result: MoveResult::Undefined,
             move_last_turn_result: MoveResult::Undefined,
+            hurt_this_turn: 0,
+            stats_raised_this_turn: false,
+            stats_lowered_this_turn: false,
         }
     }
 }

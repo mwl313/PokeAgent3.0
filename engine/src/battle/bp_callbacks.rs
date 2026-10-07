@@ -187,6 +187,24 @@ impl BattleState {
             // returns false without a stockpile, which the Try gate already
             // refuses, so the zero-power guard covers the reserved case.
             BasePowerKind::Stockpile => self.stockpile_layers(dex, actor) * 100,
+            // `moves:assurance.basePowerCallback`: doubles against a target
+            // that already took nonzero damage this turn.
+            BasePowerKind::HurtTarget => {
+                if self.mon(target).hurt_this_turn != 0 {
+                    declared * 2
+                } else {
+                    declared
+                }
+            }
+            // `moves:temperflare.basePowerCallback`: doubles when the user's
+            // previous move (last turn) ran and failed.
+            BasePowerKind::TemperFlare => {
+                if self.mon(actor).move_last_turn_result == crate::state::MoveResult::Failed {
+                    declared * 2
+                } else {
+                    declared
+                }
+            }
         }
     }
 

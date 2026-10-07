@@ -625,6 +625,14 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:spitup.basePowerCallback",
     "moves:spitup.onTry",
     "moves:spitup.onAfterMove",
+    // Turn-history power and secondary callbacks (Assurance, Temper Flare,
+    // Lash Out, Barb Barrage, Alluring Voice).
+    "moves:assurance.basePowerCallback",
+    "moves:temperflare.basePowerCallback",
+    "moves:lashout.onBasePower",
+    "moves:barbbarrage.onBasePower",
+    "moves:alluringvoice.secondary.onHit",
+    "moves:alluringvoice.secondaries.0.onHit",
 ];
 
 /// Ported action-local callbacks, keyed by move id. Every entry must have its
@@ -717,6 +725,9 @@ fn move_hooks(id: &str) -> u32 {
         "beatup" => hook::BEAT_UP,
         "steelroller" => hook::STEEL_ROLLER,
         "spitup" => hook::SPIT_UP,
+        "lashout" => hook::LASH_OUT,
+        "barbbarrage" => hook::BARB_BARRAGE,
+        "alluringvoice" => hook::ALLURING_VOICE,
         _ => 0,
     }
 }

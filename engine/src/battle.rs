@@ -1078,6 +1078,11 @@ impl BattleState {
         mon.move_this_turn_result = crate::state::MoveResult::Undefined;
         mon.move_last_turn_result = crate::state::MoveResult::Undefined;
         mon.disguise_busted = false;
+        // Reference `Pokemon#clearVolatile`: the per-turn damage and stat
+        // flags do not survive a switch-out.
+        mon.hurt_this_turn = 0;
+        mon.stats_raised_this_turn = false;
+        mon.stats_lowered_this_turn = false;
         mon.ability = mon.base_ability;
         mon.species = mon.base_species;
         mon.types = dex.species[mon.species as usize].types.clone();
@@ -1844,6 +1849,24 @@ impl BattleState {
                 state.values[1] = i64::from(move_id);
             }
         }
+        // `abilities:protean|libero.onPrepareHit` runs after the move's own
+        // `onTry` gates but before the hit steps. The early-returning behavior
+        // branches below run their own Try gates, so they invoke the ability
+        // right after those gates instead.
+        let late_prepare_hit = matches!(
+            behavior,
+            MoveBehavior::SleepTalk
+                | MoveBehavior::Stockpile
+                | MoveBehavior::Swallow
+                | MoveBehavior::Guard
+                | MoveBehavior::Protect
+                | MoveBehavior::Endure
+                | MoveBehavior::AllySwitch
+        ) || (behavior == MoveBehavior::SideCondition
+            && hooks & crate::effects::hook::AURORA_VEIL != 0);
+        if !late_prepare_hit {
+            self.prepare_hit_abilities(dex, actor, m)?;
+        }
         if behavior == MoveBehavior::Terrain {
             self.start_terrain(dex, actor, m.terrain, false)?;
             self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
@@ -1856,6 +1879,7 @@ impl BattleState {
                 self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
                 return Ok(());
             }
+            self.prepare_hit_abilities(dex, actor, m)?;
             // `moves:sleeptalk.onHit`: collect the user's own eligible moves in
             // slot order, then `this.sample` one of them (one RNG draw) and use
             // it through `actions.useMove`.
@@ -2010,6 +2034,7 @@ impl BattleState {
                 self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
                 return Ok(());
             }
+            self.prepare_hit_abilities(dex, actor, m)?;
             self.ally_try_hit_side(dex, actor, actor, m.move_type)?;
             self.start_side_condition(dex, actor, m.side_condition)?;
             self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
@@ -2025,6 +2050,7 @@ impl BattleState {
                 self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
                 return Ok(());
             }
+            self.prepare_hit_abilities(dex, actor, m)?;
             self.start_stockpile(dex, actor)?;
             self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
             self.each_update(dex)?;
@@ -2040,6 +2066,7 @@ impl BattleState {
                 self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
                 return Ok(());
             }
+            self.prepare_hit_abilities(dex, actor, m)?;
             let healed = self.swallow_heal(dex, actor)?;
             self.mon_mut(actor).move_this_turn_result = if healed {
                 MoveResult::Success
@@ -2113,6 +2140,9 @@ impl BattleState {
                 self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
                 return Ok(());
             }
+            // The reference's move-owned PrepareHit precedes the ability
+            // PrepareHit, so Protean/Libero only run once the volatile stuck.
+            self.prepare_hit_abilities(dex, actor, m)?;
             // `moves:allyswitch.onHit`: doubles only. The user swaps slots
             // with its partner when that slot holds a living Pokémon;
             // otherwise the move reports `NOT_FAIL` (the hit loop still runs
@@ -2239,6 +2269,7 @@ impl BattleState {
                 self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
                 return Ok(());
             }
+            self.prepare_hit_abilities(dex, actor, m)?;
             let condition = m.side_condition;
             if condition == 0 {
                 return Err(EngineError::Unsupported(format!(
@@ -2278,6 +2309,7 @@ impl BattleState {
                 self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
                 return Ok(());
             }
+            self.prepare_hit_abilities(dex, actor, m)?;
             let volatile = if behavior == MoveBehavior::Endure {
                 dex.effects.endure
             } else {
@@ -2392,23 +2424,9 @@ impl BattleState {
         }
         let spread = targets.len() > 1;
         // PrepareHit abilities run once per action, before both the multi-hit
-        // dispatch and the single-hit steps.
+        // dispatch and the single-hit steps. (Protean/Libero already ran at
+        // the shared PrepareHit point above.)
         let preparer = dex.effects.abilities[self.mon(actor).ability as usize];
-        // `abilities:protean|libero.onPrepareHit`: once per switch-in the user
-        // becomes the action's (post-ModifyType) type before the hit steps,
-        // even when the action later misses.
-        if matches!(preparer, Ability::Protean | Ability::Libero)
-            && !self.mon(actor).protean_used
-            && !m.future_move
-            && m.move_type != 0
-        {
-            let kinds = self.effective_types(dex, actor);
-            if kinds.as_slice() != [m.move_type] {
-                self.set_type(dex, actor, &[m.move_type])?;
-                self.mon_mut(actor).protean_used = true;
-                self.reveal_ability(actor)?;
-            }
-        }
         // `abilities:parentalbond.onPrepareHit`: a single-target, non-status,
         // non-charge, non-future, non-multi-hit damaging move gains a second
         // hit at a quarter power.
@@ -3013,6 +3031,10 @@ impl BattleState {
             total_damage += u32::from(actual);
             hit_any = true;
             self.mon_mut(target).hp -= actual;
+            if actual != 0 {
+                let hp = self.mon(target).hp;
+                self.mon_mut(target).hurt_this_turn = hp;
+            }
             // Reference `hitStepMoveHitLoop`: a landed hit increments the
             // target's `timesAttacked`, even when it dealt zero damage.
             if target != actor {
@@ -3287,6 +3309,12 @@ impl BattleState {
                     }
                     if hooks & crate::effects::hook::THROAT_CHOP != 0 && !absorbed {
                         self.throat_chop_secondary(dex, actor, target)?;
+                    }
+                    if hooks & crate::effects::hook::ALLURING_VOICE != 0
+                        && !absorbed
+                        && self.mon(target).stats_raised_this_turn
+                    {
+                        self.alluring_voice_secondary(dex, actor, target)?;
                     }
                     if let Some(effect) = &secondary.own {
                         self.hit_effect(dex, actor, actor, effect, true)?;
@@ -3693,6 +3721,10 @@ impl BattleState {
                 let actual = damage.min(self.mon(target).hp);
                 total_damage += u32::from(actual);
                 self.mon_mut(target).hp -= actual;
+                if actual != 0 {
+                    let hp = self.mon(target).hp;
+                    self.mon_mut(target).hurt_this_turn = hp;
+                }
                 if target != actor {
                     let count = self.mon(target).times_attacked;
                     self.mon_mut(target).times_attacked = count.saturating_add(1);
@@ -3740,6 +3772,11 @@ impl BattleState {
                         self.hit_effect_from_move(dex, target, actor, &secondary.target, true, m)?;
                         if m.hooks & crate::effects::hook::DIRE_CLAW != 0 {
                             self.dire_claw_secondary(dex, actor, target)?;
+                        }
+                        if m.hooks & crate::effects::hook::ALLURING_VOICE != 0
+                            && self.mon(target).stats_raised_this_turn
+                        {
+                            self.alluring_voice_secondary(dex, actor, target)?;
                         }
                         if m.hooks & crate::effects::hook::THROAT_CHOP != 0 {
                             self.throat_chop_secondary(dex, actor, target)?;
@@ -4305,6 +4342,8 @@ impl BattleState {
             return Ok(());
         }
         self.mon_mut(e).hp -= actual as u16;
+        let hp = self.mon(e).hp;
+        self.mon_mut(e).hurt_this_turn = hp;
         if self.mon(e).hp == 0 {
             self.faint_queue.push(FaintData {
                 target: e,
@@ -4565,6 +4604,31 @@ impl BattleState {
                 ..Default::default()
             },
         )
+    }
+
+    /// `abilities:protean|libero.onPrepareHit`: once per switch-in the user
+    /// becomes the action's (post-ModifyType) type before the hit steps, even
+    /// when the action later misses.
+    fn prepare_hit_abilities(
+        &mut self,
+        dex: &Dex,
+        actor: Entity,
+        m: &ActiveMove<'_>,
+    ) -> Result<()> {
+        let preparer = dex.effects.abilities[self.mon(actor).ability as usize];
+        if matches!(preparer, Ability::Protean | Ability::Libero)
+            && !self.mon(actor).protean_used
+            && !m.future_move
+            && m.move_type != 0
+        {
+            let kinds = self.effective_types(dex, actor);
+            if kinds.as_slice() != [m.move_type] {
+                self.set_type(dex, actor, &[m.move_type])?;
+                self.mon_mut(actor).protean_used = true;
+                self.reveal_ability(actor)?;
+            }
+        }
+        Ok(())
     }
 
     /// `moves:stockpile.condition` payload readers. The volatile stores
@@ -4830,6 +4894,18 @@ impl BattleState {
         let status = statuses[self.rng.below(statuses.len() as u32) as usize];
         let effect = crate::effects::HitEffect {
             status,
+            ..Default::default()
+        };
+        self.hit_effect(dex, target, source, &effect, true)?;
+        Ok(())
+    }
+
+    /// `moves:alluringvoice.secondary.onHit`: a target whose stats were raised
+    /// this turn gains the confusion volatile (with the reference
+    /// `random(2, 6)` timer); an already-confused target is left untouched.
+    fn alluring_voice_secondary(&mut self, dex: &Dex, source: Entity, target: Entity) -> Result<()> {
+        let effect = crate::effects::HitEffect {
+            volatile: dex.effects.confusion,
             ..Default::default()
         };
         self.hit_effect(dex, target, source, &effect, true)?;
@@ -5919,6 +5995,8 @@ impl BattleState {
                     continue;
                 }
                 self.mon_mut(e).hp -= actual;
+                let hp = self.mon(e).hp;
+                self.mon_mut(e).hurt_this_turn = hp;
                 if self.mon(e).hp == 0 {
                     self.faint_queue.push(FaintData {
                         target: e,
@@ -6154,6 +6232,10 @@ impl BattleState {
                 }
                 let actual = damage.min(self.mon(e).hp);
                 self.mon_mut(e).hp -= actual;
+                if actual != 0 {
+                    let hp = self.mon(e).hp;
+                    self.mon_mut(e).hurt_this_turn = hp;
+                }
                 if self.mon(e).hp == 0 {
                     let source = self.mon(e).status_state.source.map(|(side, roster)| Entity {
                         side: side.index() as u8,
@@ -6670,6 +6752,11 @@ impl BattleState {
                 // becomes `moveLastTurnResult` for the new decision boundary.
                 mon.move_last_turn_result = mon.move_this_turn_result;
                 mon.move_this_turn_result = crate::state::MoveResult::Undefined;
+                // Reference `nextTurn`: the per-turn damage and stat-history
+                // flags reset for every active Pokémon.
+                mon.hurt_this_turn = 0;
+                mon.stats_raised_this_turn = false;
+                mon.stats_lowered_this_turn = false;
                 // Reference `choicelock.onDisableMove`: the lock is dropped
                 // lazily when the holder no longer has a Choice item (Knock
                 // Off, Trick, …) or no longer knows the locked move.
