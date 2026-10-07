@@ -67,6 +67,11 @@ impl BattleState {
         if dex.effects.abilities[self.mon(e).ability as usize] == Ability::Unburden {
             self.mon_mut(e).volatiles.remove(&dex.effects.unburden);
         }
+        // `abilities:supremeoverlord.onEnd`: the frozen boost ends with the
+        // ability (the reference's `-end fallenN` marker is silent).
+        if dex.effects.abilities[self.mon(e).ability as usize] == Ability::Supremeoverlord {
+            self.mon_mut(e).supreme_overlord_fallen = 0;
+        }
         Ok(())
     }
 

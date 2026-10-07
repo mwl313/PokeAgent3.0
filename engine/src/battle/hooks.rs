@@ -1387,6 +1387,21 @@ impl BattleState {
         if dex.effects.abilities[self.mon(e).ability as usize] == Ability::Pressure {
             self.reveal_ability(e)?;
         }
+        // `abilities:supremeoverlord.onStart`: the boost is frozen at the
+        // entry-time fainted count (clamped to five) and announced only when
+        // the count is nonzero.
+        if dex.effects.abilities[self.mon(e).ability as usize] == Ability::Supremeoverlord {
+            let fallen = self.sides[e.side as usize]
+                .pokemon
+                .iter()
+                .filter(|p| p.fainted)
+                .count()
+                .min(5) as u8;
+            self.mon_mut(e).supreme_overlord_fallen = fallen;
+            if fallen > 0 {
+                self.reveal_ability(e)?;
+            }
+        }
         // `abilities:frisk.onStart`: every active foe's held item is announced.
         // The ability only becomes public knowledge through the first item
         // message, so an item-less opposing side stays hidden.
@@ -1877,6 +1892,20 @@ impl BattleState {
                 Ability::MegaLauncher => add(actor, 19, if m.pulse { 6144 } else { 4096 }),
                 Ability::Sharpness => add(actor, 19, if m.slicing { 6144 } else { 4096 }),
                 Ability::StrongJaw => add(actor, 19, if m.bite { 6144 } else { 4096 }),
+                // `abilities:supremeoverlord.onBasePower` (priority 21): the
+                // entry-time fainted count raises power by 10% per member.
+                Ability::Supremeoverlord => add(
+                    actor,
+                    21,
+                    match self.mon(actor).supreme_overlord_fallen {
+                        1 => 4506,
+                        2 => 4915,
+                        3 => 5325,
+                        4 => 5734,
+                        5 => 6144,
+                        _ => 4096,
+                    },
+                ),
                 Ability::Reckless => add(actor, 23, if m.recoil.is_some() { 4915 } else { 4096 }),
                 Ability::Sheerforce => add(
                     actor,
@@ -2463,7 +2492,6 @@ impl Ability {
             | Ability::Innardsout
             | Ability::Keeneye
             | Ability::Klutz
-            | Ability::Leafguard
             | Ability::Lightmetal
             | Ability::Longreach
             | Ability::Magician
@@ -2496,7 +2524,6 @@ impl Ability {
             | Ability::Stickyhold
             | Ability::Suctioncups
             | Ability::Supersweetsyrup
-            | Ability::Supremeoverlord
             | Ability::Sweetveil
             | Ability::Symbiosis
             | Ability::Tangledfeet

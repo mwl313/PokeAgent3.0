@@ -154,6 +154,11 @@ pub struct PokemonState {
     /// first switch-in that follows it.
     #[serde(default)]
     pub hero_message_displayed: bool,
+    /// `abilities:supremeoverlord`: the fainted-party count captured by
+    /// `onStart` (clamped to five). The reference freezes the boost at the
+    /// entry value, so later faints during the stint do not change it.
+    #[serde(default)]
+    pub supreme_overlord_fallen: u8,
     pub ability_effect_order: Option<u32>,
     pub item_effect_order: Option<u32>,
     pub item: Id,
@@ -285,6 +290,7 @@ impl PokemonState {
             protean_used: false,
             disguise_busted: false,
             hero_message_displayed: false,
+            supreme_overlord_fallen: 0,
             ability_effect_order: None,
             item_effect_order: None,
             item: set.item,
@@ -365,7 +371,7 @@ impl Outcome {
 /// Current snapshot schema. Bump when the persisted world shape changes; the
 /// restore path rejects every other value, and tests read this constant so a
 /// bump cannot leave a stale hard-coded expectation behind.
-pub const SNAPSHOT_SCHEMA: u32 = 12;
+pub const SNAPSHOT_SCHEMA: u32 = 13;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BattleState {
@@ -729,6 +735,14 @@ impl BattleState {
                                 != crate::effects::Ability::Disguise
                             || !(m.species == dex.effects.mimikyu
                                 || m.species == dex.effects.mimikyu_totem))
+                    // A Supreme Overlord boost only exists while the holder is
+                    // an active Supreme Overlord and never exceeds five faints.
+                    || m.supreme_overlord_fallen > 5
+                    || m.supreme_overlord_fallen > 0
+                        && (m.fainted
+                            || m.active_slot.is_none()
+                            || dex.effects.abilities[m.ability as usize]
+                                != crate::effects::Ability::Supremeoverlord)
                     || m.last_move != 0
                         && (usize::from(m.last_move) >= dex.moves.len()
                             || (m.last_move != dex.effects.struggle

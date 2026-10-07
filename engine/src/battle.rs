@@ -4569,6 +4569,19 @@ impl BattleState {
             // `onSetStatus` refusals for the ported status-immunity abilities.
             // The public immunity message only appears when the source effect
             // carries a `status` field, i.e. not for ability-sourced statuses.
+            // `abilities:leafguard.onSetStatus`: while sun is effective the
+            // holder refuses every new major status. The public immunity
+            // message is only shown for a move that declares a primary status,
+            // so a secondary roll is refused silently.
+            if !suppressing
+                && dex.effects.abilities[self.mon(target).ability as usize] == Ability::Leafguard
+                && self.effective_weather(dex) == dex.effects.sun
+            {
+                if !secondary && ability_source.is_none() {
+                    self.reveal_ability(target)?;
+                }
+                return Ok(false);
+            }
             if !suppressing
                 && self.status_immune_ability(dex, target, status).is_some()
             {
@@ -4743,6 +4756,14 @@ impl BattleState {
                 }
                 // A failed re-add contributes nothing; an earlier successful
                 // boost or status in the same effect still counts.
+            } else if volatile == dex.effects.yawn
+                && !suppressing
+                && dex.effects.abilities[self.mon(target).ability as usize] == Ability::Leafguard
+                && self.effective_weather(dex) == dex.effects.sun
+            {
+                // `abilities:leafguard.onTryAddVolatile`: the attempted Yawn is
+                // refused and the immunity message reveals the ability.
+                self.reveal_ability(target)?;
             } else if volatile == dex.effects.encore
                 || volatile == dex.effects.taunt
                 || volatile == dex.effects.disable
