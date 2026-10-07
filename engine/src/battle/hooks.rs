@@ -397,7 +397,11 @@ impl BattleState {
         let actual = amount.min(u32::from(self.mon(target).hp)) as u16;
         self.mon_mut(target).hp -= actual;
         if self.mon(target).hp == 0 {
-            self.faint_queue.push(target);
+            self.faint_queue.push(crate::state::FaintData {
+                target,
+                source: Some(source),
+                from_move: matches!(effect, EffectRef::Move(_)),
+            });
         }
         self.emit(
             EventKind::Damage,
@@ -683,7 +687,11 @@ impl BattleState {
         )?;
         self.mon_mut(target).hp -= actual;
         if self.mon(target).hp == 0 {
-            self.faint_queue.push(target);
+            self.faint_queue.push(crate::state::FaintData {
+                target,
+                source: Some(holder),
+                from_move: false,
+            });
         }
         self.emit(
             EventKind::Damage,
@@ -2040,7 +2048,6 @@ impl Ability {
             | Ability::Cutecharm
             | Ability::Disguise
             | Ability::Earlybird
-            | Ability::Eelevate
             | Ability::Electromorphosis
             | Ability::Embodyaspectcornerstone
             | Ability::Embodyaspecthearthflame
@@ -2075,7 +2082,6 @@ impl Ability {
             | Ability::Mimicry
             | Ability::Minus
             | Ability::Moldbreaker
-            | Ability::Moxie
             | Ability::Mummy
             | Ability::Opportunist
             | Ability::Parentalbond

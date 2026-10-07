@@ -347,7 +347,7 @@ impl Outcome {
 /// Current snapshot schema. Bump when the persisted world shape changes; the
 /// restore path rejects every other value, and tests read this constant so a
 /// bump cannot leave a stale hard-coded expectation behind.
-pub const SNAPSHOT_SCHEMA: u32 = 8;
+pub const SNAPSHOT_SCHEMA: u32 = 9;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BattleState {
@@ -365,8 +365,20 @@ pub struct BattleState {
     pub(crate) outcome: Outcome,
     pub(crate) queue: Vec<crate::effects::QueuedAction>,
     pub(crate) mid_turn: bool,
-    pub(crate) faint_queue: Vec<crate::effects::Entity>,
+    pub(crate) faint_queue: Vec<FaintData>,
     pub(crate) trace: Option<NativeTrace>,
+}
+
+/// One queued faint with the reference `faintData` provenance: the fainted
+/// Pokémon, the source that caused it (when any) and whether a move caused it.
+/// `faintMessages` reads the same triple for its `AfterFaint` event.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct FaintData {
+    pub target: crate::effects::Entity,
+    #[serde(default)]
+    pub source: Option<crate::effects::Entity>,
+    #[serde(default)]
+    pub from_move: bool,
 }
 
 /// Opt-in development/evaluation trace. The starting snapshot contains complete
@@ -666,7 +678,7 @@ impl BattleState {
                     || m.boosts.iter().any(|b| !(-6..=6).contains(b))
                     || m.hp > m.stats[0]
                     || m.fainted && m.hp != 0
-                    || m.hp == 0 && !m.fainted && !state.faint_queue.contains(&entity)
+                    || m.hp == 0 && !m.fainted && !state.faint_queue.iter().any(|f| f.target == entity)
                     || !valid_moves(&m.moves)
                     || !valid_moves(&m.base_moves)
                     || m.active_slot.is_some_and(|s| s > 1)
@@ -979,7 +991,10 @@ impl BattleState {
                 }
             }
         }
-        if state.faint_queue.iter().any(|e| !valid_entity(*e))
+        if state
+            .faint_queue
+            .iter()
+            .any(|f| !valid_entity(f.target) || f.source.is_some_and(|s| !valid_entity(s)))
             || state
                 .field
                 .iter()

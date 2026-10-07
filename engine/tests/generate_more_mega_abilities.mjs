@@ -226,6 +226,39 @@ const TRIALS = [
     },
   },
   {
+    name: 'mega_eelevate_best_stat_after_faint',
+    p1: [MEGA('Eelektross', 'Levitate', 'Eelektrossite', ['Thunderbolt', 'Flamethrower', 'Protect']),
+      ...fillerTeam().slice(0, 5)],
+    p2: [offensive('Milotic', 'Competitive', ['Surf', 'Protect']),
+      offensive('Torterra', 'Shell Armor', ['Seed Bomb', 'Protect']),
+      offensive('Falinks', 'Battle Armor', ['Smart Strike', 'Protect']),
+      offensive('Chimecho', 'Levitate', ['Dazzling Gleam', 'Protect']),
+      offensive('Reuniclus', 'Overcoat', ['Iron Defense', 'Protect']),
+      offensive('Alakazam', 'Synchronize', ['Psychic', 'Protect'])],
+    seeds: [[8, 16, 32, 64], [19, 38, 76, 152], [23, 46, 92, 184]],
+    script: [
+      {p1: [{move: 'thunderbolt', mega: true}, 'protect'], p2: ['surf', 'protect']},
+      {p1: ['thunderbolt', 'protect'], p2: ['surf', 'protect']},
+      {p1: ['thunderbolt', 'protect'], p2: ['surf', 'protect']},
+      {p1: ['flamethrower', 'protect'], p2: ['surf', 'protect']},
+    ],
+    coverage: {move: 'thunderbolt'},
+    verify(fixture, session) {
+      const log = session.battle.log;
+      if (!log.some(line => line.startsWith('|-mega|'))) return 'the holder never Mega-evolved';
+      if (!log.some(line => line.startsWith('|faint|p2'))) return 'no opposing Pokemon fainted';
+      const best = fixture.steps.some((step, index) => {
+        if (index === 0) return false;
+        const before = fixture.steps[index - 1].expected.sides[0].pokemon.find(p => p.roster === 0).boosts;
+        const after = step.expected.sides[0].pokemon.find(p => p.roster === 0).boosts;
+        return after.some((value, i) => value === before[i] + 1) &&
+          after.filter((value, i) => value === before[i] + 1).length === 1;
+      });
+      if (!best) return 'Eelevate never raised exactly one stat after the faint';
+      return null;
+    },
+  },
+  {
     name: 'mega_spicyspray_burns_attacker',
     p1: [MEGA('Scovillain', 'Chlorophyll', 'Scovillainite', ['Seed Bomb', 'Protect', 'Flamethrower']),
       ...fillerTeam().slice(0, 5)],

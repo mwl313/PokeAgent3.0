@@ -11,8 +11,8 @@ use crate::{
     knowledge::{EffectRef, EventKind, HealthDisplay, SemanticEvent, public_health},
     queue::{Priority, speed_sort},
     state::{
-        BattleState, EffectState, EndReason, MoveResult, NativeTrace, Outcome, PokemonState,
-        SideId, TraceEntry, TraceEvent,
+        BattleState, EffectState, EndReason, FaintData, MoveResult, NativeTrace, Outcome,
+        PokemonState, SideId, TraceEntry, TraceEvent,
     },
     stats,
 };
@@ -2172,7 +2172,11 @@ impl BattleState {
                 self.mon_mut(target).times_attacked = count.saturating_add(1);
             }
             if self.mon(target).hp == 0 {
-                self.faint_queue.push(target);
+                self.faint_queue.push(FaintData {
+                    target,
+                    source: Some(actor),
+                    from_move: true,
+                });
             }
             self.emit(
                 EventKind::Damage,
@@ -2513,7 +2517,11 @@ impl BattleState {
                     self.mon_mut(target).times_attacked = count.saturating_add(1);
                 }
                 if self.mon(target).hp == 0 {
-                    self.faint_queue.push(target);
+                    self.faint_queue.push(FaintData {
+                        target,
+                        source: Some(actor),
+                        from_move: true,
+                    });
                 }
                 self.emit(
                     EventKind::Damage,
@@ -3082,7 +3090,11 @@ impl BattleState {
         }
         self.mon_mut(e).hp -= actual as u16;
         if self.mon(e).hp == 0 {
-            self.faint_queue.push(e);
+            self.faint_queue.push(FaintData {
+                target: e,
+                source: Some(e),
+                from_move: false,
+            });
         }
         self.emit(
             EventKind::Damage,
@@ -3255,7 +3267,11 @@ impl BattleState {
             return;
         }
         self.mon_mut(e).hp = 0;
-        self.faint_queue.push(e);
+        self.faint_queue.push(FaintData {
+            target: e,
+            source: Some(e),
+            from_move: true,
+        });
     }
 
     /// Fixed-damage and OHKO amounts resolved before the damage kernel. OHKO
@@ -3890,8 +3906,10 @@ impl BattleState {
         if self.outcome.terminated {
             return Ok(());
         }
-        let mut last = None;
-        for e in std::mem::take(&mut self.faint_queue) {
+        let mut last: Option<FaintData> = None;
+        let length = self.faint_queue.len();
+        for data in std::mem::take(&mut self.faint_queue) {
+            let e = data.target;
             if self.mon(e).fainted {
                 continue;
             }
@@ -3899,17 +3917,73 @@ impl BattleState {
             self.ability_end(dex, e)?;
             self.clear_volatile(dex, e);
             self.mon_mut(e).fainted = true;
-            last = Some(e);
+            last = Some(data);
         }
-        if check_win && last.is_some() {
-            self.check_win(last);
+        if check_win && last.is_some() && self.check_win(last.map(|data| data.target)) {
+            return Ok(());
+        }
+        // Reference `faintMessages` tail: one AfterFaint event per batch, with
+        // the last faint's source and the queue length as the relay value.
+        if let Some(data) = last {
+            self.after_faint(dex, data.source, data.from_move, length)?;
         }
         Ok(())
     }
 
-    fn check_win(&mut self, last_faint: Option<Entity>) {
+    /// Reference `runEvent('AfterFaint', target, source, effect, length)`:
+    /// the faint's source checks its own `onSourceAfterFaint` handler. Only
+    /// move-caused faints run it, and only while the source is still on the
+    /// field; the handler list holds at most one ability, so no RNG is drawn.
+    fn after_faint(
+        &mut self,
+        dex: &Dex,
+        source: Option<Entity>,
+        from_move: bool,
+        length: usize,
+    ) -> Result<()> {
+        let Some(source) = source else {
+            return Ok(());
+        };
+        if !from_move
+            || self.mon(source).hp == 0
+            || self.mon(source).active_slot.is_none()
+            || length == 0
+        {
+            return Ok(());
+        }
+        let ability = dex.effects.abilities[self.mon(source).ability as usize];
+        let mut changes = [0i8; 7];
+        match ability {
+            // `abilities:eelevate.onSourceAfterFaint`: boost the source's best
+            // stat by the number of fainted Pokémon (first stat wins ties).
+            Ability::Eelevate => {
+                // `stats` is [hp, atk, def, spa, spd, spe] while `boosts` is
+                // [atk, def, spa, spd, spe], so the chosen stat maps down one.
+                let mut best = 1usize;
+                for index in 2..=5 {
+                    if self.mon(source).stats[index] > self.mon(source).stats[best] {
+                        best = index;
+                    }
+                }
+                changes[best - 1] = length.min(6) as i8;
+            }
+            // `abilities:moxie.onSourceAfterFaint`: Attack rises by the count.
+            Ability::Moxie => changes[0] = length.min(6) as i8,
+            _ => return Ok(()),
+        }
+        self.boost(
+            dex,
+            source,
+            source,
+            changes,
+            BoostCause::Ability(ability),
+        )?;
+        Ok(())
+    }
+
+    fn check_win(&mut self, last_faint: Option<Entity>) -> bool {
         if self.outcome.terminated {
-            return;
+            return false;
         }
         let left: [usize; 2] = std::array::from_fn(|s| {
             self.sides[s]
@@ -3935,7 +4009,9 @@ impl BattleState {
             for request in &mut self.requests {
                 request.kind = RequestKind::Finished;
             }
+            return true;
         }
+        false
     }
 
     fn residual(&mut self, dex: &Dex) -> Result<()> {
@@ -4351,7 +4427,15 @@ impl BattleState {
                 let actual = damage.min(self.mon(e).hp);
                 self.mon_mut(e).hp -= actual;
                 if self.mon(e).hp == 0 {
-                    self.faint_queue.push(e);
+                    let source = self.mon(e).status_state.source.map(|(side, roster)| Entity {
+                        side: side.index() as u8,
+                        roster,
+                    });
+                    self.faint_queue.push(FaintData {
+                        target: e,
+                        source,
+                        from_move: false,
+                    });
                 }
                 self.emit(
                     EventKind::Damage,
