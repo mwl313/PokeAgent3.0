@@ -3278,21 +3278,22 @@ impl BattleState {
                 did_anything |= self.defog(dex, actor, target)?;
             } else if behavior == MoveBehavior::CorrosiveGas {
                 // `moves:corrosivegas.onHit`: destroy the target's held item.
-                // The silent take runs first; a successful destruction is
-                // public and counts as the move doing something.
-                let crate::battle::hooks::TakeOutcome::Taken(item) =
+                // The reference's status result is a numeric zero, so the move
+                // still counts as having connected (both move-loop Updates
+                // run) even when the target holds nothing; the per-target
+                // `-fail` message is a log detail the native model omits.
+                if let crate::battle::hooks::TakeOutcome::Taken(item) =
                     self.take_item_checked(dex, target)?
-                else {
-                    continue;
-                };
-                self.emit(
-                    EventKind::EndItem,
-                    target,
-                    Some(actor),
-                    EffectRef::Item(item),
-                    0,
-                    false,
-                )?;
+                {
+                    self.emit(
+                        EventKind::EndItem,
+                        target,
+                        Some(actor),
+                        EffectRef::Item(item),
+                        0,
+                        false,
+                    )?;
+                }
                 did_anything = true;
             } else if behavior == MoveBehavior::Recycle {
                 // `moves:recycle.onHit`: with empty hands, restore the last
