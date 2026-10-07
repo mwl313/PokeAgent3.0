@@ -267,8 +267,16 @@ impl BattleState {
                         },
                     };
                     if action.kind == ActionKind::Switch {
-                        queued.kind = QueuedKind::Switch;
-                        queued.priority.order = if replacement { 3 } else { 103 };
+                        // A reviving slot commits a `revivalblessing` action
+                        // (reference order 6): the user stays in and the
+                        // chosen destination is revived when it resolves.
+                        if self.requests[side].slots[action.own_slot as usize].reviving {
+                            queued.kind = QueuedKind::Revive;
+                            queued.priority.order = 6;
+                        } else {
+                            queued.kind = QueuedKind::Switch;
+                            queued.priority.order = if replacement { 3 } else { 103 };
+                        }
                     } else {
                         queued.move_id = if action.move_slot == NO_SLOT {
                             dex.effects.struggle
@@ -1281,6 +1289,54 @@ impl BattleState {
                         slot,
                     )?;
                 }
+                QueuedKind::Revive => {
+                    // Reference `runAction` case 'revivalblessing': revive the
+                    // chosen fainted party member at half HP, then queue an
+                    // instaswitch when it still occupies an active slot. The
+                    // user keeps the field; the slot condition is consumed.
+                    let user = action.actor.unwrap();
+                    let target = Entity {
+                        side: user.side,
+                        roster: action.destination,
+                    };
+                    if self.mon(target).active_slot.is_some() {
+                        self.insert_action(QueuedAction {
+                            kind: QueuedKind::Switch,
+                            actor: Some(target),
+                            move_slot: NO_SLOT,
+                            move_id: 0,
+                            source_effect: 0,
+                            target_location: 0,
+                            destination: target.roster,
+                            priority: Priority {
+                                order: 3,
+                                speed: 1,
+                                ..Default::default()
+                            },
+                        });
+                    }
+                    // Reference `faintQueued = false` / `subFainted = false`:
+                    // a still-pending faint entry for the target must not
+                    // fire after the revive.
+                    self.faint_queue.retain(|f| f.target != target);
+                    self.mon_mut(user).revival_blessing = false;
+                    let healed = {
+                        let mon = self.mon_mut(target);
+                        mon.fainted = false;
+                        mon.status = 0;
+                        let hp = (mon.stats[0] / 2).max(1);
+                        mon.hp = hp;
+                        hp
+                    };
+                    self.emit(
+                        EventKind::Heal,
+                        target,
+                        Some(target),
+                        EffectRef::Move(dex.effects.revival_blessing),
+                        i32::from(healed),
+                        true,
+                    )?;
+                }
                 QueuedKind::Move => {
                     let actor = action.actor.unwrap();
                     if self.mon(actor).fainted || self.mon(actor).active_slot.is_none() {
@@ -2124,6 +2180,34 @@ impl BattleState {
             // and used - even when the called move itself failed before its
             // own hit loop (e.g. a called Protect with no remaining action).
             self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
+            self.each_update(dex)?;
+            self.each_update(dex)?;
+            return Ok(());
+        }
+        if behavior == MoveBehavior::RevivalBlessing {
+            // `moves:revivalblessing.onTryHit`: refuses the move while no
+            // party member is fainted. The hit loop's `moveDamage.some(val =>
+            // val !== false)` break returns before either `eachEvent('Update')`
+            // sort, so the failed path consumes no handler-set draws.
+            let any_fainted = self.sides[actor.side as usize]
+                .pokemon
+                .iter()
+                .any(|p| p.fainted);
+            if !any_fainted {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                return Ok(());
+            }
+            self.prepare_hit_abilities(dex, actor, m)?;
+            // Reference `onHit`: `target.side.addSlotCondition(target,
+            // 'revivalblessing', source, move)` with target === source; the
+            // hit-script tail then sets `source.switchFlag = move.id`. The
+            // port folds both into the user's `revival_blessing` flag: the
+            // user stays on the field and the flag drives the switch-style
+            // revive request plus the delayed revive action.
+            self.mon_mut(actor).revival_blessing = true;
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
+            // `hitStepMoveHitLoop`: one `eachEvent('Update')` inside the loop
+            // and one at the end, exactly like the Rest tail.
             self.each_update(dex)?;
             self.each_update(dex)?;
             return Ok(());
@@ -7058,6 +7142,20 @@ impl BattleState {
         !self.bench(side).is_empty()
     }
 
+    /// `moves:revivalblessing` destinations: reference `chooseSwitch` under
+    /// the slot condition only accepts fainted party members ("You have to
+    /// pass to a fainted Pokémon"), listed in request-team order.
+    pub(crate) fn revive_bench(&self, side: usize) -> SmallVec<[u8; 6]> {
+        let Some(order) = self.sides[side].selected_order else {
+            return SmallVec::new();
+        };
+        order
+            .iter()
+            .copied()
+            .filter(|r| self.sides[side].pokemon[*r as usize].fainted)
+            .collect()
+    }
+
     /// Reference request-time `TrapPokemon` / `MaybeTrapPokemon` pass for one
     /// active Pokémon. Returns the holder's trap state as `Some(hidden)` when a
     /// trapping effect holds it (Shadow Tag/Arena Trap/Magnet Pull mark hidden
@@ -7201,8 +7299,23 @@ impl BattleState {
         if self.outcome.terminated {
             return false;
         }
+        // `moves:revivalblessing`: a live active user carrying the slot
+        // condition forces a switch-style request even when the side has no
+        // live reserve (the reference's `reviveSwitch` pass keeps the side
+        // forced); its destinations are the side's fainted party members.
+        let reviving: [bool; 2] = std::array::from_fn(|side| {
+            self.sides[side]
+                .active
+                .iter()
+                .flatten()
+                .any(|r| self.sides[side].pokemon[*r as usize].revival_blessing)
+        });
         let mut needed = [false; 2];
         for (side, needed) in needed.iter_mut().enumerate() {
+            if reviving[side] {
+                *needed = true;
+                continue;
+            }
             let flagged = self.sides[side]
                 .active
                 .iter()
@@ -7227,6 +7340,10 @@ impl BattleState {
             return false;
         }
         for (side, needed) in needed.into_iter().enumerate() {
+            let reviving_slot = (0..2).find(|slot| {
+                self.sides[side].active[*slot]
+                    .is_some_and(|r| self.sides[side].pokemon[r as usize].revival_blessing)
+            });
             let slots = std::array::from_fn(|slot| {
                 let Some(roster) = self.sides[side].active[slot] else {
                     return SlotRequest::default();
@@ -7237,7 +7354,10 @@ impl BattleState {
                     // A `selfSwitch` pivot is alive and keeps its move list;
                     // only `forceSwitch` marks the slot as actionable.
                     requires_replacement: needed
-                        && (p.switch_flag.is_some() || p.plain_switch_flag),
+                        && (reviving_slot == Some(slot)
+                            || p.switch_flag.is_some()
+                            || p.plain_switch_flag),
+                    reviving: reviving_slot == Some(slot),
                     // The reference's switch request carries no `active` entry,
                     // so it advertises no Mega availability for the swapper.
                     can_mega: false,
@@ -7264,7 +7384,11 @@ impl BattleState {
                     RequestKind::Wait
                 },
                 slots,
-                bench: self.bench(side).into_vec(),
+                bench: if reviving_slot.is_some() {
+                    self.revive_bench(side).into_vec()
+                } else {
+                    self.bench(side).into_vec()
+                },
                 preview_roster: vec![],
             };
         }

@@ -206,6 +206,11 @@ pub struct PokemonState {
     /// `circlethrow` mark the target and the post-action phazing step drags a
     /// random reserve in.
     pub force_switch_flag: bool,
+    /// `moves:revivalblessing`: the user carries the `revivalblessing` slot
+    /// condition until the revive action removes it; the switch-style request
+    /// is built while this flag is set (only one holder can exist at a time).
+    #[serde(default)]
+    pub revival_blessing: bool,
     /// Reference `lastMove`: the move this Pokémon most recently used while
     /// active (0 = none). Encore, Disable, Torment and Cursed Body read it.
     pub last_move: Id,
@@ -329,6 +334,7 @@ impl PokemonState {
             switch_flag: None,
             plain_switch_flag: false,
             force_switch_flag: false,
+            revival_blessing: false,
             last_move: 0,
             times_attacked: 0,
             move_this_turn_result: MoveResult::Undefined,
@@ -390,7 +396,10 @@ impl Outcome {
 ///
 /// 14: queued actions carry `source_effect` (the Round chain's
 /// `move.sourceEffect`).
-pub const SNAPSHOT_SCHEMA: u32 = 14;
+///
+/// 15: `PokemonState.revival_blessing` (the `revivalblessing` slot condition
+/// held by the move's user until the revive action consumes it).
+pub const SNAPSHOT_SCHEMA: u32 = 15;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BattleState {
@@ -745,6 +754,9 @@ impl BattleState {
                     || m.switch_flag.is_some() && (m.fainted || m.active_slot.is_none())
                     || m.plain_switch_flag && (m.fainted || m.active_slot.is_none())
                     || m.force_switch_flag && (m.fainted || m.active_slot.is_none())
+                    // The revival slot condition belongs to a live user on
+                    // the field until the revive action consumes it.
+                    || m.revival_blessing && (m.fainted || m.active_slot.is_none())
                     // A pending Disguise bust only exists for a live Mimikyu
                     // that is still in its undisguised forme.
                     || m.disguise_busted
@@ -1341,6 +1353,7 @@ impl BattleState {
                 || !matches!(action.kind, QueuedKind::BeforeTurn | QueuedKind::Residual)
                     && action.actor.is_none()
                 || action.kind == QueuedKind::Switch && action.destination >= 6
+                || action.kind == QueuedKind::Revive && action.destination >= 6
                 || action.kind == QueuedKind::Move
                     && (action.move_id == 0
                         || usize::from(action.move_id) >= dex.moves.len()
@@ -1455,15 +1468,26 @@ impl BattleState {
                 }
                 for (side_index, side) in state.sides.iter().enumerate() {
                     let request = &state.requests[side_index];
-                    let bench: Vec<u8> = side
-                        .selected_order
-                        .unwrap()
-                        .into_iter()
-                        .filter(|r| {
-                            let p = &side.pokemon[*r as usize];
-                            !p.fainted && p.active_slot.is_none()
-                        })
-                        .collect();
+                    // A pending `revivalblessing` slot condition swaps the
+                    // destination list: the revive choice may only name a
+                    // fainted party member (`chooseSwitch`: "You have to pass
+                    // to a fainted Pokémon").
+                    let reviving_slots: [bool; 2] = std::array::from_fn(|slot| {
+                        side.active[slot]
+                            .is_some_and(|r| side.pokemon[r as usize].revival_blessing)
+                    });
+                    let bench: Vec<u8> = if reviving_slots.iter().any(|b| *b) {
+                        state.revive_bench(side_index).into_vec()
+                    } else {
+                        side.selected_order
+                            .unwrap()
+                            .into_iter()
+                            .filter(|r| {
+                                let p = &side.pokemon[*r as usize];
+                                !p.fainted && p.active_slot.is_none()
+                            })
+                            .collect()
+                    };
                     let slots = std::array::from_fn(|slot| {
                         if normal {
                             let Some(roster) = side.active[slot] else {
@@ -1557,10 +1581,11 @@ impl BattleState {
                                         || p.force_switch_flag)
                             });
                             let fainted = side.active[slot]
-                                .is_some_and(|r| side.pokemon[r as usize].fainted);
+                               .is_some_and(|r| side.pokemon[r as usize].fainted);
                             SlotRequest {
                                 present: side.active[slot].is_some() && !fainted,
-                                requires_replacement: fainted || blocked,
+                                requires_replacement: fainted || blocked || reviving_slots[slot],
+                                reviving: reviving_slots[slot],
                                 ..Default::default()
                             }
                         }

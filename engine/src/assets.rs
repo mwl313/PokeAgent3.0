@@ -634,6 +634,9 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:rest.onHit",
     // Snore: the asleep-only gate (its flinch secondary is data-driven).
     "moves:snore.onTry",
+    // Revival Blessing: the no-fainted-party gate; the slot condition plus
+    // selfSwitch drive the revive request and the delayed revive action.
+    "moves:revivalblessing.onTryHit",
     // Facade: the status-doubled base power.
     "moves:facade.onBasePower",
     // Burning Jealousy: the burn for targets whose stats were raised.
@@ -1880,6 +1883,7 @@ impl Dex {
             toxic_move: lookup("moves", "toxic")?,
             helping_hand_move: lookup("moves", "helpinghand")?,
             round: lookup("moves", "round")?,
+            revival_blessing: lookup("moves", "revivalblessing")?,
             ceaseless_edge: lookup("moves", "ceaselessedge")?,
             stone_axe: lookup("moves", "stoneaxe")?,
             roost: lookup("conditions", "roost")?,

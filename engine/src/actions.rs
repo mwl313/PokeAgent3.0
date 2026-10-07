@@ -99,6 +99,11 @@ pub struct SlotRequest {
     /// the move.
     #[serde(default)]
     pub last_active: bool,
+    /// `moves:revivalblessing`: this slot carries the revive slot condition,
+    /// so its replacement choice must name a fainted party member and the
+    /// committed action revives it instead of switching the user out.
+    #[serde(default)]
+    pub reviving: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

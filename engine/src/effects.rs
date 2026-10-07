@@ -851,6 +851,11 @@ pub enum MoveBehavior {
     /// insomnia family), otherwise forces a three-turn sleep and heals to
     /// full after the status lands.
     Rest,
+    /// `revivalblessing`: fails while no party member is fainted; otherwise
+    /// plants a slot condition and a switch-style request whose committed
+    /// destination is revived at half HP (with an instaswitch when the
+    /// revived member still occupies an active slot).
+    RevivalBlessing,
     /// `quash`: forces the target's queued move action behind every other
     /// move action of the turn (`action.order = 201`); fails in singles and
     /// against a target with no queued move.
@@ -976,6 +981,7 @@ impl MoveBehavior {
             "stockpile" => Self::Stockpile,
             "swallow" => Self::Swallow,
             "rest" => Self::Rest,
+            "revivalblessing" => Self::RevivalBlessing,
             "quash" => Self::Quash,
             "upperhand" => Self::UpperHand,
             "round" => Self::Round,
@@ -1162,6 +1168,9 @@ pub struct NativeEffects {
     /// `moves:round`: the Round chain's queued-action priority effect and the
     /// `move.sourceEffect` marker that doubles a chained Round's base power.
     pub round: Id,
+    /// `moves:revivalblessing`: the move id of the revive slot condition's
+    /// causing effect (`-heal ... [from] move: Revival Blessing`).
+    pub revival_blessing: Id,
     /// `moves:ceaselessedge.onAfterHit|onAfterSubDamage`: scatters one Spikes
     /// layer onto the foe side when the hit lands or a decoy absorbs it.
     pub ceaseless_edge: Id,
@@ -1316,6 +1325,10 @@ pub enum QueuedKind {
     BeforeTurn,
     Move,
     Switch,
+    /// `moves:revivalblessing`: the committed revive choice (reference
+    /// `choice: 'revivalblessing'`, order 6) resolving before the turn's
+    /// remaining actions.
+    Revive,
     RunSwitch,
     Mega,
     Residual,

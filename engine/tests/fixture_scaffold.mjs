@@ -64,8 +64,14 @@ export function createScaffold() {
         moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp,
           disabled: Boolean(m.disabled), target: m.target}))};
     });
-    const bench = side.pokemon.map((p, i) => [p, i])
-      .filter(([p]) => !p.fainted && !side.active.includes(p)).map(([p]) => roster(p));
+    // A `revivalblessing` slot condition swaps the legal destination list to
+    // the fainted party members; the native request follows the same
+    // convention (`Request.bench` = eligible destinations).
+    const reviving = [0, 1].some(slot => req.side?.pokemon?.[slot]?.reviving);
+    const bench = reviving
+      ? side.pokemon.filter(p => p.fainted).map(p => roster(p))
+      : side.pokemon.map((p, i) => [p, i])
+        .filter(([p]) => !p.fainted && !side.active.includes(p)).map(([p]) => roster(p));
     return {kind, slots, bench, preview: []};
   };
 
@@ -116,6 +122,22 @@ export function createScaffold() {
         : null;
       if (side.requestState === 'switch') {
         if (!req.forceSwitch[slot]) { commands.push('pass'); continue; }
+        // `moves:revivalblessing`: a slot carrying the revive slot condition
+        // must pass to a fainted party member (reference `chooseSwitch`).
+        // Prefer one still occupying an active slot so the instaswitch
+        // branch is exercised whenever the scene offers it.
+        const reviving = !!req.side?.pokemon?.[slot]?.reviving;
+        if (reviving) {
+          const target = (named && named.fainted && !chosen.has(named))
+            ? named
+            : side.pokemon.find(x => x.fainted && side.active.includes(x) && !chosen.has(x))
+              ?? side.pokemon.find(x => x.fainted && !chosen.has(x));
+          if (!target) { actions.push(select('Pass', slot)); commands.push('pass'); continue; }
+          chosen.add(target);
+          actions.push(select('Switch', slot, roster(target)));
+          commands.push(`switch ${side.pokemon.indexOf(target) + 1}`);
+          continue;
+        }
         const reserve = named && !named.fainted && !side.active.includes(named)
           ? named
           : bench.find(x => !chosen.has(x));

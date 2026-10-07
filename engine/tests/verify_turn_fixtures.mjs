@@ -61,8 +61,13 @@ const requestDetail = (session, side) => {
       moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp,
         disabled: Boolean(m.disabled), target: m.target}))};
   });
-  const bench = side.pokemon.map((p, i) => [p, i])
-    .filter(([p]) => !p.fainted && !side.active.includes(p)).map(([p]) => roster(p));
+  // A `revivalblessing` slot condition swaps the legal destination list to
+  // the fainted party members (keep in sync with fixture_scaffold).
+  const reviving = [0, 1].some(slot => req.side?.pokemon?.[slot]?.reviving);
+  const bench = reviving
+    ? side.pokemon.filter(p => p.fainted).map(p => roster(p))
+    : side.pokemon.map((p, i) => [p, i])
+      .filter(([p]) => !p.fainted && !side.active.includes(p)).map(([p]) => roster(p));
   return {kind, slots, bench, preview: []};
 };
 const compact = session => ({turn: session.battle.turn, rng_seed: session.battle.prng.getSeed(),
