@@ -798,6 +798,10 @@ pub enum MoveBehavior {
     /// `ragepowder`: Follow Me's powder variant, ignored by a powder-immune
     /// attacker.
     RagePowder,
+    /// `allyswitch`: doubles-only position swap between the user and its
+    /// partner, gated by the `allyswitch` condition's escalating success
+    /// roll on consecutive uses.
+    AllySwitch,
 }
 
 /// Cold payload of a ported two-turn move. Every field is transcribed from
@@ -901,6 +905,7 @@ impl MoveBehavior {
             "helpinghand" => Self::HelpingHand,
             "followme" => Self::FollowMe,
             "ragepowder" => Self::RagePowder,
+            "allyswitch" => Self::AllySwitch,
             _ => Self::Unimplemented,
         }
     }
@@ -1035,6 +1040,10 @@ pub struct NativeEffects {
     pub helping_hand: Id,
     pub follow_me: Id,
     pub rage_powder: Id,
+    /// `moves:allyswitch.condition`: the position-swap volatile whose stored
+    /// value is the escalating consecutive-use success counter (3 -> 9 -> ...
+    /// -> 729).
+    pub ally_switch: Id,
     /// The four self-destructing moves refused by `abilities:damp`.
     pub damp_moves: [Id; 4],
     /// Volatile that skips the holder's next action.

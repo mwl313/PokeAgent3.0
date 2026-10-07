@@ -2004,6 +2004,107 @@ impl BattleState {
             self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
             return Ok(());
         }
+        if behavior == MoveBehavior::AllySwitch {
+            // `moves:allyswitch.onPrepareHit`: add (or restart) the
+            // `allyswitch` volatile before any hit step. A fresh volatile
+            // stores `counter = 3`; a restart runs the reference escalating
+            // success roll `randomChance(1, counter)` and removes the volatile
+            // when the roll fails. A failed prepare aborts the move before the
+            // hit loop, so neither Update event runs.
+            let volatile = dex.effects.ally_switch;
+            let existing = self.mon(actor).volatiles.get(&volatile).cloned();
+            let prepared = match existing {
+                Some(mut state) => {
+                    let counter = u32::try_from(state.values.first().copied().unwrap_or(1))
+                        .unwrap_or(1)
+                        .max(1);
+                    if self.rng.chance(1, counter) {
+                        // `counterMax` is 729; the stored counter only grows
+                        // while it is still below the cap.
+                        if counter < 729 {
+                            state.values[0] = i64::from(counter * 3);
+                        }
+                        state.duration = Some(2);
+                        self.mon_mut(actor).volatiles.insert(volatile, state);
+                        true
+                    } else {
+                        self.mon_mut(actor).volatiles.remove(&volatile);
+                        false
+                    }
+                }
+                None => {
+                    let order = self.allocate_effect_order()?;
+                    self.mon_mut(actor).volatiles.insert(
+                        volatile,
+                        EffectState {
+                            id: volatile,
+                            duration: Some(2),
+                            source: Some((
+                                if actor.side == 0 {
+                                    SideId::P1
+                                } else {
+                                    SideId::P2
+                                },
+                                actor.roster,
+                            )),
+                            effect_order: order,
+                            effect_order_assigned: true,
+                            values: vec![3],
+                        },
+                    );
+                    self.emit(
+                        EventKind::EffectStart,
+                        actor,
+                        Some(actor),
+                        EffectRef::Condition(volatile),
+                        0,
+                        false,
+                    )?;
+                    true
+                }
+            };
+            if !prepared {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                return Ok(());
+            }
+            // `moves:allyswitch.onHit`: doubles only. The user swaps slots
+            // with its partner when that slot holds a living Pokémon;
+            // otherwise the move reports `NOT_FAIL` (the hit loop still runs
+            // both Update events, but `moveThisTurnResult` stays null).
+            let slot = self.mon(actor).active_slot.unwrap_or(0);
+            let other_slot = 1 - slot;
+            let other = self.sides[actor.side as usize].active[other_slot as usize];
+            let swap = other.filter(|roster| {
+                !self.mon(Entity {
+                    side: actor.side,
+                    roster: *roster,
+                })
+                .fainted
+            });
+            if let Some(other_roster) = swap {
+                let side = &mut self.sides[actor.side as usize];
+                side.active[slot as usize] = Some(other_roster);
+                side.active[other_slot as usize] = Some(actor.roster);
+                side.positions
+                    .swap(slot as usize, other_slot as usize);
+                self.mon_mut(actor).active_slot = Some(other_slot);
+                self.mon_mut(Entity {
+                    side: actor.side,
+                    roster: other_roster,
+                })
+                .active_slot = Some(slot);
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
+            } else {
+                // `onHit` returns `NOT_FAIL`: the move does not count as a
+                // failure, so Stomping Tantrum keeps reading a null result.
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Undefined;
+            }
+            // The single-target hit loop runs one Update per hit plus the
+            // trailing Update, exactly like the other self-target volatiles.
+            self.each_update(dex)?;
+            self.each_update(dex)?;
+            return Ok(());
+        }
         if matches!(
             behavior,
             MoveBehavior::HelpingHand | MoveBehavior::FollowMe | MoveBehavior::RagePowder
