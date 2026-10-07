@@ -838,6 +838,18 @@ pub enum MoveBehavior {
     /// `swallow`: heals a quarter, half or all of the user's maximum HP from
     /// the stockpile layer count and always consumes the volatile.
     Swallow,
+    /// `quash`: forces the target's queued move action behind every other
+    /// move action of the turn (`action.order = 201`); fails in singles and
+    /// against a target with no queued move.
+    Quash,
+    /// `upperhand`: fails outright unless the target still has a queued move
+    /// action whose *declaration* priority is positive and whose category is
+    /// not Status.
+    UpperHand,
+    /// `round`: a queued Round action anywhere in the turn's queue jumps to
+    /// the front of the queue and resolves immediately after this one with
+    /// its base power doubled.
+    Round,
 }
 
 /// Cold payload of a ported two-turn move. Every field is transcribed from
@@ -949,6 +961,9 @@ impl MoveBehavior {
             "recycle" => Self::Recycle,
             "stockpile" => Self::Stockpile,
             "swallow" => Self::Swallow,
+            "quash" => Self::Quash,
+            "upperhand" => Self::UpperHand,
+            "round" => Self::Round,
             _ => Self::Unimplemented,
         }
     }
@@ -1129,6 +1144,9 @@ pub struct NativeEffects {
     /// `moves:helpinghand` (the move, not the volatile condition): the
     /// invulnerability step short-circuits for it.
     pub helping_hand_move: Id,
+    /// `moves:round`: the Round chain's queued-action priority effect and the
+    /// `move.sourceEffect` marker that doubles a chained Round's base power.
+    pub round: Id,
     /// `moves:ceaselessedge.onAfterHit|onAfterSubDamage`: scatters one Spikes
     /// layer onto the foe side when the hit lands or a decoy absorbs it.
     pub ceaseless_edge: Id,
@@ -1294,6 +1312,10 @@ pub struct QueuedAction {
     pub actor: Option<Entity>,
     pub move_slot: u8,
     pub move_id: Id,
+    /// `BattleQueue#prioritizeAction` writes the causing effect onto the
+    /// action; the Round chain is the only move that reads it (`Round`'s
+    /// base power doubles when `move.sourceEffect` is `round`).
+    pub source_effect: Id,
     pub target_location: i8,
     pub destination: u8,
     pub priority: crate::queue::Priority,

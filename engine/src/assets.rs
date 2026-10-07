@@ -147,6 +147,9 @@ pub struct Move {
     pub ignore_ability: bool,
     /// `flags.nosleeptalk`: excluded from Sleep Talk's candidate list.
     pub no_sleep_talk: bool,
+    /// `flags.cantusetwice`: after a successful use the move is disabled in
+    /// the holder's next request while it is still the last used move.
+    pub cant_use_twice: bool,
     /// `flags.mustpressure`: the move charges Pressure PP from every foe, not
     /// only its apparent targets (Imprison and the side hazards declare it).
     pub must_pressure: bool,
@@ -612,6 +615,13 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:firstimpression.onDisableMove",
     // After You: the queue reprioritisation hit effect.
     "moves:afteryou.onHit",
+    // Quash: rewrites the target's queued move action order.
+    "moves:quash.onHit",
+    // Upper Hand: reads the target's queued move to gate itself.
+    "moves:upperhand.onTry",
+    // Round: the queued-action chain and its doubled base power.
+    "moves:round.onTry",
+    "moves:round.basePowerCallback",
     // Haze and Psych Up: field-wide and copied boost stages.
     "moves:haze.onHitField",
     "moves:psychup.onHit",
@@ -686,6 +696,9 @@ const HANDLED_MOVE_FLAGS: &[&str] = &[
     // locked "Recharge" request entry plus the mustrecharge BeforeMove gate.
     "charge",
     "recharge",
+    // `cantusetwice` disables the move in the holder's next request while it
+    // is still the last used move (Gigaton Hammer).
+    "cantusetwice",
     // Cold / AI-facing flags.
     "allyanim",
     "distance",
@@ -1402,6 +1415,7 @@ impl Dex {
             ignore_immunity: false,
             ignore_ability: false,
             no_sleep_talk: false,
+            cant_use_twice: false,
             must_pressure: false,
             sleep_usable: false,
             calls_move: false,
@@ -1514,6 +1528,7 @@ impl Dex {
                 ignore_immunity: d["ignoreImmunity"].as_bool().unwrap_or(false),
                 ignore_ability: d["ignoreAbility"].as_bool().unwrap_or(false),
                 no_sleep_talk: d["flags"]["nosleeptalk"] == 1,
+                cant_use_twice: d["flags"]["cantusetwice"] == 1,
                 must_pressure: d["flags"]["mustpressure"] == 1,
                 sleep_usable: d["sleepUsable"].as_bool().unwrap_or(false),
                 calls_move: d["callsMove"].as_bool().unwrap_or(false),
@@ -1852,6 +1867,7 @@ impl Dex {
             first_impression: lookup("moves", "firstimpression")?,
             toxic_move: lookup("moves", "toxic")?,
             helping_hand_move: lookup("moves", "helpinghand")?,
+            round: lookup("moves", "round")?,
             ceaseless_edge: lookup("moves", "ceaselessedge")?,
             stone_axe: lookup("moves", "stoneaxe")?,
             roost: lookup("conditions", "roost")?,
