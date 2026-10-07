@@ -105,6 +105,13 @@ pub mod hook {
     pub const BURNING_JEALOUSY: u64 = 1 << 33;
     /// `moves:acupressure.onHit`: one sampled stat below +6 rises two stages.
     pub const ACUPRESSURE: u64 = 1 << 34;
+    /// `moves:burnup.onTryMove|self.onHit`: fails without the Fire type and
+    /// strips it from the user on a landed hit.
+    pub const BURN_UP: u64 = 1 << 35;
+    /// `moves:triattack.secondary.onHit`: samples burn, paralysis or freeze.
+    pub const TRI_ATTACK: u64 = 1 << 36;
+    /// `moves:synthesis|moonlight|morningsun.onHit` weather-scaled heal.
+    pub const WEATHER_HEAL: u64 = 1 << 37;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -867,6 +874,9 @@ pub enum MoveBehavior {
     /// `acupressure`: raises one random stat that is not already +6 by two
     /// stages (fails when every stage is capped).
     Acupressure,
+    /// `synthesis` / `moonlight` / `morningsun`: heals half the user's maximum
+    /// HP, two thirds in sun and a quarter in any other weather.
+    WeatherHeal,
     /// `upperhand`: fails outright unless the target still has a queued move
     /// action whose *declaration* priority is positive and whose category is
     /// not Status.
@@ -1004,6 +1014,7 @@ impl MoveBehavior {
             "revivalblessing" => Self::RevivalBlessing,
             "bellydrum" => Self::BellyDrum,
             "acupressure" => Self::Acupressure,
+            "synthesis" | "moonlight" | "morningsun" => Self::WeatherHeal,
             "upperhand" => Self::UpperHand,
             "round" => Self::Round,
             "healpulse" => Self::HealPulse,

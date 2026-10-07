@@ -647,6 +647,13 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:rest.onHit",
     // Snore: the asleep-only gate (its flinch secondary is data-driven).
     "moves:snore.onTry",
+    // Tri Attack: the sampled-status secondary, executed by the native hook.
+    "moves:triattack.secondary.onHit",
+    "moves:triattack.secondaries.0.onHit",
+    // Burn Up: the Fire-type TryMove gate and the self type strip, both
+    // executed by the native hook.
+    "moves:burnup.onTryMove",
+    "moves:burnup.self.onHit",
     // Focus Energy / Dragon Cheer: the mutual-exclusion start gate and the
     // crit-ratio modifier.
     "moves:focusenergy.condition.onStart",
@@ -802,6 +809,9 @@ fn move_hooks(id: &str) -> u64 {
         "facade" => hook::FACADE,
         "burningjealousy" => hook::BURNING_JEALOUSY,
         "acupressure" => hook::ACUPRESSURE,
+        "burnup" => hook::BURN_UP,
+        "triattack" => hook::TRI_ATTACK,
+        "synthesis" | "moonlight" | "morningsun" => hook::WEATHER_HEAL,
         _ => 0,
     }
 }

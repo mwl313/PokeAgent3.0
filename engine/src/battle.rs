@@ -2028,6 +2028,14 @@ impl BattleState {
             self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
             return Ok(());
         }
+        // `moves:burnup.onTryMove`: the user must still be Fire-type; the
+        // fail message names the move and the type is stripped on a landed hit.
+        if hooks & crate::effects::hook::BURN_UP != 0
+            && !self.effective_types(dex, actor).contains(&dex.effects.fire)
+        {
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+            return Ok(());
+        }
         // `items:metronome.condition.onTryMove` (priority -2, the last TryMove
         // handler): a lost item removes the counter volatile here; otherwise
         // the consecutive-use counter advances only when the previous turn
@@ -2225,6 +2233,47 @@ impl BattleState {
             self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
             // Reference `hitStepMoveHitLoop` runs `eachEvent('Update')` once
             // after the hit step and once more at the end of the loop.
+            self.each_update(dex)?;
+            self.each_update(dex)?;
+            return Ok(());
+        }
+        if behavior == MoveBehavior::WeatherHeal {
+            // `moves:synthesis|moonlight|morningsun.onHit`: half the user's
+            // maximum HP, two thirds in sun and a quarter in any other
+            // weather. A full-HP user fails with the heal fail message.
+            let max_hp = u32::from(self.mon(actor).stats[0]);
+            let weather = self.effective_weather(dex);
+            let factor = if weather == dex.effects.sun {
+                0.667
+            } else if weather == dex.effects.rain
+                || weather == dex.effects.sand
+                || weather == dex.effects.snow
+            {
+                0.25
+            } else {
+                0.5
+            };
+            let amount = ((f64::from(max_hp) * factor).floor() as u32)
+                .min(max_hp - u32::from(self.mon(actor).hp));
+            if amount == 0 {
+                // `onHit` returns NOT_FAIL after the fail message, which keeps
+                // the hit loop alive: both Update sorts still run.
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                self.each_update(dex)?;
+                self.each_update(dex)?;
+                return Ok(());
+            }
+            self.prepare_hit_abilities(dex, actor, m)?;
+            self.mon_mut(actor).hp += amount as u16;
+            self.emit(
+                EventKind::Heal,
+                actor,
+                Some(actor),
+                EffectRef::Move(move_id),
+                amount as i32,
+                false,
+            )?;
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
             self.each_update(dex)?;
             self.each_update(dex)?;
             return Ok(());
@@ -3773,6 +3822,15 @@ impl BattleState {
                 .collect();
             self.set_type(dex, actor, &mapped)?;
         }
+        // `moves:burnup.self.onHit`: the same placeholder strip for Fire.
+        if hooks & crate::effects::hook::BURN_UP != 0 && did_anything {
+            let mapped: SmallVec<[Id; 4]> = self
+                .effective_types(dex, actor)
+                .into_iter()
+                .map(|kind| if kind == dex.effects.fire { 0 } else { kind })
+                .collect();
+            self.set_type(dex, actor, &mapped)?;
+        }
         // `moves:clangoroussoul.onHit`: once the five-stat self boost applied,
         // the user pays a third of its maximum HP as direct damage (no Damage
         // event, so Magic Guard cannot refuse it).
@@ -3871,6 +3929,9 @@ impl BattleState {
                         && self.mon(target).stats_raised_this_turn
                     {
                         self.alluring_voice_secondary(dex, actor, target)?;
+                    }
+                    if hooks & crate::effects::hook::TRI_ATTACK != 0 && !absorbed {
+                        self.tri_attack_secondary(dex, actor, target)?;
                     }
                     if let Some(effect) = &secondary.own {
                         self.hit_effect(dex, actor, actor, effect, true)?;
@@ -5663,6 +5724,19 @@ impl BattleState {
     /// runs before the status application exactly like the reference.
     fn dire_claw_secondary(&mut self, dex: &Dex, source: Entity, target: Entity) -> Result<()> {
         let statuses = [dex.effects.poison, dex.effects.paralysis, dex.effects.sleep];
+        let status = statuses[self.rng.below(statuses.len() as u32) as usize];
+        let effect = crate::effects::HitEffect {
+            status,
+            ..Default::default()
+        };
+        self.hit_effect(dex, target, source, &effect, true)?;
+        Ok(())
+    }
+
+    /// `moves:triattack.secondary.onHit`: `this.sample(['brn', 'par', 'frz'])`
+    /// picks one status, applied through `trySetStatus`.
+    fn tri_attack_secondary(&mut self, dex: &Dex, source: Entity, target: Entity) -> Result<()> {
+        let statuses = [dex.effects.burn, dex.effects.paralysis, dex.effects.freeze];
         let status = statuses[self.rng.below(statuses.len() as u32) as usize];
         let effect = crate::effects::HitEffect {
             status,
