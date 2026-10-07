@@ -71,6 +71,9 @@ pub mod hook {
     /// `moves:poltergeist.onTry|onTryHit`: the move fails without a held item
     /// and publicly reveals the item when it connects.
     pub const POLTERGEIST: u32 = 1 << 23;
+    /// `moves:strengthsap.onHit`: heal by the target's stage-boosted Attack
+    /// (no ModifyStat modifiers) and drop the target's Attack one stage.
+    pub const STRENGTH_SAP: u32 = 1 << 24;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

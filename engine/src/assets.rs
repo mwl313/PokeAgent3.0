@@ -544,6 +544,8 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     // Poltergeist: the held-item gate and its public item reveal.
     "moves:poltergeist.onTry",
     "moves:poltergeist.onTryHit",
+    // Strength Sap: the Attack-derived heal and the Attack drop.
+    "moves:strengthsap.onHit",
 ];
 
 /// Ported action-local callbacks, keyed by move id. Every entry must have its
@@ -628,6 +630,7 @@ fn move_hooks(id: &str) -> u32 {
         "haze" => hook::HAZE,
         "psychup" => hook::PSYCH_UP,
         "poltergeist" => hook::POLTERGEIST,
+        "strengthsap" => hook::STRENGTH_SAP,
         "doubleshock" => hook::DOUBLE_SHOCK,
         _ => 0,
     }

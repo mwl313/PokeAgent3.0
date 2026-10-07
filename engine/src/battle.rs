@@ -2402,6 +2402,7 @@ impl BattleState {
                     actor,
                     target,
                     stats::round_fraction(u32::from(actual), fraction),
+                    EffectRef::Condition(dex.effects.drain),
                 )?;
             }
         }
@@ -2457,6 +2458,39 @@ impl BattleState {
                         )?;
                     }
                     did_anything = true;
+                    continue;
+                }
+                // `moves:strengthsap.onHit`: a target already at -6 Attack
+                // fails the move outright. Otherwise the heal amount is the
+                // target's stage-boosted Attack (`getStat('atk', false, true)`
+                // skips ModifyStat ability modifiers), the Attack drop is
+                // applied first, and the move succeeds when either the drop
+                // changed a stage or the heal actually restored HP.
+                if hooks & crate::effects::hook::STRENGTH_SAP != 0 {
+                    let (atk_stage, atk_stat) = {
+                        let t = self.mon(target);
+                        (t.boosts[0], t.stats[1])
+                    };
+                    if atk_stage > -6 {
+                        let amount = stats::apply_stage(u32::from(atk_stat), atk_stage);
+                        let mut drop = [0i8; 7];
+                        drop[0] = -1;
+                        let changed = self.boost(
+                            dex,
+                            target,
+                            actor,
+                            drop,
+                            BoostCause::Move { secondary: false },
+                        )?;
+                        let healed = self.drain_heal(
+                            dex,
+                            actor,
+                            target,
+                            amount,
+                            EffectRef::Move(move_id),
+                        )?;
+                        did_anything |= changed || healed > 0;
+                    }
                     continue;
                 }
                 // `moves:soak.onHit`: pure-Water targets refuse; anything else
@@ -2891,12 +2925,13 @@ impl BattleState {
                 if actual != 0
                     && let Some(fraction) = m.drain
                 {
-                    self.drain_heal(
-                        dex,
-                        actor,
-                        target,
-                        stats::round_fraction(u32::from(actual), fraction),
-                    )?;
+                self.drain_heal(
+                    dex,
+                    actor,
+                    target,
+                    stats::round_fraction(u32::from(actual), fraction),
+                    EffectRef::Condition(dex.effects.drain),
+                )?;
                 }
                 self.hit_effect(dex, target, actor, &m.hit, false)?;
                 if hit == 1
