@@ -856,6 +856,11 @@ pub enum MoveBehavior {
     /// destination is revived at half HP (with an instaswitch when the
     /// revived member still occupies an active slot).
     RevivalBlessing,
+    /// `destinybond`: drops the `destinybond` volatile (a second consecutive
+    /// use instead removes the existing bond and fails); the volatile drags a
+    /// foe's move-caused faint down with it and is dropped before the holder's
+    /// next non-Destiny-Bond action.
+    DestinyBond,
     /// `quash`: forces the target's queued move action behind every other
     /// move action of the turn (`action.order = 201`); fails in singles and
     /// against a target with no queued move.
@@ -982,6 +987,7 @@ impl MoveBehavior {
             "swallow" => Self::Swallow,
             "rest" => Self::Rest,
             "revivalblessing" => Self::RevivalBlessing,
+            "destinybond" => Self::DestinyBond,
             "quash" => Self::Quash,
             "upperhand" => Self::UpperHand,
             "round" => Self::Round,
@@ -1171,6 +1177,12 @@ pub struct NativeEffects {
     /// `moves:revivalblessing`: the move id of the revive slot condition's
     /// causing effect (`-heal ... [from] move: Revival Blessing`).
     pub revival_blessing: Id,
+    /// `moves:destinybond` volatile condition: the bond's `onFaint` trigger
+    /// and the `onBeforeMove` / `onMoveAborted` drop points.
+    pub destiny_bond: Id,
+    /// `moves:destinybond` move id: the `onBeforeMove` drop is skipped when
+    /// the holder's attempted move is Destiny Bond itself.
+    pub destiny_bond_move: Id,
     /// `moves:ceaselessedge.onAfterHit|onAfterSubDamage`: scatters one Spikes
     /// layer onto the foe side when the hit lands or a decoy absorbs it.
     pub ceaseless_edge: Id,

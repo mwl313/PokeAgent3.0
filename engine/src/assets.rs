@@ -637,6 +637,9 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     // Revival Blessing: the no-fainted-party gate; the slot condition plus
     // selfSwitch drive the revive request and the delayed revive action.
     "moves:revivalblessing.onTryHit",
+    // Destiny Bond: the consecutive-use gate; the volatile condition's
+    // onFaint / onBeforeMove / onMoveAborted handlers are behaviour-driven.
+    "moves:destinybond.onPrepareHit",
     // Facade: the status-doubled base power.
     "moves:facade.onBasePower",
     // Burning Jealousy: the burn for targets whose stats were raised.
@@ -1884,6 +1887,8 @@ impl Dex {
             helping_hand_move: lookup("moves", "helpinghand")?,
             round: lookup("moves", "round")?,
             revival_blessing: lookup("moves", "revivalblessing")?,
+            destiny_bond: lookup("conditions", "destinybond")?,
+            destiny_bond_move: lookup("moves", "destinybond")?,
             ceaseless_edge: lookup("moves", "ceaselessedge")?,
             stone_axe: lookup("moves", "stoneaxe")?,
             roost: lookup("conditions", "roost")?,

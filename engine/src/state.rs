@@ -1008,6 +1008,13 @@ impl BattleState {
                             .is_some_and(|duration| (1..=2).contains(&duration))
                             && effect.values.is_empty()
                             && effect.source.is_some()
+                    } else if id == dex.effects.destiny_bond {
+                        // `moves:destinybond.condition` (`noCopy`, no
+                        // duration): a bare marker whose source is the user
+                        // that set the bond.
+                        effect.duration.is_none()
+                            && effect.values.is_empty()
+                            && effect.source.is_some()
                     } else if id == dex.effects.follow_me || id == dex.effects.rage_powder {
                         // `moves:followme.condition` / `moves:ragepowder.condition`:
                         // duration-one redirection volatiles that share the
