@@ -131,6 +131,10 @@ pub mod hook {
     /// shattered before the hit resolves, and the Paldea Tauros forms use
     /// their own primary type (Combat/Fighting, Blaze/Fire, Aqua/Water).
     pub const RAGING_BULL: u64 = 1 << 46;
+    /// `moves:pollenpuff.onTryHit|onTryMove|onHit`: an ally-targeted Pollen
+    /// Puff becomes a zero-power heal that ignores the ally's decoy, and Heal
+    /// Block on the user refuses that use outright.
+    pub const POLLEN_PUFF: u64 = 1 << 47;
     /// `moves:burnup.onTryMove|self.onHit`: fails without the Fire type and
     /// strips it from the user on a landed hit.
     pub const BURN_UP: u64 = 1 << 35;

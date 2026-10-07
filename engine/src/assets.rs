@@ -712,6 +712,10 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     // Raging Bull: the screen shatter at TryHit and the Paldea-form type.
     "moves:ragingbull.onTryHit",
     "moves:ragingbull.onModifyType",
+    // Pollen Puff: the ally-retarget payload and its Heal Block gate.
+    "moves:pollenpuff.onTryHit",
+    "moves:pollenpuff.onTryMove",
+    "moves:pollenpuff.onHit",
     // Baton Pass: the `canSwitch`/commanded gate and the marker that makes the
     // incoming Pokémon skip its BeforeSwitchOut event. The volatile transfer
     // itself is the `selfSwitch: 'copyvolatile'` payload.
@@ -898,6 +902,7 @@ fn move_hooks(id: &str) -> u64 {
         "triattack" => hook::TRI_ATTACK,
         "synthesis" | "moonlight" | "morningsun" => hook::WEATHER_HEAL,
         "ragingbull" => hook::RAGING_BULL,
+        "pollenpuff" => hook::POLLEN_PUFF,
         _ => 0,
     }
 }

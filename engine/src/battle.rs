@@ -2039,6 +2039,18 @@ impl BattleState {
         // redirection-independent hit steps. A failed try consumes no RNG and
         // ends the move without damage or secondary effects.
         let hooks = dex.effects.move_hooks[move_id as usize];
+        // `moves:pollenpuff.onTryHit`: a Pollen Puff aimed at an ally drops to
+        // zero power and gains `move.infiltrates` for the action, so the heal
+        // passes through the ally's decoy. `onTryMove` then refuses that use
+        // while the *user* is under Heal Block.
+        let pollen_ally = hooks & crate::effects::hook::POLLEN_PUFF != 0
+            && targets
+                .first()
+                .is_some_and(|target| target.side == actor.side);
+        if pollen_ally && self.heal_blocked(dex, actor) {
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+            return Ok(());
+        }
         if (hooks & crate::effects::hook::FAKE_OUT_FIRST_TURN != 0
             || hooks & crate::effects::hook::FIRST_IMPRESSION != 0)
             && self.mon(actor).active_move_actions > 1
@@ -3594,7 +3606,9 @@ impl BattleState {
         // per-target computation.
         let decoys: SmallVec<[Entity; 4]> = hit
             .iter()
-            .filter(|(target, _)| self.decoy_absorbs(dex, actor, *target, m, m.infiltrates))
+            .filter(|(target, _)| {
+                self.decoy_absorbs(dex, actor, *target, m, m.infiltrates || pollen_ally)
+            })
             .map(|(target, _)| *target)
             .collect();
         let ordered: SmallVec<[(Entity, i8); 4]> = hit
@@ -3608,6 +3622,12 @@ impl BattleState {
             )
             .collect();
         for (target, effectiveness) in ordered {
+            // `moves:pollenpuff.onTryHit` set `basePower = 0` for the ally
+            // case: `getDamage` returns `undefined` before any crit or
+            // randomizer draw, so the heal phase below is the only effect.
+            if pollen_ally && target.side == actor.side {
+                continue;
+            }
             if m.category == Category::Status {
                 continue;
             }
@@ -3799,7 +3819,7 @@ impl BattleState {
             let damage = damage::finish_damage(damage, final_modifier, false);
             // The decoy call in the reference still resolves the full damage
             // (identical RNG draws) and then eats it instead of the target.
-            if self.intercept_substitute(dex, actor, target, m, damage, m.infiltrates)? {
+            if self.intercept_substitute(dex, actor, target, m, damage, m.infiltrates || pollen_ally)? {
                 sub_absorbed.push(target);
             } else {
                 damages.push((target, damage));
@@ -4138,6 +4158,14 @@ impl BattleState {
                             .mon(actor)
                             .volatiles
                             .contains_key(&dex.effects.commanded);
+                }
+                // `moves:pollenpuff.onHit`: an ally-targeted use heals half of
+                // the target's maximum HP instead of damaging it. A refused
+                // heal (full HP, Heal Block) is `NOT_FAIL`, so it must discard
+                // the generic payload's success just like the other refusals.
+                if hooks & crate::effects::hook::POLLEN_PUFF != 0 && target.side == actor.side {
+                    let amount = u32::from(self.mon(target).stats[0]) / 2;
+                    did_anything = self.heal_for_move(dex, target, amount)? > 0;
                 }
                 // `setAbility` payloads of the ability-transfer moves.
                 if hooks & crate::effects::hook::ENTRAINMENT != 0 {
