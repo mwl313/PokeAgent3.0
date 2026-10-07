@@ -269,6 +269,7 @@ impl BattleState {
                 called: true,
                 bounced: true,
                 priority: m.priority,
+                caller_slot: crate::actions::NO_SLOT,
                 explicit_target: true,
             },
         )
@@ -1350,6 +1351,18 @@ impl BattleState {
         {
             self.reveal_ability(e)?;
         }
+        // `abilities:zerotohero.onSwitchIn`: the Hero forme announces itself
+        // once per transformation, on the first switch-in after the switch-out
+        // forme change armed it.
+        if dex.effects.abilities[self.mon(e).ability as usize] == Ability::Zerotohero
+            && !self.mon(e).hero_message_displayed
+            && dex.species[self.mon(e).species as usize].base_species
+                == dex.id("species", "Palafin")?
+            && self.mon(e).species == dex.id("species", "Palafin-Hero")?
+        {
+            self.mon_mut(e).hero_message_displayed = true;
+            self.reveal_ability(e)?;
+        }
         self.ability_start(dex, e)
     }
 
@@ -1531,6 +1544,37 @@ impl BattleState {
         Ok(())
     }
 
+    /// `abilities:zerotohero.onSwitchOut`: the reference permanent
+    /// `formeChange` updates the stored species, recalculates the stored
+    /// stats (the two formes share the same HP base, so `updateMaxHp` keeps
+    /// the current HP) and resets the ability state through
+    /// `setAbility(same, isFromFormeChange = true)`.
+    fn zero_to_hero_forme(&mut self, dex: &Dex, e: Entity, form: Id) -> Result<()> {
+        let species = &dex.species[form as usize];
+        let mon = self.mon_mut(e);
+        let new_stats = crate::stats::champions_stats(
+            species.base_stats,
+            mon.points,
+            dex.natures[mon.nature as usize],
+            species.max_hp,
+        );
+        let damage_taken = mon.stats[0].saturating_sub(mon.hp);
+        if mon.hp > 0 {
+            mon.hp = new_stats[0].saturating_sub(damage_taken).max(1);
+        }
+        mon.stats = new_stats;
+        mon.cached_speed = i32::from(new_stats[5]);
+        mon.species = form;
+        mon.base_species = form;
+        mon.types = species.types.clone();
+        // `heroMessageDisplayed = false` arms the next switch-in message.
+        mon.hero_message_displayed = false;
+        self.emit(EventKind::Forme, e, None, EffectRef::Species(form), 0, true)?;
+        let order = self.allocate_effect_order()?;
+        self.mon_mut(e).ability_effect_order = Some(order);
+        Ok(())
+    }
+
     /// Reference `Pokemon#setAbility`: end the outgoing ability, reset the
     /// holder's ability state (a fresh effect order), reveal the incoming
     /// ability and run its `Start` callbacks. The reference's `[of]` source
@@ -1552,6 +1596,18 @@ impl BattleState {
 
     pub(super) fn ability_switch_out(&mut self, dex: &Dex, e: Entity) -> Result<()> {
         match dex.effects.abilities[self.mon(e).ability as usize] {
+            // `abilities:zerotohero.onSwitchOut`: a Palafin leaving the field
+            // becomes Palafin-Hero permanently (the switch-in message is armed
+            // for the next entry).
+            Ability::Zerotohero => {
+                let palafin = dex.id("species", "Palafin")?;
+                if dex.species[self.mon(e).base_species as usize].base_species == palafin {
+                    let hero = dex.id("species", "Palafin-Hero")?;
+                    if self.mon(e).species != hero {
+                        self.zero_to_hero_forme(dex, e, hero)?;
+                    }
+                }
+            }
             Ability::Regenerator => {
                 let p = self.mon(e);
                 let amount = (p.stats[0] / 3).min(p.stats[0] - p.hp);
@@ -2431,7 +2487,6 @@ impl Ability {
             | Ability::Vitalspirit
             | Ability::Wanderingspirit
             | Ability::Whitesmoke
-            | Ability::Zerotohero
         )
     }
 }
