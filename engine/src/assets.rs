@@ -541,6 +541,9 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     // Haze and Psych Up: field-wide and copied boost stages.
     "moves:haze.onHitField",
     "moves:psychup.onHit",
+    // Poltergeist: the held-item gate and its public item reveal.
+    "moves:poltergeist.onTry",
+    "moves:poltergeist.onTryHit",
 ];
 
 /// Ported action-local callbacks, keyed by move id. Every entry must have its
@@ -624,6 +627,7 @@ fn move_hooks(id: &str) -> u32 {
         "afteryou" => hook::AFTER_YOU,
         "haze" => hook::HAZE,
         "psychup" => hook::PSYCH_UP,
+        "poltergeist" => hook::POLTERGEIST,
         "doubleshock" => hook::DOUBLE_SHOCK,
         _ => 0,
     }

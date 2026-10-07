@@ -68,6 +68,9 @@ pub mod hook {
     pub const HAZE: u32 = 1 << 21;
     /// `moves:psychup.onHit`: the user copies every boost stage of the target.
     pub const PSYCH_UP: u32 = 1 << 22;
+    /// `moves:poltergeist.onTry|onTryHit`: the move fails without a held item
+    /// and publicly reveals the item when it connects.
+    pub const POLTERGEIST: u32 = 1 << 23;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

@@ -1520,6 +1520,17 @@ impl BattleState {
             self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
             return Ok(());
         }
+        // `moves:poltergeist.onTry`: the move fails outright when the target
+        // holds no item, before protection, immunity and accuracy. The gate
+        // reads the raw item field, so Klutz does not hide the item from it.
+        if hooks & crate::effects::hook::POLTERGEIST != 0 {
+            // The reference `onTry` reads the player's selected target, before
+            // redirection rewrites it.
+            if selected.is_none_or(|target| self.mon(target).item == 0) {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                return Ok(());
+            }
+        }
         if behavior == MoveBehavior::Terrain {
             self.start_terrain(dex, actor, m.terrain, false)?;
             self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
@@ -2160,6 +2171,19 @@ impl BattleState {
         for (target, effectiveness) in hit {
             if m.category == Category::Status {
                 continue;
+            }
+            // `moves:poltergeist.onTryHit`: the move-owned handler runs at the
+            // start of the damage step, after protection, type immunity and
+            // accuracy have passed, and publicly reveals the held item.
+            if hooks & crate::effects::hook::POLTERGEIST != 0 {
+                self.emit(
+                    EventKind::Item,
+                    target,
+                    Some(actor),
+                    EffectRef::Item(self.mon(target).item),
+                    0,
+                    false,
+                )?;
             }
             // OHKO and fixed-damage moves resolve before the damage kernel and
             // therefore consume no critical-hit or damage randomizer draws.
