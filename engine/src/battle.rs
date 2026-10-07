@@ -1470,6 +1470,15 @@ impl BattleState {
         // `moves:teleport.onTry`: Teleport fails before any hit step when the
         // user has no switchable reserve. The plain `selfSwitch` moves instead
         // nullify their own result after a failed pivot attempt.
+        // `moves:clangoroussoul.onTry`: the user must stay above a third of
+        // its maximum HP (integer arithmetic) and above one HP in total.
+        if hooks & crate::effects::hook::CLANGOROUS_SOUL != 0 {
+            let max_hp = u32::from(self.mon(actor).stats[0]);
+            if max_hp == 1 || u32::from(self.mon(actor).hp) <= max_hp * 33 / 100 {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                return Ok(());
+            }
+        }
         if hooks & crate::effects::hook::TELEPORT != 0 && !self.can_switch(actor.side as usize) {
             self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
             return Ok(());
@@ -2228,6 +2237,31 @@ impl BattleState {
                     // evasion]; Parting Shot drops Attack and Sp. Atk.
                     [-1, 0, -1, 0, 0, 0, 0],
                     BoostCause::Move { secondary: false },
+                )?;
+            }
+        }
+        // `moves:clangoroussoul.onHit`: once the five-stat self boost applied,
+        // the user pays a third of its maximum HP as direct damage (no Damage
+        // event, so Magic Guard cannot refuse it).
+        if hooks & crate::effects::hook::CLANGOROUS_SOUL != 0 && did_anything {
+            let amount = (u32::from(self.mon(actor).stats[0]) * 33 / 100).max(1);
+            let actual = amount.min(u32::from(self.mon(actor).hp));
+            if actual > 0 {
+                self.mon_mut(actor).hp -= actual as u16;
+                if self.mon(actor).hp == 0 {
+                    self.faint_queue.push(FaintData {
+                        target: actor,
+                        source: Some(actor),
+                        from_move: true,
+                    });
+                }
+                self.emit(
+                    EventKind::Damage,
+                    actor,
+                    Some(actor),
+                    EffectRef::Move(move_id),
+                    -(actual as i32),
+                    true,
                 )?;
             }
         }

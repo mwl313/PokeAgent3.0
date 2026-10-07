@@ -47,6 +47,10 @@ pub mod hook {
     /// `moves:disable.onTryHit`: the move fails before accuracy when the target
     /// has no recorded last move (or last used Struggle).
     pub const DISABLE_TARGET_GATE: u16 = 1 << 14;
+    /// `moves:clangoroussoul.onTry|onTryHit|onHit`: the user must be above a
+    /// third of its maximum HP, the five-stat self boost must change something
+    /// and the move then costs a third of the user's maximum HP.
+    pub const CLANGOROUS_SOUL: u16 = 1 << 15;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

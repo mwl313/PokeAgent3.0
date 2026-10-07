@@ -512,6 +512,10 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:glaiverush.condition.onAccuracy",
     "moves:glaiverush.condition.onSourceModifyDamage",
     "moves:glaiverush.condition.onBeforeMove",
+    // Clangorous Soul: HP gate, five-stat self boost and HP payment.
+    "moves:clangoroussoul.onTry",
+    "moves:clangoroussoul.onTryHit",
+    "moves:clangoroussoul.onHit",
 ];
 
 /// Ported action-local callbacks, keyed by move id. Every entry must have its
@@ -588,6 +592,7 @@ fn move_hooks(id: &str) -> u16 {
         "expandingforce" => hook::EXPANDING_FORCE,
         "auroraveil" => hook::AURORA_VEIL,
         "disable" => hook::DISABLE_TARGET_GATE,
+        "clangoroussoul" => hook::CLANGOROUS_SOUL,
         _ => 0,
     }
 }
