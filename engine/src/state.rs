@@ -387,7 +387,10 @@ impl Outcome {
 /// Current snapshot schema. Bump when the persisted world shape changes; the
 /// restore path rejects every other value, and tests read this constant so a
 /// bump cannot leave a stale hard-coded expectation behind.
-pub const SNAPSHOT_SCHEMA: u32 = 13;
+///
+/// 14: queued actions carry `source_effect` (the Round chain's
+/// `move.sourceEffect`).
+pub const SNAPSHOT_SCHEMA: u32 = 14;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BattleState {
@@ -1342,6 +1345,8 @@ impl BattleState {
                     && (action.move_id == 0
                         || usize::from(action.move_id) >= dex.moves.len()
                         || !(action.move_slot < 4 || action.move_slot == crate::actions::NO_SLOT))
+                || action.source_effect != 0
+                    && usize::from(action.source_effect) >= dex.moves.len()
                 || !(-2..=2).contains(&action.target_location)
             {
                 return Err(EngineError::InvalidInput("snapshot queued action".into()));

@@ -150,6 +150,7 @@ impl BattleState {
                         priority: m.priority,
                         explicit_target: true,
                         caller_slot: crate::actions::NO_SLOT,
+                        source_effect: 0,
                     },
                 )?;
                 return Ok(true);
@@ -312,6 +313,7 @@ impl BattleState {
                 priority: m.priority,
                 caller_slot: crate::actions::NO_SLOT,
                 explicit_target: true,
+                source_effect: 0,
             },
         )
     }

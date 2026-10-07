@@ -71,6 +71,9 @@ pub(super) struct MoveUse {
     pub called: bool,
     pub bounced: bool,
     pub priority: Option<i8>,
+    /// `move.sourceEffect`: the id of the effect that queued or called this
+    /// action (only the Round chain sets it today).
+    pub source_effect: Id,
     /// Move slot that pays a nested move's Pressure `DeductPP` cost: the
     /// caller's slot for a move called by another move, `NO_SLOT` for a
     /// reflection whose source effect is an ability rather than a move.
@@ -254,6 +257,7 @@ impl BattleState {
                         actor: Some(actor),
                         move_slot: action.move_slot,
                         move_id: 0,
+                        source_effect: 0,
                         target_location: action.target_location,
                         destination: action.switch_destination,
                         priority: Priority {
@@ -306,6 +310,7 @@ impl BattleState {
                                 actor: Some(actor),
                                 move_slot: NO_SLOT,
                                 move_id: 0,
+                                source_effect: 0,
                                 target_location: 0,
                                 destination: NO_SLOT,
                                 priority: Priority {
@@ -340,6 +345,7 @@ impl BattleState {
             actor: None,
             move_slot: NO_SLOT,
             move_id: 0,
+            source_effect: 0,
             target_location: 0,
             destination: NO_SLOT,
             priority: Priority {
@@ -735,6 +741,7 @@ impl BattleState {
                 actor: Some(incoming),
                 move_slot: NO_SLOT,
                 move_id: 0,
+                source_effect: 0,
                 target_location: 0,
                 destination: NO_SLOT,
                 priority,
@@ -1285,6 +1292,7 @@ impl BattleState {
                         action.move_slot,
                         action.move_id,
                         action.target_location,
+                        action.source_effect,
                     )?;
                     item_ports::white_herb_event(self, dex)?;
                 }
@@ -1573,7 +1581,15 @@ impl BattleState {
         })
     }
 
-    fn use_move(&mut self, dex: &Dex, actor: Entity, slot: u8, move_id: Id, loc: i8) -> Result<()> {
+    fn use_move(
+        &mut self,
+        dex: &Dex,
+        actor: Entity,
+        slot: u8,
+        move_id: Id,
+        loc: i8,
+        source_effect: Id,
+    ) -> Result<()> {
         self.use_move_inner(
             dex,
             actor,
@@ -1582,6 +1598,7 @@ impl BattleState {
             loc,
             MoveUse {
                 caller_slot: slot,
+                source_effect,
                 ..Default::default()
             },
         )
@@ -1761,6 +1778,12 @@ impl BattleState {
         let mut action = self.active_move(dex, actor, m, behavior);
         action.calls_move = called;
         action.has_bounced = call.bounced;
+        // `moves:round.basePowerCallback`: a Round action that another Round
+        // pulled to the front carries `move.sourceEffect === 'round'` and
+        // doubles its base power.
+        if behavior == MoveBehavior::Round && call.source_effect == dex.effects.round {
+            action.power = action.power.saturating_mul(2);
+        }
         // Reference `useMoveInner`: a nested caller inherits the outer
         // action's stored priority (`battle.queue` writes the ModifyPriority
         // result onto the active move). A chosen action resolves its own.
@@ -1912,6 +1935,45 @@ impl BattleState {
                 self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
                 return Ok(());
             }
+        }
+        // `moves:upperhand.onTry`: the move fails outright unless the target
+        // still has a queued move action whose declaration priority is
+        // positive and whose category is not Status. The reference reads
+        // `action.move.priority` (the move data, not the modified action
+        // priority), so Prankster/Gale Wings boosts do not qualify a move.
+        if behavior == MoveBehavior::UpperHand {
+            let target = redirected.or(selected);
+            let qualifies = target.is_some_and(|target| {
+                !self.mon(target).fainted
+                    && self.mon(target).hp > 0
+                    && self
+                        .queue
+                        .iter()
+                        .find(|q| q.kind == QueuedKind::Move && q.actor == Some(target))
+                        .is_some_and(|q| {
+                            let data = &dex.moves[q.move_id as usize];
+                            data.priority > 0 && data.category != Category::Status
+                        })
+            });
+            if !qualifies {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                return Ok(());
+            }
+        }
+        // `moves:round.onTry`: another queued Round move action (of any
+        // Pokémon on either side) jumps to the front of the queue, marked with
+        // this effect as its source, so it resolves immediately after this
+        // Round and doubles its own base power.
+        if behavior == MoveBehavior::Round
+            && let Some(index) = self
+                .queue
+                .iter()
+                .position(|q| q.kind == QueuedKind::Move && q.move_id == dex.effects.round)
+        {
+            let mut action = self.queue.remove(index);
+            action.priority.order = 3;
+            action.source_effect = dex.effects.round;
+            self.queue.insert(0, action);
         }
         // `moves:teleport.onTry`: Teleport fails before any hit step when the
         // user has no switchable reserve. The plain `selfSwitch` moves instead
@@ -3400,6 +3462,22 @@ impl BattleState {
                     )?;
                 }
                 did_anything = true;
+            } else if behavior == MoveBehavior::Quash {
+                // `moves:quash.onHit`: doubles only, and only while the
+                // target still has a queued move action. The reference
+                // rewrites that action's order to 201 in place; the queue
+                // re-sort that follows this action (Gen 8+) then leaves it
+                // after every other move but before the residual phase.
+                let doubles = self.sides[0].active.len() > 1;
+                if doubles
+                    && let Some(index) = self
+                        .queue
+                        .iter()
+                        .position(|q| q.kind == QueuedKind::Move && q.actor == Some(target))
+                {
+                    self.queue[index].priority.order = 201;
+                    did_anything = true;
+                }
             } else if behavior == MoveBehavior::Recycle {
                 // `moves:recycle.onHit`: with empty hands, restore the last
                 // consumed item (clearing `lastItem` first, then `setItem`).
@@ -4631,6 +4709,7 @@ impl BattleState {
             actor: Some(actor),
             move_slot: slot as u8,
             move_id,
+            source_effect: 0,
             target_location: 0,
             destination: NO_SLOT,
             priority: Priority {
@@ -7410,6 +7489,12 @@ impl BattleState {
                         disabled = true;
                     }
                     if tormented && last_move != 0 && mv.id == last_move {
+                        disabled = true;
+                    }
+                    // `flags.cantusetwice`: the reference disables the move
+                    // while it is still the holder's last used move, so a
+                    // consecutive Gigaton Hammer is refused by the request.
+                    if dex.moves[mv.id as usize].cant_use_twice && last_move == mv.id {
                         disabled = true;
                     }
                     let hidden = imprisoned_moves.contains(&mv.id);
