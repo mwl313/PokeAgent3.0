@@ -103,7 +103,7 @@ impl BattleState {
                 };
             }
         }
-        let weather = self.effective_weather(dex);
+        let weather = self.mon_weather(dex, actor);
         if behavior == MoveBehavior::WeatherBall && weather != 0 {
             action.power = 100;
             action.move_type = if weather == dex.effects.rain {

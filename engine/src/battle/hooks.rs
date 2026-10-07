@@ -2871,7 +2871,6 @@ impl Ability {
             | Ability::Klutz
             | Ability::Lightmetal
             | Ability::Longreach
-            | Ability::Megasol
             | Ability::Merciless
             | Ability::Mimicry
             | Ability::Opportunist

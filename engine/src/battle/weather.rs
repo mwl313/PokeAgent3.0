@@ -278,14 +278,47 @@ impl BattleState {
         self.process_faints(dex, true)
     }
 
-    pub(super) fn weather_damage_modifier(&self, dex: &Dex, move_type: Id) -> u32 {
-        let weather = self.effective_weather(dex);
-        if (weather == dex.effects.rain && move_type == dex.effects.water)
-            || (weather == dex.effects.sun && move_type == dex.effects.fire)
+    /// `Pokemon#effectiveWeather` for the pinned regulation: a Mega Sol holder
+    /// resolves under sun no matter what the field weather is. The reference
+    /// only applies the override when the source effect is that ability, a move
+    /// or a weather, so ability-owned handlers (Chlorophyll, Solar Power,
+    /// Leaf Guard, Hydration, Sand Veil, ...) deliberately keep using
+    /// `effective_weather`.
+    pub(super) fn mon_weather(&self, dex: &Dex, e: Entity) -> Id {
+        if dex.effects.abilities[self.mon(e).ability as usize] == Ability::Megasol {
+            dex.effects.sun
+        } else {
+            self.effective_weather(dex)
+        }
+    }
+
+    /// `conditions:sunnyday|raindance.onWeatherModifyDamage` are keyed on the
+    /// *defender's* effective weather, and `abilities:megasol` runs the sun
+    /// handler first with a fast exit (so a Mega Sol attacker's moves only ever
+    /// see the sun rule).
+    pub(super) fn weather_damage_modifier(
+        &self,
+        dex: &Dex,
+        actor: Entity,
+        defender: Entity,
+        move_type: Id,
+    ) -> u32 {
+        let attacker_sol =
+            dex.effects.abilities[self.mon(actor).ability as usize] == Ability::Megasol;
+        let rule = if attacker_sol {
+            dex.effects.sun
+        } else {
+            self.effective_weather(dex)
+        };
+        if self.mon_weather(dex, defender) != rule {
+            return 4096;
+        }
+        if (rule == dex.effects.rain && move_type == dex.effects.water)
+            || (rule == dex.effects.sun && move_type == dex.effects.fire)
         {
             6144
-        } else if (weather == dex.effects.rain && move_type == dex.effects.fire)
-            || (weather == dex.effects.sun && move_type == dex.effects.water)
+        } else if (rule == dex.effects.rain && move_type == dex.effects.fire)
+            || (rule == dex.effects.sun && move_type == dex.effects.water)
         {
             2048
         } else {

@@ -1631,7 +1631,7 @@ impl BattleState {
                 BoostCause::Move { secondary: false },
             )?;
         }
-        if spec.instant_weather.contains(&self.effective_weather(dex)) {
+        if spec.instant_weather.contains(&self.mon_weather(dex, actor)) {
             return Ok(true);
         }
         let target_location = i64::from(loc);
@@ -2448,7 +2448,7 @@ impl BattleState {
             // maximum HP, two thirds in sun and a quarter in any other
             // weather. A full-HP user fails with the heal fail message.
             let max_hp = u32::from(self.mon(actor).stats[0]);
-            let weather = self.effective_weather(dex);
+            let weather = self.mon_weather(dex, actor);
             let factor = if weather == dex.effects.sun {
                 0.667
             } else if weather == dex.effects.rain
@@ -3834,7 +3834,7 @@ impl BattleState {
                     defense,
                     spread,
                     parental_bond_second_hit: false,
-                    weather_modifier: self.weather_damage_modifier(dex, m.move_type),
+                    weather_modifier: self.weather_damage_modifier(dex, actor, target, m.move_type),
                     critical,
                     stab_modifier: if behavior != MoveBehavior::Struggle
                         && self.effective_types(dex, actor).contains(&m.move_type)
@@ -5525,7 +5525,7 @@ impl BattleState {
                 defense,
                 spread: phase.spread,
                 parental_bond_second_hit: phase.parental_bond_second_hit,
-                weather_modifier: self.weather_damage_modifier(dex, m.move_type),
+                weather_modifier: self.weather_damage_modifier(dex, actor, target, m.move_type),
                 critical,
                 stab_modifier: if self.effective_types(dex, actor).contains(&m.move_type) {
                     if ability == Ability::Adaptability {
