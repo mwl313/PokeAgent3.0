@@ -76,6 +76,8 @@ fn main() {
             include_str!("../data/more_roost_yawn.json"),
             include_str!("../data/more_delayed_status.json"),
             include_str!("../data/more_heal_block.json"),
+            include_str!("../data/more_sleep_talk.json"),
+            include_str!("../data/more_frisk_pressure.json"),
         ]
         .into_iter()
         .map(serde_json::from_str)
