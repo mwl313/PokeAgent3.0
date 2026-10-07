@@ -199,6 +199,28 @@ const TRIALS = [
     },
   },
   {
+    name: 'pickpocket_steals_on_contact',
+    p1: [bulky('Weavile', 'Pickpocket', ['Ice Shard', 'Protect']), ...fillerTeam().slice(0, 5)],
+    p2: [offensive('Incineroar', 'Intimidate', ['Darkest Lariat', 'Protect'], 'Leftovers'),
+      ...fillerTeam().slice(0, 5)],
+    seeds: [[18, 36, 72, 144], [23, 46, 92, 184], [29, 58, 116, 232]],
+    script: [
+      {p1: ['iceshard', 'protect'], p2: ['darkestlariat', 'protect']},
+      {p1: ['protect', 'protect'], p2: ['protect', 'protect']},
+    ],
+    coverage: {move: 'iceshard'},
+    verify(fixture) {
+      const leftovers = ids.items.leftovers;
+      const stole = fixture.steps.some(step => {
+        const weavile = step.expected.sides[0].pokemon.find(p => p.roster === 0);
+        const attacker = step.expected.sides[1].pokemon.find(p => p.roster === 0);
+        return weavile.item === leftovers && attacker.item === 0;
+      });
+      if (!stole) return 'Pickpocket never stole the contact attacker\'s item';
+      return null;
+    },
+  },
+  {
     name: 'moody_residual_stat_samples',
     p1: [bulky('Glalie', 'Moody', ['Protect', 'Ice Beam', 'Body Slam']), ...fillerTeam().slice(0, 5)],
     p2: [offensive('Metagross', 'Clear Body', ['Meteor Mash', 'Protect']), ...fillerTeam().slice(1),

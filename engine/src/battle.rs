@@ -2608,6 +2608,42 @@ impl BattleState {
         self.each_update(dex)?;
         self.process_faints(dex, self.mon(actor).hp == 0)?;
         self.each_update(dex)?;
+        // `abilities:pickpocket.onAfterMoveSecondary`: a contact hit against a
+        // holder with no item and no pending switch steals the attacker's item
+        // (`source.switchFlag === true` is strict, so a pivot's move-id flag
+        // does not block the steal).
+        if m.contact {
+            for &target in &hit_targets {
+                if target == actor
+                    || dex.effects.abilities[self.mon(target).ability as usize]
+                        != Ability::Pickpocket
+                    || self.mon(target).item != 0
+                    || self.mon(target).switch_flag.is_some()
+                    || self.mon(target).plain_switch_flag
+                    || self.mon(target).force_switch_flag
+                    || self.mon(actor).plain_switch_flag
+                {
+                    continue;
+                }
+                let crate::battle::hooks::TakeOutcome::Taken(item) =
+                    self.take_item_checked(dex, actor)?
+                else {
+                    continue;
+                };
+                let order = self.allocate_effect_order()?;
+                self.mon_mut(target).item = item;
+                self.mon_mut(target).item_effect_order = Some(order);
+                self.reveal_ability(target)?;
+                self.emit(
+                    EventKind::Item,
+                    target,
+                    Some(actor),
+                    EffectRef::Item(item),
+                    0,
+                    false,
+                )?;
+            }
+        }
         // Reference `hitStepMoveHitLoop` tail: every damaged target that is
         // still alive checks Emergency Exit against its pre-move HP.
         for &(target, hp_before) in &hit_before {

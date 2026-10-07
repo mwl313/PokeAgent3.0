@@ -2083,7 +2083,6 @@ impl Ability {
             | Ability::Moldbreaker
             | Ability::Mummy
             | Ability::Opportunist
-            | Ability::Pickpocket
             | Ability::Pickup
             | Ability::Piercingdrill
             | Ability::Plus
