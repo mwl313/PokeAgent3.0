@@ -706,34 +706,60 @@ fn unsupported_effects_are_replayable_operational_failures() {
     let dex = Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap();
     let corpus: Corpus = serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap();
     let f = &corpus.fixtures[0];
-    let mut teams = f.teams.clone();
-    teams[0].members[0].moves[0] = dex.id("moves", "Rest").unwrap();
-    let mut state = BattleState::reset(&dex, [&teams[0], &teams[1]], f.seed, [0, 1]).unwrap();
-    state.enable_trace().unwrap();
-    for step in &f.steps[..2] {
-        state.step(&dex, step.side, &step.actions).unwrap();
-    }
-    for side in [SideId::P1, SideId::P2] {
-        let request = state.observe(side).request;
-        let mut actions = vec![];
-        for _ in request.branch_slots() {
-            actions.push(request.candidates(&actions).unwrap()[0]);
+    // The probe needs an unimplemented move the first fixture's lead can
+    // legally hold: the pinned learnsets only overlap some of the open
+    // families, so take the first candidate that resets and fails cleanly.
+    // Each name below is a deliberate operational error until its family is
+    // ported, which is exactly the contract this test pins.
+    let mut probe = None;
+    for name in ["Transform", "Wish", "Round", "Imprison", "Fling"] {
+        let mut teams = f.teams.clone();
+        teams[0].members[0].moves[0] = dex.id("moves", name).unwrap();
+        let Ok(mut state) = BattleState::reset(&dex, [&teams[0], &teams[1]], f.seed, [0, 1])
+        else {
+            continue;
+        };
+        state.enable_trace().unwrap();
+        for step in &f.steps[..2] {
+            state.step(&dex, step.side, &step.actions).unwrap();
         }
-        state.step(&dex, side, &actions).unwrap();
+        let mut matched = true;
+        for side in [SideId::P1, SideId::P2] {
+            let request = state.observe(side).request;
+            let mut actions = vec![];
+            for _ in request.branch_slots() {
+                actions.push(request.candidates(&actions).unwrap()[0]);
+            }
+            if state.step(&dex, side, &actions).is_err() {
+                matched = false;
+                break;
+            }
+        }
+        if !matched {
+            continue;
+        }
+        let expected = name.to_lowercase();
+        for side in [SideId::P1, SideId::P2] {
+            let view = state.observe(side);
+            if view.request.kind != RequestKind::Finished
+                || view.outcome.terminated
+                || view.outcome.truncated
+                || view.outcome.reward(side).is_some()
+                || !view
+                    .outcome
+                    .operational_error
+                    .as_deref()
+                    .is_some_and(|error| error.contains(&expected))
+            {
+                matched = false;
+            }
+        }
+        if matched {
+            probe = Some(state);
+            break;
+        }
     }
-    for side in [SideId::P1, SideId::P2] {
-        let view = state.observe(side);
-        assert_eq!(view.request.kind, RequestKind::Finished);
-        assert!(
-            view.outcome
-                .operational_error
-                .as_ref()
-                .unwrap()
-                .contains("rest")
-        );
-        assert!(!view.outcome.terminated && !view.outcome.truncated);
-        assert_eq!(view.outcome.reward(side), None);
-    }
+    let state = probe.expect("no legal unimplemented probe move for fixture 0");
     let trace = state.export_trace().unwrap();
     assert_eq!(BattleState::replay_trace(&dex, trace).unwrap(), state);
     let mut corrupted = trace.clone();

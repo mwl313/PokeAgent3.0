@@ -94,6 +94,9 @@ pub mod hook {
     /// `moves:alluringvoice.secondary.onHit`: confuses a target whose stats
     /// were raised this turn.
     pub const ALLURING_VOICE: u32 = 1 << 30;
+    /// `moves:snore.onTry`: the move fails outright unless the user is
+    /// asleep (or Comatose, which no in-scope ability provides).
+    pub const SNORE: u32 = 1 << 31;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -838,6 +841,10 @@ pub enum MoveBehavior {
     /// `swallow`: heals a quarter, half or all of the user's maximum HP from
     /// the stockpile layer count and always consumes the volatile.
     Swallow,
+    /// `rest`: fails while already asleep or at full HP (and for the
+    /// insomnia family), otherwise forces a three-turn sleep and heals to
+    /// full after the status lands.
+    Rest,
 }
 
 /// Cold payload of a ported two-turn move. Every field is transcribed from
@@ -898,7 +905,8 @@ impl MoveBehavior {
             | "nightslash" | "shadowclaw" | "aerialace" | "aquajet" | "aquatail" | "hydropump"
             | "surf" | "earthquake" | "hypervoice" | "dazzlinggleam" | "powergem" | "tackle"
             | "pound" | "scratch" | "quickattack" | "vinewhip" | "watergun" | "gust"
-            | "wingattack" | "peck" | "drillpeck" | "psychocut" | "razorleaf" | "mudslap" => {
+            | "wingattack" | "peck" | "drillpeck" | "psychocut" | "razorleaf" | "mudslap"
+            | "snore" => {
                 Self::Damage
             }
             "flamethrower" | "icebeam" | "thunderbolt" | "shadowball" | "darkpulse"
@@ -949,6 +957,7 @@ impl MoveBehavior {
             "recycle" => Self::Recycle,
             "stockpile" => Self::Stockpile,
             "swallow" => Self::Swallow,
+            "rest" => Self::Rest,
             _ => Self::Unimplemented,
         }
     }

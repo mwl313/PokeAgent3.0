@@ -619,6 +619,11 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     // Sleep Talk: the asleep gate and the called-move sample.
     "moves:sleeptalk.onTry",
     "moves:sleeptalk.onHit",
+    // Rest: the three fail gates and the self sleep-plus-heal hit effect.
+    "moves:rest.onTry",
+    "moves:rest.onHit",
+    // Snore: the asleep-only gate (its flinch secondary is data-driven).
+    "moves:snore.onTry",
     "moves:poltergeist.onTry",
     "moves:poltergeist.onTryHit",
     // Steel Beam: `onMoveFail` is executed by the `mindBlownRecoil` primitive
@@ -757,6 +762,7 @@ fn move_hooks(id: &str) -> u32 {
         "lashout" => hook::LASH_OUT,
         "barbbarrage" => hook::BARB_BARRAGE,
         "alluringvoice" => hook::ALLURING_VOICE,
+        "snore" => hook::SNORE,
         _ => 0,
     }
 }

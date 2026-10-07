@@ -1951,6 +1951,15 @@ impl BattleState {
             self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
             return Ok(());
         }
+        // `moves:snore.onTry`: the move fails outright unless the user is
+        // asleep (Comatose has no in-scope holder and stays an explicit
+        // operational error).
+        if hooks & crate::effects::hook::SNORE != 0
+            && self.mon(actor).status != dex.effects.sleep
+        {
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+            return Ok(());
+        }
         // `items:metronome.condition.onTryMove` (priority -2, the last TryMove
         // handler): a lost item removes the counter volatile here; otherwise
         // the consecutive-use counter advances only when the previous turn
@@ -1998,6 +2007,7 @@ impl BattleState {
         let late_prepare_hit = matches!(
             behavior,
             MoveBehavior::SleepTalk
+                | MoveBehavior::Rest
                 | MoveBehavior::Stockpile
                 | MoveBehavior::Swallow
                 | MoveBehavior::Guard
@@ -2052,6 +2062,101 @@ impl BattleState {
             // and used - even when the called move itself failed before its
             // own hit loop (e.g. a called Protect with no remaining action).
             self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
+            self.each_update(dex)?;
+            self.each_update(dex)?;
+            return Ok(());
+        }
+        if behavior == MoveBehavior::Rest {
+            // `moves:rest.onTry` gates, in declaration order: an already
+            // sleeping (or Comatose) user fails outright, a full-HP user
+            // fails with the heal fail message, and the insomnia family
+            // fails with its ability named. Comatose has no in-scope holder
+            // and stays an explicit operational error.
+            let p = self.mon(actor);
+            if p.status == dex.effects.sleep {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                return Ok(());
+            }
+            if p.hp == p.stats[0] {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                return Ok(());
+            }
+            if dex.effects.abilities[p.ability as usize] == Ability::Insomnia {
+                // The fail message names the ability, so it is revealed.
+                self.reveal_ability(actor)?;
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                return Ok(());
+            }
+            self.prepare_hit_abilities(dex, actor, m)?;
+            // `moves:rest.onHit` calls `target.setStatus('slp', source, move)`
+            // directly, so an existing major status (burn, paralysis, ...) is
+            // replaced rather than refusing the move. The SetStatus pipeline
+            // still refuses a grounded user under Misty Terrain (any status)
+            // or Electric Terrain (sleep), and a Leaf Guard holder in sun.
+            let terrain = self.terrain_id(dex);
+            let terrain_blocks = self.grounded(dex, actor)
+                && (terrain == dex.effects.misty_terrain
+                    || terrain == dex.effects.electric_terrain);
+            let leaf_guard = dex.effects.abilities[self.mon(actor).ability as usize]
+                == Ability::Leafguard
+                && self.effective_weather(dex) == dex.effects.sun;
+            if terrain_blocks
+                || leaf_guard
+                || self
+                    .status_immune_ability(dex, actor, dex.effects.sleep)
+                    .is_some()
+            {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                return Ok(());
+            }
+            // `slp.onStart` samples its own 2..4 start time (one draw) before
+            // Rest overwrites both counters with three.
+            let _start_time = self.rng.below(3);
+            let order = self.allocate_effect_order()?;
+            let mon = self.mon_mut(actor);
+            mon.status = dex.effects.sleep;
+            mon.status_state = EffectState {
+                id: dex.effects.sleep,
+                effect_order: order,
+                effect_order_assigned: true,
+                source: Some((
+                    if actor.side == 0 { SideId::P1 } else { SideId::P2 },
+                    actor.roster,
+                )),
+                values: vec![3],
+                ..Default::default()
+            };
+            self.emit(
+                EventKind::Status,
+                actor,
+                Some(actor),
+                EffectRef::Condition(dex.effects.sleep),
+                0,
+                false,
+            )?;
+            // AfterSetStatus: a Lum Berry cures the fresh sleep before the
+            // heal half of the move runs.
+            if dex.effects.items[self.mon(actor).item as usize] == Item::LumBerry {
+                self.item_update(dex, actor)?;
+            }
+            // `this.heal(target.maxhp)`: top the user up. The reference heal
+            // is silent for the `rest` effect id, and Heal Block has already
+            // refused the move at BeforeMove, so no TryHeal gate applies.
+            let missing = self.mon(actor).stats[0] - self.mon(actor).hp;
+            if missing > 0 {
+                self.mon_mut(actor).hp += missing;
+                self.emit(
+                    EventKind::Heal,
+                    actor,
+                    Some(actor),
+                    EffectRef::None,
+                    i32::from(missing),
+                    true,
+                )?;
+            }
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
+            // Reference `hitStepMoveHitLoop` runs `eachEvent('Update')` once
+            // after the hit step and once more at the end of the loop.
             self.each_update(dex)?;
             self.each_update(dex)?;
             return Ok(());
@@ -5485,6 +5590,9 @@ impl BattleState {
             }
             let status_order = self.allocate_effect_order()?;
             let values = if status == fx.sleep {
+                // `mods/champions` overrides `slp.onStart`: the start time is
+                // `this.sample([2, 3, 3])`, so the single draw maps 0 to two
+                // turns and both other outcomes to three.
                 vec![if self.rng.below(3) == 0 { 2 } else { 3 }]
             } else if status == fx.freeze {
                 vec![3]
