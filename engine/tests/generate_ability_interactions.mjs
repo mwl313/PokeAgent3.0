@@ -753,6 +753,129 @@ const TRIALS = [
           log: session.battle.log.filter(l => l.includes('Zero to Hero') || l.startsWith('|detailschange'))}};
     },
   },
+  {
+    name: 'intimidate_lowers_foe_attack',
+    ability: 'Intimidate',
+    holderPool: ['Protect', 'Body Slam', 'Crunch'],
+    holderPlan: () => ({move: 'protect'}),
+    foe: {move: 'Body Slam', species: 'Milotic'},
+    rounds: 2,
+    probe: session => {
+      const foe = session.battle.sides[1].pokemon[0];
+      return {ok: foe.boosts.atk === -1, detail: {foeBoosts: {...foe.boosts}}};
+    },
+  },
+  {
+    name: 'defiant_boosts_attack_on_drop',
+    ability: 'Defiant',
+    holderPool: ['Protect', 'Iron Head', 'Crunch'],
+    holderPlan: () => ({move: 'protect'}),
+    foe: {move: 'Screech', species: 'Aggron'},
+    rounds: 3,
+    probe: session => {
+      const holder = session.battle.sides[0].pokemon[0];
+      return {ok: holder.boosts.atk === 2, detail: {holderBoosts: {...holder.boosts}}};
+    },
+  },
+  {
+    name: 'prankster_status_priority_taunt',
+    ability: 'Prankster',
+    holderPool: ['Protect', 'Taunt', 'Foul Play'],
+    holderPlan: () => ({move: 'taunt'}),
+    foe: {move: 'Body Slam', species: 'Milotic'},
+    rounds: 3,
+    probe: session => {
+      const foe = session.battle.sides[1].pokemon[0];
+      return {ok: Boolean(foe.volatiles['taunt']), detail: {volatiles: Object.keys(foe.volatiles)}};
+    },
+  },
+  {
+    name: 'stamina_boosts_defense_on_hit',
+    ability: 'Stamina',
+    holderPool: ['Protect', 'Body Slam', 'Iron Head'],
+    holderPlan: () => ({move: 'protect'}),
+    foe: {move: 'Body Slam', species: 'Milotic'},
+    rounds: 3,
+    probe: session => {
+      const holder = session.battle.sides[0].pokemon[0];
+      return {ok: holder.boosts.def >= 1, detail: {holderBoosts: {...holder.boosts}}};
+    },
+  },
+  {
+    name: 'roughskin_contact_damage',
+    ability: 'Rough Skin',
+    holderPool: ['Protect', 'Body Slam', 'Surf'],
+    holderPlan: () => ({move: 'protect'}),
+    foe: {move: 'Body Slam', species: 'Milotic'},
+    rounds: 3,
+    probe: session => {
+      const foe = session.battle.sides[1].pokemon[0];
+      return {ok: foe.hp < foe.maxhp, detail: {foeHp: foe.hp, foeMax: foe.maxhp}};
+    },
+  },
+  {
+    name: 'drought_sun_on_entry',
+    ability: 'Drought',
+    holderPool: ['Protect', 'Flamethrower', 'Solar Beam'],
+    holderPlan: () => ({move: 'protect'}),
+    foe: {move: 'Body Slam', species: 'Milotic'},
+    rounds: 2,
+    probe: session => ({ok: session.battle.field.weather === 'sunnyday', detail: {weather: session.battle.field.weather}}),
+  },
+  {
+    name: 'drizzle_rain_on_entry',
+    ability: 'Drizzle',
+    holderPool: ['Protect', 'Surf', 'Ice Beam'],
+    holderPlan: () => ({move: 'protect'}),
+    foe: {move: 'Body Slam', species: 'Milotic'},
+    rounds: 2,
+    probe: session => ({ok: session.battle.field.weather === 'raindance', detail: {weather: session.battle.field.weather}}),
+  },
+  {
+    name: 'sandstream_sand_on_entry',
+    ability: 'Sand Stream',
+    holderPool: ['Protect', 'Earthquake', 'Rock Slide'],
+    holderPlan: () => ({move: 'protect'}),
+    foe: {move: 'Body Slam', species: 'Milotic'},
+    rounds: 2,
+    probe: session => ({ok: session.battle.field.weather === 'sandstorm', detail: {weather: session.battle.field.weather}}),
+  },
+  {
+    name: 'snowwarning_snow_on_entry',
+    ability: 'Snow Warning',
+    holderPool: ['Protect', 'Ice Beam', 'Blizzard'],
+    holderPlan: () => ({move: 'protect'}),
+    foe: {move: 'Body Slam', species: 'Milotic'},
+    rounds: 2,
+    probe: session => ({ok: session.battle.field.weather === 'snowscape', detail: {weather: session.battle.field.weather}}),
+  },
+  {
+    name: 'grassysurge_terrain_on_entry',
+    ability: 'Grassy Surge',
+    holderPool: ['Protect', 'Grassy Glide', 'Seed Bomb'],
+    holderPlan: () => ({move: 'protect'}),
+    foe: {move: 'Body Slam', species: 'Milotic'},
+    rounds: 2,
+    probe: session => ({ok: session.battle.field.terrain === 'grassyterrain', detail: {terrain: session.battle.field.terrain}}),
+  },
+  {
+    name: 'psychicsurge_terrain_on_entry',
+    ability: 'Psychic Surge',
+    holderPool: ['Protect', 'Psychic', 'Psyshock'],
+    holderPlan: () => ({move: 'protect'}),
+    foe: {move: 'Body Slam', species: 'Milotic'},
+    rounds: 2,
+    probe: session => ({ok: session.battle.field.terrain === 'psychicterrain', detail: {terrain: session.battle.field.terrain}}),
+  },
+  {
+    name: 'electricsurge_terrain_on_entry',
+    ability: 'Electric Surge',
+    holderPool: ['Protect', 'Thunderbolt', 'Volt Switch'],
+    holderPlan: () => ({move: 'protect'}),
+    foe: {move: 'Body Slam', species: 'Milotic'},
+    rounds: 2,
+    probe: session => ({ok: session.battle.field.terrain === 'electricterrain', detail: {terrain: session.battle.field.terrain}}),
+  },
 ];
 
 const fixtures = [];

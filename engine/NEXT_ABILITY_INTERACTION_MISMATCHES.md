@@ -87,3 +87,21 @@ Fixed by porting both halves of the reference rule: the priority-5
 `onModifyAtk` 1.5x modifier while statused, and the `modifyDamage` burn-drop
 exception (`pokemon.status === 'brn' && physical && !hasAbility('guts')`).
 The fixture now matches every boundary with no exemption.
+
+## Moxie after KO (latent, found 2026-10-08)
+
+While adding witnesses for the ability tail, inserting trials at the front of
+`generate_ability_interactions.mjs` shifted every later trial's derived seed
+(`6000 + index * 64 + k`), which regenerated `moxie_after_ko` with
+`seed = [2026, 10, 7, 8176]`. At that seed the native replay diverges:
+
+```
+moxie_after_ko_8176 decision 19 P2 move 1, move 1: invalid input: illegal joint action
+```
+
+The trial was moved to the end of the array (keeping the existing fixtures'
+seeds stable), so the tracked corpus is green; the diverging seed is a genuine
+latent gap under the current native subset (a KO-timing/RNG difference that
+only shows at this seed). Repro: temporarily prepend one trial to
+`generate_ability_interactions.mjs`, regenerate the artifact, and run
+`cargo test --release --test ability_interactions`.
