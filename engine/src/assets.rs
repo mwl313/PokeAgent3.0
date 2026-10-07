@@ -143,6 +143,10 @@ pub struct Move {
     /// Protect-family contact punishment, executed by the blocking volatile.
     pub protect_punish: crate::effects::ProtectPunish,
     pub recoil: Option<[u16; 2]>,
+    /// `mindBlownRecoil: true` moves pay half the user's maximum HP after a
+    /// connecting hit, with the move itself as the damage source, so Magic
+    /// Guard does not refuse it and Rock Head does not block it.
+    pub mind_blown_recoil: bool,
     pub drain: Option<[u16; 2]>,
     pub side_condition: Id,
     pub weather: Id,
@@ -329,6 +333,12 @@ const HANDLED_MOVE_FIELDS: &[&str] = &[
     "volatileStatus",
     "drain",
     "recoil",
+    "mindBlownRecoil",
+    // Only Steel Beam's `onMoveFail` is ported (via the mindBlownRecoil
+    // primitive). The crash-damage moves that share the callback
+    // (High Jump Kick, Supercell Slam, Axe Kick) stay blocked by their own
+    // deliberately unhandled `hasCrashDamage` field.
+    "onMoveFail",
     "thawsTarget",
     "willCrit",
     "basePowerCallback",
@@ -544,6 +554,9 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     // Poltergeist: the held-item gate and its public item reveal.
     "moves:poltergeist.onTry",
     "moves:poltergeist.onTryHit",
+    // Steel Beam: `onMoveFail` is executed by the `mindBlownRecoil` primitive
+    // (half the user's maximum HP as move damage on a miss or Protect block).
+    "moves:steelbeam.onMoveFail",
 ];
 
 /// Ported action-local callbacks, keyed by move id. Every entry must have its
@@ -1270,6 +1283,7 @@ impl Dex {
             thaws_target: false,
             protect_punish: crate::effects::ProtectPunish::None,
             recoil: None,
+            mind_blown_recoil: false,
             drain: None,
             side_condition: 0,
             weather: 0,
@@ -1403,6 +1417,7 @@ impl Dex {
                 recoil: d["recoil"]
                     .as_array()
                     .map(|v| [v[0].as_u64().unwrap() as u16, v[1].as_u64().unwrap() as u16]),
+                mind_blown_recoil: d["mindBlownRecoil"].as_bool().unwrap_or(false),
                 drain: d["drain"]
                     .as_array()
                     .map(|v| [v[0].as_u64().unwrap() as u16, v[1].as_u64().unwrap() as u16]),

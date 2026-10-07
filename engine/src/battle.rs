@@ -2117,6 +2117,16 @@ impl BattleState {
         }
         failed_otherwise |= missed_accuracy;
         if hit.is_empty() {
+            // Reference `useMoveInner` runs the move-owned `onMoveFail` before
+            // the action ends. Steel Beam pays its half-maximum-HP recoil here
+            // too, so a miss or a Protect block still damages the user.
+            if m.mind_blown_recoil {
+                let recoil =
+                    stats::round_fraction(u32::from(self.mon(actor).stats[0]), [1, 2]);
+                let hp_before = self.mon(actor).hp;
+                self.indirect_damage(dex, actor, actor, recoil, EffectRef::Move(move_id))?;
+                self.emergency_exit_check(dex, actor, hp_before)?;
+            }
             return Ok(());
         }
         // Reference hitStepBreakProtect runs after the accuracy step and
@@ -2693,6 +2703,15 @@ impl BattleState {
                     EffectRef::Condition(dex.effects.recoil),
                 )?;
                 self.emergency_exit_check(dex, actor, hp_before)?;
+            } else if m.mind_blown_recoil {
+                // `applyRecoilDamage` with `mindBlownRecoil`: the user pays
+                // round(maxHP / 2) with the move itself as the effect, so the
+                // recoil is move damage for Magic Guard and ignores Rock Head.
+                let recoil =
+                    stats::round_fraction(u32::from(self.mon(actor).stats[0]), [1, 2]);
+                let hp_before = self.mon(actor).hp;
+                self.indirect_damage(dex, actor, actor, recoil, EffectRef::Move(move_id))?;
+                self.emergency_exit_check(dex, actor, hp_before)?;
             }
         }
         if m.thaws_target {
@@ -2960,6 +2979,13 @@ impl BattleState {
                 recoil,
                 EffectRef::Condition(dex.effects.recoil),
             )?;
+            self.emergency_exit_check(dex, actor, hp_before)?;
+        } else if total_damage > 0 && m.mind_blown_recoil {
+            // `mindBlownRecoil`: round(maxHP / 2) as move damage, so Magic
+            // Guard keeps it and Rock Head cannot refuse it.
+            let recoil = stats::round_fraction(u32::from(self.mon(actor).stats[0]), [1, 2]);
+            let hp_before = self.mon(actor).hp;
+            self.indirect_damage(dex, actor, actor, recoil, EffectRef::Move(move_id))?;
             self.emergency_exit_check(dex, actor, hp_before)?;
         }
         self.each_update(dex)?;
