@@ -149,6 +149,11 @@ pub struct PokemonState {
     /// switch-out.
     #[serde(default)]
     pub disguise_busted: bool,
+    /// `abilities:zerotohero`: the switch-in activation message is shown once
+    /// per Hero forme. Cleared by the switch-out forme change and set by the
+    /// first switch-in that follows it.
+    #[serde(default)]
+    pub hero_message_displayed: bool,
     pub ability_effect_order: Option<u32>,
     pub item_effect_order: Option<u32>,
     pub item: Id,
@@ -279,6 +284,7 @@ impl PokemonState {
             ability_ending: false,
             protean_used: false,
             disguise_busted: false,
+            hero_message_displayed: false,
             ability_effect_order: None,
             item_effect_order: None,
             item: set.item,
@@ -359,7 +365,7 @@ impl Outcome {
 /// Current snapshot schema. Bump when the persisted world shape changes; the
 /// restore path rejects every other value, and tests read this constant so a
 /// bump cannot leave a stale hard-coded expectation behind.
-pub const SNAPSHOT_SCHEMA: u32 = 11;
+pub const SNAPSHOT_SCHEMA: u32 = 12;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BattleState {
@@ -869,6 +875,13 @@ impl BattleState {
                     } else if id == dex.effects.glaive_rush {
                         // `moves:glaiverush.condition`: a duration-less
                         // drawback volatile that `onBeforeMove` consumes.
+                        effect.duration.is_none()
+                            && effect.values.is_empty()
+                            && effect.source.is_some()
+                    } else if id == dex.effects.minimize {
+                        // `moves:minimize.condition`: a duration-less evasion
+                        // volatile with the caster recorded as its source and
+                        // no payload.
                         effect.duration.is_none()
                             && effect.values.is_empty()
                             && effect.source.is_some()

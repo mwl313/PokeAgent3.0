@@ -119,6 +119,10 @@ pub struct Move {
     /// `flags.reflectable`: the move can be reflected by Magic Bounce. The
     /// reference checks this flag before any other bounce predicate.
     pub reflectable: bool,
+    /// `flags.minimize`: while the target carries the `minimize` volatile this
+    /// move skips the accuracy roll (`onAccuracy` returns true) and deals
+    /// doubled damage (`onSourceModifyDamage`).
+    pub minimize: bool,
     /// `flags.heal`: the move recovers HP, so Heal Block disables it in the
     /// request and refuses it when it was committed before the volatile landed.
     pub heal: bool,
@@ -551,6 +555,11 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:glaiverush.condition.onAccuracy",
     "moves:glaiverush.condition.onSourceModifyDamage",
     "moves:glaiverush.condition.onBeforeMove",
+    // Minimize: the evasion volatile's restart refusal, accuracy bypass and
+    // doubled damage against `flags.minimize` moves.
+    "moves:minimize.condition.onRestart",
+    "moves:minimize.condition.onAccuracy",
+    "moves:minimize.condition.onSourceModifyDamage",
     // Clangorous Soul: HP gate, five-stat self boost and HP payment.
     "moves:clangoroussoul.onTry",
     "moves:clangoroussoul.onTryHit",
@@ -851,6 +860,9 @@ const HANDLED_VOLATILES: &[&str] = &[
     "yawn",
     // Glaive Rush's drawback volatile (accuracy, doubled damage, cleanup).
     "glaiverush",
+    // Minimize's evasion volatile (accuracy bypass and doubled damage against
+    // `flags.minimize` moves, refused restart).
+    "minimize",
     // Binding moves' damage/trap volatile.
     "partiallytrapped",
     // Perish Song's three-turn countdown and Leech Seed's drain.
@@ -1310,6 +1322,7 @@ impl Dex {
             protect: false,
             sound: false,
             reflectable: false,
+            minimize: false,
             heal: false,
             bypass_sub: false,
             bullet: false,
@@ -1410,6 +1423,7 @@ impl Dex {
                 protect: d["flags"]["protect"] == 1,
                 sound: d["flags"]["sound"] == 1,
                 reflectable: d["flags"]["reflectable"] == 1,
+                minimize: d["flags"]["minimize"] == 1,
                 heal: d["flags"]["heal"] == 1,
                 bypass_sub: d["flags"]["bypasssub"] == 1,
                 bullet: d["flags"]["bullet"] == 1,
@@ -1753,6 +1767,7 @@ impl Dex {
             helping_hand_move: lookup("moves", "helpinghand")?,
             roost: lookup("conditions", "roost")?,
             glaive_rush: lookup("conditions", "glaiverush")?,
+            minimize: lookup("conditions", "minimize")?,
             partially_trapped: lookup("conditions", "partiallytrapped")?,
             perish_song: lookup("conditions", "perishsong")?,
             leech_seed: lookup("conditions", "leechseed")?,
