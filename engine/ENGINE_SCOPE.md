@@ -393,3 +393,30 @@ bash scripts/cargo.sh clippy --locked --all-targets -- -D warnings
 Rust 1.90.0 is pinned in `rust-toolchain.toml`; resolved dependencies are in the root `Cargo.lock`. The toolchain lives under ignored `.tools/`, and builds under ignored `target/`. Host Python, torch, CUDA, drivers, GPU power settings and services are unchanged. No GPU work has been performed.
 
 The exporter and Rust ports derive from the pinned Showdown source, whose MIT notice is preserved in `engine/data/SHOWDOWN-LICENSE`. The third-party `jackson-nestelroad/battler` source was inspected in a temporary directory for reuse. Its general Gen9 support does not establish pinned Champions parity, and its interpreted effects/nightly requirements do not fit this project's selected native representation directly; no battler code was incorporated.
+
+### Boost reset fixtures (Haze / Psych Up)
+
+The declarative move corpus gave Haze and Psych Up automatic fixtures, but
+neither battle ever held a non-zero boost, so the ported semantics were not
+differentially exercised. `engine/tests/generate_more_boost_reset.mjs` adds
+four complete legal battles that force the mechanic and are merged into the
+corpus by the exporter:
+
+- `boost_reset_haze_clears_positive` - Swords Dance (+2 Attack) and Calm Mind
+  boosts on both sides are all cleared on the Haze turn and stay zero.
+- `boost_reset_haze_clears_negative` - Icy Wind's -1 Speed on both of the
+  Haze user's side's actives is cleared, and the Protect on the Haze turn
+  keeps the drop from being re-applied.
+- `boost_reset_psychup_copies_positive` - the slower Psych Up user copies the
+  target's two Swords Dance stages and never holds an Attack stage before the
+  copy.
+- `boost_reset_psychup_copies_negative` - Psych Up copies the target's -1
+  Speed stage after Icy Wind (the target's ability must not intercept the
+  drop; a Clear Body target would silently void the check).
+
+Each fixture records the reference request at every boundary, so the served
+legal-action mask is compared as well. Verified after the merge: 641 fixtures
+/ 13,687 decision boundaries re-verified by `node engine/tests/verify_turn_fixtures.mjs`
+against a freshly booted pinned Showdown with zero mismatches; the full Rust
+suite and clippy (with and without `--features python`) are green; the
+manifest digest matches the merged corpus.
