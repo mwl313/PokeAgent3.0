@@ -1363,6 +1363,33 @@ impl BattleState {
         if dex.effects.abilities[self.mon(e).ability as usize] == Ability::Moldbreaker {
             self.reveal_ability(e)?;
         }
+        // `abilities:pressure.onStart`: Pressure is announced on entry.
+        if dex.effects.abilities[self.mon(e).ability as usize] == Ability::Pressure {
+            self.reveal_ability(e)?;
+        }
+        // `abilities:frisk.onStart`: every active foe's held item is announced.
+        // The ability only becomes public knowledge through the first item
+        // message, so an item-less opposing side stays hidden.
+        if dex.effects.abilities[self.mon(e).ability as usize] == Ability::Frisk {
+            let foes: SmallVec<[Entity; 2]> = self
+                .active_entities(false)
+                .into_iter()
+                .filter(|foe| foe.side != e.side && self.mon(*foe).item != 0)
+                .collect();
+            for (index, foe) in foes.into_iter().enumerate() {
+                if index == 0 {
+                    self.reveal_ability(e)?;
+                }
+                self.emit(
+                    EventKind::Item,
+                    foe,
+                    None,
+                    EffectRef::Item(self.mon(foe).item),
+                    0,
+                    false,
+                )?;
+            }
+        }
         // `abilities:trace.onStart`: arm the one-shot seek and immediately run
         // the same `Update` callback. The pinned regulation has no `noability`
         // or Ability Shield, so only the `notrace` filter can refuse a copy.
@@ -2347,7 +2374,6 @@ impl Ability {
             | Ability::Embodyaspectwellspring
             | Ability::Forecast
             | Ability::Forewarn
-            | Ability::Frisk
             | Ability::Gluttony
             | Ability::Guarddog
             | Ability::Gulpmissile
@@ -2376,7 +2402,6 @@ impl Ability {
             | Ability::Pickup
             | Ability::Piercingdrill
             | Ability::Plus
-            | Ability::Pressure
             | Ability::Quickdraw
             | Ability::Rattled
             | Ability::Receiver

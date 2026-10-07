@@ -1568,6 +1568,38 @@ impl BattleState {
             targets.clear();
             targets.push(target);
         }
+        // `abilities:pressure.onDeductPP`: the reference resolves the move's
+        // apparent targets (after redirection) and charges one extra PP per
+        // opposing Pressure holder among them (`pressureTargets`; `foeSide`
+        // moves resolve none, `mustpressure` moves use every foe). The base PP
+        // deduction in `runMove` already happened; nested callers pay nothing.
+        if slot != NO_SLOT && !locked {
+            let pressure_targets: SmallVec<[Entity; 4]> = if m.must_pressure {
+                self.active_entities(false)
+                    .into_iter()
+                    .filter(|foe| foe.side != actor.side)
+                    .collect()
+            } else if m.target == Target::FoeSide {
+                SmallVec::new()
+            } else {
+                targets.clone()
+            };
+            let extra = pressure_targets
+                .into_iter()
+                .filter(|target| {
+                    target.side != actor.side
+                        && self.mon(*target).hp > 0
+                        && dex.effects.abilities[self.mon(*target).ability as usize]
+                            == Ability::Pressure
+                })
+                .count() as u8;
+            if extra > 0 {
+                let mon = self.mon_mut(actor);
+                let pp = mon.moves[slot as usize].pp;
+                mon.moves[slot as usize].pp = pp.saturating_sub(extra);
+                mon.base_moves[slot as usize].pp = pp.saturating_sub(extra);
+            }
+        }
         self.emit(
             EventKind::Move,
             actor,

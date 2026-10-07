@@ -143,6 +143,9 @@ pub struct Move {
     pub ignore_ability: bool,
     /// `flags.nosleeptalk`: excluded from Sleep Talk's candidate list.
     pub no_sleep_talk: bool,
+    /// `flags.mustpressure`: the move charges Pressure PP from every foe, not
+    /// only its apparent targets (Imprison and the side hazards declare it).
+    pub must_pressure: bool,
     /// `sleepUsable`: the move stays selectable (and is not refused) while the
     /// user is asleep; only Sleep Talk and Snore declare it in the pinned data.
     pub sleep_usable: bool,
@@ -1324,6 +1327,7 @@ impl Dex {
             ignore_immunity: false,
             ignore_ability: false,
             no_sleep_talk: false,
+            must_pressure: false,
             sleep_usable: false,
             calls_move: false,
             tracks_target: false,
@@ -1434,6 +1438,7 @@ impl Dex {
                 ignore_immunity: d["ignoreImmunity"].as_bool().unwrap_or(false),
                 ignore_ability: d["ignoreAbility"].as_bool().unwrap_or(false),
                 no_sleep_talk: d["flags"]["nosleeptalk"] == 1,
+                must_pressure: d["flags"]["mustpressure"] == 1,
                 sleep_usable: d["sleepUsable"].as_bool().unwrap_or(false),
                 calls_move: d["callsMove"].as_bool().unwrap_or(false),
                 tracks_target: d["tracksTarget"].as_bool().unwrap_or(false),
