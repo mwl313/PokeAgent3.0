@@ -175,6 +175,9 @@ pub struct Move {
     /// connecting hit, with the move itself as the damage source, so Magic
     /// Guard does not refuse it and Rock Head does not block it.
     pub mind_blown_recoil: bool,
+    /// `hasCrashDamage: true`: a failed move pays half the user's base
+    /// maximum HP as crash damage (High Jump Kick family).
+    pub has_crash_damage: bool,
     pub drain: Option<[u16; 2]>,
     pub side_condition: Id,
     /// `slotCondition`: a condition attached to the user's *slot* (Revival
@@ -368,6 +371,9 @@ const HANDLED_MOVE_FIELDS: &[&str] = &[
     "drain",
     "recoil",
     "mindBlownRecoil",
+    // Crash damage: High Jump Kick / Supercell Slam / Axe Kick pay half the
+    // user's base maximum HP on a failed move through the same MoveFail path.
+    "hasCrashDamage",
     // Only Steel Beam's `onMoveFail` is ported (via the mindBlownRecoil
     // primitive). The crash-damage moves that share the callback
     // (High Jump Kick, Supercell Slam, Axe Kick) stay blocked by their own
@@ -708,6 +714,9 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     // Steel Beam: `onMoveFail` is executed by the `mindBlownRecoil` primitive
     // (half the user's maximum HP as move damage on a miss or Protect block).
     "moves:steelbeam.onMoveFail",
+    "moves:highjumpkick.onMoveFail",
+    "moves:supercellslam.onMoveFail",
+    "moves:axekick.onMoveFail",
     // Substitute: the self-cost decoy, its fail gates and the primary-hit
     // interception condition.
     "moves:substitute.onTryHit",
@@ -1527,6 +1536,7 @@ impl Dex {
             protect_punish: crate::effects::ProtectPunish::None,
             recoil: None,
             mind_blown_recoil: false,
+            has_crash_damage: false,
             drain: None,
             side_condition: 0,
             slot_condition: 0,
@@ -1672,6 +1682,7 @@ impl Dex {
                     .as_array()
                     .map(|v| [v[0].as_u64().unwrap() as u16, v[1].as_u64().unwrap() as u16]),
                 mind_blown_recoil: d["mindBlownRecoil"].as_bool().unwrap_or(false),
+                has_crash_damage: d["hasCrashDamage"].as_bool().unwrap_or(false),
                 drain: d["drain"]
                     .as_array()
                     .map(|v| [v[0].as_u64().unwrap() as u16, v[1].as_u64().unwrap() as u16]),

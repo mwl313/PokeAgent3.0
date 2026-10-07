@@ -93,6 +93,76 @@ const TRIALS = [
       return null;
     },
   },
+  {
+    name: 'crashdamage_pays_half_max_on_block',
+    p1: () => team(setOf('Medicham', 'Pure Power', ['High Jump Kick', 'Protect', 'Close Combat'])),
+    p2: () => team(setOf('Metagross', 'Clear Body', ['Iron Head', 'Protect', 'Psychic'])),
+    script: [
+      {p1: [{move: 'highjumpkick', target: 1}, 'protect'], p2: ['protect', 'protect']},
+      {p1: ['protect', 'protect'], p2: ['protect', 'protect']},
+      {p1: ['protect', 'protect'], p2: ['protect', 'protect']},
+    ],
+    coverage: {move: 'highjumpkick'},
+    verify(fixture, session) {
+      if (!logHas(session, /\|move\|p1a: s0\|High Jump Kick\|/)) return 'High Jump Kick never executed';
+      const max = fixture.steps[0].expected.sides[0].pokemon.find(p => p.roster === 0).max_hp;
+      const half = Math.trunc(max / 2);
+      const hp = fixture.steps.map(step => step.expected.sides[0].pokemon.find(p => p.roster === 0)).filter(Boolean).map(p => p.hp);
+      if (!hp.some((value, i) => i > 0 && hp[i - 1] - value === half)) {
+        return 'the user never paid half its maximum HP';
+      }
+      return null;
+    },
+  },
+  {
+    name: 'crashdamage_supercellslam_and_axekick_pay_half_max',
+    p1: () => team(
+      setOf('Ampharos', 'Static', ['Supercell Slam', 'Protect', 'Dragon Pulse']),
+      setOf('Medicham', 'Pure Power', ['Axe Kick', 'Protect', 'Close Combat']),
+    ),
+    p2: () => team(setOf('Metagross', 'Clear Body', ['Iron Head', 'Protect', 'Psychic'])),
+    script: [
+      {p1: [{move: 'supercellslam', target: 1}, {move: 'axekick', target: 1}], p2: ['protect', 'protect']},
+      {p1: ['protect', 'protect'], p2: ['protect', 'protect']},
+      {p1: ['protect', 'protect'], p2: ['protect', 'protect']},
+      {p1: ['protect', 'protect'], p2: ['protect', 'protect']},
+    ],
+    coverage: {move: 'supercellslam'},
+    verify(fixture, session) {
+      if (!logHas(session, /\|move\|p1a: s0\|Supercell Slam\|/)) return 'Supercell Slam never executed';
+      if (!logHas(session, /\|move\|p1b: s1\|Axe Kick\|/)) return 'Axe Kick never executed';
+      const paid = (side, roster) => {
+        const steps = fixture.steps
+          .map(step => step.expected.sides[side].pokemon.find(p => p.roster === roster))
+          .filter(Boolean)
+          .map(p => p.hp);
+        return steps.some((value, i) => i > 0 && steps[i - 1] - value > 0 && value <= steps[0] / 2);
+      };
+      if (!paid(0, 0)) return 'Supercell Slam never paid crash damage';
+      if (!paid(0, 1)) return 'Axe Kick never paid crash damage';
+      return null;
+    },
+  },
+  {
+    name: 'crashdamage_axekick_pays_half_max',
+    p1: () => team(setOf('Medicham', 'Pure Power', ['Axe Kick', 'Protect', 'Close Combat'])),
+    p2: () => team(setOf('Metagross', 'Clear Body', ['Iron Head', 'Protect', 'Psychic'])),
+    script: [
+      {p1: [{move: 'axekick', target: 1}, 'protect'], p2: ['protect', 'protect']},
+      {p1: ['protect', 'protect'], p2: ['protect', 'protect']},
+      {p1: ['protect', 'protect'], p2: ['protect', 'protect']},
+    ],
+    coverage: {move: 'axekick'},
+    verify(fixture, session) {
+      if (!logHas(session, /\|move\|p1a: s0\|Axe Kick\|/)) return 'Axe Kick never executed';
+      const max = fixture.steps[0].expected.sides[0].pokemon.find(p => p.roster === 0).max_hp;
+      const hp = fixture.steps.map(step => step.expected.sides[0].pokemon.find(p => p.roster === 0)).filter(Boolean).map(p => p.hp);
+      if (!hp.some((value, i) => i > 0 && hp[i - 1] - value === Math.trunc(max / 2))) {
+        return 'the user never paid half its maximum HP';
+      }
+      return null;
+    },
+  },
 ];
 
 runTrials(TRIALS, {seedBase: 26000, artifact: 'more_spinfamily.json', debugEnv: 'DEBUG_SPIN'});

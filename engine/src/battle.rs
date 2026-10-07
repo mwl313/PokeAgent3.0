@@ -3296,9 +3296,15 @@ impl BattleState {
             // Reference `useMoveInner` runs the move-owned `onMoveFail` before
             // the action ends. Steel Beam pays its half-maximum-HP recoil here
             // too, so a miss or a Protect block still damages the user.
-            if m.mind_blown_recoil {
-                let recoil =
-                    stats::round_fraction(u32::from(self.mon(actor).stats[0]), [1, 2]);
+            if m.mind_blown_recoil || m.has_crash_damage {
+                // Steel Beam rounds its half-maximum recoil; the crash-damage
+                // family hands `baseMaxhp / 2` to the truncating damage path.
+                let max = u32::from(self.mon(actor).stats[0]);
+                let recoil = if m.has_crash_damage {
+                    max / 2
+                } else {
+                    stats::round_fraction(max, [1, 2])
+                };
                 let hp_before = self.mon(actor).hp;
                 self.indirect_damage(dex, actor, actor, recoil, EffectRef::Move(move_id))?;
                 self.emergency_exit_check(dex, actor, hp_before)?;
