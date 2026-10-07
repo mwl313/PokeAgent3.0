@@ -1866,7 +1866,18 @@ impl BattleState {
                 return Ok(());
             }
             let pick = candidates[self.rng.below(candidates.len() as u32) as usize];
-            return self.use_called_move(dex, actor, pick, slot);
+            self.use_called_move(dex, actor, pick, slot)?;
+            // Reference `hitStepMoveHitLoop` for the Sleep Talk action itself:
+            // `moves:sleeptalk.onHit` ignores the called move's result and
+            // returns undefined, which `runMoveEffects` turns into "did
+            // something". The outer hit loop therefore always runs both
+            // `eachEvent('Update')` handler-set sorts once a move was sampled
+            // and used - even when the called move itself failed before its
+            // own hit loop (e.g. a called Protect with no remaining action).
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
+            self.each_update(dex)?;
+            self.each_update(dex)?;
+            return Ok(());
         }
         if behavior == MoveBehavior::TrickRoom {
             self.toggle_trick_room(dex, actor)?;
@@ -3162,6 +3173,48 @@ impl BattleState {
         self.each_update(dex)?;
         self.process_faints(dex, self.mon(actor).hp == 0)?;
         self.each_update(dex)?;
+        // `abilities:magician.onAfterMoveSecondarySelf`: a damaging move steals
+        // the first item found among the hit targets in speed order, but only
+        // while the user's own hands are empty. The reference speed-sorts the
+        // hit-target list, so ties consume their shuffle draws here.
+        if dex.effects.abilities[self.mon(actor).ability as usize] == Ability::Magician
+            && !self.mon(actor).plain_switch_flag
+            && !hit_targets.is_empty()
+            && self.mon(actor).item == 0
+        {
+            let mut ordered: SmallVec<[(Entity, Priority); 4]> = hit_targets
+                .iter()
+                .map(|&e| {
+                    (
+                        e,
+                        Priority {
+                            speed: self.mon(e).cached_speed,
+                            ..Default::default()
+                        },
+                    )
+                })
+                .collect();
+            speed_sort(&mut ordered, &mut self.rng, |x| x.1);
+            for (target, _) in ordered {
+                if target == actor {
+                    continue;
+                }
+                let crate::battle::hooks::TakeOutcome::Taken(item) =
+                    self.take_item_checked(dex, target)?
+                else {
+                    continue;
+                };
+                // `Pokemon#setItem` refuses only a fainted or inactive
+                // recipient; a refused give returns the item to its holder.
+                if self.mon(actor).hp == 0 || self.mon(actor).active_slot.is_none() {
+                    self.mon_mut(target).item = item;
+                    continue;
+                }
+                self.reveal_ability(actor)?;
+                self.give_item(dex, actor, target, item)?;
+                return Ok(());
+            }
+        }
         // `abilities:pickpocket.onAfterMoveSecondary`: a contact hit against a
         // holder with no item and no pending switch steals the attacker's item
         // (`source.switchFlag === true` is strict, so a pivot's move-id flag

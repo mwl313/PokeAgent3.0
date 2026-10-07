@@ -2608,7 +2608,6 @@ impl Ability {
             | Ability::Klutz
             | Ability::Lightmetal
             | Ability::Longreach
-            | Ability::Magician
             | Ability::Megasol
             | Ability::Merciless
             | Ability::Mimicry
