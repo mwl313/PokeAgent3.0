@@ -882,9 +882,12 @@ impl BattleState {
                             && effect.source.is_some()
                     } else if id == dex.effects.leech_seed {
                         // `moves:leechseed.condition`: a duration-less drain
-                        // volatile that records the seeding slot.
+                        // volatile that records the seeder (as the public
+                        // source) and its slot, which the residual resolves to
+                        // the slot's current occupant.
                         effect.duration.is_none()
-                            && effect.values.is_empty()
+                            && effect.values.len() <= 1
+                            && effect.values.first().is_none_or(|slot| (0..=1).contains(slot))
                             && effect.source.is_some()
                     } else if id == dex.effects.substitute {
                         // `moves:substitute.condition`: the decoy's remaining

@@ -4690,6 +4690,15 @@ impl BattleState {
                 return Ok(false);
             }
             let order = self.allocate_effect_order()?;
+            // Reference `Pokemon#addVolatile`: the condition records the
+            // seeder's *slot* (`source.getSlot()`); the residual resolves the
+            // slot's current occupant with `Battle#getAtSlot`, so a seed keeps
+            // draining into whoever stands in that slot after a switch or a
+            // faint-and-replace.
+            let seeder_slot = source
+                .and_then(|seeder| self.mon(seeder).active_slot)
+                .map(|slot| vec![i64::from(slot)])
+                .unwrap_or_default();
             self.mon_mut(target).volatiles.insert(
                 volatile,
                 EffectState {
@@ -4697,6 +4706,7 @@ impl BattleState {
                     source: source_slot,
                     effect_order: order,
                     effect_order_assigned: true,
+                    values: seeder_slot,
                     ..Default::default()
                 },
             );
@@ -5230,11 +5240,19 @@ impl BattleState {
         for (e, id, status, _) in handlers {
             if status == 0 && id == dex.effects.leech_seed {
                 // `moves:leechseed.condition.onResidual` (order 8): drain an
-                // eighth of the holder's maximum HP into the seeding slot.
+                // eighth of the holder's maximum HP into the *current occupant*
+                // of the seeding slot (`Battle#getAtSlot(sourceSlot)`); an empty
+                // or fainted slot leeches nothing and keeps the seed.
                 let Some(state) = self.mon(e).volatiles.get(&id) else {
                     continue;
                 };
-                let Some((side, roster)) = state.source else {
+                let Some((side, _roster)) = state.source else {
+                    continue;
+                };
+                let Some(slot) = state.values.first().copied() else {
+                    continue;
+                };
+                let Some(roster) = self.sides[side.index()].active[slot as usize] else {
                     continue;
                 };
                 let source = Entity {
