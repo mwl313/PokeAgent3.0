@@ -1531,6 +1531,46 @@ impl BattleState {
                 return Ok(());
             }
         }
+        // `items:metronome.condition.onTryMove` (priority -2, the last TryMove
+        // handler): a lost item removes the counter volatile here; otherwise
+        // the consecutive-use counter advances only when the previous turn
+        // used the same move successfully. A two-turn release counts its
+        // charge turn as one step, exactly like the reference branch.
+        if self
+            .mon(actor)
+            .volatiles
+            .contains_key(&dex.effects.metronome)
+        {
+            if dex.effects.items[self.mon(actor).item as usize] != Item::Metronome {
+                self.mon_mut(actor).volatiles.remove(&dex.effects.metronome);
+            } else {
+                let charged = self
+                    .mon(actor)
+                    .volatiles
+                    .contains_key(&dex.effects.two_turn_move);
+                let (num, last) = {
+                    let state = &self.mon(actor).volatiles[&dex.effects.metronome];
+                    (state.values[0], state.values[1])
+                };
+                let same = last == i64::from(move_id);
+                let previous_succeeded =
+                    self.mon(actor).move_last_turn_result == MoveResult::Success;
+                let next = if same && previous_succeeded {
+                    num + 1
+                } else if charged {
+                    if same { num + 1 } else { 1 }
+                } else {
+                    0
+                };
+                let state = self
+                    .mon_mut(actor)
+                    .volatiles
+                    .get_mut(&dex.effects.metronome)
+                    .expect("metronome volatile present");
+                state.values[0] = next;
+                state.values[1] = i64::from(move_id);
+            }
+        }
         if behavior == MoveBehavior::Terrain {
             self.start_terrain(dex, actor, m.terrain, false)?;
             self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
@@ -2508,6 +2548,7 @@ impl BattleState {
                     actor,
                     target,
                     stats::round_fraction(u32::from(actual), fraction),
+                    EffectRef::Condition(dex.effects.drain),
                 )?;
             }
         }
@@ -2577,6 +2618,39 @@ impl BattleState {
                         )?;
                     }
                     did_anything = true;
+                    continue;
+                }
+                // `moves:strengthsap.onHit`: a target already at -6 Attack
+                // fails the move outright. Otherwise the heal amount is the
+                // target's stage-boosted Attack (`getStat('atk', false, true)`
+                // skips ModifyStat ability modifiers), the Attack drop is
+                // applied first, and the move succeeds when either the drop
+                // changed a stage or the heal actually restored HP.
+                if hooks & crate::effects::hook::STRENGTH_SAP != 0 {
+                    let (atk_stage, atk_stat) = {
+                        let t = self.mon(target);
+                        (t.boosts[0], t.stats[1])
+                    };
+                    if atk_stage > -6 {
+                        let amount = stats::apply_stage(u32::from(atk_stat), atk_stage);
+                        let mut drop = [0i8; 7];
+                        drop[0] = -1;
+                        let changed = self.boost(
+                            dex,
+                            target,
+                            actor,
+                            drop,
+                            BoostCause::Move { secondary: false },
+                        )?;
+                        let healed = self.drain_heal(
+                            dex,
+                            actor,
+                            target,
+                            amount,
+                            EffectRef::Move(move_id),
+                        )?;
+                        did_anything |= changed || healed > 0;
+                    }
                     continue;
                 }
                 // `moves:soak.onHit`: pure-Water targets refuse; anything else
@@ -3053,12 +3127,13 @@ impl BattleState {
                 if actual != 0
                     && let Some(fraction) = m.drain
                 {
-                    self.drain_heal(
-                        dex,
-                        actor,
-                        target,
-                        stats::round_fraction(u32::from(actual), fraction),
-                    )?;
+                self.drain_heal(
+                    dex,
+                    actor,
+                    target,
+                    stats::round_fraction(u32::from(actual), fraction),
+                    EffectRef::Condition(dex.effects.drain),
+                )?;
                 }
                 self.hit_effect(dex, target, actor, &m.hit, false)?;
                 if hit == 1
@@ -3922,7 +3997,13 @@ impl BattleState {
             // that `battle.damage` applies to an ordinary drain.
             let amount = (dealt as u64 * u64::from(numerator))
                 .div_ceil(u64::from(denominator));
-            self.drain_heal(dex, source, target, amount as u32)?;
+            self.drain_heal(
+                dex,
+                source,
+                target,
+                amount as u32,
+                EffectRef::Condition(dex.effects.drain),
+            )?;
         }
         Ok(true)
     }

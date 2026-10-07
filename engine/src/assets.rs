@@ -566,6 +566,8 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:substitute.condition.onStart",
     "moves:substitute.condition.onTryPrimaryHit",
     "moves:substitute.condition.onEnd",
+    // Strength Sap: the Attack-derived heal and the Attack drop.
+    "moves:strengthsap.onHit",
 ];
 
 /// Ported action-local callbacks, keyed by move id. Every entry must have its
@@ -650,6 +652,7 @@ fn move_hooks(id: &str) -> u32 {
         "haze" => hook::HAZE,
         "psychup" => hook::PSYCH_UP,
         "poltergeist" => hook::POLTERGEIST,
+        "strengthsap" => hook::STRENGTH_SAP,
         "doubleshock" => hook::DOUBLE_SHOCK,
         _ => 0,
     }
@@ -1696,6 +1699,7 @@ impl Dex {
             perish_song: lookup("conditions", "perishsong")?,
             leech_seed: lookup("conditions", "leechseed")?,
             substitute: lookup("conditions", "substitute")?,
+            metronome: lookup("conditions", "metronome")?,
             throat_chop: lookup("conditions", "throatchop")?,
             encore: lookup("conditions", "encore")?,
             taunt: lookup("conditions", "taunt")?,

@@ -71,6 +71,9 @@ pub mod hook {
     /// `moves:poltergeist.onTry|onTryHit`: the move fails without a held item
     /// and publicly reveals the item when it connects.
     pub const POLTERGEIST: u32 = 1 << 23;
+    /// `moves:strengthsap.onHit`: heal by the target's stage-boosted Attack
+    /// (no ModifyStat modifiers) and drop the target's Attack one stage.
+    pub const STRENGTH_SAP: u32 = 1 << 24;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -563,6 +566,9 @@ pub enum Item {
     RockyHelmet,
     ExpertBelt,
     BigRoot,
+    /// Metronome: consecutive uses of the same move raise its damage
+    /// (`conditions:metronome.onModifyDamage`, 4096..8192 over six steps).
+    Metronome,
     LightClay,
     DampRock,
     HeatRock,
@@ -662,6 +668,7 @@ impl Item {
             "rockyhelmet" => Self::RockyHelmet,
             "expertbelt" => Self::ExpertBelt,
             "bigroot" => Self::BigRoot,
+            "metronome" => Self::Metronome,
             "lightclay" => Self::LightClay,
             "damprock" => Self::DampRock,
             "heatrock" => Self::HeatRock,
@@ -1043,6 +1050,8 @@ pub struct NativeEffects {
     /// `moves:substitute.condition`: the user's damage-absorbing decoy. The
     /// volatile's single value is the decoy's remaining HP.
     pub substitute: Id,
+    /// `conditions:metronome` volatile: the held-item consecutive-use counter.
+    pub metronome: Id,
     /// Volatile that disables and refuses sound moves for two turns.
     pub throat_chop: Id,
     /// `move:encore` volatile: locks the holder into its last move.

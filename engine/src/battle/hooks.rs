@@ -334,7 +334,8 @@ impl BattleState {
         actor: Entity,
         target: Entity,
         amount: u32,
-    ) -> Result<()> {
+        effect: EffectRef,
+    ) -> Result<u32> {
         if dex.effects.abilities[self.mon(target).ability as usize] == Ability::LiquidOoze
             && !self.mon(target).fainted
         {
@@ -348,7 +349,7 @@ impl BattleState {
                     EffectRef::Ability(self.mon(target).ability),
                 )?;
             }
-            return Ok(());
+            return Ok(0);
         }
         let amount = if dex.effects.items[self.mon(actor).item as usize] == Item::BigRoot {
             stats::modify(amount, 5324)
@@ -357,7 +358,7 @@ impl BattleState {
         };
         let p = self.mon(actor);
         if p.hp == 0 || p.hp == p.stats[0] || amount == 0 {
-            return Ok(());
+            return Ok(0);
         }
         let actual = amount.min(u32::from(p.stats[0] - p.hp)) as u16;
         self.mon_mut(actor).hp += actual;
@@ -365,10 +366,11 @@ impl BattleState {
             EventKind::Heal,
             actor,
             Some(target),
-            EffectRef::Condition(dex.effects.drain),
+            effect,
             i32::from(actual),
             true,
-        )
+        )?;
+        Ok(u32::from(actual))
     }
 
     pub(super) fn indirect_damage(
@@ -1713,6 +1715,15 @@ impl BattleState {
                 // holder's own critical hits deal 1.5x.
                 if attacking == Ability::Sniper {
                     add(actor, 0, if critical { 6144 } else { 4096 });
+                }
+                // `items:metronome.condition.onModifyDamage`: the attacker's
+                // consecutive-use counter scales every damaging move it uses
+                // (4096, 4915, 5734, 6553, 7372, 8192 for stacks 0..5+, and
+                // the handler also participates at zero).
+                if let Some(state) = self.mon(actor).volatiles.get(&dex.effects.metronome) {
+                    const METRONOME_MODS: [u32; 6] = [4096, 4915, 5734, 6553, 7372, 8192];
+                    let index = state.values[0].clamp(0, 5) as usize;
+                    add(actor, 0, METRONOME_MODS[index]);
                 }
             }
             // `abilities:furcoat|marvelscale|grasspelt.onModifyDef` all carry
