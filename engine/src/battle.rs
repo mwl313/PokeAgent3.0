@@ -4490,7 +4490,7 @@ impl BattleState {
                 let p = &self.sides[side].pokemon[roster as usize];
                 let last_active = (slot + 1..2).all(|later| {
                     self.sides[side].active[later]
-                        .map_or(true, |r| self.sides[side].pokemon[r as usize].fainted)
+                        .is_none_or(|r| self.sides[side].pokemon[r as usize].fainted)
                 });
                 // Reference `getLockedMove()`: `mustrecharge.onLockMove`
                 // returns the Recharge pseudo-move, and `twoturnmove.onLockMove`
