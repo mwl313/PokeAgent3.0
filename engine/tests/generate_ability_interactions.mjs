@@ -116,7 +116,7 @@ const compact = session => {
     field,
     sides: b.sides.map(s => ({
       request: b.ended ? 'Finished' : s.activeRequest?.wait || s.isChoiceDone() ? 'Wait' : s.requestState === 'teampreview' ? 'Preview' : s.requestState === 'switch' ? 'Replacement' : 'Normal',
-      conditions: Object.entries(s.sideConditions).map(([id, state]) => [ids.conditions[id], state.duration ?? 0]).sort((a, c) => a[0] - c[0]),
+      conditions: Object.entries(s.sideConditions).map(([id, state]) => [ids.conditions[id], state.duration ?? state.layers ?? 0]).sort((a, c) => a[0] - c[0]),
       pokemon: s.pokemon.map(p => ({
         roster: roster(p),
         species: ids.species[p.species.id] ?? 0,

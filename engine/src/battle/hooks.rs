@@ -845,6 +845,19 @@ impl BattleState {
                     index,
                 ));
             }
+            // Toxic Debris is another default `onDamagingHit` ability.
+            if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Toxicdebris {
+                handlers.push((
+                    target,
+                    13,
+                    Priority {
+                        sub_order: 7,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
             if dex.effects.items[self.mon(target).item as usize] == Item::RockyHelmet {
                 handlers.push((
                     target,
@@ -1031,6 +1044,32 @@ impl BattleState {
                         // The disable lands while the attacker's move is active.
                         true,
                     )?;
+                }
+            } else if kind == 13 {
+                // `abilities:toxicdebris.onDamagingHit`: a physical hit
+                // scatters Toxic Spikes onto the attacker's side — the
+                // attacker's foe side when an ally dealt the friendly fire.
+                if m.category == Category::Physical {
+                    let side = if actor.side == target.side {
+                        1 - actor.side
+                    } else {
+                        actor.side
+                    };
+                    let layers = self.sides[side as usize]
+                        .conditions
+                        .get(&dex.effects.toxic_spikes)
+                        .and_then(|state| state.values.first())
+                        .copied()
+                        .unwrap_or(0);
+                    if layers < 2 {
+                        self.reveal_ability(target)?;
+                        self.add_side_hazard(
+                            dex,
+                            side as usize,
+                            target,
+                            dex.effects.toxic_spikes,
+                        )?;
+                    }
                 }
             } else if m.move_type == dex.effects.fire {
                 self.cure_status(target)?;
@@ -1981,7 +2020,6 @@ impl Ability {
             | Ability::Sweetveil
             | Ability::Symbiosis
             | Ability::Tangledfeet
-            | Ability::Toxicdebris
             | Ability::Trace
             | Ability::Unseenfist
             | Ability::Vitalspirit

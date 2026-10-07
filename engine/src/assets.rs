@@ -1580,6 +1580,7 @@ impl Dex {
             endure: lookup("conditions", "endure")?,
             wide_guard: lookup("conditions", "wideguard")?,
             quick_guard: lookup("conditions", "quickguard")?,
+            toxic_spikes: lookup("conditions", "toxicspikes")?,
             helping_hand: lookup("conditions", "helpinghand")?,
             follow_me: lookup("conditions", "followme")?,
             rage_powder: lookup("conditions", "ragepowder")?,

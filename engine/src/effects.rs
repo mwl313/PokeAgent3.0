@@ -951,6 +951,10 @@ pub struct NativeEffects {
     /// Duration-one side conditions that block spread / priority moves.
     pub wide_guard: Id,
     pub quick_guard: Id,
+    /// `moves:toxicspikes.condition`: a layer-based entry hazard side
+    /// condition (no duration) that poisons or badly poisons grounded
+    /// switch-ins and is absorbed by Poison types.
+    pub toxic_spikes: Id,
     /// Snow-only screen that halves both damage categories.
     pub aurora_veil: Id,
     /// Single-turn redirection / support volatiles.

@@ -925,12 +925,26 @@ impl BattleState {
                     dex.effects.aurora_veil,
                     dex.effects.wide_guard,
                     dex.effects.quick_guard,
+                    dex.effects.toxic_spikes,
                 ]
                 .contains(&id)
                 {
                     return Err(EngineError::Unsupported(format!(
                         "snapshot side condition {id}"
                     )));
+                }
+                if id == dex.effects.toxic_spikes {
+                    // Entry hazards store their layer count in `values` and
+                    // mirror it in the duration slot for the fixture contract.
+                    // Their source is the Pokémon that scattered them (the
+                    // Toxic Debris holder), which sits on either side.
+                    if !matches!(effect.values.as_slice(), [1] | [2])
+                        || effect.duration != effect.values.first().map(|layers| *layers as u16)
+                        || effect.source.is_none()
+                    {
+                        return Err(EngineError::InvalidInput("snapshot hazard layers".into()));
+                    }
+                    continue;
                 }
                 if !effect.values.is_empty() {
                     return Err(EngineError::InvalidInput(

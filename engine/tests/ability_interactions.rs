@@ -124,7 +124,13 @@ fn check(state: &BattleState, expected: &Expected, context: &str) {
             .as_object()
             .unwrap()
             .iter()
-            .map(|(id, state)| (id.parse().unwrap(), state["duration"].as_u64().unwrap() as u16))
+            .map(|(id, state)| {
+                (
+                    id.parse().unwrap(),
+                    // Duration-less side conditions (entry hazards) compare as 0.
+                    state["duration"].as_u64().unwrap_or(0) as u16,
+                )
+            })
             .collect::<std::collections::BTreeMap<_, _>>()
             .into_iter()
             .collect();

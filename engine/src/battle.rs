@@ -651,6 +651,10 @@ impl BattleState {
         speed_sort(&mut active, &mut self.rng, |p| p.1);
         for (e, _) in active {
             if incoming.contains(&e) {
+                // Reference `findSideEventHandlers(side, 'onSwitchIn')`: entry
+                // hazards are side conditions of the entrant's own side and
+                // sort at sub-order 4, before its ability (7) and item (8).
+                self.hazard_switch_in(dex, e)?;
                 self.ability_switch_in(dex, e)?;
             }
         }
@@ -660,6 +664,151 @@ impl BattleState {
             item_ports::start(self, dex, e)?;
         }
         item_ports::white_herb_event(self, dex)?;
+        Ok(())
+    }
+
+    /// Reference `Side#addSideCondition` for the entry-hazard family: a fresh
+    /// layer starts at one; an existing condition restarts and adds a layer up
+    /// to the reference cap (Toxic Spikes caps at 2), returning false when the
+    /// cap is already reached. Hazards carry no duration, so they never join
+    /// the timed residual sweep.
+    fn add_side_hazard(
+        &mut self,
+        dex: &Dex,
+        side: usize,
+        source: Entity,
+        id: Id,
+    ) -> Result<bool> {
+        debug_assert_eq!(id, dex.effects.toxic_spikes);
+        // The public event names the *side* that now carries the hazard, not
+        // the Toxic Debris holder (which stays the recorded source).
+        let subject = self.sides[side]
+            .active
+            .iter()
+            .flatten()
+            .next()
+            .map(|roster| Entity {
+                side: side as u8,
+                roster: *roster,
+            })
+            .unwrap_or(Entity {
+                side: side as u8,
+                roster: 0,
+            });
+        if let Some(state) = self.sides[side].conditions.get_mut(&id) {
+            let layers = state.values.first().copied().unwrap_or(1);
+            if layers >= 2 {
+                return Ok(false);
+            }
+            state.values[0] = layers + 1;
+            let layers = state.values[0];
+            state.duration = Some(layers as u16);
+            self.emit(
+                EventKind::SideEffectStart,
+                subject,
+                None,
+                EffectRef::Condition(id),
+                layers as i32,
+                false,
+            )?;
+            return Ok(true);
+        }
+        let order = self.allocate_effect_order()?;
+        self.sides[side].conditions.insert(
+            id,
+            EffectState {
+                id,
+                // The layer count is stored in the duration slot so the
+                // entry-hazard fixture contract (id, layers) matches every
+                // other side condition; `residual` skips this id entirely.
+                duration: Some(1),
+                values: vec![1],
+                effect_order: order,
+                effect_order_assigned: true,
+                source: Some((
+                    if source.side == 0 {
+                        SideId::P1
+                    } else {
+                        SideId::P2
+                    },
+                    source.roster,
+                )),
+            },
+        );
+        self.emit(
+            EventKind::SideEffectStart,
+            subject,
+            None,
+            EffectRef::Condition(id),
+            1,
+            false,
+        )?;
+        Ok(true)
+    }
+
+    /// Reference `moves:toxicspikes.condition.onSwitchIn`: a grounded entrant
+    /// absorbs the hazard when it is a Poison type, ignores it as a Steel type,
+    /// and is otherwise poisoned (one layer) or badly poisoned (two layers) by
+    /// the opposing side's first active Pokémon.
+    fn hazard_switch_in(&mut self, dex: &Dex, e: Entity) -> Result<()> {
+        let side = e.side as usize;
+        let mut hazards: SmallVec<[(u32, Id); 2]> = self.sides[side]
+            .conditions
+            .iter()
+            .filter(|(id, _)| **id == dex.effects.toxic_spikes)
+            .map(|(id, state)| (state.effect_order, *id))
+            .collect();
+        hazards.sort_by_key(|(order, _)| *order);
+        for (_, id) in hazards {
+            if !self.grounded(dex, e) {
+                continue;
+            }
+            if self.mon(e).types.contains(&dex.effects.poison_type) {
+                self.sides[side].conditions.remove(&id);
+                self.emit(
+                    EventKind::SideEffectEnd,
+                    e,
+                    None,
+                    EffectRef::Condition(id),
+                    0,
+                    false,
+                )?;
+                continue;
+            }
+            if self.mon(e).types.contains(&dex.effects.steel) {
+                continue;
+            }
+            let layers = self.sides[side].conditions[&id]
+                .values
+                .first()
+                .copied()
+                .unwrap_or(1);
+            let status = if layers >= 2 {
+                dex.effects.toxic
+            } else {
+                dex.effects.poison
+            };
+            let foe = 1 - side;
+            let Some(source) = self.sides[foe]
+                .active
+                .iter()
+                .flatten()
+                .map(|roster| Entity {
+                    side: foe as u8,
+                    roster: *roster,
+                })
+                .next()
+            else {
+                // The reference passes `side.foe.active[0]`, which can only be
+                // empty once the battle is over; nothing to apply.
+                continue;
+            };
+            let effect = crate::effects::HitEffect {
+                status,
+                ..Default::default()
+            };
+            self.hit_effect(dex, e, source, &effect, false)?;
+        }
         Ok(())
     }
 
@@ -3936,6 +4085,11 @@ impl BattleState {
                     (26, 5)
                 } else if id == dex.effects.aurora_veil {
                     (26, 10)
+                } else if id == dex.effects.toxic_spikes {
+                    // Entry hazards carry no residual handler at all: their
+                    // `duration` field stores the layer count for the fixture
+                    // contract, so they must never join the timed sweep.
+                    continue;
                 } else if id == dex.effects.wide_guard || id == dex.effects.quick_guard {
                     (0, 4)
                 } else {
