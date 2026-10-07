@@ -3553,17 +3553,46 @@ impl BattleState {
                 self.mon_mut(target).force_switch_flag = true;
             }
         }
-        // `selfBoost` is applied as a self-targeted hit after the full hit
-        // sequence and only when the move connected with at least one target.
+        // `useMoveInner`: `if (move.selfBoost && moveResult) this.moveHit(...)`.
+        // A self-targeted hit is voided once the move's own damage ended the
+        // battle (the reference's `spreadMoveHit` refuses a hit against a side
+        // that has already lost), so skip the boost when every foe is down.
         // It draws no RNG: the reference only rolls for `move.self` drops.
         if let Some(effect) = &m.self_boost {
-            self.hit_effect(dex, actor, actor, effect, false)?;
+            let battle_over = (0..2usize)
+                .filter(|side| *side != actor.side as usize)
+                .all(|side| {
+                    self.sides[side]
+                        .pokemon
+                        .iter()
+                        .all(|mon| !mon.selected || mon.hp == 0)
+                });
+            if !battle_over {
+                self.hit_effect(dex, actor, actor, effect, false)?;
+            }
         }
         // Reference `spreadMoveHit` (Champions): the user's own Emergency Exit
         // check runs right after the DamagingHit event, with the HP it had
         // before that event (Rough Skin-style recoil can drop it under half).
         let user_hp_before_damaging_hit = self.mon(actor).hp;
         self.damaging_hit(dex, actor, &effect_targets, m)?;
+        // `moves:ceaselessedge.onAfterHit` / `moves:stoneaxe.onAfterHit`: an
+        // alive user scatters its hazard for every damaged target unless Sheer
+        // Force consumed the action's secondary (`!move.hasSheerForce`).
+        if !m.sheer_force && self.mon(actor).hp > 0 {
+            let hazard = if move_id == dex.effects.ceaseless_edge {
+                Some(dex.effects.spikes)
+            } else if move_id == dex.effects.stone_axe {
+                Some(dex.effects.stealth_rock)
+            } else {
+                None
+            };
+            if let Some(id) = hazard {
+                for _ in &effect_targets {
+                    self.add_side_hazard(dex, 1 - actor.side as usize, actor, id)?;
+                }
+            }
+        }
         if !hit_targets.is_empty() {
             self.emergency_exit_check(dex, actor, user_hp_before_damaging_hit)?;
         }
@@ -5234,6 +5263,24 @@ impl BattleState {
         // never runs for an absorbed hit.
         if m.hooks & crate::effects::hook::STEEL_ROLLER != 0 {
             self.clear_terrain(dex, source)?;
+        }
+        // `moves:ceaselessedge.onAfterSubDamage` / `stoneaxe.onAfterSubDamage`:
+        // a decoy hit still scatters the hazard while the user is alive and
+        // Sheer Force did not consume the secondary. The asset-level `Move`
+        // cannot see the action marker, so recompute the `onModifyMove` rule.
+        let sheer_force = !m.secondaries.is_empty()
+            && dex.effects.abilities[self.mon(source).ability as usize] == Ability::Sheerforce;
+        if !sheer_force && self.mon(source).hp > 0 {
+            let hazard = if m.id == dex.effects.ceaseless_edge {
+                Some(dex.effects.spikes)
+            } else if m.id == dex.effects.stone_axe {
+                Some(dex.effects.stealth_rock)
+            } else {
+                None
+            };
+            if let Some(id) = hazard {
+                self.add_side_hazard(dex, 1 - source.side as usize, source, id)?;
+            }
         }
         Ok(true)
     }

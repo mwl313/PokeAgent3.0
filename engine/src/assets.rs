@@ -489,6 +489,12 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:covet.onAfterHit",
     "moves:corrosivegas.onHit",
     "moves:recycle.onHit",
+    // On-hit hazard setters: the AfterHit event fires for landed hits and
+    // AfterSubDamage when a decoy absorbs the attack.
+    "moves:ceaselessedge.onAfterHit",
+    "moves:ceaselessedge.onAfterSubDamage",
+    "moves:stoneaxe.onAfterHit",
+    "moves:stoneaxe.onAfterSubDamage",
     // Dire Claw's Champions secondary samples one of three major statuses and
     // applies it with `trySetStatus`; the 30% chance stays declarative.
     "moves:direclaw.secondary.onHit",
@@ -1846,6 +1852,8 @@ impl Dex {
             first_impression: lookup("moves", "firstimpression")?,
             toxic_move: lookup("moves", "toxic")?,
             helping_hand_move: lookup("moves", "helpinghand")?,
+            ceaseless_edge: lookup("moves", "ceaselessedge")?,
+            stone_axe: lookup("moves", "stoneaxe")?,
             roost: lookup("conditions", "roost")?,
             glaive_rush: lookup("conditions", "glaiverush")?,
             minimize: lookup("conditions", "minimize")?,
