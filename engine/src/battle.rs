@@ -22,6 +22,18 @@ use std::cmp::Ordering;
 mod hooks;
 mod bp_callbacks;
 mod item_ports;
+
+/// Caller-side flags for `hit_effect_with_ability`: whether the effect is a
+/// secondary roll, the entity that owns the ability being applied (ability
+/// sourced statuses reveal it), and whether the active move ignores the
+/// target's breakable ability (Mold Breaker).
+#[derive(Clone, Copy, Default)]
+pub(super) struct HitContext {
+    secondary: bool,
+    ability_source: Option<Entity>,
+    suppressing: bool,
+}
+
 mod redirect;
 mod room;
 mod terrain;
@@ -2137,7 +2149,10 @@ impl BattleState {
             let effectiveness =
                 if behavior == MoveBehavior::Struggle || m.ignore_immunity || scrappy_bypass {
                 Some(0)
-            } else if m.move_type == dex.effects.ground && ability == Ability::Levitate {
+            } else if m.move_type == dex.effects.ground
+                && ability == Ability::Levitate
+                && !self.suppressing_ability(dex, actor, target, m)
+            {
                 self.emit(
                     EventKind::Ability,
                     target,
@@ -2559,6 +2574,7 @@ impl BattleState {
             if target != actor
                 && dex.effects.abilities[self.mon(target).ability as usize]
                     == Ability::Disguise
+                && !self.suppressing_ability(dex, actor, target, m)
                 && (self.mon(target).species == dex.effects.mimikyu
                     || self.mon(target).species == dex.effects.mimikyu_totem)
             {
@@ -2580,7 +2596,12 @@ impl BattleState {
             }
             // `endure` clamps after item/berry damage modification and before
             // the damage is applied (reference `onDamage` priority -10).
-            let damage = self.sturdy_clamp(dex, target, damage)?;
+            let damage = self.sturdy_clamp(
+                dex,
+                target,
+                damage,
+                self.suppressing_ability(dex, actor, target, m),
+            )?;
             let damage = self.damage_item(dex, target, damage)?;
             let damage = self.endure_clamp(dex, target, damage);
             let hp_before = self.mon(target).hp;
@@ -2730,7 +2751,7 @@ impl BattleState {
                 {
                     did_anything |= self.set_type(dex, target, &[dex.effects.water])?;
                 } else if hooks & crate::effects::hook::SOAK == 0 {
-                    did_anything |= self.hit_effect(dex, target, actor, &m.hit, false)?;
+                    did_anything |= self.hit_effect_from_move(dex, target, actor, &m.hit, false, m)?;
                 }
             }
             // `moves:partingshot.onHit` applies the Attack/Sp. Atk drop itself
@@ -2848,7 +2869,7 @@ impl BattleState {
             for secondary in m.secondaries.iter().filter(|_| !m.sheer_force) {
                 if self.rng.below(100) < u32::from(secondary.chance) {
                     if !absorbed {
-                        self.hit_effect(dex, target, actor, &secondary.target, true)?;
+                        self.hit_effect_from_move(dex, target, actor, &secondary.target, true, m)?;
                     }
                     if hooks & crate::effects::hook::DIRE_CLAW != 0 && !absorbed {
                         self.dire_claw_secondary(dex, actor, target)?;
@@ -3059,7 +3080,10 @@ impl BattleState {
             }
             let effectiveness = if m.ignore_immunity {
                 Some(0)
-            } else if m.move_type == dex.effects.ground && ability == Ability::Levitate {
+            } else if m.move_type == dex.effects.ground
+                && ability == Ability::Levitate
+                && !self.suppressing_ability(dex, actor, target, m)
+            {
                 self.emit(
                     EventKind::Ability,
                     target,
@@ -3155,6 +3179,7 @@ impl BattleState {
                 if target != actor
                     && dex.effects.abilities[self.mon(target).ability as usize]
                         == Ability::Disguise
+                    && !self.suppressing_ability(dex, actor, target, m)
                     && (self.mon(target).species == dex.effects.mimikyu
                         || self.mon(target).species == dex.effects.mimikyu_totem)
                 {
@@ -3196,7 +3221,12 @@ impl BattleState {
                     }
                     continue;
                 }
-                let damage = self.sturdy_clamp(dex, target, damage)?;
+                let damage = self.sturdy_clamp(
+                    dex,
+                    target,
+                    damage,
+                    self.suppressing_ability(dex, actor, target, m),
+                )?;
                 let damage = self.damage_item(dex, target, damage)?;
                 let damage = self.endure_clamp(dex, target, damage);
                 let actual = damage.min(self.mon(target).hp);
@@ -3232,7 +3262,7 @@ impl BattleState {
                     EffectRef::Condition(dex.effects.drain),
                 )?;
                 }
-                self.hit_effect(dex, target, actor, &m.hit, false)?;
+                self.hit_effect_from_move(dex, target, actor, &m.hit, false, m)?;
                 if hit == 1
                     && let Some(effect) = m.self_effect.as_ref().filter(|_| !m.sheer_force)
                 {
@@ -3246,7 +3276,7 @@ impl BattleState {
                 }
                 for secondary in m.secondaries.iter().filter(|_| !m.sheer_force) {
                     if self.rng.below(100) < u32::from(secondary.chance) {
-                        self.hit_effect(dex, target, actor, &secondary.target, true)?;
+                        self.hit_effect_from_move(dex, target, actor, &secondary.target, true, m)?;
                         if m.hooks & crate::effects::hook::DIRE_CLAW != 0 {
                             self.dire_claw_secondary(dex, actor, target)?;
                         }
@@ -4021,7 +4051,43 @@ impl BattleState {
         effect: &crate::effects::HitEffect,
         secondary: bool,
     ) -> Result<bool> {
-        self.hit_effect_with_ability(dex, target, source, effect, secondary, None)
+        self.hit_effect_with_ability(
+            dex,
+            target,
+            source,
+            effect,
+            HitContext {
+                secondary,
+                ..Default::default()
+            },
+        )
+    }
+
+    /// Move-driven `hit_effect`: a Mold Breaker user's move also suppresses the
+    /// target's `onSetStatus` refusal (Limber, Insomnia, Immunity, Purifying
+    /// Salt, ...), exactly like every other handler owned by a breakable
+    /// ability.
+    fn hit_effect_from_move(
+        &mut self,
+        dex: &Dex,
+        target: Entity,
+        source: Entity,
+        effect: &crate::effects::HitEffect,
+        secondary: bool,
+        m: &ActiveMove<'_>,
+    ) -> Result<bool> {
+        let suppressing = self.suppressing_ability(dex, source, target, m);
+        self.hit_effect_with_ability(
+            dex,
+            target,
+            source,
+            effect,
+            HitContext {
+                secondary,
+                suppressing,
+                ..Default::default()
+            },
+        )
     }
 
     /// `moves:substitute.condition.onTryPrimaryHit`: a primary hit whose source
@@ -4177,9 +4243,13 @@ impl BattleState {
         target: Entity,
         source: Entity,
         effect: &crate::effects::HitEffect,
-        secondary: bool,
-        ability_source: Option<Entity>,
+        context: HitContext,
     ) -> Result<bool> {
+        let HitContext {
+            secondary,
+            ability_source,
+            suppressing,
+        } = context;
         if self.mon(target).hp == 0 {
             return Ok(false);
         }
@@ -4240,7 +4310,9 @@ impl BattleState {
             // `onSetStatus` refusals for the ported status-immunity abilities.
             // The public immunity message only appears when the source effect
             // carries a `status` field, i.e. not for ability-sourced statuses.
-            if self.status_immune_ability(dex, target, status).is_some() {
+            if !suppressing
+                && self.status_immune_ability(dex, target, status).is_some()
+            {
                 if ability_source.is_none() {
                     self.reveal_ability(target)?;
                 }

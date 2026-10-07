@@ -982,6 +982,10 @@ pub struct SecondaryEffect {
 #[derive(Debug, Clone)]
 pub struct NativeEffects {
     pub abilities: Vec<Ability>,
+    /// Pinned `flags.breakable` abilities: only these can be ignored by the
+    /// active move (Mold Breaker / Teravolt / Turboblaze / a move-level
+    /// `ignoreAbility`). Indexed by ability id.
+    pub breakable_abilities: Vec<bool>,
     pub moves: Vec<MoveBehavior>,
     pub items: Vec<Item>,
     /// Pinned `flags.notrace` abilities: Trace never copies them (Trace itself
@@ -1060,6 +1064,10 @@ pub struct NativeEffects {
     pub substitute: Id,
     /// `conditions:metronome` volatile: the held-item consecutive-use counter.
     pub metronome: Id,
+    /// Held item `abilityshield`: the holder's ability cannot be ignored by the
+    /// active move. The item declares no other behaviour yet, so it stays out of
+    /// the ported `Item` table; this id only drives the suppression gate.
+    pub ability_shield: Id,
     /// Volatile that disables and refuses sound moves for two turns.
     pub throat_chop: Id,
     /// Disguise's species family, resolved once at load: the undisguised forms

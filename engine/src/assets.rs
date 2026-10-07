@@ -132,6 +132,9 @@ pub struct Move {
     pub self_effect: Option<crate::effects::HitEffect>,
     pub secondaries: Vec<crate::effects::SecondaryEffect>,
     pub ignore_immunity: bool,
+    /// `ignoreAbility`: the move ignores the target's (breakable) ability, the
+    /// same flag Mold Breaker / Teravolt / Turboblaze add at `onModifyMove`.
+    pub ignore_ability: bool,
     /// Cold reference metadata; action callbacks must never mutate shared Dex.
     pub tracks_target: bool,
     pub conversion_excluded: bool,
@@ -321,6 +324,7 @@ const HANDLED_MOVE_FIELDS: &[&str] = &[
     "ignoreAbility",
     "ignoreDefensive",
     "ignoreImmunity",
+    "ignoreAbility",
     "ignoreNegativeOffensive",
     "ignoreOffensive",
     "ignorePositiveDefensive",
@@ -1291,6 +1295,7 @@ impl Dex {
             self_effect: None,
             secondaries: vec![],
             ignore_immunity: false,
+            ignore_ability: false,
             tracks_target: false,
             conversion_excluded: false,
             normalize_excluded: false,
@@ -1395,6 +1400,7 @@ impl Dex {
                     })
                     .collect::<Result<_>>()?,
                 ignore_immunity: d["ignoreImmunity"].as_bool().unwrap_or(false),
+                ignore_ability: d["ignoreAbility"].as_bool().unwrap_or(false),
                 tracks_target: d["tracksTarget"].as_bool().unwrap_or(false),
                 conversion_excluded: matches!(
                     row["id"].as_str().unwrap(),
@@ -1639,10 +1645,18 @@ impl Dex {
                 no_trace_abilities[row["numeric_id"].as_u64().unwrap() as usize] = true;
             }
         }
+        // `flags.breakable`: the only abilities the active move may ignore.
+        let mut breakable_abilities = vec![false; names["abilities"].len()];
+        for row in tables["abilities"].as_array().unwrap() {
+            if row["data"]["flags"]["breakable"] == 1 {
+                breakable_abilities[row["numeric_id"].as_u64().unwrap() as usize] = true;
+            }
+        }
         let effects = crate::effects::NativeEffects {
             abilities: native_abilities,
             items: native_items,
             no_trace_abilities,
+            breakable_abilities,
             choice_lock: lookup("conditions", "choicelock")?,
             disable_move_conditions: disable_move_handler_ids(
                 &tables["conditions"],
@@ -1704,6 +1718,7 @@ impl Dex {
             leech_seed: lookup("conditions", "leechseed")?,
             substitute: lookup("conditions", "substitute")?,
             metronome: lookup("conditions", "metronome")?,
+            ability_shield: lookup("items", "abilityshield")?,
             throat_chop: lookup("conditions", "throatchop")?,
             mimikyu: lookup("species", "mimikyu")?,
             mimikyu_totem: lookup("species", "mimikyutotem")?,

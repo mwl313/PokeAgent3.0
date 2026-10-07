@@ -135,6 +135,27 @@ fn main() {
             state.rng_seed(),
             state.rng_draws(),
         );
+        if std::env::var("PA3_DUMP_SNAPSHOT").is_ok() {
+            let envelope: serde_json::Value = serde_json::from_slice(&state.snapshot().unwrap()).unwrap();
+            let world: serde_json::Value = serde_json::from_str(envelope["payload"].as_str().unwrap()).unwrap();
+            for (side, label) in ["P1", "P2"].iter().enumerate() {
+                let active = &world["sides"][side]["active"];
+                let mons = world["sides"][side]["pokemon"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, m)| m["fainted"] == true || m["active_slot"].is_u64())
+                    .map(|(i, m)| format!("{i}: faint={} active_slot={}", m["fainted"], m["active_slot"]))
+                    .collect::<Vec<_>>()
+                    .join(" | ");
+                println!(
+                    "    dump {label} request={:?} active={active} mons[{mons}] pending={}",
+                    world["requests"][side]["kind"],
+                    world["pending"][side]["is_null"],
+                );
+            }
+        }
         if std::env::var("PA3_REQ_DBG").is_ok() {
             for sd in [pa3_engine::state::SideId::P1, pa3_engine::state::SideId::P2] {
                 let v = state.observe(sd);

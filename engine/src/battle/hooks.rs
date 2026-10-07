@@ -43,6 +43,30 @@ pub(super) struct MoveContext<'a> {
 }
 
 impl BattleState {
+    /// Reference `Battle#suppressingAbility(target)`: the move currently being
+    /// resolved ignores the target's ability because its user carries Mold
+    /// Breaker (the only in-scope carrier; Teravolt / Turboblaze are outside the
+    /// pinned M-C catalogue) or because the move itself declares
+    /// `ignoreAbility`. The user can never suppress its own ability, an Ability
+    /// Shield protects the holder, and only `flags.breakable` abilities can be
+    /// ignored at all.
+    pub(super) fn suppressing_ability(
+        &self,
+        dex: &Dex,
+        source: Entity,
+        target: Entity,
+        m: &ActiveMove<'_>,
+    ) -> bool {
+        if source == target {
+            return false;
+        }
+        let ability = dex.effects.abilities[self.mon(source).ability as usize];
+        let ignores = m.ignore_ability || ability == Ability::Moldbreaker;
+        ignores
+            && self.mon(target).item != dex.effects.ability_shield
+            && dex.effects.breakable_abilities[self.mon(target).ability as usize]
+    }
+
     /// Sap Sipper onAllyTryHitSide exists for every side move, even when
     /// predicates fail. Unlike TryHit, this event sorts speed ties with RNG.
     pub(super) fn ally_try_hit_side(
@@ -105,7 +129,11 @@ impl BattleState {
         if target == source {
             return Ok(false);
         }
-        let ability = dex.effects.abilities[self.mon(target).ability as usize];
+        let ability = if self.suppressing_ability(dex, source, target, m) {
+            Ability::Unimplemented
+        } else {
+            dex.effects.abilities[self.mon(target).ability as usize]
+        };
         // `abilities:goodasgold.onTryHit`: any status move from another source
         // is refused outright. The public immunity message reveals the ability.
         if ability == Ability::Goodasgold && m.category == Category::Status {
@@ -647,12 +675,14 @@ impl BattleState {
         dex: &Dex,
         target: Entity,
         damage: u16,
+        suppressing: bool,
     ) -> Result<u16> {
         let (hp, max_hp) = {
             let p = self.mon(target);
             (p.hp, p.stats[0])
         };
-        if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Sturdy
+        if !suppressing
+            && dex.effects.abilities[self.mon(target).ability as usize] == Ability::Sturdy
             && hp > 0
             && hp == max_hp
             && damage >= hp
@@ -930,7 +960,16 @@ impl BattleState {
                         status: dex.effects.paralysis,
                         ..Default::default()
                     };
-                    self.hit_effect_with_ability(dex, actor, target, &effect, false, Some(target))?;
+                    self.hit_effect_with_ability(
+                        dex,
+                        actor,
+                        target,
+                        &effect,
+                        HitContext {
+                            ability_source: Some(target),
+                            ..Default::default()
+                        },
+                    )?;
                 }
             } else if kind == 3 {
                 // Flame Body: exact 3/10 burn roll on contact, with the ability
@@ -940,7 +979,16 @@ impl BattleState {
                         status: dex.effects.burn,
                         ..Default::default()
                     };
-                    self.hit_effect_with_ability(dex, actor, target, &effect, false, Some(target))?;
+                    self.hit_effect_with_ability(
+                        dex,
+                        actor,
+                        target,
+                        &effect,
+                        HitContext {
+                            ability_source: Some(target),
+                            ..Default::default()
+                        },
+                    )?;
                 }
             } else if kind == 4 {
                 // Poison Touch is the attacker's ability; the damaged target
@@ -950,7 +998,16 @@ impl BattleState {
                         status: dex.effects.poison,
                         ..Default::default()
                     };
-                    self.hit_effect_with_ability(dex, target, actor, &effect, false, Some(actor))?;
+                    self.hit_effect_with_ability(
+                        dex,
+                        target,
+                        actor,
+                        &effect,
+                        HitContext {
+                            ability_source: Some(actor),
+                            ..Default::default()
+                        },
+                    )?;
                 }
             } else if kind == 5 {
                 // Rough Skin: 1/8 of the attacker's maximum HP, attributed to
@@ -1037,8 +1094,10 @@ impl BattleState {
                             actor,
                             target,
                             &effect,
-                            false,
-                            Some(target),
+                            HitContext {
+                                ability_source: Some(target),
+                                ..Default::default()
+                            },
                         )?;
                     }
                 }
@@ -1106,7 +1165,16 @@ impl BattleState {
                     status: dex.effects.burn,
                     ..Default::default()
                 };
-                self.hit_effect_with_ability(dex, actor, target, &effect, false, Some(target))?;
+                self.hit_effect_with_ability(
+                        dex,
+                        actor,
+                        target,
+                        &effect,
+                        HitContext {
+                            ability_source: Some(target),
+                            ..Default::default()
+                        },
+                    )?;
             } else if m.move_type == dex.effects.fire {
                 self.cure_status(target)?;
             }
@@ -1142,6 +1210,12 @@ impl BattleState {
     pub(super) fn ability_start(&mut self, dex: &Dex, e: Entity) -> Result<()> {
         if self.mon(e).hp == 0 {
             return Ok(());
+        }
+        // `abilities:moldbreaker.onStart`: the ability announces itself when it
+        // starts (switch-in, or a copied/altered ability), which is public
+        // knowledge for both players.
+        if dex.effects.abilities[self.mon(e).ability as usize] == Ability::Moldbreaker {
+            self.reveal_ability(e)?;
         }
         // `abilities:trace.onStart`: arm the one-shot seek and immediately run
         // the same `Update` callback. The pinned regulation has no `noability`
@@ -1474,7 +1548,13 @@ impl BattleState {
         let a = self.mon(actor);
         let d = self.mon(target);
         let attacking = dex.effects.abilities[a.ability as usize];
-        let defending = dex.effects.abilities[d.ability as usize];
+        // `Battle#suppressingAbility`: a Mold Breaker move ignores the
+        // defender's ability for every modifier event it triggers.
+        let defending = if self.suppressing_ability(dex, actor, target, m) {
+            Ability::Unimplemented
+        } else {
+            dex.effects.abilities[d.ability as usize]
+        };
         let mut hooks = HookList::new();
         let mut add = |e: Entity, priority: i32, modifier: u32| {
             hooks.push((
@@ -2090,7 +2170,6 @@ impl Ability {
             | Ability::Merciless
             | Ability::Mimicry
             | Ability::Minus
-            | Ability::Moldbreaker
             | Ability::Mummy
             | Ability::Opportunist
             | Ability::Pickup

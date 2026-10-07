@@ -224,7 +224,10 @@ fn native_battles_match_reference_at_every_decision_boundary() {
             assert_eq!(result.outcome.operational_error, None, "{context}");
             // Privileged snapshot inspection is differential test code only.
             let envelope: serde_json::Value =
-                serde_json::from_slice(&state.snapshot().unwrap()).unwrap();
+                serde_json::from_slice(&state.snapshot().unwrap_or_else(|e| {
+                    panic!("{context}: snapshot: {e}")
+                }))
+                .unwrap();
             let world: serde_json::Value =
                 serde_json::from_str(envelope["payload"].as_str().unwrap()).unwrap();
             for side in [SideId::P1, SideId::P2] {
@@ -501,7 +504,13 @@ fn native_battles_match_reference_at_every_decision_boundary() {
                 "{context} RNG"
             );
             if i % 7 == 0 {
-                state = BattleState::restore(&dex, &state.snapshot().unwrap()).unwrap();
+                state = BattleState::restore(
+                    &dex,
+                    &state
+                        .snapshot()
+                        .unwrap_or_else(|e| panic!("{context}: snapshot: {e}")),
+                )
+                .unwrap_or_else(|e| panic!("{context}: restore: {e}"));
             }
         }
         let trace = state.export_trace().unwrap();

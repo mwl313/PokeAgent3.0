@@ -930,6 +930,22 @@ impl BattleState {
                             && effect.values[1] >= 0
                             && (effect.values[1] == 0
                                 || (effect.values[1] as usize) < dex.moves.len())
+                    } else if id == dex.effects.helping_hand {
+                        // `moves:helpinghand.condition`: a duration-one ally
+                        // volatile whose single value is the stacking BasePower
+                        // multiplier (4096 = x1, chained by 6144 per restack).
+                        effect.duration == Some(1)
+                            && effect.values.len() == 1
+                            && effect.values[0] > 0
+                            && effect.source.is_some()
+                    } else if id == dex.effects.follow_me || id == dex.effects.rage_powder {
+                        // `moves:followme.condition` / `moves:ragepowder.condition`:
+                        // duration-one redirection volatiles that share the
+                        // insertion shape with `helpinghand` (neutral x1
+                        // multiplier).
+                        effect.duration == Some(1)
+                            && effect.values.as_slice() == [4096]
+                            && effect.source.is_some()
                     } else if usize::from(id) < dex.moves.len()
                         && dex.moves[id as usize].charge.is_some()
                     {
@@ -1426,9 +1442,24 @@ impl BattleState {
                                 ..Default::default()
                             }
                         } else {
+                            // Replacement phase. A slot is actionable when its
+                            // active Pokémon fainted or is flagged for a
+                            // self-switch / forced switch; the reference's two
+                            // replacement builders differ in whether they carry
+                            // the pivot's live move list, so only the fields the
+                            // world pins are compared below.
+                            let blocked = side.active[slot].is_some_and(|r| {
+                                let p = &side.pokemon[r as usize];
+                                !p.fainted
+                                    && (p.switch_flag.is_some()
+                                        || p.plain_switch_flag
+                                        || p.force_switch_flag)
+                            });
+                            let fainted = side.active[slot]
+                                .is_some_and(|r| side.pokemon[r as usize].fainted);
                             SlotRequest {
-                                requires_replacement: side.active[slot]
-                                    .is_some_and(|r| side.pokemon[r as usize].fainted),
+                                present: side.active[slot].is_some() && !fainted,
+                                requires_replacement: fainted || blocked,
                                 ..Default::default()
                             }
                         }
@@ -1436,6 +1467,9 @@ impl BattleState {
                     let kind = if normal {
                         RequestKind::Normal
                     } else if !bench.is_empty() && slots.iter().any(|s| s.requires_replacement) {
+                        // A slot only becomes an actionable replacement when a
+                        // reserve exists to fill it; a side with an empty bench
+                        // keeps waiting for the rest of the turn.
                         RequestKind::Replacement
                     } else {
                         RequestKind::Wait
@@ -1446,9 +1480,50 @@ impl BattleState {
                         bench,
                         preview_roster: vec![],
                     };
-                    if *request != expected
+                    let relationship_ok = if normal {
+                        *request == expected
+                    } else {
+                        // Outside the frozen normal phase the engine either
+                        // flipped both requests to `Wait` for the running turn
+                        // (keeping their slot bodies) or wrote a replacement
+                        // request at the turn end. Only a `present: true` or a
+                        // `requires_replacement: true` claim has to be justified
+                        // by the world, and a replacement request additionally
+                        // needs a reserve to fill.
+                        let shape_ok = request.bench == expected.bench
+                            && request.slots.len() == expected.slots.len()
+                            && request
+                                .slots
+                                .iter()
+                                .zip(expected.slots.iter())
+                                .all(|(actual, pinned)| {
+                                    (!actual.present || pinned.present)
+                                        && (!actual.requires_replacement
+                                            || pinned.requires_replacement)
+                                });
+                        let actionable =
+                            expected.slots.iter().any(|s| s.requires_replacement);
+                        if request.kind == RequestKind::Wait {
+                            shape_ok
+                                && (state.mid_turn
+                                    || !actionable
+                                    || expected.bench.is_empty())
+                        } else {
+                            request.kind == RequestKind::Replacement
+                                && actionable
+                                && !expected.bench.is_empty()
+                                && shape_ok
+                        }
+                    };
+                    if !relationship_ok
                         || request.kind == RequestKind::Wait && state.pending[side_index].is_some()
                     {
+                        if std::env::var("PA3_SNAPSHOT_DBG").is_ok() {
+                            eprintln!(
+                                "mismatch side {side_index} normal={normal} actual {request:?} pinned {expected:?} pending={}",
+                                state.pending[side_index].is_some()
+                            );
+                        }
                         return Err(EngineError::InvalidInput(
                             "snapshot request/world relationship".into(),
                         ));
