@@ -863,6 +863,18 @@ pub enum MoveBehavior {
     /// the front of the queue and resolves immediately after this one with
     /// its base power doubled.
     Round,
+    /// `healpulse`: heals the target for ceil(baseMaxhp / 2); a full-HP
+    /// target is refused with `NOT_FAIL`.
+    HealPulse,
+    /// `painsplit`: both active HP values become the floor of their average
+    /// (at least one), bypassing heal gates.
+    PainSplit,
+    /// `endeavor`: fixed damage equal to the target's HP minus the user's,
+    /// refused outright unless the user is strictly lower.
+    Endeavor,
+    /// `bugbite` / `pluck`: eat the target's held Berry through the reference
+    /// `takeItem` + `Eat` sequence, applying its `onEat` effect to the user.
+    ItemSteal,
 }
 
 /// Cold payload of a ported two-turn move. Every field is transcribed from
@@ -979,6 +991,10 @@ impl MoveBehavior {
             "quash" => Self::Quash,
             "upperhand" => Self::UpperHand,
             "round" => Self::Round,
+            "healpulse" => Self::HealPulse,
+            "painsplit" => Self::PainSplit,
+            "endeavor" => Self::Endeavor,
+            "bugbite" | "pluck" => Self::ItemSteal,
             _ => Self::Unimplemented,
         }
     }
@@ -1103,6 +1119,9 @@ pub struct NativeEffects {
     pub disable_move_items: std::collections::BTreeMap<Id, i32>,
     /// Exact Champions base-form -> Mega-form mappings, indexed by held item.
     pub mega_stones: Vec<Vec<(Id, Id)>>,
+    /// `items[*].isBerry`: the reference's `takeItem`-then-`Eat` steal moves
+    /// (Bug Bite, Pluck) only act on berries.
+    pub berry_items: Vec<bool>,
     pub protect: Id,
     pub stall: Id,
     /// Additional Protect-family volatiles that block hits in the same
