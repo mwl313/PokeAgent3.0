@@ -135,6 +135,22 @@ impl BattleState {
                     .count() as u32;
                 50 + 50 * fainted
             }
+            BasePowerKind::RageFist => {
+                // `moves:ragefist.basePowerCallback`: 50 + 50 * timesAttacked
+                // with a hard cap of 350. The counter is the holder's own
+                // `timesAttacked`, incremented once per landed hit taken.
+                (50 + 50 * u32::from(self.mon(actor).times_attacked)).min(350)
+            }
+            BasePowerKind::StompingTantrum => {
+                // `moves:stompingtantrum.basePowerCallback`: doubles only when
+                // the user's previous move failed (reference `false`, not the
+                // `null` of a skipped recharge / charge turn).
+                if self.mon(actor).move_last_turn_result == crate::state::MoveResult::Failed {
+                    declared * 2
+                } else {
+                    declared
+                }
+            }
             BasePowerKind::PowerTrip => {
                 let boosts: u32 = self.mon(actor).boosts.iter().map(|b| (*b).max(0) as u32).sum();
                 declared + 20 * boosts

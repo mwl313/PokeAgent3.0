@@ -11,8 +11,8 @@ use crate::{
     knowledge::{EffectRef, EventKind, HealthDisplay, SemanticEvent, public_health},
     queue::{Priority, speed_sort},
     state::{
-        BattleState, EffectState, EndReason, NativeTrace, Outcome, PokemonState, SideId,
-        TraceEntry, TraceEvent,
+        BattleState, EffectState, EndReason, MoveResult, NativeTrace, Outcome, PokemonState,
+        SideId, TraceEntry, TraceEvent,
     },
     stats,
 };
@@ -383,6 +383,21 @@ impl BattleState {
 
     /// Reference `getActionSpeed`: base move priority plus ported
     /// `onModifyPriority` callbacks (Grassy Glide).
+    /// Reference `Pokemon#getTypes()`: the stored type list after volatile
+    /// `onType` handlers run. Roost's Flying removal is the only ported
+    /// volatile type handler; an emptied list falls back to Normal.
+    pub(super) fn effective_types(&self, dex: &Dex, e: Entity) -> SmallVec<[Id; 4]> {
+        let mon = self.mon(e);
+        let mut types: SmallVec<[Id; 4]> = mon.types.iter().copied().collect();
+        if mon.volatiles.contains_key(&dex.effects.roost) {
+            types.retain(|t| *t != dex.effects.flying);
+            if types.is_empty() {
+                types.push(dex.effects.normal);
+            }
+        }
+        types
+    }
+
     fn effective_priority(&self, dex: &Dex, actor: Entity, move_id: Id) -> i8 {
         let mut priority = dex.moves[move_id as usize].priority;
         if dex.effects.move_hooks[move_id as usize]
@@ -724,6 +739,11 @@ impl BattleState {
         // Reference `clearVolatile` also clears the recorded last move; Encore,
         // Disable and Torment read it after the Pokémon re-enters.
         mon.last_move = 0;
+        // Reference `clearVolatile`: the hit counter and both move-result
+        // slots are per-stint state (Rage Fist, Stomping Tantrum).
+        mon.times_attacked = 0;
+        mon.move_this_turn_result = crate::state::MoveResult::Undefined;
+        mon.move_last_turn_result = crate::state::MoveResult::Undefined;
         mon.ability = mon.base_ability;
         mon.species = mon.base_species;
         mon.types = dex.species[mon.species as usize].types.clone();
@@ -1103,6 +1123,7 @@ impl BattleState {
                 false,
             )?;
             self.reveal_ability(holder)?;
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
             // The reference TryMove abort still runs the single Update that
             // precedes the action's own queue re-sort.
             self.each_update(dex)?;
@@ -1111,6 +1132,10 @@ impl BattleState {
         if behavior == MoveBehavior::Unimplemented {
             return Err(EngineError::Unsupported(format!("move ID {move_id}")));
         }
+        // Reference `useMove` clears the attempt result before running; the
+        // outcome is recorded at the point the move resolves. Stomping Tantrum
+        // reads the rolled-over value next turn.
+        self.mon_mut(actor).move_this_turn_result = MoveResult::Undefined;
         // Reference `runMove` counts the attempted action before BeforeMove, so
         // a flinched, sleeping or fully paralysed attempt still counts.
         let attempts = self.mon(actor).active_move_actions;
@@ -1129,7 +1154,8 @@ impl BattleState {
         } else {
             self.resolve_target_location(actor, m.target, loc)
         };
-        if !self.before_move(dex, actor, m)? {
+        if let Some(result) = self.before_move(dex, actor, m)? {
+            self.mon_mut(actor).move_this_turn_result = result;
             return Ok(());
         }
         // Reference `useMoveInner` skips PP deduction while the Pokémon is
@@ -1259,6 +1285,7 @@ impl BattleState {
                 });
                 if let Some(holder) = blocked {
                     self.reveal_ability(holder)?;
+                    self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
                     return Ok(());
                 }
             }
@@ -1270,11 +1297,13 @@ impl BattleState {
         if hooks & crate::effects::hook::FAKE_OUT_FIRST_TURN != 0
             && self.mon(actor).active_move_actions > 1
         {
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
             return Ok(());
         }
         if hooks & crate::effects::hook::SUCKER_PUNCH != 0 {
             let target = redirected.or(selected);
             if !self.sucker_punch_target_attacks(dex, target) {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
                 return Ok(());
             }
         }
@@ -1282,18 +1311,22 @@ impl BattleState {
         // user has no switchable reserve. The plain `selfSwitch` moves instead
         // nullify their own result after a failed pivot attempt.
         if hooks & crate::effects::hook::TELEPORT != 0 && !self.can_switch(actor.side as usize) {
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
             return Ok(());
         }
         if behavior == MoveBehavior::Terrain {
             self.start_terrain(dex, actor, m.terrain, false)?;
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
             return Ok(());
         }
         if behavior == MoveBehavior::TrickRoom {
             self.toggle_trick_room(dex, actor)?;
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
             return Ok(());
         }
         if behavior == MoveBehavior::Weather {
             self.start_weather(dex, actor, m.weather, false)?;
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
             return Ok(());
         }
         if behavior == MoveBehavior::SideCondition {
@@ -1303,10 +1336,12 @@ impl BattleState {
             if hooks & crate::effects::hook::AURORA_VEIL != 0
                 && self.effective_weather(dex) != dex.effects.snow
             {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
                 return Ok(());
             }
             self.ally_try_hit_side(dex, actor, actor, m.move_type)?;
             self.start_side_condition(dex, actor, m.side_condition)?;
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
             return Ok(());
         }
         if matches!(
@@ -1320,6 +1355,7 @@ impl BattleState {
                     // `moves:helpinghand.onTryHit`: the ally must have a
                     // queued action this turn unless it just switched in.
                     let Some(ally) = self.at_location(actor, loc) else {
+                        self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
                         return Ok(());
                     };
                     if ally == actor
@@ -1329,6 +1365,7 @@ impl BattleState {
                                 .iter()
                                 .any(|q| q.actor == Some(ally))
                     {
+                        self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
                         return Ok(());
                     }
                     (ally, dex.effects.helping_hand)
@@ -1378,6 +1415,7 @@ impl BattleState {
                 0,
                 false,
             )?;
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
             self.each_update(dex)?;
             self.each_update(dex)?;
             return Ok(());
@@ -1391,6 +1429,7 @@ impl BattleState {
                 .iter()
                 .any(|q| matches!(q.kind, QueuedKind::Move | QueuedKind::Switch));
             if !acts_left {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
                 return Ok(());
             }
             let condition = m.side_condition;
@@ -1407,6 +1446,7 @@ impl BattleState {
                 .and_then(|s| s.values.first())
                 .copied();
             self.add_stall(dex, actor, counter)?;
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
             return Ok(());
         }
         if matches!(behavior, MoveBehavior::Protect | MoveBehavior::Endure) {
@@ -1415,6 +1455,7 @@ impl BattleState {
                 .iter()
                 .any(|q| matches!(q.kind, QueuedKind::Move | QueuedKind::Switch));
             if !acts_left {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
                 return Ok(());
             }
             let counter = self
@@ -1427,6 +1468,7 @@ impl BattleState {
                 && !self.rng.chance(1, counter as u32)
             {
                 self.mon_mut(actor).volatiles.remove(&dex.effects.stall);
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
                 return Ok(());
             }
             let volatile = if behavior == MoveBehavior::Endure {
@@ -1460,6 +1502,7 @@ impl BattleState {
                 false,
             )?;
             // Status self-target effects still run the two move-loop Update events.
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
             self.each_update(dex)?;
             self.each_update(dex)?;
             return Ok(());
@@ -1478,6 +1521,11 @@ impl BattleState {
         let mut action_accuracy = m.accuracy.map(u16::from);
         let effective_priority = self.effective_priority(dex, actor, move_id);
         let mut hit = SmallVec::<[(Entity, i8); 4]>::new();
+        // Reference `spreadMoveHit` target bookkeeping: a protection block is
+        // the `NOT_FAIL` case (recorded as `null`), while a type immunity or a
+        // missed accuracy roll is a real failure (`false`).
+        let mut blocked_by_protection = false;
+        let mut failed_otherwise = false;
         // `TryHitSide` runs before the hit steps. Soundproof's own
         // `onAllyTryHitSide` announces the holder when a sound move reaches a
         // spread target on the holder's side; it never blocks the move.
@@ -1506,6 +1554,20 @@ impl BattleState {
                 && !(move_id == dex.effects.toxic
                     && self.mon(actor).types.contains(&dex.effects.poison_type))
             {
+                failed_otherwise = true;
+                continue;
+            }
+            // `moves:yawn.onTryHit`: the target must be status-free and able to
+            // fall asleep, or the move fails against it before any hit step.
+            if move_id == dex.effects.yawn
+                && (self.mon(target).status != 0
+                    || self
+                        .status_immune_ability(dex, target, dex.effects.sleep)
+                        .is_some()
+                    || self.terrain_id(dex) == dex.effects.electric_terrain
+                        && self.grounded(dex, target))
+            {
+                failed_otherwise = true;
                 continue;
             }
             // `hitStepTryHitEvent` runs whole-spread with handlers ordered by
@@ -1513,10 +1575,12 @@ impl BattleState {
             // protection volatiles both precede every ability TryHit.
             if m.protect && !m.breaks_protect {
                 if self.guard_blocks(dex, target, m, effective_priority) {
+                    blocked_by_protection = true;
                     continue;
                 }
                 if let Some(volatile) = self.blocking_protection(dex, target) {
                     self.protect_punish(dex, target, actor, m, move_id, volatile)?;
+                    blocked_by_protection = true;
                     continue;
                 }
             }
@@ -1526,6 +1590,7 @@ impl BattleState {
                 && target.side != actor.side
                 && self.grounded(dex, target)
             {
+                failed_otherwise = true;
                 continue;
             }
             if m.powder
@@ -1577,8 +1642,7 @@ impl BattleState {
                 )?;
                 None
             } else {
-                self.mon(target)
-                    .types
+                self.effective_types(dex, target)
                     .iter()
                     .try_fold(0i8, |total, &kind| {
                         let mut value = dex.type_chart[m.move_type as usize][kind as usize];
@@ -1597,7 +1661,11 @@ impl BattleState {
                     })
                     .map(|total| total.clamp(-6, 6))
             };
-            if m.powder && target != actor && self.mon(target).types.contains(&dex.effects.grass) {
+            if m.powder
+                && target != actor
+                && self.effective_types(dex, target).contains(&dex.effects.grass)
+            {
+                failed_otherwise = true;
                 continue;
             }
             // `hitStepTryImmunity` precedes accuracy: Sticky Hold refuses
@@ -1605,10 +1673,13 @@ impl BattleState {
             if behavior == MoveBehavior::Trick
                 && self.mon(target).ability == dex.effects.sticky_hold
             {
+                failed_otherwise = true;
                 continue;
             }
             if let Some(effectiveness) = effectiveness {
                 hit.push((target, effectiveness));
+            } else {
+                failed_otherwise = true;
             }
         }
         // Accuracy checks for the complete spread precede all damage draws.
@@ -1622,6 +1693,7 @@ impl BattleState {
             dex.effects.abilities[self.mon(actor).ability as usize] == Ability::Unaware;
         let actor_level = self.mon(actor).level;
         let actor_is_ice = self.mon(actor).types.contains(&ice_type);
+        let mut missed_accuracy = false;
         hit.retain(|(target, _)| {
             let target_level = self.mon(*target).level;
             let defender_unaware =
@@ -1666,13 +1738,19 @@ impl BattleState {
             if toxic_never_misses {
                 return true;
             }
-            self.rng.below(100) < accuracy
+            if self.rng.below(100) < accuracy {
+                true
+            } else {
+                missed_accuracy = true;
+                false
+            }
         });
         // `moves:disable.onTryHit` is a *move-owned* callback: the reference
         // runs it inside `spreadMoveHit` after the accuracy step, so the roll
         // happens even when the move then does nothing. A target with no
         // recorded last move (or a Struggle / Z / Max last move) is refused.
         if hooks & crate::effects::hook::DISABLE_TARGET_GATE != 0 {
+            let before = hit.len();
             hit.retain(|(target, _)| {
                 let last = self.mon(*target).last_move;
                 last != 0
@@ -1680,7 +1758,9 @@ impl BattleState {
                     && !dex.moves[last as usize].is_z
                     && !dex.moves[last as usize].is_max
             });
+            failed_otherwise |= hit.len() != before;
         }
+        failed_otherwise |= missed_accuracy;
         if hit.is_empty() {
             return Ok(());
         }
@@ -1883,7 +1963,7 @@ impl BattleState {
                     weather_modifier: self.weather_damage_modifier(dex, m.move_type),
                     critical,
                     stab_modifier: if behavior != MoveBehavior::Struggle
-                        && a.types.contains(&m.move_type)
+                        && self.effective_types(dex, actor).contains(&m.move_type)
                     {
                         if ability == Ability::Adaptability {
                             8192
@@ -1919,6 +1999,12 @@ impl BattleState {
             total_damage += u32::from(actual);
             hit_any = true;
             self.mon_mut(target).hp -= actual;
+            // Reference `hitStepMoveHitLoop`: a landed hit increments the
+            // target's `timesAttacked`, even when it dealt zero damage.
+            if target != actor {
+                let count = self.mon(target).times_attacked;
+                self.mon_mut(target).times_attacked = count.saturating_add(1);
+            }
             if self.mon(target).hp == 0 {
                 self.faint_queue.push(target);
             }
@@ -1975,6 +2061,18 @@ impl BattleState {
                 )?;
             }
         }
+        // Reference `trySpreadMoveHit` result: `true` when at least one target
+        // survived every hit step (a status move also needs its effect to have
+        // applied), `null` when protection was the only refusal, `false`
+        // otherwise. Stomping Tantrum's callback reads the rolled value.
+        let landed = !hit_targets.is_empty() && (m.category != Category::Status || did_anything);
+        self.mon_mut(actor).move_this_turn_result = if landed {
+            MoveResult::Success
+        } else if blocked_by_protection && !failed_otherwise {
+            MoveResult::Skipped
+        } else {
+            MoveResult::Failed
+        };
         // Reference `spreadMoveHit` sets `source.switchFlag` once the move has
         // resolved against at least one target, `didAnything` is truthy (or a
         // numeric damage result, including zero), the user is still alive and a
@@ -2002,7 +2100,11 @@ impl BattleState {
         }
         // Sheer Force deletes the action's self effect and every secondary, so
         // those draws and effects never happen for the marked action.
-        if let Some(effect) = m.self_effect.as_ref().filter(|_| !m.sheer_force) {
+        // Reference `spreadMoveHit` removes non-connecting targets before
+        // `selfDrops` runs, so a missed, blocked or immune move never applies
+        // its `self` payload (Overheat keeps its Sp. Atk, Hyper Beam does not
+        // set mustrecharge).
+        if let Some(effect) = m.self_effect.as_ref().filter(|_| !m.sheer_force && landed) {
             // Reference `selfDrops`: the roll only happens for a boosting self
             // effect that is not a secondary. A pure volatile self effect such
             // as `mustrecharge` runs `moveHit` directly and draws nothing.
@@ -2215,6 +2317,10 @@ impl BattleState {
                 let actual = damage.min(self.mon(target).hp);
                 total_damage += u32::from(actual);
                 self.mon_mut(target).hp -= actual;
+                if target != actor {
+                    let count = self.mon(target).times_attacked;
+                    self.mon_mut(target).times_attacked = count.saturating_add(1);
+                }
                 if self.mon(target).hp == 0 {
                     self.faint_queue.push(target);
                 }
@@ -2552,7 +2658,7 @@ impl BattleState {
                 parental_bond_second_hit: false,
                 weather_modifier: self.weather_damage_modifier(dex, m.move_type),
                 critical,
-                stab_modifier: if a.types.contains(&m.move_type) {
+                stab_modifier: if self.effective_types(dex, actor).contains(&m.move_type) {
                     if ability == Ability::Adaptability {
                         8192
                     } else {
@@ -2632,7 +2738,12 @@ impl BattleState {
         Ok(())
     }
 
-    fn before_move(&mut self, dex: &Dex, e: Entity, m: &crate::assets::Move) -> Result<bool> {
+    fn before_move(
+        &mut self,
+        dex: &Dex,
+        e: Entity,
+        m: &crate::assets::Move,
+    ) -> Result<Option<MoveResult>> {
         // Reference BeforeMove ordering by handler priority:
         // mustrecharge (11) > sleep/freeze (10) > flinch (8) > confusion (3) >
         // paralysis (1). A cancel before a later handler also suppresses that
@@ -2651,7 +2762,9 @@ impl BattleState {
                 0,
                 false,
             )?;
-            return Ok(false);
+            // `mustrecharge.onBeforeMove` returns null: the reference records
+            // the skipped attempt without marking it as a failure.
+            return Ok(Some(MoveResult::Skipped));
         }
         let status = self.mon(e).status;
         if status == dex.effects.sleep || (status == dex.effects.freeze && !m.defrost) {
@@ -2660,11 +2773,11 @@ impl BattleState {
             if expired || (status == dex.effects.freeze && self.rng.chance(1, 4)) {
                 self.cure_status(e)?;
             } else {
-                return Ok(false);
+                return Ok(Some(MoveResult::Failed));
             }
         }
         if self.mon(e).volatiles.contains_key(&dex.effects.flinch) {
-            return Ok(false);
+            return Ok(Some(MoveResult::Failed));
         }
         // `moves:throatchop.condition.onBeforeMove` (priority 6, between
         // flinch and confusion): a sound move is refused outright. The
@@ -2676,13 +2789,13 @@ impl BattleState {
                 .volatiles
                 .contains_key(&dex.effects.throat_chop)
         {
-            return Ok(false);
+            return Ok(Some(MoveResult::Failed));
         }
         // `moves:disable.condition.onBeforeMove` (priority 7).
         if let Some(state) = self.mon(e).volatiles.get(&dex.effects.disable)
             && state.values.first() == Some(&i64::from(m.id))
         {
-            return Ok(false);
+            return Ok(Some(MoveResult::Failed));
         }
         // `moves:taunt.condition.onBeforeMove` (priority 5): Status moves are
         // refused outright, with Me First exempt.
@@ -2690,7 +2803,7 @@ impl BattleState {
             && m.category == Category::Status
             && m.id != dex.effects.me_first
         {
-            return Ok(false);
+            return Ok(Some(MoveResult::Failed));
         }
         // `moves:imprison.condition.onFoeBeforeMove` (priority 4): a foe's
         // Imprison refuses any non-Struggle move the imprisoning Pokémon knows.
@@ -2705,7 +2818,7 @@ impl BattleState {
                         .any(|mv| mv.id == m.id)
             })
         {
-            return Ok(false);
+            return Ok(Some(MoveResult::Failed));
         }
         if self.mon(e).volatiles.contains_key(&dex.effects.confusion) {
             let expired = {
@@ -2729,14 +2842,14 @@ impl BattleState {
                 // Reference `randomChance(33, 100)`: a hit on 33% of turns.
                 if self.rng.chance(33, 100) {
                     self.confusion_self_hit(dex, e)?;
-                    return Ok(false);
+                    return Ok(Some(MoveResult::Failed));
                 }
             }
         }
         if status == dex.effects.paralysis && self.rng.chance(1, 8) {
-            return Ok(false);
+            return Ok(Some(MoveResult::Failed));
         }
-        Ok(true)
+        Ok(None)
     }
 
     /// Reference `getConfusionDamage(pokemon, 40)`: a typeless physical
@@ -3281,6 +3394,8 @@ impl BattleState {
                 || volatile == dex.effects.disable
                 || volatile == dex.effects.imprison
                 || volatile == dex.effects.torment
+                || volatile == dex.effects.yawn
+                || volatile == dex.effects.roost
             {
                 changed |= self.start_selection_volatile(
                     dex,
@@ -3435,6 +3550,34 @@ impl BattleState {
                     effect_order: order,
                     effect_order_assigned: true,
                     values: vec![i64::from(last)],
+                },
+            );
+            self.emit(
+                EventKind::EffectStart,
+                target,
+                source,
+                EffectRef::Condition(volatile),
+                0,
+                false,
+            )?;
+            return Ok(true);
+        }
+        // `moves:yawn.condition` (2 turns, residual order 23) and
+        // `moves:roost.condition` (1 turn, residual order 25) are the only
+        // ported volatiles that carry a numeric duration without their own
+        // rest-of-family handling.
+        if volatile == dex.effects.yawn || volatile == dex.effects.roost {
+            let duration = if volatile == dex.effects.yawn { 2 } else { 1 };
+            let order = self.allocate_effect_order()?;
+            self.mon_mut(target).volatiles.insert(
+                volatile,
+                EffectState {
+                    id: volatile,
+                    duration: Some(duration),
+                    source: source_slot,
+                    effect_order: order,
+                    effect_order_assigned: true,
+                    values: vec![],
                 },
             );
             self.emit(
@@ -3698,6 +3841,10 @@ impl BattleState {
                         (17, 0)
                     } else if id == dex.effects.throat_chop {
                         (22, 0)
+                    } else if id == dex.effects.yawn {
+                        (23, 0)
+                    } else if id == dex.effects.roost {
+                        (25, 0)
                     } else {
                         (0, 0)
                     };
@@ -3984,13 +4131,32 @@ impl BattleState {
                     false
                 };
                 if expired {
+                    let yawn_source = self.mon(e).volatiles.get(&id).and_then(|state| {
+                        state.source.map(|(side, roster)| Entity {
+                            side: side.index() as u8,
+                            roster,
+                        })
+                    });
                     self.mon_mut(e).volatiles.remove(&id);
+                    if id == dex.effects.yawn {
+                        // `moves:yawn.condition.onEnd`: the target falls asleep
+                        // from the recorded source once the counter runs out.
+                        let effect = crate::effects::HitEffect {
+                            status: dex.effects.sleep,
+                            ..Default::default()
+                        };
+                        if let Some(source) = yawn_source {
+                            self.hit_effect(dex, e, source, &effect, false)?;
+                        }
+                    }
                     if id == dex.effects.protect
                         || id == dex.effects.throat_chop
                         || id == dex.effects.taunt
                         || id == dex.effects.encore
                         || id == dex.effects.disable
                         || id == dex.effects.torment
+                        || id == dex.effects.yawn
+                        || id == dex.effects.roost
                     {
                         self.emit(
                             EventKind::EffectEnd,
@@ -4234,6 +4400,10 @@ impl BattleState {
                 if mon.active_slot.is_none() {
                     continue;
                 }
+                // Reference turn-loop rollover: the previous attempt's result
+                // becomes `moveLastTurnResult` for the new decision boundary.
+                mon.move_last_turn_result = mon.move_this_turn_result;
+                mon.move_this_turn_result = crate::state::MoveResult::Undefined;
                 // Reference `choicelock.onDisableMove`: the lock is dropped
                 // lazily when the holder no longer has a Choice item (Knock
                 // Off, Trick, …) or no longer knows the locked move.

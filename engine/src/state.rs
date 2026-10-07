@@ -167,6 +167,31 @@ pub struct PokemonState {
     /// Reference `lastMove`: the move this Pokémon most recently used while
     /// active (0 = none). Encore, Disable, Torment and Cursed Body read it.
     pub last_move: Id,
+    /// Reference `timesAttacked`: landed hits this Pokémon has taken since it
+    /// last entered the field. Rage Fist's `basePowerCallback` reads it.
+    #[serde(default)]
+    pub times_attacked: u16,
+    /// Reference `moveThisTurnResult`: the outcome of the most recent move
+    /// attempt this turn. Rolled into `move_last_turn_result` at turn start.
+    #[serde(default)]
+    pub move_this_turn_result: MoveResult,
+    /// Reference `moveLastTurnResult` (see `MoveResult`).
+    #[serde(default)]
+    pub move_last_turn_result: MoveResult,
+}
+
+/// Reference `moveThisTurnResult` / `moveLastTurnResult`. `Undefined` is the
+/// reference's `undefined` (no attempt yet), `Skipped` is `null` (a skipped
+/// action: recharge, a charge turn, or an unresolved request), `Failed` is
+/// `false` (a move that did not connect or was refused) and `Success` is
+/// `true`. Stomping Tantrum doubles only on `Failed`.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub enum MoveResult {
+    #[default]
+    Undefined,
+    Skipped,
+    Failed,
+    Success,
 }
 
 impl PokemonState {
@@ -257,6 +282,9 @@ impl PokemonState {
             switch_flag: None,
             force_switch_flag: false,
             last_move: 0,
+            times_attacked: 0,
+            move_this_turn_result: MoveResult::Undefined,
+            move_last_turn_result: MoveResult::Undefined,
         }
     }
 }

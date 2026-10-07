@@ -28,8 +28,16 @@
       "bytes": 1358768
     },
     "turn-fixtures.json": {
-      "sha256": "7d13ed2341b7a2d9e872054b3dc6d3107fe4f0438605e8a6c17461889cbc4df1",
-      "bytes": 55998996
+      "sha256": "da09079d28f6a2aaf90b41cfd52c6dcdb6efddc00a82727ac0be6b07323d5f41",
+      "bytes": 56658992
+    },
+    "more_delayed_status.json": {
+      "sha256": "cc824fff49ca5ccc32cdb85aa06f8ee0a748f83bd65adc8aa0205aa23f1d06cf",
+      "bytes": 412238
+    },
+    "more_roost_yawn.json": {
+      "sha256": "814854799b58b3dc2eea3b70cae5af14c84d5fa86940627fdfa3a1b29a719b1f",
+      "bytes": 247980
     }
   }
 }
