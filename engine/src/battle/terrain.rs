@@ -16,7 +16,7 @@ impl BattleState {
     }
 
     pub(super) fn grounded(&self, dex: &Dex, e: Entity) -> bool {
-        !self.mon(e).types.contains(&dex.effects.flying)
+        !self.effective_types(dex, e).contains(&dex.effects.flying)
             && dex.effects.abilities[self.mon(e).ability as usize] != Ability::Levitate
     }
 

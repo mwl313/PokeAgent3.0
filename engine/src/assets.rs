@@ -384,6 +384,9 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:infernalparade.basePowerCallback",
     "moves:lastrespects.basePowerCallback",
     "moves:lowkick.basePowerCallback",
+    // Rage Fist / Stomping Tantrum: hit-count and last-move-result formulas.
+    "moves:ragefist.basePowerCallback",
+    "moves:stompingtantrum.basePowerCallback",
     "moves:powertrip.basePowerCallback",
     "moves:reversal.basePowerCallback",
     "moves:risingvoltage.basePowerCallback",
@@ -497,6 +500,13 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:razorwind.onTryMove",
     "moves:shadowforce.onTryMove",
     "moves:skyattack.onTryMove",
+    // Roost: heal + one-turn Flying removal (`onStart` message, `onType`).
+    "moves:roost.condition.onStart",
+    "moves:roost.condition.onType",
+    // Yawn: status/immunity gate plus the two-turn sleep countdown.
+    "moves:yawn.onTryHit",
+    "moves:yawn.condition.onStart",
+    "moves:yawn.condition.onEnd",
 ];
 
 /// Ported action-local callbacks, keyed by move id. Every entry must have its
@@ -733,6 +743,9 @@ const HANDLED_STATUSES: &[&str] = &["brn", "par", "slp", "frz", "psn", "tox"];
 const HANDLED_VOLATILES: &[&str] = &[
     "flinch",
     "confusion",
+    // Roost's one-turn self volatile and Yawn's sleep countdown.
+    "roost",
+    "yawn",
     "mustrecharge",
     // Volatile selection-lock family: each id is declared by exactly one move
     // (encore, taunt, disable, imprison, torment) whose callbacks are below.
@@ -1466,6 +1479,8 @@ impl Dex {
             ],
             must_recharge: lookup("conditions", "mustrecharge")?,
             two_turn_move: lookup("conditions", "twoturnmove")?,
+            yawn: lookup("conditions", "yawn")?,
+            roost: lookup("conditions", "roost")?,
             throat_chop: lookup("conditions", "throatchop")?,
             encore: lookup("conditions", "encore")?,
             taunt: lookup("conditions", "taunt")?,

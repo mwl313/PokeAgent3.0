@@ -874,6 +874,10 @@ pub enum BasePowerKind {
     InfernalParade,
     LastRespects,
     LowKick,
+    /// `ragefist`: `min(350, 50 + 50 * timesAttacked)`.
+    RageFist,
+    /// `stompingtantrum`: doubles when the user's previous move failed.
+    StompingTantrum,
     PowerTrip,
     RisingVoltage,
 }
@@ -897,6 +901,8 @@ impl BasePowerKind {
             "moves:infernalparade.basePowerCallback" => Self::InfernalParade,
             "moves:lastrespects.basePowerCallback" => Self::LastRespects,
             "moves:lowkick.basePowerCallback" => Self::LowKick,
+            "moves:ragefist.basePowerCallback" => Self::RageFist,
+            "moves:stompingtantrum.basePowerCallback" => Self::StompingTantrum,
             "moves:powertrip.basePowerCallback" | "moves:storedpower.basePowerCallback" => {
                 Self::PowerTrip
             }
@@ -946,6 +952,10 @@ pub struct NativeEffects {
     /// `twoturnmove` condition: locks the holder into the charging move and
     /// carries the stored target location for the second turn.
     pub two_turn_move: Id,
+    /// `moves:yawn.condition`: two-turn countdown that ends in sleep.
+    pub yawn: Id,
+    /// `moves:roost.condition`: one-turn Flying removal for the caster.
+    pub roost: Id,
     /// Volatile that disables and refuses sound moves for two turns.
     pub throat_chop: Id,
     /// `move:encore` volatile: locks the holder into its last move.
