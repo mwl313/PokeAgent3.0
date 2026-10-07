@@ -1723,9 +1723,19 @@ impl BattleState {
         // The reference runs the BeforeMove event once per *action*, before
         // `useMove`; a move called by another move (Sleep Talk) must not run it
         // again, or the sleep counter would tick twice in one turn.
-        if !called && let Some(result) = self.before_move(dex, actor, m)? {
-            self.mon_mut(actor).move_this_turn_result = result;
-            return Ok(());
+        if !called {
+            if let Some(result) = self.before_move(dex, actor, m)? {
+                // Reference `runEvent('MoveAborted')`: a cancelled attempt
+                // drops Destiny Bond (`onMoveAborted` has no move guard).
+                self.drop_destiny_bond(dex, actor)?;
+                self.mon_mut(actor).move_this_turn_result = result;
+                return Ok(());
+            }
+            // `moves:destinybond.condition.onBeforeMove` (priority -1) removes
+            // the bond before any attack that is not Destiny Bond itself.
+            if m.id != dex.effects.destiny_bond_move {
+                self.drop_destiny_bond(dex, actor)?;
+            }
         }
         // Reference `useMoveInner` skips PP deduction while the Pokémon is
         // locked (`getLockedMove()`), i.e. on the release turn of a charge and
@@ -2130,6 +2140,50 @@ impl BattleState {
             // and used - even when the called move itself failed before its
             // own hit loop (e.g. a called Protect with no remaining action).
             self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
+            self.each_update(dex)?;
+            self.each_update(dex)?;
+            return Ok(());
+        }
+        if behavior == MoveBehavior::DestinyBond {
+            // `moves:destinybond.onPrepareHit`: attempting the move while the
+            // bond is already up removes it and fails. The hit loop's
+            // all-false `moveDamage` break returns before either
+            // `eachEvent('Update')` sort, so the failed path draws nothing.
+            if self.mon(actor).volatiles.contains_key(&dex.effects.destiny_bond) {
+                self.drop_destiny_bond(dex, actor)?;
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                return Ok(());
+            }
+            let order = self.allocate_effect_order()?;
+            self.mon_mut(actor).volatiles.insert(
+                dex.effects.destiny_bond,
+                EffectState {
+                    id: dex.effects.destiny_bond,
+                    effect_order: order,
+                    effect_order_assigned: true,
+                    source: Some((
+                        if actor.side == 0 {
+                            SideId::P1
+                        } else {
+                            SideId::P2
+                        },
+                        actor.roster,
+                    )),
+                    ..Default::default()
+                },
+            );
+            self.emit(
+                EventKind::EffectStart,
+                actor,
+                None,
+                EffectRef::Condition(dex.effects.destiny_bond),
+                0,
+                false,
+            )?;
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
+            // `hitStepMoveHitLoop` runs one `eachEvent('Update')` inside the
+            // loop and one at the end, like the other self-target status
+            // moves (Rest, Revival Blessing).
             self.each_update(dex)?;
             self.each_update(dex)?;
             return Ok(());
@@ -4909,6 +4963,27 @@ impl BattleState {
         Ok(())
     }
 
+    /// `moves:destinybond.condition`: drop the bond volatile, emitting the
+    /// matching public volatile-end event when it was present.
+    fn drop_destiny_bond(&mut self, dex: &Dex, e: Entity) -> Result<()> {
+        if self
+            .mon_mut(e)
+            .volatiles
+            .remove(&dex.effects.destiny_bond)
+            .is_some()
+        {
+            self.emit(
+                EventKind::EffectEnd,
+                e,
+                None,
+                EffectRef::Condition(dex.effects.destiny_bond),
+                0,
+                false,
+            )?;
+        }
+        Ok(())
+    }
+
     fn before_move(
         &mut self,
         dex: &Dex,
@@ -6454,12 +6529,38 @@ impl BattleState {
         }
         let mut last: Option<FaintData> = None;
         let length = self.faint_queue.len();
-        for data in std::mem::take(&mut self.faint_queue) {
+        // Drain in FIFO order including entries pushed while processing (the
+        // reference `faintMessages` loops until its queue is empty, so a
+        // Destiny Bond counter-faint is processed in the same pass).
+        while !self.faint_queue.is_empty() {
+            let data = self.faint_queue.remove(0);
             let e = data.target;
             if self.mon(e).fainted {
                 continue;
             }
             self.emit(EventKind::Faint, e, None, EffectRef::None, 0, true)?;
+            // `moves:destinybond.condition.onFaint`: a faint caused by a foe's
+            // move drags the source down with it. The counter-faint is queued
+            // with no source/effect (reference `source.faint()`), so it
+            // cannot chain. Future moves are not ported, so `!futuremove`
+            // holds for every `from_move` faint today.
+            if data.from_move
+                && let Some(source) = data.source
+                && source.side != e.side
+                && self.mon(e).volatiles.contains_key(&dex.effects.destiny_bond)
+                && !self.mon(source).fainted
+                && self.mon(source).hp > 0
+            {
+                // Reference `source.faint()` zeroes HP as it queues the
+                // counter-faint (the Faint event itself comes later, during
+                // faint processing).
+                self.mon_mut(source).hp = 0;
+                self.faint_queue.push(FaintData {
+                    target: source,
+                    source: None,
+                    from_move: false,
+                });
+            }
             self.ability_end(dex, e)?;
             self.clear_volatile(dex, e);
             self.mon_mut(e).fainted = true;
