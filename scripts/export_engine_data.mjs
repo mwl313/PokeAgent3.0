@@ -261,6 +261,14 @@ const extraGenerators = fs.readdirSync(path.join(root, 'engine/tests'))
 if (extraGenerators.length) {
   const merged = JSON.parse(fs.readFileSync(path.join(output, 'turn-fixtures.json'), 'utf8'));
   const names = new Set(merged.fixtures.map(f => f.name));
+  // Reference-generated fixtures with a tracked native divergence stay out of
+  // the merged corpus (see engine/data/known-mismatches.json). This is an
+  // explicit, checked ledger rather than a silent skip: every open entry must
+  // still be produced by a generator, and removing the entry merges the
+  // fixture back on the next export.
+  const ledger = JSON.parse(fs.readFileSync(path.join(output, 'known-mismatches.json'), 'utf8'));
+  const open = new Map(ledger.mismatches.filter(m => m.status === 'open').map(m => [m.name, m]));
+  const generated = new Set();
   for (const name of extraGenerators) {
     const artifact = path.join(output, name.replace(/^generate_/, '').replace(/\.mjs$/, '.json'));
     execFileSync(process.execPath, [path.join(root, 'engine/tests', name)], {cwd: root});
@@ -268,11 +276,17 @@ if (extraGenerators.length) {
     assert.equal(extra.oracle_commit, pin, `${name} oracle pin`);
     assert.equal(extra.format, format, `${name} format`);
     for (const fixture of extra.fixtures) {
+      generated.add(fixture.name);
+      if (open.has(fixture.name)) continue;
       assert(!names.has(fixture.name), `duplicate fixture name ${fixture.name}`);
       names.add(fixture.name);
       merged.fixtures.push(fixture);
     }
-    console.log(`${name}: merged ${extra.fixtures.length} fixtures`);
+    console.log(`${name}: merged ${extra.fixtures.length - extra.fixtures.filter(f => open.has(f.name)).length} fixtures`);
+  }
+  for (const name of open.keys()) {
+    assert(generated.has(name), `known-mismatches entry ${name} has no generated fixture (stale ledger)`);
+    assert(!names.has(name), `known-mismatches entry ${name} is still merged into the corpus`);
   }
   fs.writeFileSync(path.join(output, 'turn-fixtures.json'), JSON.stringify(merged) + '\n');
 }

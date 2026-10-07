@@ -1249,7 +1249,7 @@ impl BattleState {
                             let locked = locked_move.is_some() || locked_recharge;
                             let last_active = (slot + 1..2).all(|later| {
                                 side.active[later]
-                                    .map_or(true, |r| side.pokemon[r as usize].fainted)
+                                    .is_none_or(|r| side.pokemon[r as usize].fainted)
                             });
                             let moves = if locked_recharge {
                                 Vec::new()

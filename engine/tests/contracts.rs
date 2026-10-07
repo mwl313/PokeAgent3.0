@@ -113,6 +113,7 @@ fn normal() -> Request {
                 slot,
                 target: Target::Normal,
                 disabled: false,
+                hidden: false,
                 pp: 10,
             })
             .collect(),
