@@ -538,6 +538,9 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:firstimpression.onDisableMove",
     // After You: the queue reprioritisation hit effect.
     "moves:afteryou.onHit",
+    // Haze and Psych Up: field-wide and copied boost stages.
+    "moves:haze.onHitField",
+    "moves:psychup.onHit",
 ];
 
 /// Ported action-local callbacks, keyed by move id. Every entry must have its
@@ -619,6 +622,8 @@ fn move_hooks(id: &str) -> u32 {
         "soak" => hook::SOAK,
         "firstimpression" => hook::FIRST_IMPRESSION,
         "afteryou" => hook::AFTER_YOU,
+        "haze" => hook::HAZE,
+        "psychup" => hook::PSYCH_UP,
         "doubleshock" => hook::DOUBLE_SHOCK,
         _ => 0,
     }

@@ -64,6 +64,10 @@ pub mod hook {
     pub const FIRST_IMPRESSION: u32 = 1 << 19;
     /// `moves:afteryou.onHit`: the ally's queued move jumps to the queue head.
     pub const AFTER_YOU: u32 = 1 << 20;
+    /// `moves:haze.onHitField`: every active Pokémon's boosts are cleared.
+    pub const HAZE: u32 = 1 << 21;
+    /// `moves:psychup.onHit`: the user copies every boost stage of the target.
+    pub const PSYCH_UP: u32 = 1 << 22;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -759,6 +763,8 @@ pub enum MoveBehavior {
     TerrainPulse,
     /// `perishsong`: the field-wide three-turn countdown volatile.
     PerishSong,
+    /// `haze`: the field-wide boost reset.
+    Haze,
     TrickRoom,
     Terrain,
     /// `trick` / `switcheroo`: item swap with the reference TakeItem refusal
@@ -864,6 +870,7 @@ impl MoveBehavior {
             "weatherball" => Self::WeatherBall,
             "terrainpulse" => Self::TerrainPulse,
             "perishsong" => Self::PerishSong,
+            "haze" => Self::Haze,
             "trickroom" => Self::TrickRoom,
             "electricterrain" | "grassyterrain" | "mistyterrain" | "psychicterrain" => {
                 Self::Terrain

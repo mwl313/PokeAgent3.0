@@ -1611,6 +1611,30 @@ impl BattleState {
             // single Update is the only one.
             return Ok(());
         }
+        if behavior == MoveBehavior::Haze {
+            // Reference `moves:haze.onHitField`: a public clear-all message and
+            // `clearBoosts()` on every active. The native emits one Boost event
+            // per stat that actually changes so observers stay exact.
+            for target in self.active_entities(false) {
+                for stat in 0..7usize {
+                    let old = self.mon(target).boosts[stat];
+                    if old == 0 {
+                        continue;
+                    }
+                    self.mon_mut(target).boosts[stat] = 0;
+                    self.emit(
+                        EventKind::Boost,
+                        target,
+                        None,
+                        EffectRef::Stat(stat as Id),
+                        -i32::from(old),
+                        false,
+                    )?;
+                }
+            }
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
+            return Ok(());
+        }
         if behavior == MoveBehavior::SideCondition {
             // Side-target moves use tryMoveHit, bypassing the Pokémon hit loop
             // and its two Update events. The queue runs the post-action Update.
@@ -2386,6 +2410,29 @@ impl BattleState {
                         self.queue.insert(0, action);
                         did_anything = true;
                     }
+                    continue;
+                }
+                // `moves:psychup.onHit`: the user copies every boost stage of
+                // the target (the crit-stage volatiles it also copies cannot
+                // exist natively, so only the stages matter).
+                if hooks & crate::effects::hook::PSYCH_UP != 0 {
+                    for stat in 0..7usize {
+                        let want = self.mon(target).boosts[stat];
+                        let old = self.mon(actor).boosts[stat];
+                        if want == old {
+                            continue;
+                        }
+                        self.mon_mut(actor).boosts[stat] = want;
+                        self.emit(
+                            EventKind::Boost,
+                            actor,
+                            Some(target),
+                            EffectRef::Stat(stat as Id),
+                            i32::from(want - old),
+                            false,
+                        )?;
+                    }
+                    did_anything = true;
                     continue;
                 }
                 // `moves:soak.onHit`: pure-Water targets refuse; anything else
