@@ -533,6 +533,9 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:soak.onHit",
     "moves:doubleshock.onTryMove",
     "moves:doubleshock.self.onHit",
+    // First Impression: the first-action gate and its request disable.
+    "moves:firstimpression.onTry",
+    "moves:firstimpression.onDisableMove",
 ];
 
 /// Ported action-local callbacks, keyed by move id. Every entry must have its
@@ -612,6 +615,7 @@ fn move_hooks(id: &str) -> u32 {
         "clangoroussoul" => hook::CLANGOROUS_SOUL,
         "populationbomb" | "tripleaxel" => hook::MULTI_ACCURACY,
         "soak" => hook::SOAK,
+        "firstimpression" => hook::FIRST_IMPRESSION,
         "doubleshock" => hook::DOUBLE_SHOCK,
         _ => 0,
     }
@@ -1643,6 +1647,7 @@ impl Dex {
             two_turn_move: lookup("conditions", "twoturnmove")?,
             yawn: lookup("conditions", "yawn")?,
             yawn_move: lookup("moves", "yawn")?,
+            first_impression: lookup("moves", "firstimpression")?,
             toxic_move: lookup("moves", "toxic")?,
             helping_hand_move: lookup("moves", "helpinghand")?,
             roost: lookup("conditions", "roost")?,

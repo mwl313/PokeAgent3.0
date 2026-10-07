@@ -59,6 +59,9 @@ pub mod hook {
     /// `moves:doubleshock.onTryMove|self.onHit`: fails without the Electric
     /// type and removes it from the user on a landed hit.
     pub const DOUBLE_SHOCK: u32 = 1 << 18;
+    /// `moves:firstimpression.onTry` plus the Champions `onDisableMove`
+    /// override: only the holder's first action out may use it.
+    pub const FIRST_IMPRESSION: u32 = 1 << 19;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -1002,6 +1005,8 @@ pub struct NativeEffects {
     /// `moves:yawn` (the move, not the volatile condition): `onTryHit` refuses
     /// a target that already has a status or cannot fall asleep.
     pub yawn_move: Id,
+    /// `moves:firstimpression`: the id disabled by its own `onDisableMove`.
+    pub first_impression: Id,
     /// `moves:toxic` (the move, not the `tox` status): a Poison-type attacker
     /// hits through semi-invulnerability.
     pub toxic_move: Id,

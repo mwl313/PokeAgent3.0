@@ -1483,7 +1483,8 @@ impl BattleState {
         // redirection-independent hit steps. A failed try consumes no RNG and
         // ends the move without damage or secondary effects.
         let hooks = dex.effects.move_hooks[move_id as usize];
-        if hooks & crate::effects::hook::FAKE_OUT_FIRST_TURN != 0
+        if (hooks & crate::effects::hook::FAKE_OUT_FIRST_TURN != 0
+            || hooks & crate::effects::hook::FIRST_IMPRESSION != 0)
             && self.mon(actor).active_move_actions > 1
         {
             self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
@@ -5394,7 +5395,9 @@ impl BattleState {
                 let last_move = mon.last_move;
                 for mv in &mut mon.moves {
                     let mut disabled = locked.is_some_and(|id| id != i64::from(mv.id))
-                        || (fake_out_disabled && mv.id == dex.effects.fake_out)
+                        || (fake_out_disabled
+                            && (mv.id == dex.effects.fake_out
+                                || mv.id == dex.effects.first_impression))
                         || (throat_chop && dex.moves[mv.id as usize].sound);
                     if let Some(id) = encore {
                         disabled |= i64::from(mv.id) != id;
