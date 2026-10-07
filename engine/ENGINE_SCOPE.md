@@ -462,3 +462,50 @@ legal-action mask is compared as well. Verified after the merge: 641 fixtures
 against a freshly booted pinned Showdown with zero mismatches; the full Rust
 suite and clippy (with and without `--features python`) are green; the
 manifest digest matches the merged corpus.
+
+### Strength Sap, the Metronome item, Beat Up and Disguise (parallel batch)
+
+Four independent families landed together, three of them produced by parallel
+subagents on isolated branches/worktrees and integrated by the root agent on
+the main worktree:
+
+- **Strength Sap** (`moves:strengthsap.onHit`): heals the user by the target's
+  stage-boosted Attack and drops that Attack one stage; the Clear Body /
+  Hyper Cutter / Flower Veil / Mirror Armor gates and the `atk === -6`
+  early-fail run in reference order. `drain_heal` now reports the actual
+  healing and takes its `EffectRef`, which also fixed the substitute-path
+  drain call after the merge.
+- **Metronome item** (`items:metronome`, the last blocked item): a held-item
+  volatile whose `onTryMove` (priority -2) advances the consecutive-use
+  counter, with the two-turn release branch, item-loss removal, the
+  `onModifyDamage` 4096..8192 ramp and snapshot shape validation. Legal item
+  coverage is now **166/166**. Four reference reproducers for a pre-existing
+  turn-boundary RNG divergence (a fainted slot that only passes with no live
+  reserves) stay tracked in `engine/data/known-mismatches.json` and out of the
+  merged corpus.
+- **Beat Up** (`moves:beatup.onModifyMove|basePowerCallback`): `onModifyMove`
+  captures `pokemon.side.pokemon.filter(ally => ally === pokemon ||
+  (!ally.fainted && !ally.status))` in reference party order and sets a plain
+  numeric `multihit`; each hit's power is `5 + floor(setSpecies.baseStats.atk
+  / 10)` of the next captured member's *set* species. Native `ActiveMove`
+  carries the captured roster list, the hit loop consumes one entry per hit
+  and the multihit dispatch/parental-bond exclusion read it.
+- **Disguise** (Mimikyu): the first damaging hit is absorbed (`onDamage`
+  priority 1, ability revealed, hit still counted), then the `onUpdate`
+  between hits of a multi-hit move changes the forme and pays
+  `floor(maxHP/8)` with the new species as the effect. `PokemonState`
+  carries `disguise_busted` (snapshot schema 11) and the multi-hit kernel
+  applies the absorb per hit.
+
+Reference-generated scenes: `generate_more_strengthsap.mjs` (4),
+`generate_more_metronome_item.mjs` (3), `generate_more_beatup.mjs` (3) and
+`generate_more_disguise.mjs` (4). Verified on the integrated tree: **672
+fixtures / 14,363 decision boundaries** re-verified against a freshly booted
+pinned Showdown with zero mismatches; 21 test binaries green; clippy clean with
+and without `--features python`; legal coverage **372/515 moves, 136/223
+abilities, 166/166 items**; the trajectory probe reports **967/1136 pool teams
+completing at least one natural battle (85.1%)** and 902 teams statically
+complete. The top remaining pool blockers are Magic Bounce (10), Mold Breaker
+(10), Illusion (7), Stance Change (7) and Psychic Noise (6).
+
+No readiness claim is made and no training has started.
