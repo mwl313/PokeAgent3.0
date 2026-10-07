@@ -398,6 +398,7 @@ const HANDLED_MOVE_FIELDS: &[&str] = &[
     "onAfterSubDamage",
     "onAfterMove",
     "onModifyMove",
+    "onModifyType",
     "onModifyPriority",
     "onEffectiveness",
     // Move-owned callbacks with a ported native implementation. The callback
@@ -701,6 +702,9 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     // executed by the native hook.
     "moves:burnup.onTryMove",
     "moves:burnup.self.onHit",
+    // Raging Bull: the screen shatter at TryHit and the Paldea-form type.
+    "moves:ragingbull.onTryHit",
+    "moves:ragingbull.onModifyType",
     // Focus Energy / Dragon Cheer: the mutual-exclusion start gate and the
     // crit-ratio modifier.
     "moves:focusenergy.condition.onStart",
@@ -876,6 +880,7 @@ fn move_hooks(id: &str) -> u64 {
         "burnup" => hook::BURN_UP,
         "triattack" => hook::TRI_ATTACK,
         "synthesis" | "moonlight" | "morningsun" => hook::WEATHER_HEAL,
+        "ragingbull" => hook::RAGING_BULL,
         _ => 0,
     }
 }
@@ -2042,6 +2047,9 @@ impl Dex {
             mimikyu_busted_totem: lookup("species", "mimikyubustedtotem")?,
             aegislash: lookup("species", "aegislash")?,
             aegislash_blade: lookup("species", "aegislashblade")?,
+            tauros_paldea_combat: lookup("species", "taurospaldeacombat")?,
+            tauros_paldea_blaze: lookup("species", "taurospaldeablaze")?,
+            tauros_paldea_aqua: lookup("species", "taurospaldeaaqua")?,
             kings_shield_move: lookup("moves", "kingsshield")?,
             encore: lookup("conditions", "encore")?,
             taunt: lookup("conditions", "taunt")?,

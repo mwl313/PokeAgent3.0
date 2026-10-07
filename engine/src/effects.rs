@@ -127,6 +127,10 @@ pub mod hook {
     /// `moves:noretreat.onTry`: the move fails while its own marker volatile
     /// is present.
     pub const NO_RETREAT: u64 = 1 << 45;
+    /// `moves:ragingbull.onTryHit|onModifyType`: the target side's screens are
+    /// shattered before the hit resolves, and the Paldea Tauros forms use
+    /// their own primary type (Combat/Fighting, Blaze/Fire, Aqua/Water).
+    pub const RAGING_BULL: u64 = 1 << 46;
     /// `moves:burnup.onTryMove|self.onHit`: fails without the Fire type and
     /// strips it from the user on a landed hit.
     pub const BURN_UP: u64 = 1 << 35;
@@ -1321,6 +1325,10 @@ pub struct NativeEffects {
     /// `aegislash` is the base forme the submitted set always starts in.
     pub aegislash: Id,
     pub aegislash_blade: Id,
+    /// Paldea Tauros forms whose Raging Bull takes its own primary type.
+    pub tauros_paldea_combat: Id,
+    pub tauros_paldea_blaze: Id,
+    pub tauros_paldea_aqua: Id,
     pub kings_shield_move: Id,
     /// `move:encore` volatile: locks the holder into its last move.
     pub encore: Id,

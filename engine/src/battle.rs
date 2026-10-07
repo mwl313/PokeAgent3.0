@@ -3075,6 +3075,29 @@ impl BattleState {
             if self.absorb_try_hit(dex, target, actor, m, &mut action_accuracy)? {
                 continue;
             }
+            // `moves:ragingbull.onTryHit`: the move shatters the target side's
+            // screens as part of the TryHit step, i.e. after the priority-3
+            // protection guards and the priority-1 ability absorptions (which
+            // break the reference event before the move's own handler runs)
+            // and before type immunity, accuracy and the decoy intercept.
+            if m.hooks & crate::effects::hook::RAGING_BULL != 0 {
+                for id in [
+                    dex.effects.reflect,
+                    dex.effects.light_screen,
+                    dex.effects.aurora_veil,
+                ] {
+                    if self.sides[target.side as usize].conditions.remove(&id).is_some() {
+                        self.emit(
+                            EventKind::SideEffectEnd,
+                            target,
+                            None,
+                            EffectRef::Condition(id),
+                            0,
+                            false,
+                        )?;
+                    }
+                }
+            }
             // Natural Prankster immunity (gen 7+): a status move boosted by the
             // attacker's Prankster cannot affect a Dark-type foe. It is checked
             // after TryHit absorption and before type immunity and accuracy.

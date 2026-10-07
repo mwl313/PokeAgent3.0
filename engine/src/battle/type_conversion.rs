@@ -138,6 +138,21 @@ impl BattleState {
                 action.accuracy = Some(50);
             }
         }
+        // `moves:ragingbull.onModifyType`: the three Paldea forms take their
+        // own primary type; every other species (including plain Tauros and a
+        // Metronome-item caller) keeps the declared Normal type.
+        if hooks & crate::effects::hook::RAGING_BULL != 0 {
+            let species = self.mon(actor).species;
+            action.move_type = if species == dex.effects.tauros_paldea_combat {
+                dex.effects.fighting
+            } else if species == dex.effects.tauros_paldea_blaze {
+                dex.effects.fire
+            } else if species == dex.effects.tauros_paldea_aqua {
+                dex.effects.water
+            } else {
+                action.move_type
+            };
+        }
         if hooks & crate::effects::hook::EXPANDING_FORCE != 0
             && self.terrain_id(dex) == dex.effects.psychic_terrain
             && self.grounded(dex, actor)
