@@ -1084,6 +1084,20 @@ impl BattleState {
                     index,
                 ));
             }
+            // `abilities:mummy.onDamagingHit`: a contact hit overwrites the
+            // attacker's ability unless it cannot be suppressed.
+            if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Mummy {
+                handlers.push((
+                    target,
+                    17,
+                    Priority {
+                        sub_order: 7,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
             if dex.effects.items[self.mon(target).item as usize] == Item::RockyHelmet {
                 handlers.push((
                     target,
@@ -1367,6 +1381,18 @@ impl BattleState {
                 // `abilities:seedsower.onDamagingHit`: scatter Grassy Terrain
                 // with the holder as its source (also revealing the ability).
                 self.start_terrain(dex, target, dex.effects.grassy_terrain, true)?;
+            } else if kind == 17 {
+                // `abilities:mummy.onDamagingHit`: a contact hit replaces the
+                // attacker's ability with Mummy unless that ability cannot be
+                // suppressed (or is already Mummy).
+                let attacker_ability = self.mon(actor).ability;
+                if m.contact
+                    && !dex.effects.no_suppress_abilities[attacker_ability as usize]
+                    && dex.effects.abilities[attacker_ability as usize] != Ability::Mummy
+                {
+                    let mummy = dex.id("abilities", "mummy")?;
+                    self.set_ability(dex, actor, mummy)?;
+                }
             } else if m.move_type == dex.effects.fire {
                 self.cure_status(target)?;
             }
@@ -2586,7 +2612,6 @@ impl Ability {
             | Ability::Megasol
             | Ability::Merciless
             | Ability::Mimicry
-            | Ability::Mummy
             | Ability::Opportunist
             | Ability::Pickup
             | Ability::Piercingdrill

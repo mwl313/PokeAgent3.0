@@ -990,6 +990,9 @@ pub struct NativeEffects {
     /// active move (Mold Breaker / Teravolt / Turboblaze / a move-level
     /// `ignoreAbility`). Indexed by ability id.
     pub breakable_abilities: Vec<bool>,
+    /// `flags.cantsuppress`: abilities that Mummy / Wandering Spirit / Skill
+    /// Swap may not overwrite or exchange.
+    pub no_suppress_abilities: Vec<bool>,
     pub moves: Vec<MoveBehavior>,
     pub items: Vec<Item>,
     /// Pinned `flags.notrace` abilities: Trace never copies them (Trace itself

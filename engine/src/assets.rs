@@ -1706,11 +1706,20 @@ impl Dex {
                 breakable_abilities[row["numeric_id"].as_u64().unwrap() as usize] = true;
             }
         }
+        // `flags.cantsuppress`: Mummy, Wandering Spirit and the ability-swap
+        // moves refuse to overwrite or exchange these abilities.
+        let mut no_suppress_abilities = vec![false; names["abilities"].len()];
+        for row in tables["abilities"].as_array().unwrap() {
+            if row["data"]["flags"]["cantsuppress"] == 1 {
+                no_suppress_abilities[row["numeric_id"].as_u64().unwrap() as usize] = true;
+            }
+        }
         let effects = crate::effects::NativeEffects {
             abilities: native_abilities,
             items: native_items,
             no_trace_abilities,
             breakable_abilities,
+            no_suppress_abilities,
             choice_lock: lookup("conditions", "choicelock")?,
             disable_move_conditions: disable_move_handler_ids(
                 &tables["conditions"],
