@@ -3626,6 +3626,7 @@ impl BattleState {
                 || volatile == dex.effects.yawn
                 || volatile == dex.effects.roost
                 || volatile == dex.effects.glaive_rush
+                || volatile == dex.effects.partially_trapped
             {
                 changed |= self.start_selection_volatile(
                     dex,
@@ -3780,6 +3781,32 @@ impl BattleState {
                     effect_order: order,
                     effect_order_assigned: true,
                     values: vec![i64::from(last)],
+                },
+            );
+            self.emit(
+                EventKind::EffectStart,
+                target,
+                source,
+                EffectRef::Condition(volatile),
+                0,
+                false,
+            )?;
+            return Ok(true);
+        }
+        if volatile == dex.effects.partially_trapped {
+            // `partiallytrapped.durationCallback`: a 5-or-6 turn bind (Grip Claw
+            // is not a legal item). `boundDivisor` is 8 without Binding Band.
+            let duration = self.rng.range(5, 7) as u16;
+            let order = self.allocate_effect_order()?;
+            self.mon_mut(target).volatiles.insert(
+                volatile,
+                EffectState {
+                    id: volatile,
+                    duration: Some(duration),
+                    source: source_slot,
+                    effect_order: order,
+                    effect_order_assigned: true,
+                    values: vec![8],
                 },
             );
             self.emit(
@@ -4157,6 +4184,8 @@ impl BattleState {
                         (23, 0)
                     } else if id == dex.effects.roost {
                         (25, 0)
+                    } else if id == dex.effects.partially_trapped {
+                        (13, 0)
                     } else {
                         (0, 0)
                     };
@@ -4263,6 +4292,54 @@ impl BattleState {
             );
         }
         for (e, id, status, _) in handlers {
+            if status == 0 && id == dex.effects.partially_trapped {
+                // `moves:partiallytrapped.condition.onResidual` (order 13): the
+                // bind ends silently when its source left the field or has not
+                // acted yet, otherwise it deals `baseMaxhp / boundDivisor`.
+                // An earlier handler in this sweep may have removed the
+                // volatile already (the target fainted or switched out).
+                let Some(state) = self.mon(e).volatiles.get(&id) else {
+                    continue;
+                };
+                let source = state.source.map(|(side, roster)| Entity {
+                    side: side.index() as u8,
+                    roster,
+                });
+                let keep = source.is_some_and(|source| {
+                    self.mon(source).active_slot.is_some()
+                        && self.mon(source).hp > 0
+                        && self.mon(source).active_turns > 0
+                });
+                if !keep {
+                    self.mon_mut(e).volatiles.remove(&id);
+                    self.emit(
+                        EventKind::EffectEnd,
+                        e,
+                        None,
+                        EffectRef::Condition(id),
+                        0,
+                        false,
+                    )?;
+                    continue;
+                }
+                let divisor = self.mon(e).volatiles[&id]
+                    .values
+                    .first()
+                    .copied()
+                    .filter(|value| *value > 0)
+                    .unwrap_or(8) as u32;
+                let amount = (u32::from(self.mon(e).stats[0]) / divisor).max(1);
+                if let Some(source) = source {
+                    self.indirect_damage(
+                        dex,
+                        e,
+                        source,
+                        amount,
+                        EffectRef::Condition(id),
+                    )?;
+                }
+                continue;
+            }
             if status == 7 {
                 self.terrain_upkeep(id)?;
                 continue;

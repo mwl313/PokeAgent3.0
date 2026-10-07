@@ -849,6 +849,14 @@ impl BattleState {
                         effect.duration.is_none()
                             && effect.values.is_empty()
                             && effect.source.is_some()
+                    } else if id == dex.effects.partially_trapped {
+                        // `partiallytrapped`: a 5-or-6 turn bind that stores its
+                        // damage divisor and keeps the binding source.
+                        effect
+                            .duration
+                            .is_some_and(|duration| (1..=6).contains(&duration))
+                            && effect.values.as_slice() == [8]
+                            && effect.source.is_some()
                     } else if id == dex.effects.two_turn_move {
                         // `twoturnmove.onStart` records the charging move and
                         // the player's chosen location; the duration is 2 and

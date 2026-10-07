@@ -41,6 +41,7 @@ const EXEMPT: &[(&str, &str)] = &[
     ("nightdaze", "no legal holder with an implemented ability yet"),
     ("pound", "no legal holder with an implemented ability yet"),
     ("softboiled", "no legal holder with an implemented ability yet"),
+    ("snaptrap", "no legal holder with an implemented ability yet"),
     ("spore", "no legal holder with an implemented ability yet"),
     ("struggle", "engine-internal fallback move, never selectable from a request"),
 ];

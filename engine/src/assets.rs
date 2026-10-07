@@ -753,6 +753,8 @@ const HANDLED_VOLATILES: &[&str] = &[
     "yawn",
     // Glaive Rush's drawback volatile (accuracy, doubled damage, cleanup).
     "glaiverush",
+    // Binding moves' damage/trap volatile.
+    "partiallytrapped",
     "mustrecharge",
     // Volatile selection-lock family: each id is declared by exactly one move
     // (encore, taunt, disable, imprison, torment) whose callbacks are below.
