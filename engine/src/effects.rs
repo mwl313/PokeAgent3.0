@@ -86,6 +86,14 @@ pub mod hook {
     /// volatile and always removes it once the move has run, even when the
     /// hit is blocked or missed.
     pub const SPIT_UP: u32 = 1 << 27;
+    /// `moves:lashout.onBasePower`: doubles while the user's stats were
+    /// lowered this turn.
+    pub const LASH_OUT: u32 = 1 << 28;
+    /// `moves:barbbarrage.onBasePower`: doubles against a poisoned target.
+    pub const BARB_BARRAGE: u32 = 1 << 29;
+    /// `moves:alluringvoice.secondary.onHit`: confuses a target whose stats
+    /// were raised this turn.
+    pub const ALLURING_VOICE: u32 = 1 << 30;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -970,6 +978,10 @@ pub enum BasePowerKind {
     BeatUp,
     /// `spitup`: 100 power per stored stockpile layer.
     Stockpile,
+    /// `assurance`: doubles when the target already took damage this turn.
+    HurtTarget,
+    /// `temperflare`: doubles when the user's previous move failed.
+    TemperFlare,
 }
 
 impl BasePowerKind {
@@ -1000,6 +1012,8 @@ impl BasePowerKind {
             "moves:risingvoltage.basePowerCallback" => Self::RisingVoltage,
             "moves:beatup.basePowerCallback" => Self::BeatUp,
             "moves:spitup.basePowerCallback" => Self::Stockpile,
+            "moves:assurance.basePowerCallback" => Self::HurtTarget,
+            "moves:temperflare.basePowerCallback" => Self::TemperFlare,
             _ => return None,
         })
     }

@@ -548,6 +548,10 @@ impl BattleState {
         }
         let actual = amount.min(u32::from(self.mon(target).hp)) as u16;
         self.mon_mut(target).hp -= actual;
+        if actual != 0 {
+            let hp = self.mon(target).hp;
+            self.mon_mut(target).hurt_this_turn = hp;
+        }
         if self.mon(target).hp == 0 {
             self.faint_queue.push(crate::state::FaintData {
                 target,
@@ -858,6 +862,8 @@ impl BattleState {
             false,
         )?;
         self.mon_mut(target).hp -= actual;
+        let hp = self.mon(target).hp;
+        self.mon_mut(target).hurt_this_turn = hp;
         if self.mon(target).hp == 0 {
             self.faint_queue.push(crate::state::FaintData {
                 target,
@@ -1903,11 +1909,18 @@ impl BattleState {
             self.reveal_ability(target)?;
         }
         let mut changed = false;
+        let mut raised = false;
+        let mut lowered = false;
         for (stat, change) in changes.into_iter().enumerate() {
             let old = self.mon(target).boosts[stat];
             let new = (old + change).clamp(-6, 6);
             if new == old {
                 continue;
+            }
+            if new > old {
+                raised = true;
+            } else {
+                lowered = true;
             }
             self.mon_mut(target).boosts[stat] = new;
             self.emit(
@@ -1930,6 +1943,14 @@ impl BattleState {
                 response[if ability == Ability::Defiant { 0 } else { 2 }] = 2;
                 self.boost(dex, target, target, response, BoostCause::Ability(ability))?;
             }
+        }
+        // Reference `boost`: the turn flags read the *applied* deltas, so a
+        // fully capped boost leaves them untouched.
+        if raised {
+            self.mon_mut(target).stats_raised_this_turn = true;
+        }
+        if lowered {
+            self.mon_mut(target).stats_lowered_this_turn = true;
         }
         Ok(changed)
     }
@@ -2078,6 +2099,18 @@ impl BattleState {
                     && !dex.item_take_refused(d.item, d.base_species)
                 {
                     add(actor, 0, 6144);
+                }
+                // `moves:lashout.onBasePower`: doubles while the user's stats
+                // were lowered this turn.
+                if m.hooks & crate::effects::hook::LASH_OUT != 0 && a.stats_lowered_this_turn {
+                    add(actor, 0, 8192);
+                }
+                // `moves:barbbarrage.onBasePower`: doubles against a poisoned
+                // target (regular or badly poisoned).
+                if m.hooks & crate::effects::hook::BARB_BARRAGE != 0
+                    && (d.status == dex.effects.poison || d.status == dex.effects.toxic)
+                {
+                    add(actor, 0, 8192);
                 }
             }
             ModifierEvent::Attack | ModifierEvent::SpecialAttack => {
