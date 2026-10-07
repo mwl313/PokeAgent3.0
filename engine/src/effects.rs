@@ -124,6 +124,9 @@ pub mod hook {
     /// `moves:mortalspin.onAfterHit|onAfterSubDamage`: the user sheds Leech
     /// Seed, its own entry hazards and partial trapping.
     pub const MORTAL_SPIN: u64 = 1 << 44;
+    /// `moves:noretreat.onTry`: the move fails while its own marker volatile
+    /// is present.
+    pub const NO_RETREAT: u64 = 1 << 45;
     /// `moves:burnup.onTryMove|self.onHit`: fails without the Fire type and
     /// strips it from the user on a landed hit.
     pub const BURN_UP: u64 = 1 << 35;
@@ -1200,6 +1203,8 @@ pub struct NativeEffects {
     /// it is consumed by.
     pub charge: Id,
     pub charge_move: Id,
+    /// `noretreat`: the self-trap marker volatile.
+    pub no_retreat: Id,
     /// Additional Protect-family volatiles that block hits in the same
     /// `hitStepTryHitEvent` phase (priority 3).
     pub spiky_shield: Id,

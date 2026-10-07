@@ -1046,6 +1046,11 @@ impl BattleState {
                         effect.duration.is_none()
                             && effect.values.is_empty()
                             && effect.source.is_some()
+                    } else if id == dex.effects.no_retreat {
+                        // `moves:noretreat.condition`: the self-trap marker.
+                        effect.duration.is_none()
+                            && effect.values.is_empty()
+                            && effect.source.is_some()
                     } else if id == dex.effects.dragon_cheer {
                         // `moves:dragoncheer.condition`: the single value is
                         // `effectState.hasDragonType`, captured at start.

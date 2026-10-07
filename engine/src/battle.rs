@@ -2045,6 +2045,18 @@ impl BattleState {
             self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
             return Ok(());
         }
+        // `moves:noretreat.onTry`: the move fails while its own marker
+        // volatile is up (the `trapped` deletion branch needs the unported
+        // Mean Look volatile and cannot be reached in the pinned regulation).
+        if hooks & crate::effects::hook::NO_RETREAT != 0
+            && self
+                .mon(actor)
+                .volatiles
+                .contains_key(&dex.effects.no_retreat)
+        {
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+            return Ok(());
+        }
         // `moves:burnup.onTryMove`: the user must still be Fire-type; the
         // fail message names the move and the type is stripped on a landed hit.
         if hooks & crate::effects::hook::BURN_UP != 0
@@ -6321,6 +6333,34 @@ impl BattleState {
                     false,
                     suppressing,
                 )?;
+            } else if volatile == dex.effects.no_retreat {
+                // `moves:noretreat.condition`: a bare marker (no duration, no
+                // payload) that also pins the holder in place.
+                if !self.mon(target).volatiles.contains_key(&volatile) {
+                    let order = self.allocate_effect_order()?;
+                    self.mon_mut(target).volatiles.insert(
+                        volatile,
+                        EffectState {
+                            id: volatile,
+                            effect_order: order,
+                            effect_order_assigned: true,
+                            source: Some((
+                                if source.side == 0 { SideId::P1 } else { SideId::P2 },
+                                source.roster,
+                            )),
+                            ..Default::default()
+                        },
+                    );
+                    self.emit(
+                        EventKind::EffectStart,
+                        target,
+                        Some(source),
+                        EffectRef::Condition(volatile),
+                        0,
+                        false,
+                    )?;
+                    changed = true;
+                }
             } else if volatile == dex.effects.charge {
                 changed |= self.add_charge_volatile(dex, target, Some(source))?;
             } else if volatile == dex.effects.focus_energy || volatile == dex.effects.dragon_cheer {
@@ -7757,6 +7797,11 @@ impl BattleState {
         }
         // `moves:partiallytrapped.condition.onTrapPokemon`: the volatile's
         // source must still be on the field.
+        // `moves:noretreat.condition.onTrapPokemon`: the marker pins its own
+        // holder in place (`tryTrap` always succeeds for the holder).
+        if self.mon(e).volatiles.contains_key(&dex.effects.no_retreat) {
+            trapped = Some(false);
+        }
         if self
             .mon(e)
             .volatiles

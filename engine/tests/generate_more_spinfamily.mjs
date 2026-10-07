@@ -66,6 +66,33 @@ const TRIALS = [
       return null;
     },
   },
+  {
+    name: 'spinfamily_noretreat_boosts_once',
+    p1: () => team(setOf('Falinks', 'Battle Armor', ['No Retreat', 'Protect', 'Close Combat'])),
+    p2: () => team(setOf('Metagross', 'Clear Body', ['Iron Head', 'Protect', 'Psychic'])),
+    script: [
+      {p1: [{move: 'noretreat', target: 0}, 'protect'], p2: ['protect', 'protect']},
+      {p1: [{move: 'noretreat', target: 0}, 'protect'], p2: ['protect', 'protect']},
+      {p1: [{move: 'closecombat', target: 1}, 'protect'], p2: ['protect', 'protect']},
+      {p1: ['protect', 'protect'], p2: ['protect', 'protect']},
+    ],
+    coverage: {move: 'noretreat'},
+    verify(fixture, session) {
+      if (!logHas(session, /\|move\|p1a: s0\|No Retreat\|/)) return 'No Retreat never executed';
+      const steps = fixture.steps
+        .map(step => step.expected.sides[0].pokemon.find(p => p.roster === 0))
+        .filter(Boolean);
+      const boosted = steps.find(p => p.boosts[0] === 1);
+      if (!boosted) return 'no Attack stage was raised';
+      if (!(boosted.boosts[1] === 1 && boosted.boosts[2] === 1 && boosted.boosts[3] === 1 && boosted.boosts[4] === 1)) {
+        return 'the five-stat boost was incomplete';
+      }
+      if (!steps.some(p => p.volatiles.includes('noretreat'))) return 'the marker volatile was never recorded';
+      const fails = session.battle.log.filter(line => line.startsWith('|-fail|p1a: s0')).length;
+      if (!fails) return 'the second No Retreat did not fail';
+      return null;
+    },
+  },
 ];
 
 runTrials(TRIALS, {seedBase: 26000, artifact: 'more_spinfamily.json', debugEnv: 'DEBUG_SPIN'});

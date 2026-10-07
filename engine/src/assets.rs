@@ -655,6 +655,10 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:charge.condition.onMoveAborted",
     "moves:charge.condition.onAfterMove",
     "moves:charge.condition.onEnd",
+    // No Retreat: the self-marker Try gate and its condition lifecycle.
+    "moves:noretreat.onTry",
+    "moves:noretreat.condition.onStart",
+    "moves:noretreat.condition.onTrapPokemon",
     // Rapid-Spin-family after-hit payloads (terrain clear, hazard/seed shed).
     "moves:icespinner.onAfterHit",
     "moves:icespinner.onAfterSubDamage",
@@ -850,6 +854,7 @@ fn move_hooks(id: &str) -> u64 {
         "simplebeam" => hook::SIMPLE_BEAM,
         "icespinner" => hook::ICE_SPINNER,
         "mortalspin" => hook::MORTAL_SPIN,
+        "noretreat" => hook::NO_RETREAT,
         "eeriespell" => hook::EERIE_SPELL,
         "burnup" => hook::BURN_UP,
         "triattack" => hook::TRI_ATTACK,
@@ -1033,6 +1038,8 @@ const HANDLED_VOLATILES: &[&str] = &[
     "dragoncheer",
     // Charge's Electric base-power doubling volatile.
     "charge",
+    // No Retreat's self-trap marker.
+    "noretreat",
     // Volatile selection-lock family: each id is declared by exactly one move
     // (encore, taunt, disable, imprison, torment) whose callbacks are below.
     "encore",
@@ -1958,6 +1965,7 @@ impl Dex {
             focus_energy: lookup("conditions", "focusenergy")?,
             dragon_cheer: lookup("conditions", "dragoncheer")?,
             charge: lookup("conditions", "charge")?,
+            no_retreat: lookup("conditions", "noretreat")?,
             charge_move: lookup("moves", "charge")?,
             spiky_shield: lookup("conditions", "spikyshield")?,
             baneful_bunker: lookup("conditions", "banefulbunker")?,
