@@ -5957,15 +5957,24 @@ impl BattleState {
             return Ok(());
         }
         let deducted = {
+            // PP lives in both the live moveset and the `base_moves` copy the
+            // observation serves; every deduction site updates the two
+            // together.
             let mon = self.mon_mut(target);
-            match mon.moves.iter_mut().find(|slot| slot.id == last && slot.pp > 0) {
-                Some(slot) => {
-                    let amount = slot.pp.min(3);
-                    slot.pp -= amount;
-                    amount
+            let amount = mon
+                .moves
+                .iter()
+                .find(|slot| slot.id == last && slot.pp > 0)
+                .map(|slot| slot.pp.min(3))
+                .unwrap_or(0);
+            if amount > 0 {
+                for slot in mon.moves.iter_mut().chain(mon.base_moves.iter_mut()) {
+                    if slot.id == last {
+                        slot.pp -= slot.pp.min(amount);
+                    }
                 }
-                None => 0,
             }
+            amount
         };
         // The reference's `-activate` message carries the drained amount but
         // changes no state beyond the PP deduction above.
