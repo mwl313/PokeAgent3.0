@@ -2374,6 +2374,20 @@ impl BattleState {
                 // an empty bench).
                 did_anything |= self.can_switch(target.side as usize);
             } else {
+                // `moves:afteryou.onHit`: the ally's queued move action jumps
+                // to the front of the queue; a target with no queued move
+                // makes the move fail.
+                if hooks & crate::effects::hook::AFTER_YOU != 0 {
+                    if let Some(index) = self.queue.iter().position(|q| {
+                        q.kind == QueuedKind::Move && q.actor == Some(target)
+                    }) {
+                        let mut action = self.queue.remove(index);
+                        action.priority.order = 3;
+                        self.queue.insert(0, action);
+                        did_anything = true;
+                    }
+                    continue;
+                }
                 // `moves:soak.onHit`: pure-Water targets refuse; anything else
                 // is overwritten with pure Water.
                 if hooks & crate::effects::hook::SOAK != 0

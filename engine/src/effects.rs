@@ -62,6 +62,8 @@ pub mod hook {
     /// `moves:firstimpression.onTry` plus the Champions `onDisableMove`
     /// override: only the holder's first action out may use it.
     pub const FIRST_IMPRESSION: u32 = 1 << 19;
+    /// `moves:afteryou.onHit`: the ally's queued move jumps to the queue head.
+    pub const AFTER_YOU: u32 = 1 << 20;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

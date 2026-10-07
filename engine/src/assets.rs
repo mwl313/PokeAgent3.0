@@ -536,6 +536,8 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     // First Impression: the first-action gate and its request disable.
     "moves:firstimpression.onTry",
     "moves:firstimpression.onDisableMove",
+    // After You: the queue reprioritisation hit effect.
+    "moves:afteryou.onHit",
 ];
 
 /// Ported action-local callbacks, keyed by move id. Every entry must have its
@@ -616,6 +618,7 @@ fn move_hooks(id: &str) -> u32 {
         "populationbomb" | "tripleaxel" => hook::MULTI_ACCURACY,
         "soak" => hook::SOAK,
         "firstimpression" => hook::FIRST_IMPRESSION,
+        "afteryou" => hook::AFTER_YOU,
         "doubleshock" => hook::DOUBLE_SHOCK,
         _ => 0,
     }
