@@ -421,6 +421,9 @@ const HANDLED_MOVE_FIELDS: &[&str] = &[
     "multiaccuracy",
     "selfSwitch",
     "forceSwitch",
+    // `smartTarget`: a multi-hit move whose hits split across the target and
+    // its adjacent ally (Dragon Darts).
+    "smartTarget",
     // Embedded condition declaration (e.g. `throatchop`). The condition's own
     // callbacks are still gated by `PORTED_MOVE_CALLBACK_KEYS`.
     "condition",

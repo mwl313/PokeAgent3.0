@@ -44,9 +44,6 @@ impl BattleState {
         {
             return Ok(selected);
         }
-        if m.smart_target {
-            return Err(EngineError::Unsupported("smart move targeting".into()));
-        }
         if m.pledge_combo {
             return Ok(selected);
         }

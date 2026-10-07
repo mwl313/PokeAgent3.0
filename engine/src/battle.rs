@@ -4608,20 +4608,57 @@ impl BattleState {
         parental_bond: bool,
     ) -> Result<()> {
         let mut action_accuracy = m.accuracy.map(u16::from);
-        let spread = targets.len() > 1;
+        // `getSmartTargets` (Dragon Darts): a smart-target action resolves
+        // against the chosen target and that target's first live adjacent
+        // ally, in that order. A missing or fainted ally - or a fainted chosen
+        // target - falls back to a single target and clears the flag for the
+        // action.
+        let mut targets = targets;
+        let mut smart = false;
+        if m.smart_target && targets.len() == 1 {
+            let chosen = targets[0];
+            let ally = self.sides[chosen.side as usize]
+                .active
+                .iter()
+                .flatten()
+                .map(|roster| Entity {
+                    side: chosen.side,
+                    roster: *roster,
+                })
+                .find(|e| *e != chosen);
+            match ally {
+                Some(ally) if ally != actor && self.mon(ally).hp > 0 => {
+                    if self.mon(chosen).hp > 0 {
+                        targets.push(ally);
+                        smart = true;
+                    } else {
+                        targets = smallvec::smallvec![ally];
+                    }
+                }
+                _ => {}
+            }
+        }
+        // Reference `spreadMoveHit`: a smart-target hit is not a spread hit.
+        let spread = targets.len() > 1 && !m.smart_target;
         let effective_priority = m
             .priority
             .unwrap_or_else(|| self.effective_priority(dex, actor, move_id));
         let mut blocked = SmallVec::<[(Entity, Id); 4]>::new();
+        // Reference `trySpreadMoveHit` clears `move.smartTarget` once any hit
+        // step refuses a target, which turns the remaining hits into a normal
+        // all-targets hit.
+        let mut at_least_one_failure = false;
         let mut kept = SmallVec::<[Entity; 4]>::new();
         for e in targets {
             self.validate_effects(dex, e)?;
             if m.protect && !m.breaks_protect {
                 if self.guard_blocks(dex, e, m, effective_priority) {
+                    at_least_one_failure = true;
                     continue;
                 }
                 if let Some(volatile) = self.blocking_protection(dex, e) {
                     blocked.push((e, volatile));
+                    at_least_one_failure = true;
                     continue;
                 }
             }
@@ -4645,7 +4682,8 @@ impl BattleState {
                 && target.side != actor.side
                 && self.grounded(dex, target)
             {
-                return Ok(());
+                at_least_one_failure = true;
+                continue;
             }
             if m.powder
                 && target != actor
@@ -4653,11 +4691,13 @@ impl BattleState {
                 && !self.mon(target).types.contains(&dex.effects.grass)
             {
                 self.reveal_ability(target)?;
-                return Ok(());
+                at_least_one_failure = true;
+                continue;
             }
             // TryHit (absorption) precedes type immunity and accuracy.
             if self.absorb_try_hit(dex, target, actor, m, &mut action_accuracy)? {
-                return Ok(());
+                at_least_one_failure = true;
+                continue;
             }
             let effectiveness = if m.ignore_immunity {
                 Some(0)
@@ -4689,15 +4729,23 @@ impl BattleState {
                     .map(|total| total.clamp(-6, 6))
             };
             let Some(effectiveness) = effectiveness else {
-                return Ok(());
+                at_least_one_failure = true;
+                continue;
             };
             if !self.roll_move_accuracy(dex, actor, target, m, action_accuracy) {
-                return Ok(());
+                at_least_one_failure = true;
+                continue;
             }
             connected.push((target, effectiveness));
         }
         if connected.is_empty() {
             return Ok(());
+        }
+        // Reference `trySpreadMoveHit`: any refused target clears the
+        // smart-target flag, so the remaining hits resolve like a normal
+        // multi-hit move against every surviving target.
+        if smart && at_least_one_failure {
+            smart = false;
         }
         // Parental Bond overrides the move's own hit count with exactly two.
         let hit_count = if parental_bond {
@@ -4725,7 +4773,20 @@ impl BattleState {
                 break;
             }
             let mut missed = false;
-            for &(target, effectiveness) in &connected {
+            // Reference `hitStepMoveHitLoop`: a smart-target action resolves
+            // each hit against one entry of the list (`targets[hit - 1]`); a
+            // step-filtered index simply spends the hit with no target.
+            let single: SmallVec<[(Entity, i8); 1]> = if smart {
+                connected
+                    .get(hit as usize - 1)
+                    .copied()
+                    .into_iter()
+                    .collect()
+            } else {
+                SmallVec::new()
+            };
+            let hit_targets: &[(Entity, i8)] = if smart { &single } else { &connected };
+            for &(target, effectiveness) in hit_targets {
                 if self.mon(target).hp == 0 {
                     continue;
                 }
