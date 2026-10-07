@@ -1098,6 +1098,22 @@ impl BattleState {
                     index,
                 ));
             }
+            // `abilities:wanderingspirit.onDamagingHit`: a contact hit swaps
+            // both abilities through the shared `Battle#skillSwap` helper.
+            if dex.effects.abilities[self.mon(target).ability as usize]
+                == Ability::Wanderingspirit
+            {
+                handlers.push((
+                    target,
+                    18,
+                    Priority {
+                        sub_order: 7,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
             if dex.effects.items[self.mon(target).item as usize] == Item::RockyHelmet {
                 handlers.push((
                     target,
@@ -1394,6 +1410,13 @@ impl BattleState {
                 {
                     let mummy = dex.id("abilities", "mummy")?;
                     self.set_ability(dex, actor, mummy)?;
+                }
+            } else if kind == 18 {
+                // `abilities:wanderingspirit.onDamagingHit`: a contact hit
+                // exchanges both abilities through the shared Skill Swap
+                // primitive (fail gates and End/Start ordering included).
+                if m.contact {
+                    self.skill_swap(dex, actor, target)?;
                 }
             } else if m.move_type == dex.effects.fire {
                 self.cure_status(target)?;
@@ -2668,7 +2691,6 @@ impl Ability {
             | Ability::Symbiosis
             | Ability::Unseenfist
             | Ability::Vitalspirit
-            | Ability::Wanderingspirit
             | Ability::Whitesmoke
         )
     }
