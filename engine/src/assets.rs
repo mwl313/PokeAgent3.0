@@ -647,6 +647,12 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:rest.onHit",
     // Snore: the asleep-only gate (its flinch secondary is data-driven).
     "moves:snore.onTry",
+    // Focus Energy / Dragon Cheer: the mutual-exclusion start gate and the
+    // crit-ratio modifier.
+    "moves:focusenergy.condition.onStart",
+    "moves:focusenergy.condition.onModifyCritRatio",
+    "moves:dragoncheer.condition.onStart",
+    "moves:dragoncheer.condition.onModifyCritRatio",
     // Facade: the status-doubled base power.
     "moves:facade.onBasePower",
     // Burning Jealousy: the burn for targets whose stats were raised.
@@ -795,6 +801,7 @@ fn move_hooks(id: &str) -> u64 {
         "snore" => hook::SNORE,
         "facade" => hook::FACADE,
         "burningjealousy" => hook::BURNING_JEALOUSY,
+        "acupressure" => hook::ACUPRESSURE,
         _ => 0,
     }
 }
@@ -969,6 +976,9 @@ const HANDLED_VOLATILES: &[&str] = &[
     "perishsong",
     "leechseed",
     "mustrecharge",
+    // Focus Energy / Dragon Cheer: mutually exclusive crit-ratio volatiles.
+    "focusenergy",
+    "dragoncheer",
     // Volatile selection-lock family: each id is declared by exactly one move
     // (encore, taunt, disable, imprison, torment) whose callbacks are below.
     "encore",
@@ -1874,6 +1884,8 @@ impl Dex {
             protect: lookup("conditions", "protect")?,
             stall: lookup("conditions", "stall")?,
             revival_blessing: lookup("conditions", "revivalblessing")?,
+            focus_energy: lookup("conditions", "focusenergy")?,
+            dragon_cheer: lookup("conditions", "dragoncheer")?,
             spiky_shield: lookup("conditions", "spikyshield")?,
             baneful_bunker: lookup("conditions", "banefulbunker")?,
             kings_shield: lookup("conditions", "kingsshield")?,

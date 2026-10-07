@@ -1027,6 +1027,19 @@ impl BattleState {
                             && (-3..=0).contains(&effect.values[1])
                             && (-3..=0).contains(&effect.values[2])
                             && effect.source.is_some()
+                    } else if id == dex.effects.focus_energy {
+                        // `moves:focusenergy.condition`: no duration, no
+                        // payload; cleared by switch-out.
+                        effect.duration.is_none()
+                            && effect.values.is_empty()
+                            && effect.source.is_some()
+                    } else if id == dex.effects.dragon_cheer {
+                        // `moves:dragoncheer.condition`: the single value is
+                        // `effectState.hasDragonType`, captured at start.
+                        effect.duration.is_none()
+                            && effect.values.len() == 1
+                            && (0..=1).contains(&effect.values[0])
+                            && effect.source.is_some()
                     } else if usize::from(id) < dex.moves.len()
                         && dex.moves[id as usize].charge.is_some()
                     {

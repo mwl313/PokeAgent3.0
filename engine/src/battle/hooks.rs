@@ -883,9 +883,26 @@ impl BattleState {
     /// `abilities:superluck.onModifyCritRatio` adds one stage before the
     /// gen9 clamp to 4.
     pub(super) fn crit_ratio(&self, dex: &Dex, actor: Entity, base: u8) -> u8 {
-        let bonus = u8::from(
+        let mut bonus = u8::from(
             dex.effects.abilities[self.mon(actor).ability as usize] == Ability::Superluck,
         );
+        // `moves:focusenergy.condition.onModifyCritRatio` adds two stages;
+        // `moves:dragoncheer.condition.onModifyCritRatio` adds two for a
+        // Dragon-type target and one otherwise, using the type captured when
+        // the volatile started (`effectState.hasDragonType`).
+        if self
+            .mon(actor)
+            .volatiles
+            .contains_key(&dex.effects.focus_energy)
+        {
+            bonus += 2;
+        } else if let Some(state) = self.mon(actor).volatiles.get(&dex.effects.dragon_cheer) {
+            bonus += if state.values.first().copied().unwrap_or(0) != 0 {
+                2
+            } else {
+                1
+            };
+        }
         (base + bonus).min(4)
     }
 

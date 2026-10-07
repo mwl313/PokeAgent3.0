@@ -2229,6 +2229,29 @@ impl BattleState {
             self.each_update(dex)?;
             return Ok(());
         }
+        if behavior == MoveBehavior::BellyDrum {
+            // `moves:bellydrum.onHit`: fails at half HP or less, at a capped
+            // Attack stage and for a one-HP maximum, otherwise pays half the
+            // user's maximum HP through the direct-damage pipeline and sets
+            // Attack to +6 (the reference boosts by 12 stages, which clamps).
+            if self.mon(actor).boosts[0] >= 6
+                || u32::from(self.mon(actor).hp) * 2 <= u32::from(self.mon(actor).stats[0])
+                || self.mon(actor).stats[0] == 1
+            {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                return Ok(());
+            }
+            self.prepare_hit_abilities(dex, actor, m)?;
+            let cost = self.mon(actor).stats[0] / 2;
+            self.indirect_damage(dex, actor, actor, u32::from(cost), EffectRef::Move(move_id))?;
+            let mut atk = [0i8; 7];
+            atk[0] = 12;
+            self.boost(dex, actor, actor, atk, BoostCause::Move { secondary: false })?;
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
+            self.each_update(dex)?;
+            self.each_update(dex)?;
+            return Ok(());
+        }
         if behavior == MoveBehavior::RevivalBlessing {
             // `moves:revivalblessing.onTryHit` (`PrepareHit` already ran for
             // the ability hooks): the move fails outright unless the side has a
@@ -3696,6 +3719,28 @@ impl BattleState {
                         ..Default::default()
                     };
                     let _ = self.hit_effect_from_move(dex, target, actor, &burn, true, m)?;
+                }
+                // `moves:acupressure.onHit`: one draw samples a stat below +6,
+                // which then rises two stages; a fully capped target fails.
+                if hooks & crate::effects::hook::ACUPRESSURE != 0 {
+                    let candidates: smallvec::SmallVec<[usize; 7]> = (0..7)
+                        .filter(|slot| self.mon(target).boosts[*slot] < 6)
+                        .collect();
+                    if candidates.is_empty() {
+                        did_anything = false;
+                        continue;
+                    }
+                    let pick =
+                        candidates[self.rng.below(candidates.len() as u32) as usize];
+                    let mut boosts = [0i8; 7];
+                    boosts[pick] = 2;
+                    did_anything |= self.boost(
+                        dex,
+                        target,
+                        actor,
+                        boosts,
+                        BoostCause::Move { secondary: false },
+                    )?;
                 }
             }
             // `moves:partingshot.onHit` applies the Attack/Sp. Atk drop itself
@@ -5980,6 +6025,57 @@ impl BattleState {
                     false,
                     suppressing,
                 )?;
+            } else if volatile == dex.effects.focus_energy || volatile == dex.effects.dragon_cheer {
+                // Focus Energy / Dragon Cheer: no duration and no restart. The
+                // `onStart` gate refuses the new volatile while the other crit
+                // volatile is up, and an existing volatile makes the re-add
+                // fail (the move reports failure).
+                let other = if volatile == dex.effects.focus_energy {
+                    dex.effects.dragon_cheer
+                } else {
+                    dex.effects.focus_energy
+                };
+                if self.mon(target).volatiles.contains_key(&volatile)
+                    || self.mon(target).volatiles.contains_key(&other)
+                {
+                    changed |= false;
+                } else {
+                    let order = self.allocate_effect_order()?;
+                    // `dragoncheer.condition.onStart` records whether the
+                    // target was Dragon-type when the volatile started.
+                    let values = if volatile == dex.effects.dragon_cheer {
+                        vec![i64::from(self.mon(target).types.contains(&dex.effects.dragon))]
+                    } else {
+                        Vec::new()
+                    };
+                    self.mon_mut(target).volatiles.insert(
+                        volatile,
+                        EffectState {
+                            id: volatile,
+                            effect_order: order,
+                            effect_order_assigned: true,
+                            source: Some((
+                                if source.side == 0 {
+                                    SideId::P1
+                                } else {
+                                    SideId::P2
+                                },
+                                source.roster,
+                            )),
+                            values,
+                            ..Default::default()
+                        },
+                    );
+                    self.emit(
+                        EventKind::EffectStart,
+                        target,
+                        Some(source),
+                        EffectRef::Condition(volatile),
+                        0,
+                        false,
+                    )?;
+                    changed = true;
+                }
             } else {
                 return Err(EngineError::Unsupported(format!("volatile {volatile}")));
             }

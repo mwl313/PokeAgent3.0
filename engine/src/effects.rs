@@ -103,6 +103,8 @@ pub mod hook {
     /// `moves:burningjealousy.onHit`: burns each target whose stats were
     /// raised this turn.
     pub const BURNING_JEALOUSY: u64 = 1 << 33;
+    /// `moves:acupressure.onHit`: one sampled stat below +6 rises two stages.
+    pub const ACUPRESSURE: u64 = 1 << 34;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -859,6 +861,12 @@ pub enum MoveBehavior {
     /// the `revivalblessing` slot condition on the user and asks the side to
     /// pick a fainted party member to revive at half HP.
     RevivalBlessing,
+    /// `bellydrum`: pays half the user's maximum HP to set Attack to +6 (fails
+    /// at half HP or less, at a capped Attack, and for a one-HP maximum).
+    BellyDrum,
+    /// `acupressure`: raises one random stat that is not already +6 by two
+    /// stages (fails when every stage is capped).
+    Acupressure,
     /// `upperhand`: fails outright unless the target still has a queued move
     /// action whose *declaration* priority is positive and whose category is
     /// not Status.
@@ -994,6 +1002,8 @@ impl MoveBehavior {
             "rest" => Self::Rest,
             "quash" => Self::Quash,
             "revivalblessing" => Self::RevivalBlessing,
+            "bellydrum" => Self::BellyDrum,
+            "acupressure" => Self::Acupressure,
             "upperhand" => Self::UpperHand,
             "round" => Self::Round,
             "healpulse" => Self::HealPulse,
@@ -1132,6 +1142,9 @@ pub struct NativeEffects {
     /// The `revivalblessing` slot condition (Revival Blessing's revive
     /// protocol marker).
     pub revival_blessing: Id,
+    /// `focusenergy` / `dragoncheer`: the two crit-ratio volatiles.
+    pub focus_energy: Id,
+    pub dragon_cheer: Id,
     /// Additional Protect-family volatiles that block hits in the same
     /// `hitStepTryHitEvent` phase (priority 3).
     pub spiky_shield: Id,
