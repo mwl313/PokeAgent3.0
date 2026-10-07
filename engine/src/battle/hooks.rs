@@ -2416,7 +2416,6 @@ impl Ability {
             | Ability::Stakeout
             | Ability::Stall
             | Ability::Stalwart
-            | Ability::Stancechange
             | Ability::Steadfast
             | Ability::Steelyspirit
             | Ability::Stench

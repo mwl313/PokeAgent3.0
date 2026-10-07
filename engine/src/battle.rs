@@ -993,6 +993,73 @@ impl BattleState {
         Ok(())
     }
 
+    /// `abilities:stancechange.onModifyMove`: the Aegislash base chain
+    /// switches to Blade for a damaging move (Struggle included) and back to
+    /// Shield for King's Shield; any other status move leaves the forme
+    /// alone. The change is non-permanent: `base_species` keeps the submitted
+    /// forme so switch-out reverts it, and only the stored stats are
+    /// recomputed (both formes share the same base HP, so HP is preserved).
+    fn stance_change(
+        &mut self,
+        dex: &Dex,
+        actor: Entity,
+        move_id: Id,
+        category: Category,
+    ) -> Result<()> {
+        if dex.effects.abilities[self.mon(actor).ability as usize] != Ability::Stancechange {
+            return Ok(());
+        }
+        let mon = self.mon(actor);
+        if mon.transformed || dex.species[mon.species as usize].base_species != dex.effects.aegislash
+        {
+            return Ok(());
+        }
+        // `if (move.category === 'Status' && move.id !== 'kingsshield') return;`
+        if category == Category::Status && move_id != dex.effects.kings_shield_move {
+            return Ok(());
+        }
+        let target = if move_id == dex.effects.kings_shield_move {
+            dex.effects.aegislash
+        } else {
+            dex.effects.aegislash_blade
+        };
+        if mon.species == target {
+            return Ok(());
+        }
+        let species = &dex.species[target as usize];
+        let new_stats = stats::champions_stats(
+            species.base_stats,
+            mon.points,
+            dex.natures[mon.nature as usize],
+            species.max_hp,
+        );
+        let types = species.types.clone();
+        {
+            let mon = self.mon_mut(actor);
+            mon.species = target;
+            mon.types = types.clone();
+            mon.stats = new_stats;
+            mon.cached_speed = i32::from(new_stats[5]);
+            if mon.hp > mon.stats[0] {
+                mon.hp = mon.stats[0];
+            }
+        }
+        self.emit(
+            EventKind::Forme,
+            actor,
+            None,
+            EffectRef::Species(target),
+            0,
+            false,
+        )?;
+        // Both players see the new forme's typing immediately.
+        for viewer in 0..2 {
+            let index = actor.roster as usize + if actor.side as usize == viewer { 0 } else { 6 };
+            self.knowledge[viewer].pokemon[index].types = types.clone();
+        }
+        Ok(())
+    }
+
     fn clear_volatile(&mut self, dex: &Dex, e: Entity) {
         let mon = self.mon_mut(e);
         mon.boosts = [0; 7];
@@ -1533,6 +1600,10 @@ impl BattleState {
             .priority
             .unwrap_or_else(|| self.effective_priority(dex, actor, move_id));
         action.priority = Some(effective_priority);
+        // `abilities:stancechange.onModifyMove` (priority 1): a damaging move
+        // or King's Shield switches the Aegislash forme before the action
+        // resolves, so the move itself is used with the new forme's stats.
+        self.stance_change(dex, actor, move_id, m.category)?;
         // A move-owned ModifyMove that changes the target class makes the
         // reference re-resolve a random target after both dispatches
         // (`singleEvent` then `runEvent`): two samples that spread moves then
