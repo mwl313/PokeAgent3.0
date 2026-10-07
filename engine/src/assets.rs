@@ -622,6 +622,13 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     // Round: the queued-action chain and its doubled base power.
     "moves:round.onTry",
     "moves:round.basePowerCallback",
+    // Heal Pulse: the pulse-scaled targeted heal.
+    "moves:healpulse.onHit",
+    // Pain Split: the averaged HP transfer.
+    "moves:painsplit.onHit",
+    // Endeavor: the user-must-be-lower immunity gate; the fixed damage itself
+    // runs through the ported `FixedDamage::Endeavor` primitive.
+    "moves:endeavor.onTryImmunity",
     // Haze and Psych Up: field-wide and copied boost stages.
     "moves:haze.onHitField",
     "moves:psychup.onHit",

@@ -850,6 +850,15 @@ pub enum MoveBehavior {
     /// the front of the queue and resolves immediately after this one with
     /// its base power doubled.
     Round,
+    /// `healpulse`: heals the target for ceil(baseMaxhp / 2); a full-HP
+    /// target is refused with `NOT_FAIL`.
+    HealPulse,
+    /// `painsplit`: both active HP values become the floor of their average
+    /// (at least one), bypassing heal gates.
+    PainSplit,
+    /// `endeavor`: fixed damage equal to the target's HP minus the user's,
+    /// refused outright unless the user is strictly lower.
+    Endeavor,
 }
 
 /// Cold payload of a ported two-turn move. Every field is transcribed from
@@ -964,6 +973,9 @@ impl MoveBehavior {
             "quash" => Self::Quash,
             "upperhand" => Self::UpperHand,
             "round" => Self::Round,
+            "healpulse" => Self::HealPulse,
+            "painsplit" => Self::PainSplit,
+            "endeavor" => Self::Endeavor,
             _ => Self::Unimplemented,
         }
     }
