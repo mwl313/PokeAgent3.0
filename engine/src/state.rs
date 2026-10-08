@@ -814,7 +814,26 @@ impl BattleState {
                     ));
                 }
                 for (&id, effect) in &m.volatiles {
-                    let valid = if id == dex.effects.protect
+                    // The charge marker is identified first: its volatile id is
+                    // a *move* id, which shares the numeric space with the
+                    // condition ids below (Bounce's move id equals the
+                    // magnetrise condition id).
+                    let charge_marker = usize::from(id) < dex.moves.len()
+                        && dex.moves[id as usize].charge.is_some();
+                    let valid = if charge_marker {
+                        // `attacker.addVolatile(move.id)` with the move's own
+                        // condition duration and the recorded target location.
+                        let spec = dex.moves[id as usize].charge.as_ref().unwrap();
+                        let duration_ok = match spec.volatile_duration {
+                            Some(declared) => effect
+                                .duration
+                                .is_some_and(|ticked| (1..=declared).contains(&ticked)),
+                            None => effect.duration.is_none(),
+                        };
+                        duration_ok
+                            && effect.values.len() == 1
+                            && (-2..=2).contains(&effect.values[0])
+                    } else if id == dex.effects.protect
                         || id == dex.effects.flinch
                         || id == dex.effects.endure
                         || id == dex.effects.spiky_shield
@@ -1101,22 +1120,7 @@ impl BattleState {
                         effect.duration.is_none()
                             && effect.values.is_empty()
                             && effect.source.is_some()
-                    } else if usize::from(id) < dex.moves.len()
-                        && dex.moves[id as usize].charge.is_some()
-                    {
-                        // The charge marker: `attacker.addVolatile(move.id)`
-                        // with the move's own condition duration and the
-                        // recorded target location.
-                        let spec = dex.moves[id as usize].charge.as_ref().unwrap();
-                        let duration_ok = match spec.volatile_duration {
-                            Some(declared) => effect
-                                .duration
-                                .is_some_and(|ticked| (1..=declared).contains(&ticked)),
-                            None => effect.duration.is_none(),
-                        };
-                        duration_ok
-                            && effect.values.len() == 1
-                            && (-2..=2).contains(&effect.values[0])
+                    
                     } else {
                         return Err(EngineError::Unsupported(format!("snapshot volatile {id}")));
                     };

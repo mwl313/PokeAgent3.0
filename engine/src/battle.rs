@@ -8271,9 +8271,19 @@ impl BattleState {
                     || id == dex.effects.curse
                     || id == dex.effects.aqua_ring
                 {
+                    // A charge marker's volatile id is the *move* id, which
+                    // shares the numeric space with condition ids: it declares
+                    // no residual order of its own, so identify it first or a
+                    // move id that happens to equal a condition id would borrow
+                    // that condition's order (Bounce's move id equals the
+                    // magnetrise condition id).
+                    let is_charge_marker = (id as usize) < dex.moves.len()
+                        && dex.moves[id as usize].charge.is_some();
                     // Reference `onResidualOrder`: Taunt 15, Encore 16, Disable
                     // 17, Throat Chop 22; other timed volatiles stay unordered.
-                    let (order, sub_order) = if id == dex.effects.taunt {
+                    let (order, sub_order) = if is_charge_marker {
+                        (0, 0)
+                    } else if id == dex.effects.taunt {
                         (15, 0)
                     } else if id == dex.effects.encore {
                         (16, 0)
