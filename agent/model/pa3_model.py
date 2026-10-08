@@ -174,6 +174,24 @@ class PA3Model(nn.Module):
         return sum(p.numel() for p in parameters)
 
     # -- encode -----------------------------------------------------------
+    def forward(self, observation: ObservationBatch, candidates: Optional[BranchCandidatesBatch] = None,
+                selected: Optional[torch.Tensor] = None, mode: str = "learner"):
+        """DDP-visible forward entry.
+
+        `DistributedDataParallel` requires the wrapped module's own ``forward``
+        to own the *whole* graph; calling ``encode``/``value``/``evaluate``
+        directly on the inner module uses parameters outside that entry and
+        makes DDP's reducer mark them ready twice. When a candidate batch is
+        given the learner forward returns the full ``(encoded, values,
+        evaluation)`` triple; without it only the encoder/value path runs.
+        """
+        encoded = self.encode(observation)
+        values = self.value(encoded)
+        if candidates is not None:
+            evaluation = self.evaluate_encoded(encoded, candidates, selected=selected)
+            return encoded, values, evaluation
+        return encoded, values
+
     def encode(self, observation: ObservationBatch) -> EncodedState:
         tokens = self.encoder(observation)
         global_index = observation.layout.GLOBAL

@@ -109,6 +109,10 @@ class PPOLearner:
             self.device.type, enabled=self.amp and self.config.amp_grad_scaler
         )
         self.optimizer_steps = 0
+        # Set by `attach_ddp`; when present the learner routes the forward
+        # through the DDP entry and uses the global-denominator objective.
+        self.ddp_model = None
+        self.world_size = 1
         # Stage accounting for the M0 breakdown (always collected; ~12
         # perf_counter calls per minibatch, no GPU synchronization).
         self.profile: dict[str, float] = {}
@@ -218,11 +222,18 @@ class PPOLearner:
             dtype=torch.float16,
             enabled=self.amp,
         ):
-            encoded = self.model.encode(batch.observation)
-            values = self.model.value(encoded)
-            evaluation = self.model.evaluate_encoded(
-                encoded, batch.candidates, selected=batch.candidates.selected
-            )
+            if self.ddp_model is not None:
+                # DDP requires its own forward entry to own the graph and the
+                # `no_sync` context to cover forward *and* backward.
+                encoded, values, evaluation = self.ddp_model(
+                    batch.observation, batch.candidates, selected=batch.candidates.selected
+                )
+            else:
+                encoded = self.model.encode(batch.observation)
+                values = self.model.value(encoded)
+                evaluation = self.model.evaluate_encoded(
+                    encoded, batch.candidates, selected=batch.candidates.selected
+                )
         # FP32 probability/loss math.
         values = values.float()
         logprob = evaluation.request_logprob.float()
@@ -380,6 +391,178 @@ class PPOLearner:
             report.ratio_mean = float(totals["ratio_sum"].item()) / actor_total
             report.clip_fraction = float(totals["clip_sum"].item()) / actor_total
         report.learning_rate = self.scheduler.learning_rate
+
+    def attach_ddp(self, ddp_model, world_size: int) -> None:
+        """Route forwards through a DDP wrapper and enable the global objective."""
+        self.ddp_model = ddp_model
+        self.world_size = int(world_size)
+
+    def detach_ddp(self) -> None:
+        self.ddp_model = None
+        self.world_size = 1
+
+    def update_ddp(
+        self,
+        plan: StreamingPlan,
+        committed_matches: Optional[int] = None,
+        generator: Optional[torch.Generator] = None,
+        communication=None,
+    ) -> UpdateReport:
+        """Two-rank DDP update with global actor/value denominators.
+
+        Per minibatch the local valid actoralue counts are all-reduced once
+        (`all_reduce_sums`), and each rank's loss uses
+        ``world_size * (sum_local/A + value_coef * value_sum_local/V)`` so DDP's
+        gradient averaging reproduces the single-process global objective. The
+        `no_sync` context wraps the forward *and* backward of every non-final
+        microbatch.
+        """
+        from agent.ppo.ddp import all_reduce_sums, ddp_rank_loss
+
+        rows = plan.rows
+        report = self._new_report(len(rows), plan.actor_rows, committed_matches)
+        self.model.train()
+        sum_keys = (
+            "policy_sum", "value_sum", "entropy_sum", "uniform_kl_sum",
+            "kl_sum", "ratio_sum", "clip_sum", "actor_count", "value_count",
+        )
+        totals = {key: torch.zeros((), dtype=torch.float32, device=self.device) for key in sum_keys}
+        profile = self._blank_profile()
+        # Per-rank chunk: the global minibatch is split across ranks; using the
+        # global size here would double the padded batch on every rank.
+        batch_size = max(
+            1,
+            self.config.per_rank_minibatch_size
+            if self.config.per_rank_minibatch_size > 0
+            else self.config.global_minibatch_size // max(self.world_size, 1),
+        )
+        world_size = max(self.world_size, 1)
+        update_started = time.perf_counter()
+        # Collective alignment: ranks have different local row counts, so the
+        # number of minibatches (and therefore all-reduce calls and optimizer
+        # steps) must be agreed before the epoch loop or DDP deadlocks. Every
+        # rank runs the same count; a rank that runs out processes an
+        # all-padding minibatch whose loss is zero.
+        local_batches = (len(rows) + batch_size - 1) // batch_size
+        batch_count = local_batches
+        if world_size > 1 and torch.distributed.is_available() and torch.distributed.is_initialized():
+            tensor = torch.tensor([local_batches], dtype=torch.long, device=self.device)
+            torch.distributed.all_reduce(tensor, op=torch.distributed.ReduceOp.MAX)
+            batch_count = int(tensor.item())
+
+        for epoch in range(self.config.ppo_epochs):
+            epoch_sums = {key: torch.zeros((), dtype=torch.float32, device=self.device) for key in sum_keys}
+            epoch_batches = 0
+            start = time.perf_counter()
+            order = torch.randperm(len(rows), generator=generator)
+            for batch_index in range(batch_count):
+                begin = batch_index * batch_size
+                chunk = order[begin:begin + batch_size] if begin < len(order) else order[:1]
+                real = len(chunk)
+                padding = batch_size - real
+                if begin >= len(order):
+                    # Aligned padding-only minibatch: zero loss, no rows.
+                    real = 0
+                    padding = batch_size
+                    chunk = order[:1]
+                valid = torch.cat([
+                    torch.ones(real, dtype=torch.bool),
+                    torch.zeros(padding, dtype=torch.bool),
+                ])
+                indices = chunk if padding == 0 else torch.cat([chunk[:real] if real else chunk[:0], chunk[:1].repeat(padding)])
+                minibatch_rows = [rows[int(index)] for index in indices.tolist()]
+                minibatch = plan.buffer.to_batch(minibatch_rows, device="cpu")
+                minibatch = replace(
+                    minibatch, row_valid=valid, advantages=plan.advantages[indices]
+                )
+                profile["minibatch_select"] += time.perf_counter() - start
+                start = time.perf_counter()
+
+                local_actor = (minibatch.actor_mask & minibatch.row_valid).sum().float()
+                local_value = minibatch.row_valid.sum().float()
+                minibatch = minibatch.to(self.device)
+                profile["h2d"] += time.perf_counter() - start
+                start = time.perf_counter()
+                actor_total, value_total = all_reduce_sums(
+                    torch.zeros((), device=self.device),
+                    torch.zeros((), device=self.device),
+                    local_actor.to(self.device),
+                    local_value.to(self.device),
+                    world_size,
+                )
+                profile["epoch_sync"] += time.perf_counter() - start
+
+                tiny = 1e-8
+                self.optimizer.zero_grad(set_to_none=True)
+                micro_ranges = []
+                for micro_begin in range(0, len(minibatch), self.config.microbatch_size):
+                    micro_end = min(micro_begin + self.config.microbatch_size, len(minibatch))
+                    if bool(minibatch.row_valid[micro_begin:micro_end].any().item()):
+                        micro_ranges.append((micro_begin, micro_end))
+                used = 0
+                if communication is not None:
+                    communication.reset()
+                for micro_index, (micro_begin, micro_end) in enumerate(micro_ranges):
+                    context = communication.context() if communication is not None else None
+                    from contextlib import nullcontext
+
+                    with (context if context is not None else nullcontext()):
+                        forward_start = time.perf_counter()
+                        micro = minibatch.select(
+                            torch.arange(micro_begin, micro_end, dtype=torch.long,
+                                         device=minibatch.old_logprob.device)
+                        )
+                        terms = self._forward_terms(micro)
+                        profile["forward"] += time.perf_counter() - forward_start
+                        actor_sum = terms["loss_unscaled"] * terms["actor_count"]
+                        value_sum = terms["value_mean"] * terms["value_count"]
+                        loss = ddp_rank_loss(
+                            actor_sum, value_sum, actor_total, value_total,
+                            world_size, self.config.value_coefficient,
+                        )
+                        self.scaler.scale(loss).backward()
+                    for key in sum_keys:
+                        epoch_sums[key] = epoch_sums[key] + terms[key].float()
+                    used += 1
+                if used == 0:
+                    continue
+                optimizer_start = time.perf_counter()
+                scale_before = self.scaler.get_scale()
+                self.scaler.unscale_(self.optimizer)
+                grad_norm = torch.nn.utils.clip_grad_norm_(
+                    self.model.parameters(), self.config.max_grad_norm
+                )
+                self.scaler.step(self.optimizer)
+                self.scaler.update()
+                profile["optimizer"] += time.perf_counter() - optimizer_start
+                stepped = self.scaler.get_scale() >= scale_before
+                if stepped:
+                    self.optimizer_steps += 1
+                else:
+                    report.optimizer_steps_skipped += 1
+                report.grad_norm = float(grad_norm.detach())
+                report.grad_norm_max = max(report.grad_norm_max, report.grad_norm)
+                report.scaler_scale = float(self.scaler.get_scale())
+                report.optimizer_steps = self.optimizer_steps
+                epoch_batches += 1
+                start = time.perf_counter()
+
+            if epoch_batches == 0:
+                break
+            for key in sum_keys:
+                totals[key] = totals[key] + epoch_sums[key]
+            actor_total = float(epoch_sums["actor_count"].clamp_min(1).item())
+            epoch_kl = float(epoch_sums["kl_sum"].item()) / actor_total
+            report.epoch_approx_kl.append(epoch_kl)
+            report.epochs_run = epoch + 1
+            if epoch_kl > self.config.target_approx_kl:
+                report.stopped_early = True
+                break
+
+        self._finish_report(report, totals, sum_keys)
+        profile["total"] = time.perf_counter() - update_started
+        self.profile = profile
+        return report
 
     def update(
         self,
