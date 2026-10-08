@@ -46,6 +46,9 @@ pub(super) struct ActiveMove<'a> {
     /// `moves:fling.onPrepareHit`: the thrown item and its payload kind for
     /// this action, or `None` when the action is not a Fling.
     pub fling: Option<(Id, crate::effects::FlingKind)>,
+    /// `moves:growth.onModifyMove`: the declared boosts replaced for this
+    /// action (the sun branch grants +2/+2 as one boost).
+    pub boost_override: Option<[i8; 7]>,
 }
 impl Deref for ActiveMove<'_> {
     type Target = crate::assets::Move;
@@ -77,6 +80,7 @@ impl BattleState {
             tracks_target: data.tracks_target,
             infiltrates: false,
             fling: None,
+            boost_override: None,
         };
         // `abilities:stalwart.onModifyMove` (priority 1): the holder's moves
         // ignore redirection. Stalwart has no `breakable` flag, so Mold Breaker
@@ -160,6 +164,13 @@ impl BattleState {
             } else {
                 action.move_type
             };
+        }
+        // `moves:growth.onModifyMove`: in sun the declared {atk: 1, spa: 1}
+        // becomes {atk: 2, spa: 2}, applied as a single boost.
+        if hooks & crate::effects::hook::GROWTH != 0
+            && self.mon_weather(dex, actor) == dex.effects.sun
+        {
+            action.boost_override = Some([2, 0, 2, 0, 0, 0, 0]);
         }
         // `moves:curse.onModifyMove`: a non-Ghost user redirects Curse onto
         // itself (the Ghost branch keeps the chosen foe; an ally or missing

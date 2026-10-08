@@ -820,6 +820,12 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     // `moves:venoshock.onBasePower`: the same doubling against a poisoned
     // target.
     "moves:venoshock.onBasePower",
+    // Growth: the sun branch upgrades the declared self boost to +2/+2.
+    "moves:growth.onModifyMove",
+    // Fickle Beam: the 30% BasePower doubling roll.
+    "moves:ficklebeam.onBasePower",
+    // Last Resort: fails until every other move slot has been used.
+    "moves:lastresort.onTry",
     // `moves:topsyturvy.onHit`: invert the target's boost stages.
     "moves:topsyturvy.onHit",
     // `moves:clearsmog.onHit`: reset the target's boost stages after the hit.
@@ -946,6 +952,8 @@ fn move_hooks(id: &str) -> u64 {
         "pollenpuff" => hook::POLLEN_PUFF,
         "curse" => hook::CURSE,
         "venoshock" => hook::VENOSHOCK,
+        "growth" => hook::GROWTH,
+        "ficklebeam" => hook::FICKLE_BEAM,
         _ => 0,
     }
 }

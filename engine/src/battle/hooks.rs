@@ -2228,6 +2228,14 @@ impl BattleState {
             effectiveness,
             critical,
         } = context;
+        // `moves:ficklebeam.onBasePower`: a 30% `randomChance(3, 10)` roll
+        // doubles the BasePower modifier. It is the event's only drawing
+        // handler, so drawing before the hook list is built stays
+        // reference-equivalent; the draw must happen before the `add` closure
+        // borrows `self`.
+        let fickle_beam_boost = matches!(event, ModifierEvent::BasePower)
+            && m.hooks & crate::effects::hook::FICKLE_BEAM != 0
+            && self.rng.chance(3, 10);
         let a = self.mon(actor);
         let d = self.mon(target);
         let attacking = dex.effects.abilities[a.ability as usize];
@@ -2361,6 +2369,9 @@ impl BattleState {
                 if m.hooks & crate::effects::hook::VENOSHOCK != 0
                     && (d.status == dex.effects.poison || d.status == dex.effects.toxic)
                 {
+                    add(actor, 0, 8192);
+                }
+                if fickle_beam_boost {
                     add(actor, 0, 8192);
                 }
                 // `moves:facade.onBasePower`: doubles while the user carries a

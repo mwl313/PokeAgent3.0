@@ -2143,6 +2143,20 @@ impl BattleState {
         // `moves:fling.onPrepareHit`: the thrown item sets the action's base
         // power (and its payload) before any target resolves. A refusal leaves
         // the action without targets, so it reports the reference's failure.
+        // `moves:lastresort.onTry`: the move fails until every other move slot
+        // has been used at least once.
+        if behavior == MoveBehavior::LastResort {
+            let knows = self.mon(actor).moves.len() >= 2;
+            let ready = self
+                .mon(actor)
+                .moves
+                .iter()
+                .all(|mv| mv.used || mv.id == move_id);
+            if !knows || !ready {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                return Ok(());
+            }
+        }
         let fling_ready = behavior != MoveBehavior::Fling
             || self.fling_prepare(dex, actor, &mut action)?;
         if !fling_ready {
@@ -4721,7 +4735,18 @@ impl BattleState {
                 {
                     did_anything |= self.set_type(dex, target, &[dex.effects.water])?;
                 } else if hooks & crate::effects::hook::SOAK == 0 {
-                    did_anything |= self.hit_effect_from_move(dex, target, actor, &m.hit, false, m)?;
+                    // `moves:growth.onModifyMove` may have replaced the declared
+                    // boosts for this action (the sun branch).
+                    let override_hit;
+                    let payload = match m.boost_override {
+                        Some(boosts) => {
+                            override_hit = crate::effects::HitEffect { boosts, ..m.hit };
+                            &override_hit
+                        }
+                        None => &m.hit,
+                    };
+                    did_anything |=
+                        self.hit_effect_from_move(dex, target, actor, payload, false, m)?;
                 }
                 // `moves:magicpowder.onHit`: a pure-Psychic target refuses the
                 // move outright (`onHit` returns false), so the generic empty
