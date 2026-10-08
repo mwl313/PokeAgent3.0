@@ -54,28 +54,27 @@ ally's Symbiosis), with the hand-off, the receiver-side TakeItem refusal, the
 raw `source.item` rollback and the item's Start on the recipient. Four fixtures
 (hand-off, two controls, the Unburden handler-set scene) are merged.
 
-## Fling (pool weight 1) - WIP, blocked on a queue tie-break divergence
+## Fling (pool weight 1) - LANDED 2026-10-08
 
-The pinned plain-item path is implemented and verified locally (the item's
-`fling` base power arms the action, the marker volatile's `onUpdate` consumes
-the item and runs the same `AfterUseItem` set, empty hands and fling-less items
-refuse the move before the hit loop, and a Berry/status/herb payload errors
-explicitly). The WIP patch and its generator live outside the repo at
-`/Users/leah/Projects/pokeagent3_fling_wip.patch`,
-`/Users/leah/Projects/pokeagent3_generate_more_fling.mjs.wip` and
-`/Users/leah/Projects/pokeagent3_more_fling.json.wip`.
+The item table (`items:<id>.fling`) is loaded into `NativeEffects::fling_items`
+with the base power and the payload kind; `moves:fling.onPrepareHit` arms the
+action from the held item, refuses empty hands and fling-less items (Normal Gem)
+before the hit loop, and `conditions:fling.onUpdate` consumes the thrown item on
+the next Update, which raises the same `AfterUseItem` set Symbiosis/Unburden
+answer.
 
-It is held out because its scenes exposed a **pre-existing queue tie-break
-divergence**: with two same-speed actions on opposite sides (a mirrored Snorlax
-pair at 50, or the Goodra-Hisui pair at 84 in the auto-generated
-`move_fling_15188` scene), the native resolves the tied group in the opposite
-order from the reference. Boundary seeds still match (the same draws are
-consumed) but the actions are assigned to different Pokémon, so the damage
-lands elsewhere and a faint cascades into different Update counts. Reproduce
-with the WIP fixture `fling_iron_ball_deals_and_consumes_the_item_8300` (P1
-Sneasler + Snorlax vs `foeTeam()`) or the coverage scene `move_fling_15188`
-(Abomasnow/Fling and a Goodra-Hisui mirror). Next step: instrument the native
-commit-time queue assembly (`BattleQueue.insertChoice`'s per-action tie-break
-draw plus `BattleQueue.sort`) against the reference's stack for the tied pair;
-the reference logs the insert as `BattleQueue.insertChoice` and the sort as
-`BattleQueue.sort`, and the native currently makes only one draw for the two.
+The payload family is ported too: a thrown Berry is eaten by the target through
+its `onEat`, the Mental Herb clears the target's taunt/encore/torment/disable/
+heal-block volatiles, the White Herb clears its negative boosts, and a thrown
+`fling.status`/`volatileStatus` item applies through the ordinary `secondaries`
+phase (the reference rolls `random(100)` for every entry, so the always-on
+payload still consumes its roll). Seven fixtures plus the auto-generated
+`move_fling_15188` scene are merged; only an item whose `fling.effect` callback
+has no native port would still raise `fling payload <item>`.
+
+The earlier hold-out was a modeling error, not a queue bug: a refused
+Fling runs **no** `Update` of its own (unlike the Damp `TryMove` abort,
+which runs one), so the extra `each_update` in the first draft shifted every
+later draw. Mirrored speed ties are fine (see the `tiecheck_*` probe scenes in
+`/tmp/pa3_generate_more_tiecheck.mjs`: the queue's Fischer-Yates break matches
+the reference for mirrored leads and partners).
