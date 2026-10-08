@@ -59,6 +59,12 @@ class NativeCollectorConfig:
     # Actor-only inference flags (A/B measured; probabilities stay FP32).
     amp: bool = False
     inference_mode: bool = False
+    # configs/train.yaml `collect_both_sides_when_current_self_play: true`: when
+    # both seats run the frozen current policy, both sides' requests are
+    # current-policy learner rows. With no history pool yet this doubles the
+    # learner rows per natural match (and the per-match PPO work) for the same
+    # game, matching the documented collection contract.
+    collect_both_sides_when_current_self_play: bool = True
 
 
 @dataclass
@@ -151,6 +157,17 @@ class NativeCollector:
 
     def _learner_side(self, roles: Sequence[int]) -> int:
         return 0 if int(roles[0]) == 0 else 1
+
+    def _records_side(self, side: int, roles: Sequence[int]) -> bool:
+        """Whether this seat's requests become current-policy learner rows.
+
+        Both seats run the same frozen current policy while the history pool is
+        empty, so the documented contract records both. Historical-opponent rows
+        stay excluded (`collect_historical_opponent_rows: false`).
+        """
+        if self.config.collect_both_sides_when_current_self_play:
+            return True
+        return side == self._learner_side(roles)
 
     def _level_table(
         self, candidate_rows: Sequence[Sequence[Sequence[int]]]
@@ -503,7 +520,7 @@ class NativeCollector:
                     self._prefix_actions(prefix_buf, offset, branch_count)
                     if prefix_buf is not None else [tuple(value) for value in prefixes[offset]]
                 )
-                if side == self._learner_side(roles[env]):
+                if self._records_side(side, roles[env]):
                     start_record = time.perf_counter()
                     selected_prefix = [picks_by_level[level][offset] for level in range(branch_count)]
                     if packed_by_level[0] is not None and compact_batch is not None:
@@ -598,21 +615,33 @@ class NativeCollector:
                 raise RuntimeError(f"operational error in env {env}: {error}")
             if terminated:
                 learner = self._learner_side(roles[env])
+                # One terminal reward per recorded side's own trajectory; a
+                # draw pays 0.0 to both seats.
                 if winner is None:
-                    reward = 0.0
+                    learner_reward = 0.0
                     self.stats.draws += 1
                 elif int(winner) == learner:
-                    reward = 1.0
+                    learner_reward = 1.0
                     self.stats.wins += 1
                 else:
-                    reward = -1.0
+                    learner_reward = -1.0
                     self.stats.losses += 1
-                row_index = self._row_cursor.get((env, learner))
-                if row_index is not None:
+                for side in (0, 1):
+                    if not self._records_side(side, roles[env]):
+                        continue
+                    row_index = self._row_cursor.get((env, side))
+                    if row_index is None:
+                        continue
+                    if winner is None:
+                        reward = 0.0
+                    elif int(winner) == side:
+                        reward = 1.0
+                    else:
+                        reward = -1.0
                     row = self.buffer.rows[row_index]
                     row.reward = reward
                     row.done = True
-                self.stats.reward_sum += reward
+                self.stats.reward_sum += learner_reward
                 self.stats.games += 1
                 finished[env] = True
                 match_ids[env] = self._match_counter

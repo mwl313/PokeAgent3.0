@@ -8,19 +8,20 @@
     "sm_86",
     "sm_90"
   ],
-  "command": "python scripts/bench_pa3_end_to_end.py --games 10000 --envs 1024 --workers 16 --repeats 1 --mode full --observations fixed --precision fp16 --inference-mode --candidate-wire packed --device cuda:0 --microbatch 1024 --streaming-minibatch --report runs/perf/v2_stream_10k.json --checkpoint runs/perf/v2_ckpt.pt --tag v2-stream-10k",
+  "command": "python scripts/bench_pa3_end_to_end.py --games 2048 --envs 1024 --workers 16 --repeats 3 --mode full --observations fixed --precision fp16 --inference-mode --candidate-wire packed --device cuda:0 --streaming-minibatch --checkpoint runs/perf/v3_micro1024_single_ckpt.pt --report runs/perf/v3_micro1024_single.json --tag v3_micro1024_single --microbatch 1024 --single-side-collection",
   "config": {
     "candidate_wire": "packed",
+    "collect_both_sides_when_current_self_play": false,
     "device": "cuda:0",
     "envs": 1024,
-    "games": 10000,
+    "games": 2048,
     "global_minibatch": 4096,
     "inference_mode": true,
     "microbatch": 1024,
     "mode": "full",
     "observations": "fixed",
     "precision": "fp16",
-    "repeats": 1,
+    "repeats": 3,
     "seed": 20261006,
     "streaming_minibatch": true,
     "workers": 16
@@ -29,9 +30,9 @@
   "dataset_id": "mb-mc-v3-userteam-all-train",
   "dataset_manifest_sha256": "f0509c08544c89a0b0c043218e33795c91af7af2f78e2d6fb83bae69f3babaef",
   "git_branch": "optimization/pa3-realpolicy-throughput",
-  "git_diff_hash": "3e84208c98b5c102e3186fa7cd3493a4efe821b5a49c1a3448bbf83ab4440a42",
+  "git_diff_hash": "7501a353a4f628f662f8724b680472214240eaade04e6dbda1a7353a5184864f",
   "git_dirty": true,
-  "git_sha": "78728bf159c0aa82bc66e8c37fc466ec8c36d23e",
+  "git_sha": "cba9dfac2b57e32574d612194c478affb2867cb2",
   "gpus": [
     {
       "driver_version": "580.178.04",
@@ -41,7 +42,7 @@
       "name": "Tesla V100-PCIE-32GB",
       "pci_bus_id": "00000000:05:00.0",
       "power_limit_w": 175.0,
-      "temperature_c": 40,
+      "temperature_c": 49,
       "utilization_pct": 0
     },
     {
@@ -52,12 +53,12 @@
       "name": "Tesla V100-PCIE-32GB",
       "pci_bus_id": "00000000:84:00.0",
       "power_limit_w": 150.0,
-      "temperature_c": 38,
+      "temperature_c": 39,
       "utilization_pct": 0
     }
   ],
   "python": "3.12.3",
   "readiness_note": "readiness_check is 10/16 PASS; this benchmark does not change it",
-  "run_id": "bench-1791474736-v2-stream-10k",
+  "run_id": "bench-1791478090-v3_micro1024_single",
   "torch": "2.14.0+cu126"
 }

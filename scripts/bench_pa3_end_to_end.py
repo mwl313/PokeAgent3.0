@@ -73,6 +73,9 @@ def parse_args():
                         help="learner global minibatch size (default 4096)")
     parser.add_argument("--streaming-minibatch", action="store_true",
                         help="materialize one minibatch at a time instead of the whole iteration")
+    parser.add_argument("--single-side-collection", action="store_true",
+                        help="record only the assigned learner seat (pre-v3 behavior); "
+                             "default follows configs/train.yaml and records both current-policy sides")
     return parser.parse_args()
 
 
@@ -154,6 +157,7 @@ def build_runner(args, seed_offset):
         device=str(device), observation_mode=args.observations,
         amp=args.precision == "fp16", inference_mode=args.inference_mode,
         candidate_wire=args.candidate_wire,
+        collect_both_sides_when_current_self_play=not args.single_side_collection,
     )
     collector = NativeCollector(engine, model, config, device=device)
     model_sha = hashlib.sha256()
@@ -385,6 +389,7 @@ def main():
             "mode": args.mode, "observations": args.observations, "precision": args.precision,
             "candidate_wire": args.candidate_wire,
             "streaming_minibatch": bool(args.streaming_minibatch),
+            "collect_both_sides_when_current_self_play": not args.single_side_collection,
             "global_minibatch": args.minibatch or PPOConfig().global_minibatch_size,
             "microbatch": args.microbatch or PPOConfig().microbatch_size,
             "inference_mode": bool(args.inference_mode),

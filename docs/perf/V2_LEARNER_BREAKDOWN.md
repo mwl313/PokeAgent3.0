@@ -1,5 +1,12 @@
 # V2 learner breakdown (M0 of the v2.0 plan)
 
+> **Correction (v3, 2026-10-09):** the "2,112 per-microbatch GPU syncs per 2k
+> iteration" figure in this document was a scale mix-up. The measured counts are
+> 448 micro calls / device syncs for the 2,048-match iteration (28 minibatches ×
+> 16 micros) and 2,176 for the 10,240-match iteration (136 × 16). The
+> optimizer-step counts (28 / 136) in the raw JSON confirm this; the old figure
+> is not reused as evidence. See `V3_NUMERIC_PARITY.md` §4.
+
 Measured on the miniDC with the optimized actor path (fixed observation batch,
 packed candidate wire, packed rollout rows), GPU0, 1,024 environments, 16
 workers, fp16 autocast + `inference_mode`, PA3-8M, frozen 1,137-team pool.

@@ -1,5 +1,12 @@
 # Performance track final report (v1.1 plan, Phases 0-6)
 
+> **v3 note (2026-10-09):** the single-GPU PPO numbers below were measured under
+> the single learner-seat collection contract. The `configs/train.yaml` contract
+> (both current-policy sides) is now implemented: the controlled A/B shows
+> 34.24 → 19.37 all-in games/s with 13.42 → 26.87 learner rows per match, i.e.
+> learner rows/s rises 460 → 520 while games/s is not directly comparable across
+> contracts. See `V3_NUMERIC_PARITY.md` and `V3_VRAM_BATCH_SWEEP.md`.
+
 ## 1. Scope, source, hardware
 
 * Branch `optimization/pa3-realpolicy-throughput`; commits `c55b227` (plan),

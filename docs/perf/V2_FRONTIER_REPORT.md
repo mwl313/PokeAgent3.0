@@ -1,5 +1,13 @@
 # V2 frontier report (v2.0 plan, P0 + M0 complete, P1/P3/P4 open)
 
+> **v3 accounting note (2026-10-09):** every `games/s` number in this document
+> was measured under the *single learner seat* collection contract. The
+> `configs/train.yaml` contract (`collect_both_sides_when_current_self_play:
+> true`) is now implemented, which doubles the learner rows per match; see
+> `V3_NUMERIC_PARITY.md` for the controlled A/B (34.24 → 19.37 games/s with
+> 13.42 → 26.87 rows/match, i.e. learner rows/s rises from 460 to 520).
+> Games/s is only comparable within one collection contract.
+
 Base `b72f5f4` → branch `optimization/pa3-realpolicy-throughput`. This report
 covers the v2.0 plan's correctness phase (P0) and learner breakdown (M0), plus
 the measurement-honesty fixes they required. Phase 1 (streaming/columnar), P3
