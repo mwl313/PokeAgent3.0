@@ -1,0 +1,83 @@
+{
+  "aggregate_games_per_s": 162.73309426414536,
+  "config": {
+    "candidate_wire": "packed",
+    "check_hardware": true,
+    "envs": 1024,
+    "games": 2048,
+    "inference_mode": true,
+    "observations": "fixed",
+    "precision": "fp16",
+    "report": "runs/perf/dual-real.json",
+    "seed": 20261006,
+    "workers": 16
+  },
+  "ddp_learner": "not part of this measurement",
+  "environments": 2048,
+  "mode": "real_policy_collect",
+  "ranks": [
+    {
+      "cpus": "0-15",
+      "decisions_per_s": 2530.2306966756532,
+      "games": 2048,
+      "games_per_s": 94.1498295171013,
+      "gpu": "cuda:0",
+      "gpu_peak_reserved_gib": 2.80078125,
+      "numa": 0,
+      "operational_errors": 0,
+      "rank": 0,
+      "rss_peak_gib": 2.4198875427246094,
+      "stage_seconds": {
+        "assemble_submissions": 0.011256890997174196,
+        "buffer_record": 4.79241128196918,
+        "candidate_table": 0.2675126200174418,
+        "candidates": 0.2754809580073925,
+        "h2d": 2.4796645550013636,
+        "model": 5.8593549429697305,
+        "native_observation": 3.8255597800089163,
+        "parse_convert": 1.1813232759832317,
+        "prefix_specs": 0.0002556650106271263,
+        "readback": 0.09462201499627554,
+        "request_info": 0.03237837698543444,
+        "reset": 0.02597887400042964,
+        "rust_step": 0.36425611700178706,
+        "unaccounted": 2.541698012049892
+      },
+      "wall_s": 21.75256195899965
+    },
+    {
+      "cpus": "20-35",
+      "decisions_per_s": 2687.352958932361,
+      "games": 2048,
+      "games_per_s": 100.26413429813954,
+      "gpu": "cuda:1",
+      "gpu_peak_reserved_gib": 2.80078125,
+      "numa": 1,
+      "operational_errors": 0,
+      "rank": 1,
+      "rss_peak_gib": 2.400634765625,
+      "stage_seconds": {
+        "assemble_submissions": 0.008984602996861213,
+        "buffer_record": 4.266857637103385,
+        "candidate_table": 0.23019750401363126,
+        "candidates": 0.2440662589870044,
+        "h2d": 2.375084444985987,
+        "model": 5.632497656990381,
+        "native_observation": 3.647186599993802,
+        "parse_convert": 1.1395046260004165,
+        "prefix_specs": 0.00020464702174649574,
+        "readback": 0.08334712999931071,
+        "request_info": 0.02529326800686249,
+        "reset": 0.034376145000351244,
+        "rust_step": 0.3391561830158025,
+        "unaccounted": 2.398614396885023
+      },
+      "wall_s": 20.42604780200054
+    }
+  ],
+  "scaling_vs_one_rank": 1.7284481033987074,
+  "single_rank_games_per_s": 94.1498295171013,
+  "sum_rank_games_per_s": 194.41396381524083,
+  "total_games": 4096,
+  "wall_s": 25.17004926700065
+}

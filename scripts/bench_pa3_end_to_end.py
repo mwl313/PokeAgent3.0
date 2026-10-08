@@ -112,6 +112,10 @@ def dataset_sha():
 def build_runner(args, seed_offset):
     torch.manual_seed(args.seed + seed_offset)
     device = torch.device(args.device if torch.cuda.is_available() else "cpu")
+    if device.type == "cuda":
+        # Events, allocations and the RNG generator must live on the rank's own
+        # GPU; without this, rank 1 would record events on device 0.
+        torch.cuda.set_device(device)
     engine = pa3_engine.NativeEngine(args.data, args.teams, workers=args.workers)
     model = PA3Model(PA3Config())
     learner = PPOLearner(model, PPOConfig(), device=device) if args.mode == "full" else None

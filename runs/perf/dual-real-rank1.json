@@ -1,0 +1,185 @@
+{
+  "arch_list": [
+    "sm_50",
+    "sm_60",
+    "sm_70",
+    "sm_75",
+    "sm_80",
+    "sm_86",
+    "sm_90"
+  ],
+  "command": "python /home/minidc/Desktop/PokeAgent3.0/scripts/bench_pa3_end_to_end.py --games 2048 --envs 1024 --workers 16 --repeats 1 --seed 20261007 --mode collect --device cuda:1 --observations fixed --candidate-wire packed --precision fp16 --report /home/minidc/Desktop/PokeAgent3.0/runs/perf/dual-real-rank1.json --tag dual-rank1 --inference-mode",
+  "config": {
+    "candidate_wire": "packed",
+    "device": "cuda:1",
+    "envs": 1024,
+    "games": 2048,
+    "inference_mode": true,
+    "mode": "collect",
+    "observations": "fixed",
+    "precision": "fp16",
+    "repeats": 1,
+    "seed": 20261007,
+    "workers": 16
+  },
+  "cuda_runtime": "12.6",
+  "dataset_id": "mb-mc-v3-userteam-all-train",
+  "dataset_manifest_sha256": "f0509c08544c89a0b0c043218e33795c91af7af2f78e2d6fb83bae69f3babaef",
+  "git_branch": "optimization/pa3-realpolicy-throughput",
+  "git_dirty": true,
+  "git_sha": "6e45adecddfa314231394f828df338e76b663188",
+  "gpus": [
+    {
+      "driver_version": "580.178.04",
+      "index": 0,
+      "memory_total_mib": 32768,
+      "memory_used_mib": 4,
+      "name": "Tesla V100-PCIE-32GB",
+      "pci_bus_id": "00000000:05:00.0",
+      "power_limit_w": 175.0,
+      "temperature_c": 35,
+      "utilization_pct": 0
+    },
+    {
+      "driver_version": "580.178.04",
+      "index": 1,
+      "memory_total_mib": 32768,
+      "memory_used_mib": 4,
+      "name": "Tesla V100-PCIE-32GB",
+      "pci_bus_id": "00000000:84:00.0",
+      "power_limit_w": 150.0,
+      "temperature_c": 39,
+      "utilization_pct": 0
+    }
+  ],
+  "python": "3.12.3",
+  "readiness_note": "readiness_check is 10/16 PASS; this benchmark does not change it",
+  "repeats": [
+    {
+      "actor_collect_wall_s": 20.42604780200054,
+      "actor_games_per_s": 100.26413429813954,
+      "all_in_committed_games_per_s": 100.26413429813954,
+      "all_in_wall_s": 20.42604780200054,
+      "candidate_calls": 352,
+      "candidates_returned": 844225,
+      "cohort_overshoot": 0,
+      "cohorts": 2,
+      "cpu_seconds": 27.77861,
+      "decisions": 54892,
+      "decisions_per_s": 2687.352958932361,
+      "draws": 0,
+      "games_natural_complete": 2048,
+      "games_target": 2048,
+      "gpu_event_ms": 20426.115234375,
+      "gpu_peak_allocated_gib": 1.916313648223877,
+      "gpu_peak_reserved_gib": 2.80078125,
+      "inference_mode": true,
+      "learner_rows": 27413,
+      "losses": 1023,
+      "max_open_games": 1024,
+      "mode": "collect",
+      "model_sha256": "50990df0ebc3738cd2ddaeca71a37ba3284ab5e9c222eea7a87ac3d704c61498",
+      "observation_mode": "fixed",
+      "operational_errors": 0,
+      "ppo_update_wall_s": 0.0,
+      "precision": "fp16",
+      "repeat": 0,
+      "rounds": 144,
+      "rss_peak_gib": 2.400634765625,
+      "stage_seconds": {
+        "assemble_submissions": 0.008984602996861213,
+        "buffer_record": 4.266857637103385,
+        "candidate_table": 0.23019750401363126,
+        "candidates": 0.2440662589870044,
+        "h2d": 2.375084444985987,
+        "model": 5.632497656990381,
+        "native_observation": 3.647186599993802,
+        "parse_convert": 1.1395046260004165,
+        "prefix_specs": 0.00020464702174649574,
+        "readback": 0.08334712999931071,
+        "request_info": 0.02529326800686249,
+        "reset": 0.034376145000351244,
+        "rust_step": 0.3391561830158025,
+        "unaccounted": 2.398614396885023
+      },
+      "wins": 1025
+    }
+  ],
+  "run_id": "bench-1791469606-dual-rank1",
+  "stage_medians": {
+    "assemble_submissions": {
+      "median_s": 0.008984602996861213,
+      "share_of_wall": 0.0004398600788538865
+    },
+    "buffer_record": {
+      "median_s": 4.266857637103385,
+      "share_of_wall": 0.2088929624792852
+    },
+    "candidate_table": {
+      "median_s": 0.23019750401363126,
+      "share_of_wall": 0.011269801492929317
+    },
+    "candidates": {
+      "median_s": 0.2440662589870044,
+      "share_of_wall": 0.0119487754730066
+    },
+    "h2d": {
+      "median_s": 2.375084444985987,
+      "share_of_wall": 0.11627723914135606
+    },
+    "model": {
+      "median_s": 5.632497656990381,
+      "share_of_wall": 0.27575073316134757
+    },
+    "native_observation": {
+      "median_s": 3.647186599993802,
+      "share_of_wall": 0.17855566751569993
+    },
+    "parse_convert": {
+      "median_s": 1.1395046260004165,
+      "share_of_wall": 0.055786838307938
+    },
+    "prefix_specs": {
+      "median_s": 0.00020464702174649574,
+      "share_of_wall": 1.0018924058644986e-05
+    },
+    "readback": {
+      "median_s": 0.08334712999931071,
+      "share_of_wall": 0.004080433513484074
+    },
+    "request_info": {
+      "median_s": 0.02529326800686249,
+      "share_of_wall": 0.001238284970839305
+    },
+    "reset": {
+      "median_s": 0.034376145000351244,
+      "share_of_wall": 0.0016829562592614918
+    },
+    "rust_step": {
+      "median_s": 0.3391561830158025,
+      "share_of_wall": 0.016604102090791415
+    },
+    "unaccounted": {
+      "median_s": 2.398614396885023,
+      "share_of_wall": 0.11742919727477096
+    }
+  },
+  "summary": {
+    "actor_games_per_s": {
+      "max": 100.26413429813954,
+      "median": 100.26413429813954,
+      "min": 100.26413429813954
+    },
+    "all_in_committed_games_per_s": {
+      "max": 100.26413429813954,
+      "median": 100.26413429813954,
+      "min": 100.26413429813954
+    },
+    "decisions_per_s": {
+      "max": 2687.352958932361,
+      "median": 2687.352958932361,
+      "min": 2687.352958932361
+    }
+  },
+  "torch": "2.14.0+cu126"
+}
