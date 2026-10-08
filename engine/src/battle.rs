@@ -7088,6 +7088,13 @@ impl BattleState {
         }
         let status = self.mon(e).status;
         if status == dex.effects.sleep || (status == dex.effects.freeze && !m.defrost) {
+            // `conditions:slp.onBeforeMove`: an Early Bird holder ticks the
+            // sleep counter twice, so sleep lasts roughly half as long.
+            if status == dex.effects.sleep
+                && dex.effects.abilities[self.mon(e).ability as usize] == Ability::Earlybird
+            {
+                self.mon_mut(e).status_state.values[0] -= 1;
+            }
             self.mon_mut(e).status_state.values[0] -= 1;
             let expired = self.mon(e).status_state.values[0] <= 0;
             if expired || (status == dex.effects.freeze && self.rng.chance(1, 4)) {

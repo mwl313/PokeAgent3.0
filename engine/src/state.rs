@@ -232,6 +232,10 @@ pub struct PokemonState {
     /// against a target that has already acted this turn.
     #[serde(default)]
     pub newly_switched: bool,
+    /// Reference `syrupTriggered` (Supersweet Syrup): the entry evasion drop
+    /// fires only once per battle, even across switch-outs.
+    #[serde(default)]
+    pub syrup_triggered: bool,
     /// Reference `lastMove`: the move this Pokémon most recently used while
     /// active (0 = none). Encore, Disable, Torment and Cursed Body read it.
     pub last_move: Id,
@@ -380,6 +384,7 @@ impl PokemonState {
             plain_switch_flag: false,
             force_switch_flag: false,
             newly_switched: false,
+            syrup_triggered: false,
             last_move: 0,
             last_move_target_location: 0,
             times_attacked: 0,
@@ -445,7 +450,7 @@ impl Outcome {
 /// `move.sourceEffect`).
 /// 15: requests carry `revive_targets` / `SlotRequest.reviving`, and sides
 /// persist the `revivalblessing` slot condition.
-pub const SNAPSHOT_SCHEMA: u32 = 18;
+pub const SNAPSHOT_SCHEMA: u32 = 19;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BattleState {

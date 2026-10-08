@@ -1913,6 +1913,31 @@ impl BattleState {
         // its `onTerrainChange` answers, so the change lands here as well as
         // through the global TerrainChange event.
         self.mimicry_terrain_change(dex, e)?;
+        // `abilities:supersweetsyrup.onStart`: once per battle, every adjacent
+        // foe loses a stage of evasiveness (a substitute intercepts it).
+        if dex.effects.abilities[self.mon(e).ability as usize] == Ability::Supersweetsyrup
+            && !self.mon(e).syrup_triggered
+        {
+            self.mon_mut(e).syrup_triggered = true;
+            self.reveal_ability(e)?;
+            let foes: SmallVec<[Entity; 2]> = self
+                .active_entities(false)
+                .into_iter()
+                .filter(|p| p.side != e.side && self.mon(*p).hp > 0)
+                .collect();
+            for foe in foes {
+                if self.mon(foe).volatiles.contains_key(&dex.effects.substitute) {
+                    continue;
+                }
+                self.boost(
+                    dex,
+                    foe,
+                    e,
+                    [0, 0, 0, 0, 0, 0, -1],
+                    BoostCause::Ability(Ability::Supersweetsyrup),
+                )?;
+            }
+        }
         // `abilities:moldbreaker.onStart`: the ability announces itself when it
         // starts (switch-in, or a copied/altered ability), which is public
         // knowledge for both players.
@@ -3188,7 +3213,6 @@ impl Ability {
             | Ability::Berserk
             | Ability::Cudchew
             | Ability::Cutecharm
-            | Ability::Earlybird
             | Ability::Embodyaspectcornerstone
             | Ability::Embodyaspecthearthflame
             | Ability::Embodyaspectteal
@@ -3211,7 +3235,6 @@ impl Ability {
             | Ability::Runaway
             | Ability::Shieldsdown
             | Ability::Stickyhold
-            | Ability::Supersweetsyrup
         )
     }
 }
