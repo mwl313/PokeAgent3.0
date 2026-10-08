@@ -149,8 +149,27 @@ in turn 1 that the corpus test catches at the first boundary:
   attribution) and `PA3_RNG_SITES=1` / `PA3_RNG_DBG=1` (native attribution)
   reproduce the tracing above.
 
-Next step for whoever picks this up: diff the reference's `eachEvent('Update')`
-handler list against `BattleState::each_update`'s entity list for that scene
-(the reference sorts one handler per effect with an `onUpdate` callback, the
-native sorts the four active Pokémon), then decide whether the native must grow
-per-handler Update sorting before these two moves can be witnessed.
+Finer evidence gathered on 2026-10-08 (`tmp/focuspunch_beakblast_src_v2.patch`
+adds `PA3_UPDATE_DBG` and `PA3_SORT_DBG` probes plus the same family patch):
+
+* every sort in the reference is an `eachEvent`/`fieldEvent` **of the active
+  Pokémon**, keyed by speed with `order`/`subOrder` undefined - i.e. exactly the
+  shape `BattleState::each_update` and `field_queue` produce. The reference's
+  Update sorts (n=4, 2 shuffles with the 80/80 and 84/84 ties) match the
+  native's one for one;
+* the divergence is therefore in the **number** of events, not their shapes:
+  the native runs 17 `each_update` calls in turn 1 where the reference runs 15
+  `Update` events, and the reference spends four shuffles in its residual phase
+  (`eachEvent('Weather')` + the field Residual + a trailing Update) that the
+  native's `residual`/`weather_upkeep` do not reproduce (its own handler sort
+  sees a single handler, `n=1`, and draws nothing);
+* `tmp/pa3probe/event_probe.mjs` (wraps `eachEvent`/`fieldEvent`/`speedSort` and
+  prints the per-event shuffle count and handler summary) and
+  `tmp/pa3probe/replay_draws.mjs` are the tools that produced this; both are
+  scratch probes, not repo files.
+
+Next step: make `BattleState::residual` collect one handler **per active
+Pokémon** (the reference's `findPokemonEventHandlers(active, 'onResidual',
+'duration')`) and run the weather upkeep through an explicit
+`eachEvent('Weather')`-shaped sort, then re-run both scenes and check the
+per-action draw counts against `replay_draws.mjs`.
