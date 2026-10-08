@@ -3197,14 +3197,12 @@ impl Ability {
             | Ability::Gluttony
             | Ability::Gulpmissile
             | Ability::Harvest
-            | Ability::Heavymetal
             | Ability::Hungerswitch
             | Ability::Iceface
             | Ability::Illusion
             | Ability::Imposter
             | Ability::Innardsout
             | Ability::Klutz
-            | Ability::Lightmetal
             | Ability::Opportunist
             | Ability::Pickup
             | Ability::Quickdraw
@@ -3212,7 +3210,6 @@ impl Ability {
             | Ability::Ripen
             | Ability::Runaway
             | Ability::Shieldsdown
-            | Ability::Stench
             | Ability::Stickyhold
             | Ability::Supersweetsyrup
         )

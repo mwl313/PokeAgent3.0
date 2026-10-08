@@ -12,6 +12,19 @@ impl BattleState {
         stats::apply_stage(u32::from(self.mon(e).stats[5]), self.mon(e).boosts[4]) as i32
     }
 
+    /// Reference `Pokemon#getWeight`: the species weight (hectograms) after the
+    /// `ModifyWeight` handlers, clamped to at least one. Heavy Metal doubles
+    /// and Light Metal truncates to half; both are the regulation's only
+    /// handlers for this event.
+    fn weight(&self, dex: &Dex, e: Entity) -> u32 {
+        let base = dex.species[self.mon(e).species as usize].weight_hg;
+        match dex.effects.abilities[self.mon(e).ability as usize] {
+            Ability::Heavymetal => base.saturating_mul(2).max(1),
+            Ability::Lightmetal => (base / 2).max(1),
+            _ => base.max(1),
+        }
+    }
+
     /// Returns the callback-derived base power, or the move's declared power
     /// when it has no ported callback.
     pub(super) fn base_power(
@@ -82,7 +95,7 @@ impl BattleState {
             BasePowerKind::GrassKnot | BasePowerKind::LowKick => {
                 // Reference compares `target.getWeight()` (hectograms) against
                 // 2000/1000/500/250/100, not the 10x-scaled grams.
-                let weight = dex.species[self.mon(target).species as usize].weight_hg;
+                let weight = self.weight(dex, target);
                 match weight {
                     w if w >= 2_000 => 120,
                     w if w >= 1_000 => 100,
@@ -114,8 +127,8 @@ impl BattleState {
                 (inner / 100).max(1)
             }
             BasePowerKind::HeatCrash => {
-                let actor_weight = dex.species[self.mon(actor).species as usize].weight_hg;
-                let target_weight = dex.species[self.mon(target).species as usize].weight_hg;
+                let actor_weight = self.weight(dex, actor);
+                let target_weight = self.weight(dex, target);
                 if actor_weight >= target_weight * 5 {
                     120
                 } else if actor_weight >= target_weight * 4 {

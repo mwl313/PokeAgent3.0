@@ -57,6 +57,10 @@ pub(super) struct ActiveMove<'a> {
     /// `contact` flag, so every contact-gated handler reads the overridden
     /// value through `makes_contact`.
     pub no_contact: bool,
+    /// `abilities:stench.onModifyMove` (priority -1): every damaging move that
+    /// does not already roll for a flinch gains an appended 10% flinch entry,
+    /// so its chance roll happens after the move's own secondaries.
+    pub stench_flinch: bool,
 }
 impl Deref for ActiveMove<'_> {
     type Target = crate::assets::Move;
@@ -99,11 +103,23 @@ impl BattleState {
             boost_override: None,
             move_uid: 0,
             no_contact: false,
+            stench_flinch: false,
         };
         // `abilities:longreach.onModifyMove` deletes the contact flag on every
         // move the holder uses; `ActiveMove::makes_contact` folds it in.
         if dex.effects.abilities[self.mon(actor).ability as usize] == Ability::Longreach {
             action.no_contact = true;
+        }
+        // `abilities:stench.onModifyMove`: the entry is appended unless the
+        // move already carries a flinch secondary.
+        if dex.effects.abilities[self.mon(actor).ability as usize] == Ability::Stench
+            && data.category != crate::assets::Category::Status
+            && !data
+                .secondaries
+                .iter()
+                .any(|s| s.target.volatile == dex.effects.flinch)
+        {
+            action.stench_flinch = true;
         }
         // `abilities:stalwart.onModifyMove` (priority 1): the holder's moves
         // ignore redirection. Stalwart has no `breakable` flag, so Mold Breaker

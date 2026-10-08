@@ -5794,6 +5794,17 @@ impl BattleState {
                     }
                 }
             }
+            // `abilities:stench.onModifyMove`'s appended flinch entry: a
+            // target-side secondary, so Shield Dust drops it before its roll.
+            if m.stench_flinch && !self.shield_dust_blocks(dex, target, false) {
+                let effect = crate::effects::HitEffect {
+                    volatile: dex.effects.flinch,
+                    ..Default::default()
+                };
+                if self.rng.below(100) < 10 && !absorbed {
+                    self.hit_effect_from_move(dex, target, actor, &effect, true, m)?;
+                }
+            }
         }
         // Reference `forceSwitch`: the phazing step runs after self drops and
         // secondaries, marks every surviving in-range target, and lets the
@@ -6378,6 +6389,11 @@ impl BattleState {
                             self.hit_effect(dex, actor, actor, effect, true)?;
                         }
                     }
+                    // The Stench entry is appended to `move.secondaries`, so its
+                    // chance still rolls here while the payload is dropped.
+                    if m.stench_flinch {
+                        self.rng.below(100);
+                    }
                     continue;
                 }
                 let damage = self.sturdy_clamp(
@@ -6458,6 +6474,17 @@ impl BattleState {
                         if let Some(effect) = &secondary.own {
                             self.hit_effect(dex, actor, actor, effect, true)?;
                         }
+                    }
+                }
+                // `abilities:stench.onModifyMove`: the appended flinch entry
+                // rolls after the move's own secondaries for this target.
+                if m.stench_flinch && !self.shield_dust_blocks(dex, target, false) {
+                    let effect = crate::effects::HitEffect {
+                        volatile: dex.effects.flinch,
+                        ..Default::default()
+                    };
+                    if self.rng.below(100) < 10 {
+                        self.hit_effect_from_move(dex, target, actor, &effect, true, m)?;
                     }
                 }
                 let user_hp_before_damaging_hit = self.mon(actor).hp;
