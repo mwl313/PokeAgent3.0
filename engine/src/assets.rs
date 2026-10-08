@@ -496,6 +496,11 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     // Ability exchange: the fail gates, End/Start ordering and announcement
     // are native (`Battle#skillSwap`).
     "moves:skillswap.onHit",
+    // Stat swaps: the two boost stages (or the stored Speed stats) swap
+    // through a direct write, announced afterwards.
+    "moves:powerswap.onHit",
+    "moves:guardswap.onHit",
+    "moves:speedswap.onHit",
     // Entry hazards: the side-condition start/restart/switch-in callbacks are
     // executed by the native hazard primitive.
     "moves:spikes.condition.onSideStart",
@@ -2102,6 +2107,7 @@ impl Dex {
             abilities: native_abilities,
             fling: lookup("conditions", "fling")?,
             fling_items,
+            power_swap_move: lookup("moves", "powerswap")?,
             items: native_items,
             no_trace_abilities,
             breakable_abilities,

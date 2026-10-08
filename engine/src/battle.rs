@@ -4218,6 +4218,57 @@ impl BattleState {
                 // the exchange result, so the empty generic payload must not
                 // mark a refused swap as "did anything".
                 did_anything |= self.skill_swap(dex, actor, target)?;
+            } else if behavior == MoveBehavior::StatSwap {
+                // `moves:powerswap|guardswap.onHit`: `setBoost` writes the two
+                // stages directly (no TryBoost hooks, so Defiant stays quiet)
+                // and both sides' new stages are public. Power Swap moves
+                // Attack/Sp. Atk (boost indexes 0 and 2), Guard Swap
+                // Defense/Sp. Def (1 and 3).
+                let stats: [usize; 2] = if m.id == dex.effects.power_swap_move {
+                    [0, 2]
+                } else {
+                    [1, 3]
+                };
+                let actor_old = self.mon(actor).boosts;
+                let target_old = self.mon(target).boosts;
+                for stat in stats {
+                    let actor_new = target_old[stat];
+                    let target_new = actor_old[stat];
+                    self.mon_mut(actor).boosts[stat] = actor_new;
+                    self.mon_mut(target).boosts[stat] = target_new;
+                    let actor_delta = actor_new - actor_old[stat];
+                    let target_delta = target_new - target_old[stat];
+                    if actor_delta != 0 {
+                        self.emit(
+                            EventKind::Boost,
+                            actor,
+                            Some(target),
+                            EffectRef::Stat(stat as Id),
+                            i32::from(actor_delta),
+                            false,
+                        )?;
+                    }
+                    if target_delta != 0 {
+                        self.emit(
+                            EventKind::Boost,
+                            target,
+                            Some(actor),
+                            EffectRef::Stat(stat as Id),
+                            i32::from(target_delta),
+                            false,
+                        )?;
+                    }
+                }
+                did_anything = true;
+            } else if behavior == MoveBehavior::SpeedSwap {
+                // `moves:speedswap.onHit`: the two stored Speed stats swap. The
+                // cached `speed` stays stale until the next `updateSpeed`,
+                // exactly like the reference's direct `storedStats.spe` write.
+                let actor_spe = self.mon(actor).stats[5];
+                let target_spe = self.mon(target).stats[5];
+                self.mon_mut(actor).stats[5] = target_spe;
+                self.mon_mut(target).stats[5] = actor_spe;
+                did_anything = true;
             } else if behavior == MoveBehavior::Defog {
                 // `moves:defog.onHit`: the evasion drop (skipped behind a
                 // decoy unless the user infiltrates), then the target side's

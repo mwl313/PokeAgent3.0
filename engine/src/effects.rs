@@ -876,6 +876,12 @@ pub enum MoveBehavior {
     /// `fling`: the thrown item sets the action's base power and payload; the
     /// item is consumed by the marker volatile's `onUpdate`.
     Fling,
+    /// `powerswap` / `guardswap`: the two attack (or defense) boost stages swap
+    /// with the target through a direct `setBoost` write.
+    StatSwap,
+    /// `speedswap`: the two stored Speed stats swap, leaving the cached speed
+    /// stale until the next `updateSpeed`.
+    SpeedSwap,
     /// `helpinghand`: single-turn ally volatile with a stacking BasePower
     /// multiplier.
     HelpingHand,
@@ -1061,6 +1067,8 @@ impl MoveBehavior {
             }
             "trick" | "switcheroo" => Self::Trick,
             "fling" => Self::Fling,
+            "powerswap" | "guardswap" => Self::StatSwap,
+            "speedswap" => Self::SpeedSwap,
             "helpinghand" => Self::HelpingHand,
             "followme" => Self::FollowMe,
             "ragepowder" => Self::RagePowder,
@@ -1218,6 +1226,9 @@ pub struct NativeEffects {
     /// `conditions:fling`: the marker volatile whose `onUpdate` consumes the
     /// thrown item after the action.
     pub fling: Id,
+    /// `moves:powerswap`: the Stat Swap behaviour needs to know which pair of
+    /// stages it moves.
+    pub power_swap_move: Id,
     /// Pinned `flags.breakable` abilities: only these can be ignored by the
     /// active move (Mold Breaker / Teravolt / Turboblaze / a move-level
     /// `ignoreAbility`). Indexed by ability id.
