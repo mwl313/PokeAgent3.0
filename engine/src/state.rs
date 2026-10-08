@@ -1133,6 +1133,14 @@ impl BattleState {
                         effect.duration.is_none()
                             && effect.values.is_empty()
                             && effect.source.is_some()
+                    } else if id == dex.effects.power_trick || id == dex.effects.power_shift {
+                        // `moves:powertrick|powershift.condition`: a bare
+                        // marker (no duration, no payload) whose presence means
+                        // the stored Attack/Defense are swapped; the holder is
+                        // its own source.
+                        effect.duration.is_none()
+                            && effect.values.is_empty()
+                            && effect.source.is_some()
                     } else if id == dex.effects.charge {
                         // `moves:charge.condition`: a bare marker (no duration,
                         // no payload) granted by the move or Electromorphosis.

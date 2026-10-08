@@ -753,6 +753,19 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:healingwish.condition.onSwitchIn",
     "moves:healingwish.condition.onSwap",
     "moves:healbell.onHit",
+    // Swap/split family: the two Attack/Defense swap volatiles, the two stat
+    // averaging moves and Magnetic Flux's side-wide boost.
+    "moves:powertrick.condition.onStart",
+    "moves:powertrick.condition.onCopy",
+    "moves:powertrick.condition.onEnd",
+    "moves:powertrick.condition.onRestart",
+    "moves:powershift.condition.onStart",
+    "moves:powershift.condition.onCopy",
+    "moves:powershift.condition.onEnd",
+    "moves:powershift.condition.onRestart",
+    "moves:powersplit.onHit",
+    "moves:guardsplit.onHit",
+    "moves:magneticflux.onHitSide",
     // Ability-transfer moves: the gates and the setAbility payloads.
     "moves:entrainment.onTryHit",
     "moves:entrainment.onHit",
@@ -1200,6 +1213,9 @@ const HANDLED_VOLATILES: &[&str] = &[
     // Counter / Mirror Coat's one-turn recorded-hit volatiles.
     "counter",
     "mirrorcoat",
+    // Power Trick / Power Shift's Attack-Defense swap markers.
+    "powertrick",
+    "powershift",
 ];
 
 /// Status/volatile payloads of every declared effect must already have native
@@ -2199,6 +2215,8 @@ impl Dex {
             trapped: lookup("conditions", "trapped")?,
             trapper: lookup("conditions", "trapper")?,
             aqua_ring: lookup("conditions", "aquaring")?,
+            power_trick: lookup("conditions", "powertrick")?,
+            power_shift: lookup("conditions", "powershift")?,
             wish: lookup("conditions", "wish")?,
             healing_wish: lookup("conditions", "healingwish")?,
             wish_move: lookup("moves", "wish")?,

@@ -1496,7 +1496,15 @@ impl BattleState {
             if dex.effects.no_copy_conditions.contains(&id) {
                 continue;
             }
-            if dex.effects.copy_callback_conditions.contains(&id) {
+            if id == dex.effects.power_trick || id == dex.effects.power_shift {
+                // `moves:powertrick|powershift.condition.onCopy`: the incoming
+                // Pokémon swaps its own stored Attack and Defense as it adopts
+                // the marker.
+                let atk = self.mon(to).stats[1];
+                let def = self.mon(to).stats[2];
+                self.mon_mut(to).stats[1] = def;
+                self.mon_mut(to).stats[2] = atk;
+            } else if dex.effects.copy_callback_conditions.contains(&id) {
                 return Err(EngineError::Unsupported(format!(
                     "copied volatile {id} declares onCopy"
                 )));
@@ -4628,6 +4636,78 @@ impl BattleState {
                     }
                 }
                 did_anything = true;
+            } else if matches!(behavior, MoveBehavior::PowerTrick | MoveBehavior::PowerShift) {
+                // `moves:powertrick|powershift.condition`: a self volatile that
+                // swaps the stored Attack and Defense. `onRestart` removes the
+                // marker (running `onEnd`, which swaps them back), so re-using
+                // the move cancels it; a switch-out recomputes the base stats.
+                let volatile = if behavior == MoveBehavior::PowerShift {
+                    dex.effects.power_shift
+                } else {
+                    dex.effects.power_trick
+                };
+                if self.mon(target).volatiles.contains_key(&volatile) {
+                    self.mon_mut(target).volatiles.remove(&volatile);
+                    self.emit(
+                        EventKind::EffectEnd,
+                        target,
+                        None,
+                        EffectRef::Condition(volatile),
+                        0,
+                        false,
+                    )?;
+                } else {
+                    let order = self.allocate_effect_order()?;
+                    self.mon_mut(target).volatiles.insert(
+                        volatile,
+                        EffectState {
+                            id: volatile,
+                            effect_order: order,
+                            effect_order_assigned: true,
+                            source: Some((
+                                if target.side == 0 {
+                                    SideId::P1
+                                } else {
+                                    SideId::P2
+                                },
+                                target.roster,
+                            )),
+                            ..Default::default()
+                        },
+                    );
+                    self.emit(
+                        EventKind::EffectStart,
+                        target,
+                        None,
+                        EffectRef::Condition(volatile),
+                        0,
+                        false,
+                    )?;
+                }
+                let atk = self.mon(target).stats[1];
+                let def = self.mon(target).stats[2];
+                self.mon_mut(target).stats[1] = def;
+                self.mon_mut(target).stats[2] = atk;
+                did_anything = true;
+            } else if matches!(behavior, MoveBehavior::PowerSplit | MoveBehavior::GuardSplit) {
+                // `moves:powersplit|guardsplit.onHit`: both stored stats become
+                // their floored average. The change is not a volatile, so a
+                // switch-out recomputes the base stats like the reference's
+                // `setSpecies`.
+                let (first, second) = if behavior == MoveBehavior::PowerSplit {
+                    (1usize, 3usize)
+                } else {
+                    (2usize, 4usize)
+                };
+                for index in [first, second] {
+                    let averaged = (u32::from(self.mon(actor).stats[index])
+                        + u32::from(self.mon(target).stats[index]))
+                        / 2;
+                    let averaged = averaged.min(u32::from(u16::MAX)) as u16;
+                    self.mon_mut(actor).stats[index] = averaged;
+                    self.mon_mut(target).stats[index] = averaged;
+                }
+                did_anything = true;
             } else if behavior == MoveBehavior::SpeedSwap {
                 // `moves:speedswap.onHit`: the two stored Speed stats swap. The
                 // cached `speed` stays stale until the next `updateSpeed`,
@@ -4840,6 +4920,38 @@ impl BattleState {
                     }
                 }
                 did_anything |= cured;
+            } else if behavior == MoveBehavior::MagneticFlux {
+                // `moves:magneticflux.onHitSide`: every Plus/Minus holder on
+                // the user's side (the user included, `side.allies()`) gains
+                // Defense and Special Defense. The move fails when no holder
+                // could be raised.
+                let side = actor.side;
+                let mut boosted = false;
+                let holders: Vec<Entity> = self.sides[side as usize]
+                    .active
+                    .iter()
+                    .flatten()
+                    .map(|roster| Entity {
+                        side,
+                        roster: *roster,
+                    })
+                    .filter(|e| {
+                        matches!(
+                            dex.effects.abilities[self.mon(*e).ability as usize],
+                            Ability::Plus | Ability::Minus
+                        )
+                    })
+                    .collect();
+                for holder in holders {
+                    boosted |= self.boost(
+                        dex,
+                        holder,
+                        actor,
+                        [0, 1, 0, 1, 0, 0, 0],
+                        BoostCause::Move { secondary: false },
+                    )?;
+                }
+                did_anything |= boosted;
             } else if behavior == MoveBehavior::TidyUp {
                 // `moves:tidyup.onHit`: every Substitute on the field is
                 // removed, the entry hazards are cleared on the user's side and
@@ -5596,9 +5708,21 @@ impl BattleState {
                 self.give_item(dex, actor, target, item)?;
             }
         }
-        self.each_update(dex)?;
+        // Reference `useMoveInner`: the `all` / `foeSide` / `allySide` /
+        // `allyTeam` classes run `tryMoveHit`, which never enters
+        // `hitStepMoveHitLoop`, so neither of its two `Update` events fires —
+        // only the action tail's own Update does.
+        let hit_loop_updates = !matches!(
+            m.target,
+            Target::All | Target::FoeSide | Target::AllySide | Target::AllyTeam
+        );
+        if hit_loop_updates {
+            self.each_update(dex)?;
+        }
         self.process_faints(dex, self.mon(actor).hp == 0)?;
-        self.each_update(dex)?;
+        if hit_loop_updates {
+            self.each_update(dex)?;
+        }
         // `moves:fellstinger.onAfterMoveSecondarySelf`: Attack +3 when the move
         // KO'd its target (the reference's `!target || target.fainted ||
         // target.hp <= 0`).

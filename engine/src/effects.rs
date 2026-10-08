@@ -926,6 +926,18 @@ pub enum MoveBehavior {
     HealingWish,
     /// `healbell`: cures every party member's status.
     HealBell,
+    /// `powertrick` / `powershift`: a self volatile that swaps the user's
+    /// stored Attack and Defense for as long as it is up; re-using the move
+    /// removes it (swapping back).
+    PowerTrick,
+    PowerShift,
+    /// `powersplit` / `guardsplit`: both sides' stored Attack and Special
+    /// Attack (or Defense and Special Defense) become their floored average.
+    PowerSplit,
+    GuardSplit,
+    /// `magneticflux`: raises Defense and Special Defense of every Plus/Minus
+    /// holder on the user's side.
+    MagneticFlux,
     /// `clearsmog`: damages and then resets the target's boost stages.
     ClearSmog,
     /// `powerswap` / `guardswap`: the two attack (or defense) boost stages swap
@@ -1139,6 +1151,11 @@ impl MoveBehavior {
             "wish" => Self::Wish,
             "healingwish" => Self::HealingWish,
             "healbell" => Self::HealBell,
+            "powertrick" => Self::PowerTrick,
+            "powershift" => Self::PowerShift,
+            "powersplit" => Self::PowerSplit,
+            "guardsplit" => Self::GuardSplit,
+            "magneticflux" => Self::MagneticFlux,
             "helpinghand" => Self::HelpingHand,
             "followme" => Self::FollowMe,
             "ragepowder" => Self::RagePowder,
@@ -1304,6 +1321,10 @@ pub struct NativeEffects {
     pub trapper: Id,
     /// `moves:aquaring.condition`: the residual heal volatile.
     pub aqua_ring: Id,
+    /// `moves:powertrick.condition` / `moves:powershift.condition`: the
+    /// Attack/Defense swap volatiles (identical conditions under two ids).
+    pub power_trick: Id,
+    pub power_shift: Id,
     /// `moves:wish.condition` / `moves:healingwish.condition`: slot conditions
     /// that resolve on the next residual / on the replacement's switch-in.
     pub wish: Id,
