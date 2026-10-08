@@ -38,7 +38,6 @@ const EXEMPT: &[(&str, &str)] = &[
     ("nightdaze", "no legal holder with an implemented ability yet"),
     ("pound", "no legal holder with an implemented ability yet"),
     ("softboiled", "no legal holder with an implemented ability yet"),
-    ("snaptrap", "no legal holder with an implemented ability yet"),
     // Power Shift is legal in the move list but no pinned-regulation species
     // learns it, so no legal team can hold it.
     ("powershift", "no legal holder in the pinned regulation"),

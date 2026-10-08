@@ -326,9 +326,11 @@ pub(super) fn terrain_change(state: &mut BattleState, dex: &Dex, e: Entity) -> R
 
 /// Reference `eachEvent('TerrainChange')`: all seed holders resolve in the
 /// ordinary speed order (with the exact tie shuffling) before any of them
-/// consumes its item.
+/// consumes its item. Mimicry's `onTerrainChange` is a handler of the same
+/// event and joins the identical sort, so a Mimicry holder ties (and shuffles)
+/// against a seed holder at the same speed.
 pub(super) fn terrain_change_event(state: &mut BattleState, dex: &Dex) -> Result<()> {
-    let mut handlers: SmallVec<[(Entity, Priority); 4]> = state
+    let mut handlers: SmallVec<[(bool, Entity, Priority); 6]> = state
         .active_entities(false)
         .into_iter()
         .filter(|e| {
@@ -339,6 +341,7 @@ pub(super) fn terrain_change_event(state: &mut BattleState, dex: &Dex) -> Result
         })
         .map(|e| {
             (
+                false,
                 e,
                 Priority {
                     speed: state.mon(e).cached_speed,
@@ -347,9 +350,31 @@ pub(super) fn terrain_change_event(state: &mut BattleState, dex: &Dex) -> Result
             )
         })
         .collect();
-    speed_sort(&mut handlers, &mut state.rng, |h| h.1);
-    for (e, _) in handlers {
-        terrain_change(state, dex, e)?;
+    handlers.extend(
+        state
+            .active_entities(false)
+            .into_iter()
+            .filter(|e| {
+                dex.effects.abilities[state.mon(*e).ability as usize] == Ability::Mimicry
+            })
+            .map(|e| {
+                (
+                    true,
+                    e,
+                    Priority {
+                        speed: state.mon(e).cached_speed,
+                        ..Default::default()
+                    },
+                )
+            }),
+    );
+    speed_sort(&mut handlers, &mut state.rng, |h| h.2);
+    for (mimicry, e, _) in handlers {
+        if mimicry {
+            state.mimicry_terrain_change(dex, e)?;
+        } else {
+            terrain_change(state, dex, e)?;
+        }
     }
     Ok(())
 }

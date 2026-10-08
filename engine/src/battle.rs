@@ -9454,7 +9454,7 @@ impl BattleState {
                 continue;
             }
             if status == 7 {
-                self.terrain_upkeep(id)?;
+                self.terrain_upkeep(dex, id)?;
                 continue;
             }
             if matches!(status, 11 | 12) {

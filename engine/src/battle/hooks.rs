@@ -1780,6 +1780,11 @@ impl BattleState {
         if self.mon(e).hp == 0 {
             return Ok(());
         }
+        // `abilities:mimicry.onStart`: the holder re-evaluates its terrain
+        // typing. The reference runs the same `singleEvent('TerrainChange')`
+        // its `onTerrainChange` answers, so the change lands here as well as
+        // through the global TerrainChange event.
+        self.mimicry_terrain_change(dex, e)?;
         // `abilities:moldbreaker.onStart`: the ability announces itself when it
         // starts (switch-in, or a copied/altered ability), which is public
         // knowledge for both players.
@@ -3048,7 +3053,6 @@ impl Ability {
             | Ability::Lightmetal
             | Ability::Longreach
             | Ability::Merciless
-            | Ability::Mimicry
             | Ability::Opportunist
             | Ability::Pickup
             | Ability::Quickdraw

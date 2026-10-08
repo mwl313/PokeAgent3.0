@@ -108,7 +108,7 @@ impl BattleState {
         Ok(true)
     }
 
-    pub(super) fn terrain_upkeep(&mut self, id: Id) -> Result<()> {
+    pub(super) fn terrain_upkeep(&mut self, dex: &Dex, id: Id) -> Result<()> {
         let state = self.field.get_mut(&id).unwrap();
         let duration = state.duration.as_mut().unwrap();
         *duration -= 1;
@@ -135,7 +135,51 @@ impl BattleState {
                 false,
             )?;
             self.field_change_order();
+            // Reference `field.clearTerrain` (the residual handler's `end`):
+            // the terrain is dropped and then the global TerrainChange event
+            // runs, so terrain-bound handlers (Mimicry, seeds) re-evaluate.
+            super::item_ports::terrain_change_event(self, dex)?;
         }
+        Ok(())
+    }
+
+    /// `abilities:mimicry.onTerrainChange`: the holder adopts the active
+    /// terrain's type and reverts to its base typing when no terrain is up.
+    /// Both reference call sites are public (the `-start ... typechange [from]
+    /// ability: Mimicry` message and the `-activate ability: Mimicry` revert),
+    /// so a change reveals the ability to both players.
+    pub(super) fn mimicry_terrain_change(&mut self, dex: &Dex, e: Entity) -> Result<()> {
+        if self.mon(e).hp == 0
+            || dex.effects.abilities[self.mon(e).ability as usize] != Ability::Mimicry
+        {
+            return Ok(());
+        }
+        let terrain = self.terrain_id(dex);
+        let types: SmallVec<[Id; 2]> = if terrain == dex.effects.electric_terrain {
+            smallvec![dex.effects.electric]
+        } else if terrain == dex.effects.grassy_terrain {
+            smallvec![dex.effects.grass]
+        } else if terrain == dex.effects.misty_terrain {
+            smallvec![dex.effects.fairy]
+        } else if terrain == dex.effects.psychic_terrain {
+            smallvec![dex.effects.psychic]
+        } else {
+            dex.species[self.mon(e).base_species as usize]
+                .types
+                .clone()
+                .into()
+        };
+        if self.mon(e).types.as_slice() == types.as_slice() {
+            return Ok(());
+        }
+        self.set_type(dex, e, &types)?;
+        // Both players see the new typing immediately, exactly like a forme
+        // change.
+        for viewer in 0..2 {
+            let index = e.roster as usize + if e.side as usize == viewer { 0 } else { 6 };
+            self.knowledge[viewer].pokemon[index].types = types.to_vec();
+        }
+        self.reveal_ability(e)?;
         Ok(())
     }
 
