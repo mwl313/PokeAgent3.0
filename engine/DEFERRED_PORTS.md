@@ -173,3 +173,32 @@ Pokémon** (the reference's `findPokemonEventHandlers(active, 'onResidual',
 'duration')`) and run the weather upkeep through an explicit
 `eachEvent('Weather')`-shaped sort, then re-run both scenes and check the
 per-action draw counts against `replay_draws.mjs`.
+
+## Queue-tie / Focus Punch prototype - preserved, not landed (2026-10-08)
+
+A parallel workstream applied a Focus Punch / Beak Blast + queue-tie prototype
+to the root checkout during the 2026-10-08 session. It was removed from the
+working tree to keep `mac/long-horizon-engine-tail` green and is preserved in
+two places:
+
+* the root stash entry in `git stash list` ->
+  `foreign tie-sort/focuspunch WIP preserved 2026-10-08 15:46` (save it to a
+  patch before dropping; it also carries the scratch tooling below);
+* the worktree `/Users/leah/Projects/pa3-tie` (branch `wip/tie-sort`, based on
+  `7c29a2c`), whose index holds the same prototype plus an
+  `engine/src/queue.rs` tie-sort change.
+
+Prototype contents (all evidence, no verification): `moves:focuspunch.*` and
+`moves:beakblast.*` callback keys, the `priorityChargeMove` generalisation from
+Chilly Reception, Focus Punch's `beforeMoveCallback` gate and flinch refusal,
+Beak Blast's contact burn and `AfterMove` marker drop, the snapshot validator
+entries for both one-turn markers, `debug_fixture --file`, and
+`MOVE_FIXTURE_ONLY` / `MOVE_FIXTURE_OUT` hooks in
+`generate_more_move_coverage.mjs`.
+
+It is **not** mergeable as-is: with the prototype applied the regenerated
+`move_beakblast_30327` scene fails at decision 3 (native P2 mon 0 hp 165 vs
+reference 167), which is the same residual/Update event-count divergence
+described in the Focus Punch / Beak Blast section above. Land the residual
+handler collection fix first, then re-apply this prototype and re-run both
+scenes.
