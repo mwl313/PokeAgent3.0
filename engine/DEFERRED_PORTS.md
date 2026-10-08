@@ -95,3 +95,26 @@ The pass immediately paid off: the Own Tempo scene caught a live divergence
 (the native rolled the confusion timer and applied the volatile instead of
 refusing it), fixed in `hit_effect` together with the Safeguard gate it shares.
 Remaining witness gap after the pass: none.
+
+## Type-addition moves (2026-10-08) - deferred pending an observation decision
+
+Forest's Curse, Trick-or-Treat and Reflect Type stay explicit operational errors
+for now. Their battle behaviour is fully specified in the pinned source
+(`onHit` calls `addType` / copies `getTypes(true)` plus `addedType`), but the
+reference keeps the added type in a *separate* `addedType` field: `pokemon.types`
+(what the corpus records and what the player-facing `PublicPokemon.types` holds)
+only ever contains the base types, and the added type is announced with a
+separate `-start ... typeadd` message.
+
+Porting them faithfully therefore needs one of:
+1. an `added_type: Id` field on `PokemonState` with `effective_types` (and the
+   ~40 `mon.types.contains` call sites) switched to the effective list while the
+   knowledge/tensor keeps the base list, plus a new public feature or event for
+   `typeadd` so the observation layer does not silently drop public state; or
+2. a fixture-format extension (`types_added`) with the generator and the turn
+   test comparing both lists.
+
+Both are observation-contract decisions, not battle-mechanic ones, so they wait
+for the same review as Illusion's per-viewer identity. Ingrain and Octolock were
+ported in the same family because they only need the existing marker/trap and
+grounded models.
