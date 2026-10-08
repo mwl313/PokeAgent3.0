@@ -3964,6 +3964,14 @@ impl BattleState {
                 failed_otherwise = true;
                 continue;
             }
+            // `moves:octolock.onTryImmunity`: `getImmunity('trapped', ...)`
+            // refuses the marker against a Ghost-type target.
+            if behavior == MoveBehavior::Octolock
+                && self.mon(target).types.contains(&dex.effects.ghost)
+            {
+                failed_otherwise = true;
+                continue;
+            }
             // `moves:endeavor.onTryImmunity`: the move is refused outright
             // unless the user's HP is strictly below the target's.
             if m.fixed_damage == Some(crate::assets::FixedDamage::Endeavor)
@@ -4952,6 +4960,73 @@ impl BattleState {
                     )?;
                 }
                 did_anything |= boosted;
+            } else if behavior == MoveBehavior::Ingrain {
+                // `moves:ingrain.condition.onStart`: a self marker that grounds
+                // the holder, pins it in place and heals it at residual order
+                // 7. A repeated use fails (the condition declares no
+                // `onRestart`).
+                if !self.mon(target).volatiles.contains_key(&dex.effects.ingrain) {
+                    let order = self.allocate_effect_order()?;
+                    self.mon_mut(target).volatiles.insert(
+                        dex.effects.ingrain,
+                        EffectState {
+                            id: dex.effects.ingrain,
+                            effect_order: order,
+                            effect_order_assigned: true,
+                            source: Some((
+                                if target.side == 0 {
+                                    SideId::P1
+                                } else {
+                                    SideId::P2
+                                },
+                                target.roster,
+                            )),
+                            ..Default::default()
+                        },
+                    );
+                    self.emit(
+                        EventKind::EffectStart,
+                        target,
+                        None,
+                        EffectRef::Condition(dex.effects.ingrain),
+                        0,
+                        false,
+                    )?;
+                    did_anything = true;
+                }
+            } else if behavior == MoveBehavior::Octolock {
+                // `moves:octolock.condition.onStart`: the target is pinned by
+                // the user and loses a stage of Defense and Special Defense at
+                // residual order 14 for as long as the user stays active.
+                if !self.mon(target).volatiles.contains_key(&dex.effects.octolock) {
+                    let order = self.allocate_effect_order()?;
+                    self.mon_mut(target).volatiles.insert(
+                        dex.effects.octolock,
+                        EffectState {
+                            id: dex.effects.octolock,
+                            effect_order: order,
+                            effect_order_assigned: true,
+                            source: Some((
+                                if actor.side == 0 {
+                                    SideId::P1
+                                } else {
+                                    SideId::P2
+                                },
+                                actor.roster,
+                            )),
+                            ..Default::default()
+                        },
+                    );
+                    self.emit(
+                        EventKind::EffectStart,
+                        target,
+                        Some(actor),
+                        EffectRef::Condition(dex.effects.octolock),
+                        0,
+                        false,
+                    )?;
+                    did_anything = true;
+                }
             } else if behavior == MoveBehavior::TidyUp {
                 // `moves:tidyup.onHit`: every Substitute on the field is
                 // removed, the entry hazards are cleared on the user's side and
@@ -5607,6 +5682,11 @@ impl BattleState {
                     || self.mon(actor).hp == 0
                     || !self.can_switch(target.side as usize)
                 {
+                    continue;
+                }
+                // `moves:ingrain.condition.onDragOut` returns null, which
+                // refuses the drag without the Status-move `-fail` branch.
+                if self.mon(target).volatiles.contains_key(&dex.effects.ingrain) {
                     continue;
                 }
                 self.mon_mut(target).force_switch_flag = true;
@@ -8912,6 +8992,9 @@ impl BattleState {
                     || id == dex.effects.leech_seed
                     || id == dex.effects.curse
                     || id == dex.effects.aqua_ring
+                    // Duration-less volatiles with their own residual handler.
+                    || id == dex.effects.ingrain
+                    || id == dex.effects.octolock
                 {
                     // A charge marker's volatile id is the *move* id, which
                     // shares the numeric space with condition ids: it declares
@@ -8951,6 +9034,12 @@ impl BattleState {
                     } else if id == dex.effects.aqua_ring {
                         // `moves:aquaring.condition.onResidualOrder: 6`.
                         (6, 0)
+                    } else if id == dex.effects.ingrain {
+                        // `moves:ingrain.condition.onResidualOrder: 7`.
+                        (7, 0)
+                    } else if id == dex.effects.octolock {
+                        // `moves:octolock.condition.onResidualOrder: 14`.
+                        (14, 0)
                     } else {
                         (0, 0)
                     };
@@ -9176,6 +9265,67 @@ impl BattleState {
                         return Ok(());
                     }
                 }
+                continue;
+            }
+            if status == 0 && id == dex.effects.ingrain {
+                // `moves:ingrain.condition.onResidual` (order 7): recover a
+                // sixteenth of the maximum HP; Heal Block refuses the recovery
+                // while the marker stays in place.
+                if self.mon(e).hp > 0 && !self.heal_blocked(dex, e) {
+                    let max = u32::from(self.mon(e).stats[0]);
+                    let amount = (max / 16).max(1).min(max - u32::from(self.mon(e).hp));
+                    if amount > 0 {
+                        self.mon_mut(e).hp += amount as u16;
+                        self.emit(
+                            EventKind::Heal,
+                            e,
+                            None,
+                            EffectRef::Condition(id),
+                            amount as i32,
+                            true,
+                        )?;
+                    }
+                }
+                continue;
+            }
+            if status == 0 && id == dex.effects.octolock {
+                // `moves:octolock.condition.onResidual` (order 14): the marker
+                // ends silently once its source left the field, fainted or has
+                // not acted yet; otherwise the holder loses a stage of Defense
+                // and Special Defense (the boost is attributed to the source,
+                // so Clear Body and friends can refuse it).
+                let Some(state) = self.mon(e).volatiles.get(&id) else {
+                    continue;
+                };
+                let source = state.source.map(|(side, roster)| Entity {
+                    side: side.index() as u8,
+                    roster,
+                });
+                let keep = source.is_some_and(|source| {
+                    self.mon(source).active_slot.is_some()
+                        && self.mon(source).hp > 0
+                        && self.mon(source).active_turns > 0
+                });
+                if !keep {
+                    self.mon_mut(e).volatiles.remove(&id);
+                    self.emit(
+                        EventKind::EffectEnd,
+                        e,
+                        None,
+                        EffectRef::Condition(id),
+                        0,
+                        false,
+                    )?;
+                    continue;
+                }
+                let source = source.unwrap();
+                self.boost(
+                    dex,
+                    e,
+                    source,
+                    [0, -1, 0, -1, 0, 0, 0],
+                    BoostCause::Move { secondary: false },
+                )?;
                 continue;
             }
             if status == 0 && id == dex.effects.aqua_ring {
@@ -9964,6 +10114,25 @@ impl BattleState {
         // holder in place (`tryTrap` always succeeds for the holder).
         if self.mon(e).volatiles.contains_key(&dex.effects.no_retreat) {
             trapped = Some(false);
+        }
+        // `moves:ingrain.condition.onTrapPokemon`: the marker pins its own
+        // holder (`tryTrap` always succeeds for the holder).
+        if self.mon(e).volatiles.contains_key(&dex.effects.ingrain) {
+            trapped = Some(false);
+        }
+        // `moves:octolock.condition.onTrapPokemon`: the holder stays pinned
+        // while the recorded source is still active.
+        if let Some(state) = self.mon(e).volatiles.get(&dex.effects.octolock) {
+            let source_active = state.source.is_some_and(|(side, roster)| {
+                let source = Entity {
+                    side: side.index() as u8,
+                    roster,
+                };
+                self.mon(source).hp > 0 && self.mon(source).active_slot.is_some()
+            });
+            if source_active {
+                trapped = Some(false);
+            }
         }
         // `moves:trapped.condition.onTrapPokemon`: the marker pins its holder
         // while the trapper recorded as its source is still active.

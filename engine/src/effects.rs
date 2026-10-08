@@ -938,6 +938,12 @@ pub enum MoveBehavior {
     /// `magneticflux`: raises Defense and Special Defense of every Plus/Minus
     /// holder on the user's side.
     MagneticFlux,
+    /// `ingrain`: a self marker that grounds and pins the holder and heals it
+    /// at residual order 7.
+    Ingrain,
+    /// `octolock`: a trapping marker that lowers the holder's defenses every
+    /// residual while its source is still active.
+    Octolock,
     /// `clearsmog`: damages and then resets the target's boost stages.
     ClearSmog,
     /// `powerswap` / `guardswap`: the two attack (or defense) boost stages swap
@@ -1156,6 +1162,8 @@ impl MoveBehavior {
             "powersplit" => Self::PowerSplit,
             "guardsplit" => Self::GuardSplit,
             "magneticflux" => Self::MagneticFlux,
+            "ingrain" => Self::Ingrain,
+            "octolock" => Self::Octolock,
             "helpinghand" => Self::HelpingHand,
             "followme" => Self::FollowMe,
             "ragepowder" => Self::RagePowder,
@@ -1321,6 +1329,11 @@ pub struct NativeEffects {
     pub trapper: Id,
     /// `moves:aquaring.condition`: the residual heal volatile.
     pub aqua_ring: Id,
+    /// `moves:ingrain.condition`: the grounding/fixing self marker.
+    pub ingrain: Id,
+    /// `moves:octolock.condition`: the trapping marker whose residual lowers
+    /// the holder's Defense and Special Defense.
+    pub octolock: Id,
     /// `moves:powertrick.condition` / `moves:powershift.condition`: the
     /// Attack/Defense swap volatiles (identical conditions under two ids).
     pub power_trick: Id,

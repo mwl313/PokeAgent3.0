@@ -26,6 +26,11 @@ impl BattleState {
         if self.field.contains_key(&dex.effects.gravity) {
             return true;
         }
+        // `moves:ingrain.condition`: the marker grounds its holder regardless
+        // of type or ability.
+        if self.mon(e).volatiles.contains_key(&dex.effects.ingrain) {
+            return true;
+        }
         !self.effective_types(dex, e).contains(&dex.effects.flying)
             && dex.effects.abilities[self.mon(e).ability as usize] != Ability::Levitate
     }

@@ -766,6 +766,16 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:powersplit.onHit",
     "moves:guardsplit.onHit",
     "moves:magneticflux.onHitSide",
+    // Trap/type family: Ingrain's grounding/fixing marker and Octolock's
+    // trapping residual.
+    "moves:ingrain.condition.onStart",
+    "moves:ingrain.condition.onResidual",
+    "moves:ingrain.condition.onTrapPokemon",
+    "moves:ingrain.condition.onDragOut",
+    "moves:octolock.onTryImmunity",
+    "moves:octolock.condition.onStart",
+    "moves:octolock.condition.onResidual",
+    "moves:octolock.condition.onTrapPokemon",
     // Ability-transfer moves: the gates and the setAbility payloads.
     "moves:entrainment.onTryHit",
     "moves:entrainment.onHit",
@@ -1216,6 +1226,9 @@ const HANDLED_VOLATILES: &[&str] = &[
     // Power Trick / Power Shift's Attack-Defense swap markers.
     "powertrick",
     "powershift",
+    // Ingrain's grounding marker and Octolock's trapping marker.
+    "ingrain",
+    "octolock",
 ];
 
 /// Status/volatile payloads of every declared effect must already have native
@@ -2215,6 +2228,8 @@ impl Dex {
             trapped: lookup("conditions", "trapped")?,
             trapper: lookup("conditions", "trapper")?,
             aqua_ring: lookup("conditions", "aquaring")?,
+            ingrain: lookup("conditions", "ingrain")?,
+            octolock: lookup("conditions", "octolock")?,
             power_trick: lookup("conditions", "powertrick")?,
             power_shift: lookup("conditions", "powershift")?,
             wish: lookup("conditions", "wish")?,

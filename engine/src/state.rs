@@ -1133,6 +1133,21 @@ impl BattleState {
                         effect.duration.is_none()
                             && effect.values.is_empty()
                             && effect.source.is_some()
+                    } else if id == dex.effects.ingrain {
+                        // `moves:ingrain.condition`: the grounding/fixing self
+                        // marker carries the holder as its source and no
+                        // payload or duration.
+                        effect.duration.is_none()
+                            && effect.values.is_empty()
+                            && effect.source.is_some()
+                    } else if id == dex.effects.octolock {
+                        // `moves:octolock.condition`: the trapping marker keeps
+                        // the octolocking Pokémon as its source and no payload
+                        // or duration (its residual boost is computed from the
+                        // source's liveness).
+                        effect.duration.is_none()
+                            && effect.values.is_empty()
+                            && effect.source.is_some()
                     } else if id == dex.effects.power_trick || id == dex.effects.power_shift {
                         // `moves:powertrick|powershift.condition`: a bare
                         // marker (no duration, no payload) whose presence means
