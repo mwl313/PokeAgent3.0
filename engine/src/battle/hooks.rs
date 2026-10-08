@@ -843,6 +843,24 @@ impl BattleState {
     /// `singleEvent('Eat', ...)` directly there, so `TryEatItem` (and with it
     /// Unnerve) never applies, and the eater never holds the item.
     pub(super) fn eat_berry(&mut self, dex: &Dex, eater: Entity, berry: Id) -> Result<()> {
+        self.berry_effect(dex, eater, berry)?;
+        self.cheek_pouch_heal(dex, eater)
+    }
+
+    /// `abilities:cheekpouch.onEatItem`: the reference fires `EatItem` after
+    /// the berry's own `Eat` callback, healing a third of the max HP. Every
+    /// berry consumption path funnels through here.
+    fn cheek_pouch_heal(&mut self, dex: &Dex, eater: Entity) -> Result<()> {
+        if self.mon(eater).hp > 0
+            && dex.effects.abilities[self.mon(eater).ability as usize] == Ability::Cheekpouch
+        {
+            let amount = u32::from(self.mon(eater).stats[0]) / 3;
+            self.heal_for_move(dex, eater, amount)?;
+        }
+        Ok(())
+    }
+
+    fn berry_effect(&mut self, dex: &Dex, eater: Entity, berry: Id) -> Result<()> {
         let fx = &dex.effects;
         let status = self.mon(eater).status;
         let is = |name: &str| dex.id("items", name).map(|id| id == berry).unwrap_or(false);
@@ -907,18 +925,21 @@ impl BattleState {
         match dex.effects.items[p.item as usize] {
             Item::SitrusBerry if u32::from(p.hp) * 2 <= u32::from(p.stats[0]) => {
                 if !self.unnerve_blocks_eat(dex, e) {
-                    self.item_heal(dex, e, p.stats[0] / 4, true)?
+                    self.item_heal(dex, e, p.stats[0] / 4, true)?;
+                    self.cheek_pouch_heal(dex, e)?;
                 }
             }
             Item::OranBerry if u32::from(p.hp) * 2 <= u32::from(p.stats[0]) => {
                 if !self.unnerve_blocks_eat(dex, e) {
-                    self.item_heal(dex, e, 10, true)?
+                    self.item_heal(dex, e, 10, true)?;
+                    self.cheek_pouch_heal(dex, e)?;
                 }
             }
             Item::LumBerry if p.status != 0 => {
                 if !self.unnerve_blocks_eat(dex, e) {
                     self.consume_item(dex, e)?;
                     self.cure_status(e)?;
+                    self.cheek_pouch_heal(dex, e)?;
                 }
             }
             _ => (),
@@ -1372,6 +1393,22 @@ impl BattleState {
                     index,
                 ));
             }
+            // `abilities:aftermath.onDamagingHitOrder: 1`: the same order band
+            // as Rough Skin, but it only fires once the holder is knocked out by
+            // a contact move.
+            if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Aftermath {
+                handlers.push((
+                    target,
+                    25,
+                    Priority {
+                        order: 1,
+                        sub_order: 7,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
             // Spicy Spray burns the attacker on every damaging hit.
             if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Spicyspray {
                 handlers.push((
@@ -1801,6 +1838,21 @@ impl BattleState {
                         target,
                         [0, 0, 0, 0, 1, 0, 0],
                         BoostCause::Ability(Ability::Rattled),
+                    )?;
+                }
+            } else if kind == 25 {
+                // `abilities:aftermath.onDamagingHit`: once the holder has been
+                // knocked out by a contact move, the attacker loses a quarter
+                // of its own maximum HP.
+                if self.mon(target).hp == 0 && m.contact && self.mon(actor).hp > 0 {
+                    self.reveal_ability(target)?;
+                    let amount = (u32::from(self.mon(actor).stats[0]) / 4).max(1);
+                    self.indirect_damage(
+                        dex,
+                        actor,
+                        target,
+                        amount,
+                        EffectRef::Ability(self.mon(target).ability),
                     )?;
                 }
             } else if m.move_type == dex.effects.fire {
@@ -3130,12 +3182,10 @@ impl Ability {
         !matches!(
             self,
             Ability::Unimplemented
-            | Ability::Aftermath
             | Ability::Angerpoint
             | Ability::Anticipation
             | Ability::Battlebond
             | Ability::Berserk
-            | Ability::Cheekpouch
             | Ability::Cudchew
             | Ability::Cutecharm
             | Ability::Earlybird
