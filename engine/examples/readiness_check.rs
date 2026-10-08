@@ -113,6 +113,7 @@ fn main() {
         "jetpunch",
         "kingsshield",
         "nightdaze",
+        "powershift",
         "pound",
         "softboiled",
         "spore",
