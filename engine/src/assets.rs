@@ -2026,6 +2026,33 @@ impl Dex {
             native_items[row["numeric_id"].as_u64().unwrap() as usize] =
                 crate::items::classify(id, &row["data"]);
         }
+        // `items:<id>.fling`: the Fling move's dynamic base power and payload.
+        // An unported `fling.effect` callback stays an explicit use-time error,
+        // never a load-time one, because holding such an item is legal.
+        let mut fling_items = vec![None; names["items"].len()];
+        for row in tables["items"].as_array().unwrap() {
+            let Some(data) = row["data"].get("fling") else {
+                continue;
+            };
+            let base_power = data["basePower"].as_u64().unwrap_or(0) as u16;
+            let kind = if data.get("effect").is_some() {
+                match row["id"].as_str().unwrap() {
+                    "mentalherb" => crate::effects::FlingKind::MentalHerb,
+                    "whiteherb" => crate::effects::FlingKind::WhiteHerb,
+                    _ => crate::effects::FlingKind::Unsupported,
+                }
+            } else if let Some(status) = data["status"].as_str() {
+                crate::effects::FlingKind::Status(lookup("conditions", status)?)
+            } else if let Some(volatile) = data["volatileStatus"].as_str() {
+                crate::effects::FlingKind::Volatile(lookup("conditions", volatile)?)
+            } else if row["data"]["isBerry"] == true {
+                crate::effects::FlingKind::Berry
+            } else {
+                crate::effects::FlingKind::Plain
+            };
+            fling_items[row["numeric_id"].as_u64().unwrap() as usize] =
+                Some(crate::effects::FlingSpec { base_power, kind });
+        }
         // Reference `abilities:trace.onUpdate` skips every ability flagged
         // `notrace` (Trace itself among them). The flag is data, not a native
         // port gate: an excluded ability may still be unimplemented.
@@ -2073,6 +2100,8 @@ impl Dex {
         }
         let effects = crate::effects::NativeEffects {
             abilities: native_abilities,
+            fling: lookup("conditions", "fling")?,
+            fling_items,
             items: native_items,
             no_trace_abilities,
             breakable_abilities,

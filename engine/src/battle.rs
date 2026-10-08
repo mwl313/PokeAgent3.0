@@ -618,6 +618,9 @@ impl BattleState {
                 self.reveal_ability(e)?;
                 self.cure_status(e)?;
             }
+            // Volatile `Update` handlers (sub-order 2) run before the ability
+            // (7) and item (8) groups; the Fling marker is the ported case.
+            self.fling_update(dex, e)?;
             // Ability Update handlers run before item Update handlers.
             self.disguise_update(dex, e)?;
             self.item_update(dex, e)?;
@@ -1232,6 +1235,68 @@ impl BattleState {
     /// alone. The change is non-permanent: `base_species` keeps the submitted
     /// forme so switch-out reverts it, and only the stored stats are
     /// recomputed (both formes share the same base HP, so HP is preserved).
+    /// `moves:fling.onPrepareHit`: the thrown item sets the action's base power
+    /// and arms the marker volatile that consumes it after the hit loop.
+    /// `item.fling` data decides the payload; the pinned plain-item path is
+    /// ported, while a Berry/status/herb payload stays an explicit operational
+    /// error until its on-hit port lands.
+    fn fling_prepare(
+        &mut self,
+        dex: &Dex,
+        actor: Entity,
+        action: &mut ActiveMove<'_>,
+    ) -> Result<bool> {
+        let item = self.mon(actor).item;
+        if item == 0 {
+            return Ok(false);
+        }
+        let Some(spec) = dex.effects.fling_items[item as usize] else {
+            return Ok(false);
+        };
+        // `singleEvent('TakeItem', item, state, source, source, move, item)`:
+        // an item that refuses removal (a Mega Stone on its own base form) is
+        // not thrown.
+        if dex.item_take_refused(item, self.mon(actor).base_species) {
+            return Ok(false);
+        }
+        if spec.kind != crate::effects::FlingKind::Plain {
+            return Err(EngineError::Unsupported(format!(
+                "fling payload {}",
+                dex.names["items"][item as usize]
+            )));
+        }
+        action.power = spec.base_power;
+        if !self.mon(actor).volatiles.contains_key(&dex.effects.fling) {
+            let order = self.allocate_effect_order()?;
+            self.mon_mut(actor).volatiles.insert(
+                dex.effects.fling,
+                crate::state::EffectState {
+                    id: dex.effects.fling,
+                    effect_order: order,
+                    effect_order_assigned: true,
+                    ..Default::default()
+                },
+            );
+        }
+        Ok(true)
+    }
+
+    /// `moves:fling.condition.onUpdate`: the marker consumes the thrown item on
+    /// the next `Update`, which also runs the item's `AfterUseItem` set (so
+    /// Symbiosis and Unburden answer a throw exactly like any other use).
+    fn fling_update(&mut self, dex: &Dex, e: Entity) -> Result<()> {
+        if self
+            .mon_mut(e)
+            .volatiles
+            .remove(&dex.effects.fling)
+            .is_none()
+        {
+            return Ok(());
+        }
+        self.consume_item(dex, e)?;
+        Ok(())
+    }
+
     /// Reference `Pokemon#setSpecies` for a temporary forme change: the new
     /// species' types and base stats replace the old ones, `speed` follows the
     /// new base speed, and the public change reaches both viewers' knowledge.
@@ -2024,6 +2089,18 @@ impl BattleState {
         {
             self.random_target_location(actor, action.target);
             self.random_target_location(actor, action.target);
+        }
+        // `moves:fling.onPrepareHit`: the thrown item sets the action's base
+        // power (and its payload) before any target resolves. A refusal leaves
+        // the action without targets, so it reports the reference's failure.
+        let fling_ready = behavior != MoveBehavior::Fling
+            || self.fling_prepare(dex, actor, &mut action)?;
+        if !fling_ready {
+            // The refused throw never enters the hit loop and runs no `Update`
+            // of its own: the reference logs `-fail` and moves straight to the
+            // next queued action's queue re-sort.
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+            return Ok(());
         }
         let m = &action;
         let selected = if m.target == Target::SelfOnly {

@@ -873,6 +873,9 @@ pub enum MoveBehavior {
     /// `trick` / `switcheroo`: item swap with the reference TakeItem refusal
     /// and failed-swap restore semantics.
     Trick,
+    /// `fling`: the thrown item sets the action's base power and payload; the
+    /// item is consumed by the marker volatile's `onUpdate`.
+    Fling,
     /// `helpinghand`: single-turn ally volatile with a stacking BasePower
     /// multiplier.
     HelpingHand,
@@ -1057,6 +1060,7 @@ impl MoveBehavior {
                 Self::Terrain
             }
             "trick" | "switcheroo" => Self::Trick,
+            "fling" => Self::Fling,
             "helpinghand" => Self::HelpingHand,
             "followme" => Self::FollowMe,
             "ragepowder" => Self::RagePowder,
@@ -1177,9 +1181,43 @@ pub struct SecondaryEffect {
     pub own: Option<HitEffect>,
 }
 
+/// `items:<id>.fling`: how the Fling move resolves the thrown item.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum FlingKind {
+    /// Damage only (`leftovers`, `ironball`, every Mega Stone).
+    Plain,
+    /// `isBerry`: the target eats the thrown Berry through its `onEat`.
+    Berry,
+    /// `fling.status`: a guaranteed status on the target.
+    Status(Id),
+    /// `fling.volatileStatus`: a guaranteed volatile on the target.
+    Volatile(Id),
+    /// The Mental Herb callback: clears the target's attract/taunt/encore/
+    /// torment/disable/healblock volatiles.
+    MentalHerb,
+    /// The White Herb callback: clears the target's negative boosts.
+    WhiteHerb,
+    /// A `fling.effect` with no native port: Fling stays an explicit error for
+    /// that item instead of guessing.
+    Unsupported,
+}
+
+/// One row of the pinned `fling` table.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct FlingSpec {
+    pub base_power: u16,
+    pub kind: FlingKind,
+}
+
 #[derive(Debug, Clone)]
 pub struct NativeEffects {
     pub abilities: Vec<Ability>,
+    /// `items:<id>.fling`: the Fling move's per-item table. `None` means the
+    /// item declares no `fling` data, so Fling fails outright with it.
+    pub fling_items: Vec<Option<FlingSpec>>,
+    /// `conditions:fling`: the marker volatile whose `onUpdate` consumes the
+    /// thrown item after the action.
+    pub fling: Id,
     /// Pinned `flags.breakable` abilities: only these can be ignored by the
     /// active move (Mold Breaker / Teravolt / Turboblaze / a move-level
     /// `ignoreAbility`). Indexed by ability id.
