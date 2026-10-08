@@ -778,6 +778,17 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:octolock.condition.onStart",
     "moves:octolock.condition.onResidual",
     "moves:octolock.condition.onTrapPokemon",
+    // Priority-charge pair: Focus Punch's focus marker and Beak Blast's
+    // contact burn.
+    "moves:focuspunch.priorityChargeCallback",
+    "moves:focuspunch.beforeMoveCallback",
+    "moves:focuspunch.condition.onStart",
+    "moves:focuspunch.condition.onHit",
+    "moves:focuspunch.condition.onTryAddVolatile",
+    "moves:beakblast.priorityChargeCallback",
+    "moves:beakblast.condition.onStart",
+    "moves:beakblast.condition.onHit",
+    "moves:beakblast.onAfterMove",
     // Ability-transfer moves: the gates and the setAbility payloads.
     "moves:entrainment.onTryHit",
     "moves:entrainment.onHit",
@@ -1231,6 +1242,9 @@ const HANDLED_VOLATILES: &[&str] = &[
     // Ingrain's grounding marker and Octolock's trapping marker.
     "ingrain",
     "octolock",
+    // Focus Punch's focus marker and Beak Blast's contact-burn marker.
+    "focuspunch",
+    "beakblast",
 ];
 
 /// Status/volatile payloads of every declared effect must already have native
@@ -2230,6 +2244,8 @@ impl Dex {
             trapped: lookup("conditions", "trapped")?,
             trapper: lookup("conditions", "trapper")?,
             aqua_ring: lookup("conditions", "aquaring")?,
+            focus_punch: lookup("conditions", "focuspunch")?,
+            beak_blast: lookup("conditions", "beakblast")?,
             ingrain: lookup("conditions", "ingrain")?,
             octolock: lookup("conditions", "octolock")?,
             power_trick: lookup("conditions", "powertrick")?,

@@ -315,9 +315,8 @@ impl BattleState {
                         // but *no* chosen targetLoc, so its own
                         // `getRandomTarget` runs before the outer action
                         // resolves its location and can consume a sample.
-                        // Chilly Reception targets itself (no draw), while a
-                        // foe-targeted priority-charge move (Beak Blast, Focus
-                        // Punch) resolves a random foe here.
+                        // Chilly Reception targets itself (no draw), Beak Blast
+                        // and Focus Punch resolve a random foe here.
                         let priority_charge_location = if m.priority_charge {
                             self.random_target_location(actor, target)
                         } else {
@@ -396,6 +395,14 @@ impl BattleState {
                 }
             }
             speed_sort(&mut self.queue, &mut self.rng, |q| q.priority);
+            if std::env::var("PA3_QUEUE_DBG").is_ok() {
+                for q in &self.queue {
+                    eprintln!(
+                        "QUEUE kind={:?} actor={:?} move={} order={} prio={} speed={}",
+                        q.kind, q.actor, q.move_id, q.priority.order, q.priority.priority, q.priority.speed
+                    );
+                }
+            }
             self.queue.extend(old_queue);
             if !self.mid_turn {
                 self.insert_action(Self::field_action(QueuedKind::BeforeTurn, 4));
@@ -1670,30 +1677,52 @@ impl BattleState {
                     item_ports::white_herb_event(self, dex)?;
                 }
                 QueuedKind::PriorityCharge => {
-                    // `moves:chillyreception.priorityChargeCallback`: the
-                    // queued action adds the move's one-turn volatile before
-                    // any move of the turn. The reference start is silent for
-                    // this condition, and its residual duration tick removes
-                    // it at the end of the turn.
+                    // `priorityChargeCallback`: the queued action adds the
+                    // move's own one-turn volatile before any move of the turn.
+                    // Chilly Reception's start is silent; Focus Punch announces
+                    // itself and Beak Blast arms its contact burn. The residual
+                    // duration tick removes the marker at the end of the turn.
                     let actor = action.actor.unwrap();
-                    if self
-                        .mon(actor)
-                        .volatiles
-                        .contains_key(&dex.effects.chilly_reception)
-                    {
+                    let volatile = match dex.effects.moves[action.move_id as usize] {
+                        MoveBehavior::ChillyReception => dex.effects.chilly_reception,
+                        MoveBehavior::FocusPunch if std::env::var("PA3_NO_PC_MARK").is_ok() => continue,
+                        MoveBehavior::FocusPunch => dex.effects.focus_punch,
+                        MoveBehavior::BeakBlast if std::env::var("PA3_NO_PC_MARK").is_ok() => continue,
+                        MoveBehavior::BeakBlast => dex.effects.beak_blast,
+                        _ => continue,
+                    };
+                    if self.mon(actor).volatiles.contains_key(&volatile) {
                         continue;
                     }
                     let order = self.allocate_effect_order()?;
                     self.mon_mut(actor).volatiles.insert(
-                        dex.effects.chilly_reception,
+                        volatile,
                         EffectState {
-                            id: dex.effects.chilly_reception,
+                            id: volatile,
                             duration: Some(1),
                             effect_order: order,
                             effect_order_assigned: true,
+                            source: Some((
+                                if actor.side == 0 {
+                                    SideId::P1
+                                } else {
+                                    SideId::P2
+                                },
+                                actor.roster,
+                            )),
                             ..Default::default()
                         },
                     );
+                    if volatile != dex.effects.chilly_reception {
+                        self.emit(
+                            EventKind::EffectStart,
+                            actor,
+                            None,
+                            EffectRef::Condition(volatile),
+                            0,
+                            false,
+                        )?;
+                    }
                 }
                 QueuedKind::Residual => self.residual(dex)?,
                 QueuedKind::BeforeTurnMove => {
@@ -2068,6 +2097,20 @@ impl BattleState {
         self.charge_after_move(dex, actor, move_id)?;
         if ran {
             self.locked_move_after_move(dex, actor)?;
+            // `moves:beakblast.onAfterMove`: the marker ends after the move
+            // resolves. The reference implements no `onMoveAborted`, so an
+            // aborted attempt leaves it for the residual tick.
+            if dex.effects.moves[move_id as usize] == MoveBehavior::BeakBlast {
+                self.mon_mut(actor).volatiles.remove(&dex.effects.beak_blast);
+                self.emit(
+                    EventKind::EffectEnd,
+                    actor,
+                    None,
+                    EffectRef::Condition(dex.effects.beak_blast),
+                    0,
+                    false,
+                )?;
+            }
         }
         result
     }
@@ -2211,6 +2254,20 @@ impl BattleState {
             if m.id != dex.effects.destiny_bond_move {
                 self.drop_destiny_bond(dex, actor)?;
             }
+        }
+        // Reference `runMove`'s `beforeMoveCallback` (Focus Punch): a lost
+        // focus fails the attempt before PP is deducted, and the action reports
+        // a `cant` message.
+        if !called
+            && behavior == MoveBehavior::FocusPunch
+            && self
+                .mon(actor)
+                .volatiles
+                .get(&dex.effects.focus_punch)
+                .is_some_and(|state| state.values.first() == Some(&1))
+        {
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+            return Ok(());
         }
         // Reference `useMoveInner` skips PP deduction while the Pokémon is
         // locked (`getLockedMove()`), i.e. on the release turn of a charge, on
@@ -4552,6 +4609,31 @@ impl BattleState {
                 sub_absorbed.push(target);
                 did_anything = true;
                 continue;
+            }
+            // `conditions:focuspunch.onHit` / `conditions:beakblast.onHit`: the
+            // reference runs the target's volatile `Hit` handlers for every
+            // non-self recipient after the move's own onHit. Focus Punch loses
+            // focus to any damaging move; Beak Blast burns attackers that make
+            // contact.
+            if target != actor {
+                if m.category != Category::Status
+                    && let Some(state) = self.mon_mut(target).volatiles.get_mut(&dex.effects.focus_punch)
+                    && state.values.is_empty()
+                {
+                    state.values = vec![1];
+                }
+                if m.contact
+                    && self
+                        .mon(target)
+                        .volatiles
+                        .contains_key(&dex.effects.beak_blast)
+                {
+                    let effect = crate::effects::HitEffect {
+                        status: dex.effects.burn,
+                        ..Default::default()
+                    };
+                    self.hit_effect(dex, actor, target, &effect, false)?;
+                }
             }
             // `moves:fling.onPrepareHit`'s per-item `move.onHit`: the thrown
             // Berry is eaten by the target through its `onEat`, and the two
@@ -8059,6 +8141,16 @@ impl BattleState {
         if effect.volatile != 0 {
             let volatile = effect.volatile;
             if volatile == dex.effects.flinch {
+                // `moves:focuspunch.condition.onTryAddVolatile`: a focusing
+                // Pokémon refuses flinches outright (collected before the
+                // target's ability handlers, so Inner Focus stays unrevealed).
+                if self
+                    .mon(target)
+                    .volatiles
+                    .contains_key(&dex.effects.focus_punch)
+                {
+                    return Ok(false);
+                }
                 if dex.effects.abilities[self.mon(target).ability as usize] == Ability::InnerFocus {
                     return Ok(false);
                 }

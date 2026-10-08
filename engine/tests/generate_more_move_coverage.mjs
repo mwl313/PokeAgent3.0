@@ -238,7 +238,10 @@ function holderFor(moveId) {
 
 const fixtures = [];
 const skipped = [];
-const moves = scope.allowed_moves.filter(executable).sort();
+const only = new Set(
+  (process.env.MOVE_FIXTURE_ONLY || '').split(',').map(id => id.trim()).filter(Boolean),
+);
+const moves = scope.allowed_moves.filter(executable).filter(id => !only.size || only.has(id)).sort();
 for (const moveId of moves) {
   if (limit && fixtures.length >= limit) break;
   const holder = holderFor(moveId);
@@ -287,7 +290,7 @@ for (const moveId of moves) {
   fixtures.push(fixture);
   session.destroy();
 }
-fs.writeFileSync(new URL('../data/more_move_coverage.json', import.meta.url),
+fs.writeFileSync(process.env.MOVE_FIXTURE_OUT || new URL('../data/more_move_coverage.json', import.meta.url),
   JSON.stringify({oracle_commit: ORACLE_COMMIT, format: FORMAT, fixtures}) + '\n');
 console.log(JSON.stringify({moves: moves.length, fixtures: fixtures.length, skipped: skipped.length}));
 if (skipped.length) console.log(JSON.stringify(skipped));

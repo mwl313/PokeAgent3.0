@@ -944,6 +944,12 @@ pub enum MoveBehavior {
     /// `octolock`: a trapping marker that lowers the holder's defenses every
     /// residual while its source is still active.
     Octolock,
+    /// `focuspunch`: loses focus when a damaging move hits the user before it
+    /// acts, and refuses flinch volatiles while the user is focusing.
+    FocusPunch,
+    /// `beakblast`: burns any attacker that makes contact before the move
+    /// resolves.
+    BeakBlast,
     /// `clearsmog`: damages and then resets the target's boost stages.
     ClearSmog,
     /// `powerswap` / `guardswap`: the two attack (or defense) boost stages swap
@@ -1164,6 +1170,8 @@ impl MoveBehavior {
             "magneticflux" => Self::MagneticFlux,
             "ingrain" => Self::Ingrain,
             "octolock" => Self::Octolock,
+            "focuspunch" => Self::FocusPunch,
+            "beakblast" => Self::BeakBlast,
             "helpinghand" => Self::HelpingHand,
             "followme" => Self::FollowMe,
             "ragepowder" => Self::RagePowder,
@@ -1335,6 +1343,10 @@ pub struct NativeEffects {
     pub trapper: Id,
     /// `moves:aquaring.condition`: the residual heal volatile.
     pub aqua_ring: Id,
+    /// `moves:focuspunch.condition` / `moves:beakblast.condition`: the
+    /// priority-charge markers those two moves add before the turn resolves.
+    pub focus_punch: Id,
+    pub beak_blast: Id,
     /// `moves:ingrain.condition`: the grounding/fixing self marker.
     pub ingrain: Id,
     /// `moves:octolock.condition`: the trapping marker whose residual lowers

@@ -22,12 +22,36 @@ struct Step {
 }
 
 fn main() {
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    let file_arg = args
+        .iter()
+        .position(|a| a == "--file")
+        .map(|index| args.get(index + 1).cloned().expect("--file needs a path"));
+    let mut positional = Vec::new();
+    let mut skip_next = false;
+    for arg in &args {
+        if skip_next {
+            skip_next = false;
+            continue;
+        }
+        if arg == "--file" {
+            skip_next = true;
+            continue;
+        }
+        if !arg.starts_with("--") {
+            positional.push(arg.clone());
+        }
+    }
     let dir = format!("{}/data", env!("CARGO_MANIFEST_DIR"));
     let dex = Dex::load(Path::new(&dir)).unwrap();
     // The ability-interaction corpus is a separate artifact but shares the
     // fixture shape, so the probe accepts it through an explicit flag.
     let ledger = std::env::args().any(|a| a == "--ledger");
-    let corpus: Corpus = if std::env::args().any(|a| a == "--artifact") {
+    let corpus: Corpus = if let Some(path) = &file_arg {
+        // Scratch corpora (a filtered generator run, a held-out scene) stay on
+        // disk; the checked-in artifacts remain compiled in.
+        serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap()
+    } else if std::env::args().any(|a| a == "--artifact") {
         // Generator artifacts hold the current fixture shape even while a
         // ledger entry still carries the snapshot it was diagnosed from.
         let artifacts: Vec<serde_json::Value> = [
@@ -112,20 +136,15 @@ fn main() {
     } else {
         serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap()
     };
-    let needle = std::env::args()
-        .skip(1)
-        .find(|a| !a.starts_with("--"))
-        .expect("fixture name");
-    let limits: usize = std::env::args()
-        .skip(1)
-        .filter(|a| !a.starts_with("--"))
-        .nth(1)
+    let needle = positional.first().expect("fixture name");
+    let limits: usize = positional
+        .get(1)
         .map(|v| v.parse().unwrap())
         .unwrap_or(usize::MAX);
     let fixture = corpus
         .fixtures
         .iter()
-        .find(|f| f.name == needle)
+        .find(|f| &f.name == needle)
         .expect("unknown fixture");
     let mut state =
         BattleState::reset(&dex, [&fixture.teams[0], &fixture.teams[1]], fixture.seed, [0, 1])

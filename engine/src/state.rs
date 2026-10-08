@@ -1145,6 +1145,18 @@ impl BattleState {
                         effect.duration.is_none()
                             && effect.values.is_empty()
                             && effect.source.is_some()
+                    } else if id == dex.effects.focus_punch || id == dex.effects.beak_blast {
+                        // `moves:focuspunch|beakblast.condition`: a one-turn
+                        // priority-charge marker. Focus Punch's marker carries
+                        // a single `lostFocus` flag once a damaging move hit
+                        // its holder; Beak Blast's carries no payload. Both are
+                        // added by their own callback with the holder as the
+                        // source.
+                        effect.duration == Some(1)
+                            && (effect.values.is_empty()
+                                || (id == dex.effects.focus_punch
+                                    && effect.values.as_slice() == [1]))
+                            && effect.source.is_some()
                     } else if id == dex.effects.ingrain {
                         // `moves:ingrain.condition`: the grounding/fixing self
                         // marker carries the holder as its source and no

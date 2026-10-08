@@ -119,19 +119,32 @@ for the same review as Illusion's per-viewer identity. Ingrain and Octolock were
 ported in the same family because they only need the existing marker/trap and
 grounded models.
 
-## Focus Punch / Beak Blast (2026-10-08) - held out behind an undiagnosed divergence
+## Focus Punch / Beak Blast (2026-10-08) - LANDED
 
-Both moves are ported in a local WIP patch
-(`tmp/focuspunch_beakblast_src.patch`, engine/src only, 13 KB): the
-`priorityChargeMove` action is generalised from Chilly Reception to the move's
-own condition, Focus Punch gets its `beforeMoveCallback` gate and the flinch
-refusal, Beak Blast burns contact attackers through the target's `Hit` handlers
-and drops its marker in its own `AfterMove`, and the snapshot validator accepts
-both one-turn markers.
+Both moves are ported: the `priorityChargeMove` action is generalised from
+Chilly Reception to the move's own condition, Focus Punch gets its
+`beforeMoveCallback` gate and the flinch refusal, Beak Blast burns contact
+attackers through the target's `Hit` handlers and drops its marker in its own
+`AfterMove`, and the snapshot validator accepts both one-turn markers.
 
-They are **not merged** because their two auto-generated coverage scenes
-(`move_focuspunch_7606`, `move_beakblast_30327`) expose a draw-count divergence
-in turn 1 that the corpus test catches at the first boundary:
+The scenes (`move_focuspunch_7606`, `move_beakblast_30327`) are merged and green
+at every decision boundary. Getting there required the draw-count divergence
+below to be fixed first; the fix is its own commit
+(`Sample the priority-charge sub-action's random target like the reference`):
+
+* the reference's `BattleQueue.resolveAction` builds the order-107
+  `priorityChargeMove` sub-action with the move but **no** `targetLoc`, so the
+  nested call runs `getRandomTarget` and can consume a sample before the outer
+  action resolves its own chosen location and before `BattleQueue.sort`, while
+  the native queued the sub-action without resolving a target at all. Chilly
+  Reception targets itself (no draw), which is why its scenes passed while a
+  foe-targeted priority-charge move shifted every later draw by one;
+* attribution came from a scratch probe that prints the enclosing simulator
+  frame of every reference draw (`/tmp/pa3probe/draw_stacks.mjs`); draw 0 of the
+  turn-1 commit window is `getRandomTarget -> Side.randomFoe -> PRNG.sample`,
+  then `BattleQueue.sort`, then the runAction `eachEvent` shuffles.
+
+The earlier investigation notes are kept below for the record:
 
 * the reference spends 59 draws in turn 1 of `move_focuspunch_7606`, the native
   55 (and 50 vs 49 for `move_beakblast_30327`), with identical draws up to the
@@ -168,37 +181,25 @@ adds `PA3_UPDATE_DBG` and `PA3_SORT_DBG` probes plus the same family patch):
   `tmp/pa3probe/replay_draws.mjs` are the tools that produced this; both are
   scratch probes, not repo files.
 
-Next step: make `BattleState::residual` collect one handler **per active
-Pokémon** (the reference's `findPokemonEventHandlers(active, 'onResidual',
-'duration')`) and run the weather upkeep through an explicit
-`eachEvent('Weather')`-shaped sort, then re-run both scenes and check the
-per-action draw counts against `replay_draws.mjs`.
+**Resolved**: the divergence was not in the residual phase after all. It was a
+missing `getRandomTarget` sample for the `priorityChargeMove` sub-action in
+`BattleState::commit`; see the Focus Punch / Beak Blast section above. Both
+scenes are merged and green, and the reference's residual draw counts line up
+with the native's without touching `BattleState::residual`.
 
-## Queue-tie / Focus Punch prototype - preserved, not landed (2026-10-08)
+## Preserved scratch work (2026-10-08) - do not merge
 
-A parallel workstream applied a Focus Punch / Beak Blast + queue-tie prototype
-to the root checkout during the 2026-10-08 session. It was removed from the
-working tree to keep `mac/long-horizon-engine-tail` green and is preserved in
-two places:
+A parallel workstream left an alternative queue-tie prototype behind when the
+sampling fix landed. It is not needed for anything currently green; keep it
+only as research:
 
 * the root stash entry in `git stash list` ->
-  `foreign tie-sort/focuspunch WIP preserved 2026-10-08 15:46` (save it to a
-  patch before dropping; it also carries the scratch tooling below);
+  `foreign tie-sort/focuspunch WIP preserved 2026-10-08 15:46` (the
+  Focus Punch / Beak Blast half of it is now landed; the rest is history);
 * the worktree `/Users/leah/Projects/pa3-tie` (branch `wip/tie-sort`, based on
-  `7c29a2c`), whose index holds the same prototype plus an
-  `engine/src/queue.rs` tie-sort change.
+  `7c29a2c`), whose index holds an `engine/src/queue.rs` tie-sort experiment
+  that the landed fix does not use.
 
-Prototype contents (all evidence, no verification): `moves:focuspunch.*` and
-`moves:beakblast.*` callback keys, the `priorityChargeMove` generalisation from
-Chilly Reception, Focus Punch's `beforeMoveCallback` gate and flinch refusal,
-Beak Blast's contact burn and `AfterMove` marker drop, the snapshot validator
-entries for both one-turn markers, `debug_fixture --file`, and
-`MOVE_FIXTURE_ONLY` / `MOVE_FIXTURE_OUT` hooks in
-`generate_more_move_coverage.mjs`.
-
-It is **not** mergeable as-is: with the prototype applied the regenerated
-`move_beakblast_30327` scene fails at decision 3 (native P2 mon 0 hp 165 vs
-reference 167), which is the same residual/Update event-count divergence
-described in the Focus Punch / Beak Blast section above. Land the residual
-handler collection fix first, then re-apply this prototype and re-run both
-scenes.
+`debug_fixture --file <corpus.json>` and the `MOVE_FIXTURE_ONLY` /
+`MOVE_FIXTURE_OUT` env hooks in `generate_more_move_coverage.mjs` came out of
+that workstream and *are* part of the landed tooling.
