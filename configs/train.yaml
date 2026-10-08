@@ -62,7 +62,7 @@ teams:
   max_accepted_teams: null
   aspirational_train_team_count: 1000
   min_teams_for_scope_override: null
-  train_count: 1136
+  train_count: 1137
   dev_count: 0
   final_count: 0
   group_key: unordered_reference_base_species_and_resource_form_roster
@@ -91,18 +91,29 @@ teams:
     prefer_public_bulk_exports: true
     enabled: false
   source_scope_override: User selected the two existing 20261006 M-B/M-C EVs Yes batches
-    as the lifetime project source pool; M-A and further collection excluded.
-  dataset_id: mb-mc-v2-all-train
-  dataset_manifest: data/teams/mb-mc-v2-all-train/manifest.json
-  dataset_manifest_sha256: 15ac30b2dbafac08bd4e50f4534d14f9ee485e0133ae32b281fa12cdc5174fbe
-  dataset_schema: pa3-team-v1
-  train_path: data/teams/mb-mc-v2-all-train/train.jsonl
-  dev_path: data/teams/mb-mc-v2-all-train/dev.jsonl
-  final_path: data/teams/mb-mc-v2-all-train/final.jsonl
-  inventory_path: data/teams/mb-mc-v2-all-train/inventory.json
-  quarantine_path: data/teams/mb-mc-v2-all-train/quarantine.jsonl
-  source_rows: 1207
-  eligible_count: 1136
+    as the lifetime project source pool; M-A and further collection excluded. The
+    single exception is the user's own Pokepaste https://pokepast.es/c2cfbd453aa9172e,
+    explicitly approved for the training pool on 2026-10-08; no other team may be
+    crawled, discovered or added.
+  dataset_id: mb-mc-v3-userteam-all-train
+  dataset_manifest: data/teams/mb-mc-v3-userteam-all-train/manifest.json
+  dataset_manifest_sha256: a74a6b4bdb4943247f5bc2ab4c479b152072417074c1da58ec1e0a2367495f8e
+  dataset_schema: pa3-team-record-v2
+  dataset_schema_document: data/schemas/team-record-v2.schema.json
+  train_path: data/teams/mb-mc-v3-userteam-all-train/train.jsonl
+  dev_path: data/teams/mb-mc-v3-userteam-all-train/dev.jsonl
+  final_path: data/teams/mb-mc-v3-userteam-all-train/final.jsonl
+  inventory_path: data/teams/mb-mc-v3-userteam-all-train/inventory.json
+  quarantine_path: data/teams/mb-mc-v3-userteam-all-train/quarantine.jsonl
+  source_rows: 1208
+  eligible_count: 1137
+  predecessor_dataset: mb-mc-v2-all-train
+  predecessor_manifest_sha256: 15ac30b2dbafac08bd4e50f4534d14f9ee485e0133ae32b281fa12cdc5174fbe
+  predecessor_records_verified_unchanged: true
+  manual_source_approval_date: '2026-10-08'
+  manual_source_scope: exactly_one_user_approved_pokepaste
+  manual_source_team_ids:
+    - UT20261008
   frozen: true
   automatic_collection: false
   quarantined_records_used_for_training: false

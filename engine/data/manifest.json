@@ -20,12 +20,12 @@
       "bytes": 921648
     },
     "training-teams.json": {
-      "sha256": "904ca06aa8cd9257e3fd61080b0490f06c8d7570cacc6208de677e636f91d567",
-      "bytes": 1143683
+      "sha256": "48a050d007bf43e2ba4e0cbea0757bffe1565cfaab9909b7ccb3eb78736c8073",
+      "bytes": 1144690
     },
     "reference-fixtures.json": {
-      "sha256": "54a91b206bef3fd11b302a5cb871adadaabebc0426575c951e9f93d8bab567e3",
-      "bytes": 1358768
+      "sha256": "fc4997589b2037620564b80170f818d8925fb6a28ef79e0801cea62043964d43",
+      "bytes": 1359249
     },
     "turn-fixtures.json": {
       "sha256": "5a5a7431bab23425d3b6475cbd4083e50173852f260866963c97cd20b76017ad",
@@ -35,5 +35,12 @@
       "sha256": "1a09f3b8f2dbf1e8c6df6c4da0e304c10071a384d140a9af5378c288fcf0b67a",
       "bytes": 42115888
     }
+  },
+  "dataset": {
+    "id": "mb-mc-v3-userteam-all-train",
+    "schema": "pa3-team-record-v2",
+    "manifest_sha256": "a74a6b4bdb4943247f5bc2ab4c479b152072417074c1da58ec1e0a2367495f8e",
+    "train_teams": 1137,
+    "source_input_sha256": "35553944731b5acee26685e3146cc1e06151e33d108eec91def3d7604ac16880"
   }
 }

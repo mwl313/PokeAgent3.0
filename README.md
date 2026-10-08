@@ -4,14 +4,14 @@ PokeAgent 3.0 aims to train a strong Pokémon VGC doubles policy through a full-
 
 **Current status: native Rust engine implementation is in progress.** Its scope is every Pokémon and set legal in pinned Champions M-C, including Mega forms and interacting effects, as requested by the user. See [engine scope and progress](engine/ENGINE_SCOPE.md). The [hot-path audit and native subset measurements](engine/HOT_PATH_AUDIT.md) record allocation fixes and their practical limits. Full battle transitions and effect coverage are not finished; the engine is not training-ready.
 
-The combined M-B/M-C pool is normalized, validated, deduplicated and frozen. It contains **1,136 eligible unique teams, all assigned to training with no dev/final holdouts**. The 1,207 original source records are preserved; 56 records are quarantined and 15 accepted duplicates merged. See [the fixed team pool](docs/TEAM_POOL.md). M-A and further collection remain excluded. Model implementation and training have not started.
+The combined M-B/M-C pool is normalized, validated, deduplicated and frozen. It contains **1,137 eligible unique teams, all assigned to training with no dev/final holdouts**: the 1,136-team `mb-mc-v2-all-train` snapshot plus the single user-approved Poképaste of 2026-10-08. The 1,208 source records are preserved; 56 records are quarantined and 15 accepted duplicates merged. See [the fixed team pool](docs/TEAM_POOL.md). No other new source may be crawled or added, and M-A stays excluded. Model implementation and training have not started.
 
 ## Project reference
 
 The original ZIP remains at the project root. Its ten files are preserved byte-for-byte in [the versioned package](docs/spec/fullspec-1.1-minidc-20261006/README.md).
 
 - [Full specification](docs/spec/fullspec-1.1-minidc-20261006/POKEAGENT_3_0_FULL_SPEC.md): complete intended scope and design contracts.
-- [Training configuration](configs/train.yaml): active config with the user-selected frozen M-B/M-C pool, actual counts, split paths and manifest hash.
+- [Training configuration](configs/train.yaml): active config with the user-selected frozen M-B/M-C pool plus the approved manual source, actual counts, split paths and manifest hash.
 - [Accepted team record schema](data/schemas/team-record.schema.json): relative symlink to the supplied JSON Schema, unchanged.
 - [Runtime changes](docs/spec/fullspec-1.1-minidc-20261006/RUNTIME_CHANGES.md): version 1.1 changes and their limits.
 - [Hardware reference](docs/spec/fullspec-1.1-minidc-20261006/reference/73-v100-driver-cuda-constraints.md): supplied equipment report, not a fresh measurement.
@@ -26,7 +26,7 @@ The package's internal paths retain their original meaning relative to the packa
 | Battle format | `gen9championsvgc2026regmc`, closed team sheets, best of one, bring four of six with two active slots |
 | Rules reference | Pokémon Showdown commit `14546894d86f9589ac11130c510bbe73b6968665`; built and used for team validation and initial stats |
 | Teams | Frozen eligible teams from the two collected M-B/M-C batches, legal in M-C; no invented sets, M-A additions or automatic refresh |
-| Split | All 1,136 eligible teams train by user request; roster groups retained for analysis; zero held-out teams |
+| Split | All 1,137 eligible teams train by user request; roster groups retained for analysis; zero held-out teams |
 | Engine | Rust with a PyO3 batch interface; implement the effect dependencies of the entire eligible inventory |
 | Policy | One randomly initialized PA3-8M Entity Transformer: six layers, width 320, five attention heads; target total 8–10 million parameters |
 | Observation | Player-visible structured state, 88 tokens padded to 96, persistent revealed knowledge and explicit unknown masks |
@@ -65,7 +65,7 @@ The intended hardware is two V100 PCIe 32GB GPUs at 175W and 150W, assigned to N
 | `data/schemas/` | Accepted team schema link; collected raw records remain separate from this legality-validated schema |
 | `data/raw/vgcpastes/champions-mc/20261006/` | M-C sheet snapshot, 424 source pastes and extracted teams, provenance and extraction checks |
 | `data/raw/vgcpastes/champions-mb/20261006/` | M-B sheet snapshot, 782 distinct source pastes and 783 extracted team records, provenance and extraction checks |
-| `data/teams/mb-mc-v2-all-train/` | Frozen accepted teams all in train, empty dev/final files, quarantine, provenance, inventory and hashes |
+| `data/teams/mb-mc-v3-userteam-all-train/` | Active frozen pool (1,137 teams) with empty dev/final files, quarantine, provenance, inventory and hashes; `mb-mc-v2-all-train` remains as the immutable predecessor |
 | `scripts/` | Pinned reference setup and reproducible team preparation |
 | `tests/` | Eight data-preparation regression tests |
 | `vendor/pokemon-showdown/` | Ignored, pinned reference checkout and local build |

@@ -49,10 +49,10 @@ fn main() {
     let dex = Arc::new(Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap());
     let teams: Arc<Vec<Team>> =
         Arc::new(serde_json::from_str(include_str!("../data/training-teams.json")).unwrap());
-    assert_eq!(teams.len(), 1136);
+    assert_eq!(teams.len(), 1137);
     let encoder = Encoder::new(&dex).unwrap();
     println!(
-        "native_observation_probe environments={ENVIRONMENTS} teams=1136 phase=preview iterations={ITERATIONS} repetitions={REPETITIONS} bridge=unmeasured model=unmeasured numa=unconfigured cold_load_reset_validation_and_warmup=excluded full_battle_observation_cost=unmeasured"
+        "native_observation_probe environments={ENVIRONMENTS} teams=1137 phase=preview iterations={ITERATIONS} repetitions={REPETITIONS} bridge=unmeasured model=unmeasured numa=unconfigured cold_load_reset_validation_and_warmup=excluded full_battle_observation_cost=unmeasured"
     );
     {
         let (batch, requests) = group(dex.clone(), teams.clone(), 1, ENVIRONMENTS, 0);

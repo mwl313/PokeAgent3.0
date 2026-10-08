@@ -89,7 +89,7 @@ fn opponent_hidden_allocations_nature_and_team_id_do_not_change_view() {
 }
 
 #[test]
-fn all_1136_teams_initialize_in_a_2048_environment_group() {
+fn all_1137_teams_initialize_in_a_2048_environment_group() {
     let teams = teams();
     let mut batch = BattleBatch::new(dex(), teams.clone(), 16).unwrap();
     let specs = (0..2048)
