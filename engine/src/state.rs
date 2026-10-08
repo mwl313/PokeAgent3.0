@@ -209,6 +209,11 @@ pub struct PokemonState {
     /// Reference `lastMove`: the move this Pokémon most recently used while
     /// active (0 = none). Encore, Disable, Torment and Cursed Body read it.
     pub last_move: Id,
+    /// Reference `lastMoveTargetLoc`: the chosen location of that move. The
+    /// rampage lock re-uses it as the locked action's target (`clearVolatile`
+    /// does not reset it).
+    #[serde(default)]
+    pub last_move_target_location: i8,
     /// Reference `timesAttacked`: landed hits this Pokémon has taken since it
     /// last entered the field. Rage Fist's `basePowerCallback` reads it.
     #[serde(default)]
@@ -244,6 +249,17 @@ impl PokemonState {
     pub fn locked_state(&self, dex: &Dex) -> (Option<Id>, bool, i8) {
         if self.volatiles.contains_key(&dex.effects.must_recharge) {
             return (None, true, 0);
+        }
+        // `conditions:lockedmove.onLockMove`: the rampage lock forces its
+        // recorded move at the previous action's location (`lastMoveTargetLoc`;
+        // `getLockedMove` runs before `getSemiLockedMove`, so it outranks the
+        // choice lock that does not prevent switching).
+        if let Some(state) = self.volatiles.get(&dex.effects.locked_move) {
+            let id = state.values.first().copied().unwrap_or(0);
+            if id > 0 && id <= i64::from(u16::MAX) {
+                return (Some(id as Id), false, self.last_move_target_location);
+            }
+            return (None, false, 0);
         }
         match self.volatiles.get(&dex.effects.two_turn_move) {
             Some(state) => {
@@ -330,6 +346,7 @@ impl PokemonState {
             plain_switch_flag: false,
             force_switch_flag: false,
             last_move: 0,
+            last_move_target_location: 0,
             times_attacked: 0,
             move_this_turn_result: MoveResult::Undefined,
             move_last_turn_result: MoveResult::Undefined,
@@ -392,7 +409,7 @@ impl Outcome {
 /// `move.sourceEffect`).
 /// 15: requests carry `revive_targets` / `SlotRequest.reviving`, and sides
 /// persist the `revivalblessing` slot condition.
-pub const SNAPSHOT_SCHEMA: u32 = 15;
+pub const SNAPSHOT_SCHEMA: u32 = 16;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BattleState {
@@ -772,6 +789,7 @@ impl BattleState {
                                     .iter()
                                     .chain(m.moves.iter())
                                     .any(|mv| mv.id == m.last_move)))
+                    || !(-2..=2).contains(&m.last_move_target_location)
                 {
                     return Err(EngineError::InvalidInput("invalid snapshot Pokémon".into()));
                 }
@@ -988,6 +1006,19 @@ impl BattleState {
                             && effect.values[0] < dex.moves.len() as i64
                             && dex.moves[effect.values[0] as usize].charge.is_some()
                             && (-2..=2).contains(&effect.values[1])
+                    } else if id == dex.effects.locked_move {
+                        // `conditions:lockedmove.onStart` records the locked
+                        // move and the rolled true duration (2 or 3, decremented
+                        // by the residual). The declared duration is 2, so a
+                        // retained snapshot sees 1 or 2.
+                        effect
+                            .duration
+                            .is_some_and(|duration| (1..=2).contains(&duration))
+                            && effect.values.len() == 2
+                            && effect.values[0] > 0
+                            && effect.values[0] < dex.moves.len() as i64
+                            && (1..=3).contains(&effect.values[1])
+                            && effect.source.is_some()
                     } else if id == dex.effects.metronome {
                         // `conditions:metronome`: `[numConsecutive, lastMove]`,
                         // duration-less while the item is held. A fresh start

@@ -66,8 +66,8 @@ pub(crate) struct HitPhase {
 /// `BeforeMove`, PP deduction, `moveUsed` bookkeeping and the action counter,
 /// and the Magic Bounce reflection additionally inherits the outer action's
 /// priority and carries `hasBounced`.
-#[derive(Clone, Copy, Default)]
-pub(super) struct MoveUse {
+#[derive(Default)]
+pub(super) struct MoveUse<'a> {
     pub called: bool,
     pub bounced: bool,
     pub priority: Option<i8>,
@@ -82,6 +82,10 @@ pub(super) struct MoveUse {
     /// skips its `getRandomTarget` fallback entirely (one fewer draw for a
     /// spread class, whose target list is rebuilt from the move anyway).
     pub explicit_target: bool,
+    /// Whether the attempt passed the PP gate and therefore fires the
+    /// reference's `AfterMove` events (a `BeforeMove` refusal returns before
+    /// them, so it must not tick the rampage lock).
+    pub ran: Option<&'a mut bool>,
 }
 
 impl BattleState {
@@ -1899,6 +1903,11 @@ impl BattleState {
         loc: i8,
         source_effect: Id,
     ) -> Result<()> {
+        // `runMove` fires the AfterMove events after `useMove` returns; a
+        // BeforeMove refusal (sleep, flinch, full paralysis, confusion
+        // self-hit, frozen) returns before them, so the rampage lock must not
+        // tick on a turn the Pokémon never moved.
+        let mut ran = false;
         let result = self.use_move_inner(
             dex,
             actor,
@@ -1908,12 +1917,16 @@ impl BattleState {
             MoveUse {
                 caller_slot: slot,
                 source_effect,
+                ran: Some(&mut ran),
                 ..Default::default()
             },
         );
         // `conditions:charge.onAfterMove|onMoveAborted`: an Electric attempt
         // consumes the volatile whether it resolved or was aborted.
         self.charge_after_move(dex, actor, move_id)?;
+        if ran {
+            self.locked_move_after_move(dex, actor)?;
+        }
         result
     }
 
@@ -1931,6 +1944,7 @@ impl BattleState {
     ) -> Result<()> {
         let target = dex.moves[move_id as usize].target;
         let loc = self.random_target_location(actor, target);
+        let mut ran = false;
         let result = self.use_move_inner(
             dex,
             actor,
@@ -1940,6 +1954,7 @@ impl BattleState {
             MoveUse {
                 called: true,
                 caller_slot,
+                ran: Some(&mut ran),
                 ..Default::default()
             },
         );
@@ -1955,7 +1970,7 @@ impl BattleState {
         slot: u8,
         move_id: Id,
         loc: i8,
-        call: MoveUse,
+        mut call: MoveUse,
     ) -> Result<()> {
         let called = call.called;
         // Reference `moveUsed(move, targetLoc)` records the player's chosen
@@ -2056,8 +2071,8 @@ impl BattleState {
             }
         }
         // Reference `useMoveInner` skips PP deduction while the Pokémon is
-        // locked (`getLockedMove()`), i.e. on the release turn of a charge and
-        // on the forced Recharge turn.
+        // locked (`getLockedMove()`), i.e. on the release turn of a charge, on
+        // the forced Recharge turn and on every continuation turn of a rampage.
         let locked = self
             .mon(actor)
             .volatiles
@@ -2065,7 +2080,11 @@ impl BattleState {
             || self
                 .mon(actor)
                 .volatiles
-                .contains_key(&dex.effects.must_recharge);
+                .contains_key(&dex.effects.must_recharge)
+            || self
+                .mon(actor)
+                .volatiles
+                .contains_key(&dex.effects.locked_move);
         if slot != NO_SLOT && !locked {
             let mon = self.mon_mut(actor);
             let pp = mon.moves[slot as usize].pp;
@@ -2076,12 +2095,21 @@ impl BattleState {
             mon.moves[slot as usize].used = true;
             mon.base_moves[slot as usize].pp = pp - 1;
         }
+        // Past the PP gate the reference has committed the attempt: `moveUsed`
+        // records the move and its chosen location, and `runMove` fires the
+        // AfterMove events even when the move whiffs or is refused by its own
+        // gates. A nested `useMove` reports it too but its callers ignore it.
+        if let Some(ran) = call.ran.as_deref_mut() {
+            *ran = true;
+        }
         // Reference `Pokemon#moveUsed` records the move before any hit steps,
         // so a missed, failed or status-refused move still becomes `lastMove`
         // for Encore, Disable, Torment and Cursed Body. Only `runMove` calls
         // `moveUsed`; a nested `useMove` leaves `lastMove` alone.
         if !called {
-            self.mon_mut(actor).last_move = move_id;
+            let mon = self.mon_mut(actor);
+            mon.last_move = move_id;
+            mon.last_move_target_location = chosen_location;
         }
         if m.defrost && self.mon(actor).status == dex.effects.freeze {
             self.cure_status(actor)?;
@@ -4945,7 +4973,14 @@ impl BattleState {
             if effect.boosts.iter().any(|b| *b != 0) {
                 self.rng.below(100);
             }
-            self.hit_effect(dex, actor, actor, effect, false)?;
+            if effect.volatile == dex.effects.locked_move {
+                // `conditions:lockedmove`: the rampage lock records the move
+                // and rolls its true duration on a fresh start; a re-add runs
+                // `onRestart`, which refreshes only the declared duration.
+                self.start_locked_move(dex, actor, move_id)?;
+            } else {
+                self.hit_effect(dex, actor, actor, effect, false)?;
+            }
         }
         for &target in &hit_targets {
             // The reference's `secondaries` skips only targets marked `false`;
@@ -8875,6 +8910,15 @@ impl BattleState {
                             roster,
                         })
                     });
+                    let locked_true_duration = if id == dex.effects.locked_move {
+                        self.mon(e)
+                            .volatiles
+                            .get(&id)
+                            .and_then(|state| state.values.get(1))
+                            .copied()
+                    } else {
+                        None
+                    };
                     self.mon_mut(e).volatiles.remove(&id);
                     if id == dex.effects.yawn {
                         // `moves:yawn.condition.onEnd`: the target falls asleep
@@ -8892,6 +8936,20 @@ impl BattleState {
                         // reaching zero faints the holder.
                         self.faint_now(e);
                     }
+                    if id == dex.effects.locked_move {
+                        // `conditions:lockedmove.onEnd` (reached on the expiry
+                        // residual, which skips `onResidual`): the lock ends
+                        // and the user is confused once the rolled duration has
+                        // run out. A sleeping holder is not "calmed" here —
+                        // only a non-expiry residual bypasses the fatigue.
+                        if locked_true_duration.unwrap_or(0) <= 1 {
+                            let fatigue = crate::effects::HitEffect {
+                                volatile: dex.effects.confusion,
+                                ..Default::default()
+                            };
+                            self.hit_effect(dex, e, e, &fatigue, false)?;
+                        }
+                    }
                     if id == dex.effects.protect
                         || id == dex.effects.throat_chop
                         || id == dex.effects.heal_block
@@ -8901,6 +8959,7 @@ impl BattleState {
                         || id == dex.effects.torment
                         || id == dex.effects.yawn
                         || id == dex.effects.roost
+                        || id == dex.effects.locked_move
                     {
                         self.emit(
                             EventKind::EffectEnd,
@@ -8910,6 +8969,21 @@ impl BattleState {
                             0,
                             false,
                         )?;
+                    }
+                } else if id == dex.effects.locked_move {
+                    // `conditions:lockedmove.onResidual`: a sleeping holder
+                    // drops the lock without the end-of-rampage confusion (the
+                    // reference deletes the volatile, so no End event runs);
+                    // otherwise the rolled true duration loses a turn.
+                    if self.mon(e).status == dex.effects.sleep {
+                        self.mon_mut(e).volatiles.remove(&id);
+                    } else if let Some(true_duration) = self
+                        .mon_mut(e)
+                        .volatiles
+                        .get_mut(&id)
+                        .and_then(|state| state.values.get_mut(1))
+                    {
+                        *true_duration = true_duration.saturating_sub(1);
                     }
                 }
             }
@@ -9023,6 +9097,77 @@ impl BattleState {
             0,
             false,
         )?;
+        Ok(())
+    }
+
+    /// `conditions:lockedmove.onStart|onRestart`: a fresh start rolls
+    /// `random(2, 4)` for the true duration and records the locked move; a
+    /// re-add runs `onRestart`, which only refreshes the declared two-turn
+    /// duration while the rolled duration still has turns left.
+    fn start_locked_move(&mut self, dex: &Dex, actor: Entity, move_id: Id) -> Result<()> {
+        if let Some(state) = self
+            .mon_mut(actor)
+            .volatiles
+            .get_mut(&dex.effects.locked_move)
+        {
+            if state.values.get(1).copied().unwrap_or(0) >= 2 {
+                state.duration = Some(2);
+            }
+            return Ok(());
+        }
+        let true_duration = i64::from(self.rng.range(2, 4));
+        let order = self.allocate_effect_order()?;
+        self.mon_mut(actor).volatiles.insert(
+            dex.effects.locked_move,
+            EffectState {
+                id: dex.effects.locked_move,
+                effect_order: order,
+                effect_order_assigned: true,
+                duration: Some(2),
+                source: Some((
+                    if actor.side == 0 {
+                        SideId::P1
+                    } else {
+                        SideId::P2
+                    },
+                    actor.roster,
+                )),
+                values: vec![i64::from(move_id), true_duration],
+            },
+        );
+        Ok(())
+    }
+
+    /// `conditions:lockedmove.onAfterMove`: the rampage lock ends after the
+    /// move on the turn its declared duration has one tick left, and the user
+    /// is confused once the rolled true duration has run out.
+    fn locked_move_after_move(&mut self, dex: &Dex, actor: Entity) -> Result<()> {
+        let Some(state) = self.mon(actor).volatiles.get(&dex.effects.locked_move) else {
+            return Ok(());
+        };
+        if state.duration != Some(1) {
+            return Ok(());
+        }
+        let true_duration = state.values.get(1).copied().unwrap_or(0);
+        self.mon_mut(actor).volatiles.remove(&dex.effects.locked_move);
+        self.emit(
+            EventKind::EffectEnd,
+            actor,
+            None,
+            EffectRef::Condition(dex.effects.locked_move),
+            0,
+            false,
+        )?;
+        if true_duration <= 1 {
+            // `onEnd`: `target.addVolatile('confusion')` with the lock as its
+            // source effect (`[fatigue]`); the timer roll matches any other
+            // confusion start, and Own Tempo still refuses it.
+            let fatigue = crate::effects::HitEffect {
+                volatile: dex.effects.confusion,
+                ..Default::default()
+            };
+            self.hit_effect(dex, actor, actor, &fatigue, false)?;
+        }
         Ok(())
     }
 

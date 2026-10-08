@@ -138,6 +138,7 @@ impl BattleState {
                 && let Some(loc) = self.location_of(holder, actor)
             {
                 self.reveal_ability(holder)?;
+                let mut ran = false;
                 self.use_move_inner(
                     dex,
                     holder,
@@ -151,6 +152,7 @@ impl BattleState {
                         explicit_target: true,
                         caller_slot: crate::actions::NO_SLOT,
                         source_effect: 0,
+                        ran: Some(&mut ran),
                     },
                 )?;
                 return Ok(true);
@@ -301,6 +303,7 @@ impl BattleState {
             return Ok(());
         };
         self.reveal_ability(bouncer)?;
+        let mut ran = false;
         self.use_move_inner(
             dex,
             bouncer,
@@ -314,6 +317,7 @@ impl BattleState {
                 caller_slot: crate::actions::NO_SLOT,
                 explicit_target: true,
                 source_effect: 0,
+                ran: Some(&mut ran),
             },
         )
     }

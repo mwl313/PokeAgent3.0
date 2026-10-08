@@ -1152,6 +1152,8 @@ const HANDLED_VOLATILES: &[&str] = &[
     "healblock",
     // Curse's Ghost drain volatile.
     "curse",
+    // The Outrage / Thrash / Petal Dance / Raging Fury rampage lock.
+    "lockedmove",
 ];
 
 /// Status/volatile payloads of every declared effect must already have native
@@ -2229,6 +2231,7 @@ impl Dex {
             ],
             must_recharge: lookup("conditions", "mustrecharge")?,
             two_turn_move: lookup("conditions", "twoturnmove")?,
+            locked_move: lookup("conditions", "lockedmove")?,
             yawn: lookup("conditions", "yawn")?,
             yawn_move: lookup("moves", "yawn")?,
             first_impression: lookup("moves", "firstimpression")?,

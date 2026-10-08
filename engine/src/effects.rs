@@ -1399,6 +1399,9 @@ pub struct NativeEffects {
     /// `twoturnmove` condition: locks the holder into the charging move and
     /// carries the stored target location for the second turn.
     pub two_turn_move: Id,
+    /// `lockedmove` condition: the Outrage / Thrash / Petal Dance / Raging
+    /// Fury rampage lock. Stores the locked move and its rolled true duration.
+    pub locked_move: Id,
     /// `moves:yawn.condition`: two-turn countdown that ends in sleep.
     pub yawn: Id,
     /// `moves:yawn` (the move, not the volatile condition): `onTryHit` refuses
