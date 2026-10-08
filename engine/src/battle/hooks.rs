@@ -951,7 +951,7 @@ impl BattleState {
         let refused = match ability {
             Ability::Limber => status == dex.effects.paralysis,
             Ability::Immunity => status == dex.effects.poison || status == dex.effects.toxic,
-            Ability::Insomnia => status == dex.effects.sleep,
+            Ability::Insomnia | Ability::Vitalspirit => status == dex.effects.sleep,
             Ability::Waterbubble | Ability::Thermalexchange => status == dex.effects.burn,
             Ability::Purifyingsalt => true,
             _ => false,
@@ -967,7 +967,7 @@ impl BattleState {
         match ability {
             Ability::Limber => status == dex.effects.paralysis,
             Ability::Immunity => status == dex.effects.poison || status == dex.effects.toxic,
-            Ability::Insomnia => status == dex.effects.sleep,
+            Ability::Insomnia | Ability::Vitalspirit => status == dex.effects.sleep,
             Ability::Magmaarmor => status == dex.effects.freeze,
             Ability::Waterbubble | Ability::Thermalexchange => status == dex.effects.burn,
             _ => false,
@@ -2143,10 +2143,18 @@ impl BattleState {
             if (source != target
                 && *change < 0
                 && (ability == Ability::ClearBody
+                    // `abilities:whitesmoke.onTryBoost`: the Clear Body table
+                    // again (its `-fail` message is suppressed only for the
+                    // Octolock source, which the caller already excludes).
+                    || ability == Ability::Whitesmoke
                     || ability == Ability::HyperCutter && stat == 0
                     // `abilities:bigpecks.onTryBoost`: only Defense drops are
                     // refused; a secondary-sourced drop is refused silently.
-                    || ability == Ability::Bigpecks && stat == 1))
+                    || ability == Ability::Bigpecks && stat == 1
+                    // `abilities:keeneye|illuminate.onTryBoost`: accuracy drops
+                    // are refused, silently when they come from secondaries.
+                    || matches!(ability, Ability::Keeneye | Ability::Illuminate)
+                        && stat == 5))
                 || (intimidate
                     && stat == 0
                     && *change != 0
@@ -3044,11 +3052,9 @@ impl Ability {
             | Ability::Hungerswitch
             | Ability::Hustle
             | Ability::Iceface
-            | Ability::Illuminate
             | Ability::Illusion
             | Ability::Imposter
             | Ability::Innardsout
-            | Ability::Keeneye
             | Ability::Klutz
             | Ability::Lightmetal
             | Ability::Longreach
@@ -3070,11 +3076,8 @@ impl Ability {
             | Ability::Steadfast
             | Ability::Stench
             | Ability::Stickyhold
-            | Ability::Suctioncups
             | Ability::Supersweetsyrup
             | Ability::Sweetveil
-            | Ability::Vitalspirit
-            | Ability::Whitesmoke
         )
     }
 }

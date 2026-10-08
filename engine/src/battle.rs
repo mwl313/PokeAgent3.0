@@ -4061,7 +4061,13 @@ impl BattleState {
         }
         // Accuracy checks for the complete spread precede all damage draws.
         let ohko = m.ohko;
-        let ignore_evasion = m.ignore_evasion;
+        // `abilities:keeneye|illuminate.onModifyMove` sets `ignoreEvasion` on
+        // the holder's own moves.
+        let ignore_evasion = m.ignore_evasion
+            || matches!(
+                dex.effects.abilities[self.mon(actor).ability as usize],
+                Ability::Keeneye | Ability::Illuminate
+            );
         let ice_type = dex.effects.ice;
         let toxic_never_misses = m.hit.status == dex.effects.toxic
             && self.mon(actor).types.contains(&dex.effects.poison_type);
@@ -5787,6 +5793,14 @@ impl BattleState {
                 if self.mon(target).volatiles.contains_key(&dex.effects.ingrain) {
                     continue;
                 }
+                // `abilities:suctioncups.onDragOut` (priority 1) refuses the
+                // drag and announces itself.
+                if dex.effects.abilities[self.mon(target).ability as usize]
+                    == Ability::Suctioncups
+                {
+                    self.reveal_ability(target)?;
+                    continue;
+                }
                 self.mon_mut(target).force_switch_flag = true;
             }
         }
@@ -6521,7 +6535,14 @@ impl BattleState {
             dex.effects.abilities[self.mon(actor).ability as usize] == Ability::Unaware;
         let defender_unaware =
             dex.effects.abilities[self.mon(target).ability as usize] == Ability::Unaware;
-        let evasion = if m.ignore_evasion || attacker_unaware {
+        // `abilities:keeneye|illuminate.onModifyMove` sets `ignoreEvasion` on
+        // the holder's own moves.
+        let actor_ignores_evasion = m.ignore_evasion
+            || matches!(
+                dex.effects.abilities[self.mon(actor).ability as usize],
+                Ability::Keeneye | Ability::Illuminate
+            );
+        let evasion = if actor_ignores_evasion || attacker_unaware {
             0
         } else {
             self.mon(target).boosts[6]
