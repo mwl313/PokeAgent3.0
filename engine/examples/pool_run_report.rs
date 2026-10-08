@@ -48,7 +48,13 @@ fn normalize(dex: &Dex, message: &str) -> String {
     message.to_string()
 }
 
-fn run_team(dex: &Dex, team: &Team, index: usize, decision_cap: u32) -> ProbeResult {
+fn run_team(
+    dex: &Dex,
+    team: &Team,
+    index: usize,
+    decision_cap: u32,
+    decisions_out: &mut u32,
+) -> ProbeResult {
     let seed = [
         1 + (index as u16 % 30_000),
         (index as u16).wrapping_mul(7).wrapping_add(11),
@@ -127,6 +133,7 @@ fn run_team(dex: &Dex, team: &Team, index: usize, decision_cap: u32) -> ProbeRes
             return ProbeResult::EngineError("no actionable side at a boundary".into());
         }
         decisions += 1;
+        *decisions_out += 1;
     }
 }
 
@@ -153,28 +160,52 @@ fn main() {
     let mut details: Vec<(usize, String)> = Vec::new();
     let mut turns_total = 0u64;
     let mut decisive = 0usize;
+    // Training-pool throughput probe: the same deterministic policy, timed so
+    // the miniDC can compare engine-only decisions/sec across builds. The
+    // numbers are development measurements, not final throughput claims.
+    let repeat: usize = std::env::var("POOL_REPEAT")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .filter(|v| *v > 0)
+        .unwrap_or(1);
+    let started = std::time::Instant::now();
+    let mut decisions_total = 0u64;
+    let mut complete_total = 0usize;
+    for round in 0..repeat {
     for (index, team) in teams.iter().enumerate() {
-        match run_team(&dex, team, index, decision_cap) {
+        let mut decisions = 0u32;
+        match run_team(&dex, team, index, decision_cap, &mut decisions) {
             ProbeResult::Complete { turns, winner } => {
-                complete += 1;
-                turns_total += u64::from(turns);
-                if winner.is_some() {
-                    decisive += 1;
+                complete_total += 1;
+                if round == 0 {
+                    complete += 1;
+                    turns_total += u64::from(turns);
+                    if winner.is_some() {
+                        decisive += 1;
+                    }
                 }
             }
             ProbeResult::Unsupported(message) => {
-                *blockers.entry(message.clone()).or_default() += 1;
-                details.push((index, message));
+                if round == 0 {
+                    *blockers.entry(message.clone()).or_default() += 1;
+                    details.push((index, message));
+                }
             }
             ProbeResult::Truncated { turns } => {
-                *blockers.entry("decision cap / turn limit".into()).or_default() += 1;
-                details.push((index, format!("truncated after {turns} turns")));
+                if round == 0 {
+                    *blockers.entry("decision cap / turn limit".into()).or_default() += 1;
+                    details.push((index, format!("truncated after {turns} turns")));
+                }
             }
             ProbeResult::EngineError(message) => {
-                *blockers.entry(format!("ENGINE ERROR {message}")).or_default() += 1;
-                details.push((index, format!("engine error: {message}")));
+                if round == 0 {
+                    *blockers.entry(format!("ENGINE ERROR {message}")).or_default() += 1;
+                    details.push((index, format!("engine error: {message}")));
+                }
             }
         }
+        decisions_total += u64::from(decisions);
+    }
     }
     // Static mechanic completeness is a different question from "finished one
     // battle": a team can complete a trajectory in which its unsupported
@@ -225,6 +256,15 @@ fn main() {
             turns_total as f64 / complete as f64,
         );
     }
+    let elapsed = started.elapsed();
+    let seconds = elapsed.as_secs_f64().max(f64::EPSILON);
+    println!(
+        "engine-only throughput: {} games over {repeat} pool round(s), {decisions_total} decisions, {:.1} decisions/sec, {:.1} games/sec, wall {:.3}s",
+        complete_total,
+        decisions_total as f64 / seconds,
+        complete_total as f64 / seconds,
+        seconds,
+    );
     let mut ranked: Vec<(String, usize)> = blockers.into_iter().collect();
     ranked.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
     println!("first blockers (each team counted once, at its earliest unsupported mechanic):");
