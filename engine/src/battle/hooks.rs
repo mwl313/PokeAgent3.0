@@ -366,6 +366,7 @@ impl BattleState {
         target: Entity,
         accuracy: Option<u16>,
         minimize_bypass: bool,
+        physical: bool,
     ) -> Option<u16> {
         let accuracy = accuracy?;
         // `moves:glaiverush.condition.onAccuracy`: while the drawback volatile
@@ -407,6 +408,12 @@ impl BattleState {
         }
         if attacker == Ability::Compoundeyes {
             modifier = damage::chain_modifiers(modifier, 5325);
+        }
+        // `abilities:hustle.onSourceModifyAccuracyPriority: -1`: physical moves
+        // from the holder are 3277/4096 as accurate (`typeof accuracy ===
+        // 'number'`, so the always-hit sentinel is left alone).
+        if attacker == Ability::Hustle && physical {
+            modifier = damage::chain_modifiers(modifier, 3277);
         }
         // `moves:gravity.condition.onModifyAccuracy`: every numbered accuracy
         // is raised by 6840/4096 while the pseudo-weather is up.
@@ -975,8 +982,14 @@ impl BattleState {
     }
 
     /// `abilities:superluck.onModifyCritRatio` adds one stage before the
-    /// gen9 clamp to 4.
-    pub(super) fn crit_ratio(&self, dex: &Dex, actor: Entity, base: u8) -> u8 {
+    /// gen9 clamp to 4; `abilities:merciless.onModifyCritRatio` returns the
+    /// always-crit stage 5 against a poisoned target.
+    pub(super) fn crit_ratio(&self, dex: &Dex, actor: Entity, target: Entity, base: u8) -> u8 {
+        if dex.effects.abilities[self.mon(actor).ability as usize] == Ability::Merciless
+            && [dex.effects.poison, dex.effects.toxic].contains(&self.mon(target).status)
+        {
+            return 4;
+        }
         let mut bonus = u8::from(
             dex.effects.abilities[self.mon(actor).ability as usize] == Ability::Superluck,
         );
@@ -2477,6 +2490,13 @@ impl BattleState {
                 }
             }
             ModifierEvent::Attack | ModifierEvent::SpecialAttack => {
+                // `abilities:stakeout.onModifyAtk|onModifySpA` (priority 5):
+                // doubles the attacking stat while the defender has not taken
+                // a turn yet (`activeTurns == 0`, i.e. it switched in this
+                // turn).
+                if attacking == Ability::Stakeout && self.mon(target).active_turns == 0 {
+                    add(actor, 5, 8192);
+                }
                 if matches!(
                     attacking,
                     Ability::Blaze | Ability::Torrent | Ability::Overgrow | Ability::Swarm
@@ -3035,7 +3055,6 @@ impl Ability {
             | Ability::Battlebond
             | Ability::Berserk
             | Ability::Cheekpouch
-            | Ability::Corrosion
             | Ability::Cudchew
             | Ability::Cutecharm
             | Ability::Earlybird
@@ -3050,7 +3069,6 @@ impl Ability {
             | Ability::Harvest
             | Ability::Heavymetal
             | Ability::Hungerswitch
-            | Ability::Hustle
             | Ability::Iceface
             | Ability::Illusion
             | Ability::Imposter
@@ -3058,7 +3076,6 @@ impl Ability {
             | Ability::Klutz
             | Ability::Lightmetal
             | Ability::Longreach
-            | Ability::Merciless
             | Ability::Opportunist
             | Ability::Pickup
             | Ability::Quickdraw
@@ -3070,8 +3087,6 @@ impl Ability {
             | Ability::Shedskin
             | Ability::Shielddust
             | Ability::Shieldsdown
-            | Ability::Skilllink
-            | Ability::Stakeout
             | Ability::Stall
             | Ability::Steadfast
             | Ability::Stench

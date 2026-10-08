@@ -4105,7 +4105,7 @@ impl BattleState {
                 return self.rng.below(100) < accuracy;
             }
             let Some(accuracy) =
-                self.modify_accuracy(dex, actor, *target, action_accuracy, m.minimize)
+                self.modify_accuracy(dex, actor, *target, action_accuracy, m.minimize, m.category == Category::Physical)
             else {
                 return true;
             };
@@ -4331,6 +4331,7 @@ impl BattleState {
             let crit_ratio = self.crit_ratio(
             dex,
             actor,
+            target,
             m.crit_ratio + item_ports::crit_ratio_bonus(self, dex, actor),
         );
             let rolled_crit = if m.will_crit {
@@ -4388,6 +4389,13 @@ impl BattleState {
                     && self.mon(target).types.contains(&dex.effects.ice))
             {
                 defense = stats::modify(defense, 6144);
+            }
+            // `abilities:hustle.onModifyAtkPriority: 5` (see the resolve path):
+            // a direct `modify(atk, 1.5)` for physical categories only.
+            if physical
+                && dex.effects.abilities[self.mon(actor).ability as usize] == Ability::Hustle
+            {
+                attack = stats::modify(attack, 6144);
             }
             let context = MoveContext {
                 actor,
@@ -6237,7 +6245,7 @@ impl BattleState {
         let hit_count = if parental_bond {
             2
         } else {
-            self.multihit_count(m)
+            self.multihit_count(dex, actor, m)
         };
         let mut total_damage = 0u32;
         // Reference `hitStepMoveHitLoop` reads `hurtThisTurn + move.totalDamage`
@@ -6250,7 +6258,9 @@ impl BattleState {
         let mut sub_absorbed: SmallVec<[Entity; 4]> = SmallVec::new();
         // `multiaccuracy`: hits after the first roll accuracy again and the
         // first miss ends the remaining hits (Population Bomb, Triple Axel).
-        let multi_accuracy = m.hooks & crate::effects::hook::MULTI_ACCURACY != 0;
+        // `abilities:skilllink.onModifyMove` deletes the flag for its holder.
+        let multi_accuracy = m.hooks & crate::effects::hook::MULTI_ACCURACY != 0
+            && dex.effects.abilities[self.mon(actor).ability as usize] != Ability::Skilllink;
         for hit in 1..=hit_count {
             if hit > 1
                 && (self.mon(actor).hp == 0
@@ -6494,11 +6504,19 @@ impl BattleState {
     }
 
     /// Reference `battle.sample([...])`/`battle.random(a, b)` hit-count draws.
-    fn multihit_count(&mut self, m: &ActiveMove<'_>) -> u32 {
+    fn multihit_count(&mut self, dex: &Dex, actor: Entity, m: &ActiveMove<'_>) -> u32 {
         // `moves:beatup.onModifyMove`: a plain numeric `multihit` set by the
         // callback, so the count is exact and consumes no draw.
         if !m.allies.is_empty() {
             return m.allies.len() as u32;
+        }
+        // `abilities:skilllink.onModifyMove`: an array `multihit` collapses to
+        // its maximum (`multihit[1]`) and consumes no draw.
+        if dex.effects.abilities[self.mon(actor).ability as usize] == Ability::Skilllink
+            && let Some([_, high]) = m.multihit
+            && high != 0
+        {
+            return u32::from(high);
         }
         match m.multihit {
             None | Some([0, 0]) => 1,
@@ -6527,7 +6545,7 @@ impl BattleState {
         action_accuracy: Option<u16>,
     ) -> bool {
         let Some(accuracy) =
-            self.modify_accuracy(dex, actor, target, action_accuracy, m.minimize)
+            self.modify_accuracy(dex, actor, target, action_accuracy, m.minimize, m.category == Category::Physical)
         else {
             return true;
         };
@@ -6759,6 +6777,7 @@ impl BattleState {
         let crit_ratio = self.crit_ratio(
             dex,
             actor,
+            target,
             m.crit_ratio + item_ports::crit_ratio_bonus(self, dex, actor),
         );
         let rolled_crit = if m.will_crit {
@@ -6812,6 +6831,16 @@ impl BattleState {
                 && self.mon(target).types.contains(&dex.effects.ice))
         {
             defense = stats::modify(defense, 6144);
+        }
+        // `abilities:hustle.onModifyAtkPriority: 5` returns `modify(atk, 1.5)`
+        // — deliberately not `chainModify`, so the truncation happens here
+        // before the priority-ordered modifier list. The handler runs on the
+        // move *user* and only for physical categories (Body Press and Foul
+        // Play included, special moves use `ModifySpA`).
+        if physical
+            && dex.effects.abilities[self.mon(actor).ability as usize] == Ability::Hustle
+        {
+            attack = stats::modify(attack, 6144);
         }
         let context = MoveContext {
             actor,
@@ -8012,6 +8041,12 @@ impl BattleState {
             let status = effect.status;
             let p = self.mon(target);
             let fx = &dex.effects;
+            // `Pokemon#setStatus` skips the whole immunity lookup when the
+            // source holds Corrosion and the status is poison/toxic, so a
+            // Steel- or Poison-type target can be poisoned by it.
+            let corrosion = dex.effects.abilities[self.mon(source).ability as usize]
+                == Ability::Corrosion
+                && [fx.poison, fx.toxic].contains(&status);
             let immune = (status == fx.burn && p.types.contains(&fx.fire))
                 || (status == fx.paralysis && p.types.contains(&fx.electric))
                 || (status == fx.freeze
@@ -8021,6 +8056,7 @@ impl BattleState {
                         || dex.effects.abilities[p.ability as usize]
                             == Ability::Magmaarmor))
                 || ([fx.poison, fx.toxic].contains(&status)
+                    && !corrosion
                     && (p.types.contains(&fx.poison_type) || p.types.contains(&fx.steel)));
             let terrain = self.terrain_id(dex);
             let terrain_blocks = self.grounded(dex, target)
