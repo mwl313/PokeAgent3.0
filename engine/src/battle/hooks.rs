@@ -1545,14 +1545,14 @@ impl BattleState {
                 continue;
             }
             if kind == 1 {
-                if m.contact {
+                if m.makes_contact() {
                     self.item_damage(dex, actor, target, self.mon(actor).stats[0] / 6)?;
                 }
             } else if kind == 2 {
                 // DamagingHit is stable target order, never a speed-tie shuffle.
                 // Contact always draws even if status will fail or either HP is
                 // zero while the holder is still awaiting faint processing.
-                if m.contact && self.rng.chance(3, 10) {
+                if m.makes_contact() && self.rng.chance(3, 10) {
                     let effect = crate::effects::HitEffect {
                         status: dex.effects.paralysis,
                         ..Default::default()
@@ -1571,7 +1571,7 @@ impl BattleState {
             } else if kind == 3 {
                 // Flame Body: exact 3/10 burn roll on contact, with the ability
                 // holder as the status source and the reveal before any heal.
-                if m.contact && self.rng.chance(3, 10) {
+                if m.makes_contact() && self.rng.chance(3, 10) {
                     let effect = crate::effects::HitEffect {
                         status: dex.effects.burn,
                         ..Default::default()
@@ -1590,7 +1590,7 @@ impl BattleState {
             } else if kind == 4 {
                 // Poison Touch is the attacker's ability; the damaged target
                 // receives the status with the attacker as its source.
-                if m.contact && self.rng.chance(3, 10) {
+                if m.makes_contact() && self.rng.chance(3, 10) {
                     let effect = crate::effects::HitEffect {
                         status: dex.effects.poison,
                         ..Default::default()
@@ -1609,7 +1609,7 @@ impl BattleState {
             } else if kind == 5 {
                 // Rough Skin: 1/8 of the attacker's maximum HP, attributed to
                 // the holder's ability and applied before faint processing.
-                if m.contact {
+                if m.makes_contact() {
                     self.reveal_ability(target)?;
                     let amount = u32::from(self.mon(actor).stats[0]) / 8;
                     self.indirect_damage(
@@ -1656,7 +1656,7 @@ impl BattleState {
             } else if kind == 9 {
                 // Gooey: contact drops the attacker's Speed by one. The ability
                 // is revealed before the boost is attempted.
-                if m.contact {
+                if m.makes_contact() {
                     self.reveal_ability(target)?;
                     self.boost(
                         dex,
@@ -1670,7 +1670,7 @@ impl BattleState {
                 // Effect Spore: an exact 0..99 draw selects the sleep (<11),
                 // paralysis (<21) or poison (<30) bracket. Powder-immune
                 // attackers neither roll nor receive a status.
-                if m.contact && !self.powder_immune(dex, actor) {
+                if m.makes_contact() && !self.powder_immune(dex, actor) {
                     let roll = self.rng.below(100);
                     let status = if roll < 11 {
                         Some(dex.effects.sleep)
@@ -1778,7 +1778,7 @@ impl BattleState {
                 // `abilities:poisonpoint.onDamagingHit`: an exact 3/10 poison
                 // roll on contact, with the holder as the status source. The
                 // roll is consumed even when the attacker cannot be poisoned.
-                if m.contact && self.rng.chance(3, 10) {
+                if m.makes_contact() && self.rng.chance(3, 10) {
                     let effect = crate::effects::HitEffect {
                         status: dex.effects.poison,
                         ..Default::default()
@@ -1803,7 +1803,7 @@ impl BattleState {
                 // attacker's ability with Mummy unless that ability cannot be
                 // suppressed (or is already Mummy).
                 let attacker_ability = self.mon(actor).ability;
-                if m.contact
+                if m.makes_contact()
                     && !dex.effects.no_suppress_abilities[attacker_ability as usize]
                     && dex.effects.abilities[attacker_ability as usize] != Ability::Mummy
                 {
@@ -1814,7 +1814,7 @@ impl BattleState {
                 // `abilities:wanderingspirit.onDamagingHit`: a contact hit
                 // exchanges both abilities through the shared Skill Swap
                 // primitive (fail gates and End/Start ordering included).
-                if m.contact {
+                if m.makes_contact() {
                     self.skill_swap(dex, actor, target)?;
                 }
             } else if kind == 19 {
@@ -1844,7 +1844,7 @@ impl BattleState {
                 // `abilities:aftermath.onDamagingHit`: once the holder has been
                 // knocked out by a contact move, the attacker loses a quarter
                 // of its own maximum HP.
-                if self.mon(target).hp == 0 && m.contact && self.mon(actor).hp > 0 {
+                if self.mon(target).hp == 0 && m.makes_contact() && self.mon(actor).hp > 0 {
                     self.reveal_ability(target)?;
                     let amount = (u32::from(self.mon(actor).stats[0]) / 4).max(1);
                     self.indirect_damage(
@@ -2517,7 +2517,7 @@ impl BattleState {
                     },
                 ),
                 Ability::Technician => add(actor, 30, if value <= 60 { 6144 } else { 4096 }),
-                Ability::ToughClaws => add(actor, 21, if m.contact { 5325 } else { 4096 }),
+                Ability::ToughClaws => add(actor, 21, if m.makes_contact() { 5325 } else { 4096 }),
                 Ability::IronFist => add(actor, 23, if m.punch { 4915 } else { 4096 }),
                 Ability::MegaLauncher => add(actor, 19, if m.pulse { 6144 } else { 4096 }),
                 Ability::Sharpness => add(actor, 19, if m.slicing { 6144 } else { 4096 }),
@@ -2787,7 +2787,7 @@ impl BattleState {
                     // `abilities:fluffy.onSourceModifyDamage`: Fire doubles,
                     // contact halves, applied in that order on one ratio.
                     Ability::Fluffy => {
-                        let modifier = match (m.move_type == dex.effects.fire, m.contact) {
+                        let modifier = match (m.move_type == dex.effects.fire, m.makes_contact()) {
                             (true, true) => 4096,
                             (true, false) => 8192,
                             (false, true) => 2048,
@@ -2799,7 +2799,7 @@ impl BattleState {
                     Ability::Punkrock => add(target, 0, if m.sound { 2048 } else { 4096 }),
                     // `abilities:auraguard.onSourceModifyDamage`: contact moves
                     // deal half damage to the holder.
-                    Ability::Auraguard => add(target, 0, if m.contact { 2048 } else { 4096 }),
+                    Ability::Auraguard => add(target, 0, if m.makes_contact() { 2048 } else { 4096 }),
                     _ => (),
                 }
                 // `moves:glaiverush.condition.onSourceModifyDamage`: the holder
@@ -3205,7 +3205,6 @@ impl Ability {
             | Ability::Innardsout
             | Ability::Klutz
             | Ability::Lightmetal
-            | Ability::Longreach
             | Ability::Opportunist
             | Ability::Pickup
             | Ability::Quickdraw

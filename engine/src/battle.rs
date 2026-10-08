@@ -4645,7 +4645,7 @@ impl BattleState {
                 {
                     state.values = vec![1];
                 }
-                if m.contact
+                if m.makes_contact()
                     && self
                         .mon(target)
                         .volatiles
@@ -6005,7 +6005,7 @@ impl BattleState {
         // holder with no item and no pending switch steals the attacker's item
         // (`source.switchFlag === true` is strict, so a pivot's move-id flag
         // does not block the steal).
-        if m.contact {
+        if m.makes_contact() {
             for &target in &hit_targets {
                 if target == actor
                     || dex.effects.abilities[self.mon(target).ability as usize]
@@ -7341,7 +7341,7 @@ impl BattleState {
         move_id: Id,
         volatile: Id,
     ) -> Result<()> {
-        if self.mon(actor).hp == 0 || !m.contact {
+        if self.mon(actor).hp == 0 || !m.makes_contact() {
             return Ok(());
         }
         match dex.effects.protect_punish(volatile) {

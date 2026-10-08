@@ -53,11 +53,23 @@ pub(super) struct ActiveMove<'a> {
     /// single entry per move with that move's accumulated damage, so the
     /// per-hit damage sites merge into the entry carrying this id.
     pub move_uid: u32,
+    /// `abilities:longreach.onModifyMove`: the holder's moves delete their
+    /// `contact` flag, so every contact-gated handler reads the overridden
+    /// value through `makes_contact`.
+    pub no_contact: bool,
 }
 impl Deref for ActiveMove<'_> {
     type Target = crate::assets::Move;
     fn deref(&self) -> &Self::Target {
         self.data
+    }
+}
+
+impl ActiveMove<'_> {
+    /// Reference `Battle#checkMoveMakesContact`: the move's effective contact
+    /// flag for this action (Long Reach deletes it).
+    pub fn makes_contact(&self) -> bool {
+        self.data.contact && !self.no_contact
     }
 }
 impl BattleState {
@@ -86,7 +98,13 @@ impl BattleState {
             fling: None,
             boost_override: None,
             move_uid: 0,
+            no_contact: false,
         };
+        // `abilities:longreach.onModifyMove` deletes the contact flag on every
+        // move the holder uses; `ActiveMove::makes_contact` folds it in.
+        if dex.effects.abilities[self.mon(actor).ability as usize] == Ability::Longreach {
+            action.no_contact = true;
+        }
         // `abilities:stalwart.onModifyMove` (priority 1): the holder's moves
         // ignore redirection. Stalwart has no `breakable` flag, so Mold Breaker
         // never suppresses it.
