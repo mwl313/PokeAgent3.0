@@ -745,6 +745,14 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     // condition swap.
     "moves:tidyup.onHit",
     "moves:courtchange.onHitField",
+    // Wish / Healing Wish slot conditions and Heal Bell's team cure.
+    "moves:wish.condition.onStart",
+    "moves:wish.condition.onResidual",
+    "moves:wish.condition.onEnd",
+    "moves:healingwish.onTryHit",
+    "moves:healingwish.condition.onSwitchIn",
+    "moves:healingwish.condition.onSwap",
+    "moves:healbell.onHit",
     // Ability-transfer moves: the gates and the setAbility payloads.
     "moves:entrainment.onTryHit",
     "moves:entrainment.onHit",
@@ -2191,6 +2199,11 @@ impl Dex {
             trapped: lookup("conditions", "trapped")?,
             trapper: lookup("conditions", "trapper")?,
             aqua_ring: lookup("conditions", "aquaring")?,
+            wish: lookup("conditions", "wish")?,
+            healing_wish: lookup("conditions", "healingwish")?,
+            wish_move: lookup("moves", "wish")?,
+            healing_wish_move: lookup("moves", "healingwish")?,
+            heal_bell_move: lookup("moves", "healbell")?,
             counter: lookup("conditions", "counter")?,
             mirrorcoat: lookup("conditions", "mirrorcoat")?,
             counter_move: lookup("moves", "counter")?,

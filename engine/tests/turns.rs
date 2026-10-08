@@ -712,7 +712,7 @@ fn unsupported_effects_are_replayable_operational_failures() {
     // Each name below is a deliberate operational error until its family is
     // ported, which is exactly the contract this test pins.
     let mut probe = None;
-    for name in ["Transform", "Wish", "Round", "Imprison", "Fling"] {
+    for name in ["Transform", "Future Sight", "Magic Room", "Misty Explosion"] {
         let mut teams = f.teams.clone();
         teams[0].members[0].moves[0] = dex.id("moves", name).unwrap();
         let Ok(mut state) = BattleState::reset(&dex, [&teams[0], &teams[1]], f.seed, [0, 1])
@@ -738,7 +738,7 @@ fn unsupported_effects_are_replayable_operational_failures() {
         if !matched {
             continue;
         }
-        let expected = name.to_lowercase();
+        let expected = name.to_lowercase().replace(' ', "");
         for side in [SideId::P1, SideId::P2] {
             let view = state.observe(side);
             if view.request.kind != RequestKind::Finished
@@ -749,7 +749,7 @@ fn unsupported_effects_are_replayable_operational_failures() {
                     .outcome
                     .operational_error
                     .as_deref()
-                    .is_some_and(|error| error.contains(&expected))
+                    .is_some_and(|error| error.to_lowercase().contains(&expected))
             {
                 matched = false;
             }

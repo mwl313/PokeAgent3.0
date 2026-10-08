@@ -918,6 +918,14 @@ pub enum MoveBehavior {
     /// `courtchange`: swaps the listed side conditions between the two sides
     /// and fails when neither side had one.
     CourtChange,
+    /// `wish`: leaves a slot condition that heals the slot's next occupant for
+    /// half of the wisher's maximum HP at the following turn's residual.
+    Wish,
+    /// `healingwish`: faints the user and fully heals the replacement that
+    /// enters its slot.
+    HealingWish,
+    /// `healbell`: cures every party member's status.
+    HealBell,
     /// `clearsmog`: damages and then resets the target's boost stages.
     ClearSmog,
     /// `powerswap` / `guardswap`: the two attack (or defense) boost stages swap
@@ -1128,6 +1136,9 @@ impl MoveBehavior {
             "comeuppance" => Self::Comeuppance,
             "tidyup" => Self::TidyUp,
             "courtchange" => Self::CourtChange,
+            "wish" => Self::Wish,
+            "healingwish" => Self::HealingWish,
+            "healbell" => Self::HealBell,
             "helpinghand" => Self::HelpingHand,
             "followme" => Self::FollowMe,
             "ragepowder" => Self::RagePowder,
@@ -1293,6 +1304,15 @@ pub struct NativeEffects {
     pub trapper: Id,
     /// `moves:aquaring.condition`: the residual heal volatile.
     pub aqua_ring: Id,
+    /// `moves:wish.condition` / `moves:healingwish.condition`: slot conditions
+    /// that resolve on the next residual / on the replacement's switch-in.
+    pub wish: Id,
+    pub healing_wish: Id,
+    /// The three moves themselves (their `damage`/`onHit` payloads read the
+    /// conditions above).
+    pub wish_move: Id,
+    pub healing_wish_move: Id,
+    pub heal_bell_move: Id,
     /// `moves:counter.condition`: the one-turn retaliation volatile that
     /// records the last qualifying Physical hit (`moves:mirrorcoat.condition`
     /// does the same for Special hits).

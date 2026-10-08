@@ -889,6 +889,35 @@ impl BattleState {
         speed_sort(&mut active, &mut self.rng, |p| p.1);
         for (e, _) in active {
             if incoming.contains(&e) {
+                // `moves:healingwish.condition.onSwitchIn`: a slot condition is
+                // a side-condition handler with the entering Pokémon as its
+                // target, so it sorts at sub-order 3, before the entry hazards
+                // (sub-order 4) and the entrant's ability (7). `onSwap` fully
+                // heals and cures the entrant, then consumes the marker.
+                let slot = self.mon(e).active_slot.unwrap_or(0);
+                let healing_wish = self.sides[e.side as usize].slot_conditions
+                    [slot as usize]
+                    .contains_key(&dex.effects.healing_wish)
+                    && !self.mon(e).fainted
+                    && (self.mon(e).hp < self.mon(e).stats[0] || self.mon(e).status != 0);
+                if healing_wish {
+                    self.sides[e.side as usize].slot_conditions[slot as usize]
+                        .remove(&dex.effects.healing_wish);
+                    let max = u32::from(self.mon(e).stats[0]);
+                    let healed = max.saturating_sub(u32::from(self.mon(e).hp));
+                    self.mon_mut(e).hp = max as u16;
+                    if healed > 0 {
+                        self.emit(
+                            EventKind::Heal,
+                            e,
+                            None,
+                            EffectRef::Condition(dex.effects.healing_wish),
+                            healed as i32,
+                            true,
+                        )?;
+                    }
+                    self.cure_status(e)?;
+                }
                 // Reference `findSideEventHandlers(side, 'onSwitchIn')`: entry
                 // hazards are side conditions of the entrant's own side and
                 // sort at sub-order 4, before its ability (7) and item (8).
@@ -3730,6 +3759,9 @@ impl BattleState {
         // the `NOT_FAIL` case (recorded as `null`), while a type immunity or a
         // missed accuracy roll is a real failure (`false`).
         let mut blocked_by_protection = false;
+        // `moves:healingwish.onTryHit` returns the reference's `NOT_FAIL`: the
+        // attempt is recorded as skipped rather than failed.
+        let mut refused_not_fail = false;
         let mut failed_otherwise = false;
         // `TryHitSide` runs before the hit steps. Soundproof's own
         // `onAllyTryHitSide` announces the holder when a sound move reaches a
@@ -4715,6 +4747,99 @@ impl BattleState {
                     )?;
                     did_anything = true;
                 }
+            } else if behavior == MoveBehavior::Wish {
+                // `moves:wish.condition.onStart`: the wisher's slot remembers
+                // half of the user's maximum HP and the turn it started. The
+                // slot condition resolves on the next turn's residual (order
+                // 4) and heals whoever occupies the slot then.
+                let slot = self.mon(target).active_slot.unwrap_or(0);
+                let side = actor.side as usize;
+                // `addSlotCondition` refuses while the marker exists (the
+                // condition declares no `onRestart`), which fails the move.
+                if !self.sides[side].slot_conditions[slot as usize].contains_key(&dex.effects.wish)
+                {
+                    let half = i64::from(self.mon(actor).stats[0]) / 2;
+                    let order = self.allocate_effect_order()?;
+                    self.sides[side].slot_conditions[slot as usize].insert(
+                        dex.effects.wish,
+                        EffectState {
+                            id: dex.effects.wish,
+                            source: Some((
+                                if actor.side == 0 {
+                                    SideId::P1
+                                } else {
+                                    SideId::P2
+                                },
+                                actor.roster,
+                            )),
+                            effect_order: order,
+                            effect_order_assigned: true,
+                            values: vec![half, i64::from(self.turn % 256)],
+                            ..Default::default()
+                        },
+                    );
+                    did_anything = true;
+                }
+            } else if behavior == MoveBehavior::HealingWish {
+                // `moves:healingwish.onTryHit`: without a reserve to switch in,
+                // the move is refused with the reference's `NOT_FAIL` and the
+                // user stays alive (the `ifHit` self-destruct never runs).
+                // Otherwise the wisher's slot is marked for the replacement,
+                // which is fully healed and cured as it enters.
+                if !self.can_switch(actor.side as usize) {
+                    refused_not_fail = true;
+                    continue;
+                }
+                let slot = self.mon(target).active_slot.unwrap_or(0);
+                let side = actor.side as usize;
+                if !self.sides[side].slot_conditions[slot as usize]
+                    .contains_key(&dex.effects.healing_wish)
+                {
+                    let order = self.allocate_effect_order()?;
+                    self.sides[side].slot_conditions[slot as usize].insert(
+                        dex.effects.healing_wish,
+                        EffectState {
+                            id: dex.effects.healing_wish,
+                            source: Some((
+                                if actor.side == 0 {
+                                    SideId::P1
+                                } else {
+                                    SideId::P2
+                                },
+                                actor.roster,
+                            )),
+                            effect_order: order,
+                            effect_order_assigned: true,
+                            ..Default::default()
+                        },
+                    );
+                    did_anything = true;
+                }
+            } else if behavior == MoveBehavior::HealBell {
+                // `moves:healbell.onHit`: every party member of the target's
+                // side is cured, except Soundproof and Good as Gold holders
+                // whose ability is not suppressed (they announce immunity and
+                // keep their status). The move fails when nobody was cured.
+                let side = target.side as usize;
+                let mut cured = false;
+                for roster in 0..self.sides[side].pokemon.len() as u8 {
+                    let ally = Entity {
+                        side: target.side,
+                        roster,
+                    };
+                    if ally != actor && !self.suppressing_ability(dex, actor, ally, m) {
+                        let ability = dex.effects.abilities[self.mon(ally).ability as usize];
+                        if ability == Ability::Soundproof || ability == Ability::Goodasgold {
+                            self.reveal_ability(ally)?;
+                            continue;
+                        }
+                    }
+                    if self.mon(ally).hp > 0 && self.mon(ally).status != 0 {
+                        self.cure_status(ally)?;
+                        cured = true;
+                    }
+                }
+                did_anything |= cured;
             } else if behavior == MoveBehavior::TidyUp {
                 // `moves:tidyup.onHit`: every Substitute on the field is
                 // removed, the entry hazards are cleared on the user's side and
@@ -5224,7 +5349,7 @@ impl BattleState {
         let landed = !hit_targets.is_empty() && (m.category != Category::Status || did_anything);
         self.mon_mut(actor).move_this_turn_result = if landed {
             MoveResult::Success
-        } else if blocked_by_protection && !failed_otherwise {
+        } else if (blocked_by_protection || refused_not_fail) && !failed_otherwise {
             MoveResult::Skipped
         } else {
             MoveResult::Failed
@@ -5247,11 +5372,17 @@ impl BattleState {
             self.mon_mut(actor).switch_flag = Some(move_id);
         }
         // `selfdestruct: 'ifHit'` faints the user inside the reference's
-        // per-target effect phase, after the target's boosts/status resolve and
-        // whenever the move connected with at least one target (even a status
-        // move such as Memento).
+        // per-target effect phase, after the target's boosts/status resolve:
+        // `damage[i] !== false`, i.e. the effect actually applied. A status
+        // move whose payload was refused (Memento at the caps, Healing Wish
+        // without a reserve) therefore leaves the user alive.
         let connected = hit_any || !hit_targets.is_empty();
-        if connected && m.self_destruct == crate::assets::SelfDestructMode::IfHit {
+        let self_hit = if m.category == Category::Status {
+            did_anything
+        } else {
+            connected
+        };
+        if self_hit && m.self_destruct == crate::assets::SelfDestructMode::IfHit {
             self.faint_now(actor);
         }
         let self_destruct = m.self_destruct != crate::assets::SelfDestructMode::None;
@@ -8714,6 +8845,37 @@ impl BattleState {
             }
         }
         for side in 0..2 {
+            // Slot conditions resolve as side handlers whose target is the
+            // slot's occupant (what `findSideEventHandlers(side, 'onResidual',
+            // getKey, active)` passes), so they sort with that Pokémon's speed
+            // at sub-order 3. Wish declares `onResidualOrder: 4`.
+            for slot in 0..2usize {
+                for &id in self.sides[side].slot_conditions[slot].keys() {
+                    // Wish is the only ported slot condition with an
+                    // `onResidual`; Healing Wish resolves on switch-in only.
+                    if id != dex.effects.wish {
+                        continue;
+                    }
+                    let Some(roster) = self.sides[side].active[slot] else {
+                        continue;
+                    };
+                    let occupant = Entity {
+                        side: side as u8,
+                        roster,
+                    };
+                    handlers.push((
+                        occupant,
+                        id,
+                        16 + slot as u8,
+                        Priority {
+                            order: 4,
+                            sub_order: 3,
+                            speed: self.mon(occupant).cached_speed,
+                            ..Default::default()
+                        },
+                    ));
+                }
+            }
             for (&id, state) in &self.sides[side].conditions {
                 // Showdown resolves `onSideResidualOrder`; the Reflect / Light
                 // Screen / Tailwind family uses 26 with their own sub-orders,
@@ -8825,6 +8987,51 @@ impl BattleState {
             );
         }
         for (e, id, status, _) in handlers {
+            if (status == 16 || status == 17) && id == dex.effects.wish {
+                // `moves:wish.condition.onResidual` (order 4): the marker
+                // resolves on the first residual after the turn it started, so
+                // the wisher's own residual leaves it in place. Removing it
+                // runs `onEnd`, which heals the current occupant of that slot
+                // for the stored half-maximum amount.
+                let slot = usize::from(status - 16);
+                let side = e.side as usize;
+                let Some(state) = self.sides[side].slot_conditions[slot].get(&id) else {
+                    continue;
+                };
+                let started = state.values.get(1).copied().unwrap_or(0);
+                if i64::from(self.turn % 256) <= started {
+                    continue;
+                }
+                let Some(state) = self.sides[side].slot_conditions[slot].remove(&id) else {
+                    continue;
+                };
+                let amount = state.values.first().copied().unwrap_or(0).max(0) as u32;
+                let Some(roster) = self.sides[side].active[slot] else {
+                    continue;
+                };
+                let target = Entity {
+                    side: e.side,
+                    roster,
+                };
+                if self.mon(target).fainted || self.mon(target).hp == 0 {
+                    continue;
+                }
+                let max = u32::from(self.mon(target).stats[0]);
+                let healed = amount.min(max.saturating_sub(u32::from(self.mon(target).hp)));
+                if healed == 0 {
+                    continue;
+                }
+                self.mon_mut(target).hp += healed as u16;
+                self.emit(
+                    EventKind::Heal,
+                    target,
+                    None,
+                    EffectRef::Condition(dex.effects.wish),
+                    healed as i32,
+                    true,
+                )?;
+                continue;
+            }
             if status == 0 && id == dex.effects.curse {
                 // `moves:curse.condition.onResidual`: the cursed holder loses a
                 // quarter of its maximum HP to the curser. `this.damage` runs

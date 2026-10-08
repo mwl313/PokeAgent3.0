@@ -1258,10 +1258,27 @@ impl BattleState {
                 return Err(EngineError::InvalidInput("snapshot side conditions".into()));
             }
             // Only the ported slot conditions may appear: Revival Blessing's
-            // revive protocol marker.
+            // revive protocol marker (a bare marker), Wish (the stored
+            // half-heal and its starting turn) and Healing Wish's switch-in
+            // heal marker.
             for conditions in &side.slot_conditions {
-                for &id in conditions.keys() {
-                    if id != dex.effects.revival_blessing {
+                for (&id, effect) in conditions {
+                    let valid = if id == dex.effects.revival_blessing {
+                        effect.values.is_empty() && effect.source.is_some()
+                    } else if id == dex.effects.wish {
+                        // `wish.condition.onStart` stores the half-maximum heal
+                        // and the 8-bit starting turn; `onEnd` heals the slot's
+                        // occupant and the marker is consumed.
+                        effect.values.len() == 2
+                            && effect.values[0] >= 0
+                            && (0..=255).contains(&effect.values[1])
+                            && effect.source.is_some()
+                    } else if id == dex.effects.healing_wish {
+                        effect.values.is_empty() && effect.source.is_some()
+                    } else {
+                        false
+                    };
+                    if !valid {
                         return Err(EngineError::Unsupported(format!(
                             "snapshot slot condition {id}"
                         )));

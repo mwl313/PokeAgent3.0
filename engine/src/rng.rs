@@ -22,6 +22,19 @@ impl BattleRng {
     }
 
     pub fn next_u32(&mut self) -> u32 {
+        // Development aid: `PA3_RNG_SITES=1` prints the call site of every
+        // draw, which is how a stream-length divergence against the reference
+        // gets attributed to one handler. It never runs in normal use.
+        if std::env::var("PA3_RNG_SITES").is_ok() {
+            let backtrace = std::backtrace::Backtrace::force_capture();
+            let frames: Vec<String> = format!("{backtrace}")
+                .lines()
+                .filter(|line| line.contains("pa3_engine"))
+                .take(6)
+                .map(str::to_string)
+                .collect();
+            eprintln!("RNGDRAW {} {}", self.draws, frames.join(" <- "));
+        }
         self.state = self
             .state
             .wrapping_mul(0x5D588B656C078965)
