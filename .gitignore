@@ -58,6 +58,10 @@ tmp/
 # Pinned third-party reference checkout and its local build.
 /vendor/pokemon-showdown/
 
+# Profiler traces are large local artifacts; only compact summaries are tracked.
+/runs/perf/traces/*.json
+!/runs/perf/traces/*_summary.json
+
 # Project-local Rust toolchain and build products.
 /.tools/
 /target/

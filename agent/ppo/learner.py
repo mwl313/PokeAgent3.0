@@ -21,6 +21,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Optional
+import time
 
 import torch
 
@@ -51,10 +52,12 @@ class UpdateReport:
     ratio_mean: float = 0.0
     clip_fraction: float = 0.0
     grad_norm: float = 0.0
+    grad_norm_max: float = 0.0
     learning_rate: float = 0.0
     rows: int = 0
     actor_rows: int = 0
     optimizer_steps: int = 0
+    optimizer_steps_skipped: int = 0
     scaler_scale: float = 1.0
     committed_matches: int = 0
 
@@ -91,27 +94,53 @@ class PPOLearner:
             self.device.type, enabled=self.amp and self.config.amp_grad_scaler
         )
         self.optimizer_steps = 0
+        # Stage accounting for the M0 breakdown (always collected; ~12
+        # perf_counter calls per minibatch, no GPU synchronization).
+        self.profile: dict[str, float] = {}
+        self.prepare_profile: dict[str, float] = {}
+
+    @staticmethod
+    def _blank_profile() -> dict:
+        return {
+            "prepare_total": 0.0, "prepare_build": 0.0, "prepare_normalize": 0.0,
+            "minibatch_select": 0.0, "h2d": 0.0, "forward": 0.0, "backward": 0.0,
+            "optimizer": 0.0, "metrics": 0.0, "epoch_sync": 0.0,
+        }
 
     # -- batch preparation -------------------------------------------------
     def prepare_batch(
         self, buffer: RolloutBuffer, rows: Optional[list] = None
     ) -> RolloutBatch:
         """GAE + advantage normalization over the iteration's actor rows."""
+        profile = {"gae": 0.0, "build": 0.0, "normalize": 0.0, "total": 0.0}
+        started = time.perf_counter()
         rows = list(buffer.rows if rows is None else rows)
+        start = time.perf_counter()
         buffer.compute_gae(
             gamma=self.config.gamma, gae_lambda=self.config.gae_lambda, rows=rows
         )
+        profile["gae"] = time.perf_counter() - start
+        start = time.perf_counter()
         # Keep the full iteration on the host: a 10k-match rollout holds hundreds
         # of thousands of 96-token observations, and materializing all of them on
         # the GPU at once exhausts a 32 GiB card. Minibatches are moved to the
         # device one at a time in update() instead.
         batch = buffer.to_batch(rows, device="cpu")
+        profile["build"] = time.perf_counter() - start
+        profile["build_observations"] = buffer.profile.get("observations", 0.0)
+        profile["build_candidates"] = buffer.profile.get("candidates", 0.0)
+        profile["build_columns"] = buffer.profile.get("columns", 0.0)
+        profile["build_move"] = buffer.profile.get("move", 0.0)
+        start = time.perf_counter()
         actor_mask = batch.actor_mask & batch.row_valid
         normalized = normalize_advantages(
             batch.raw_advantages,
             actor_mask=actor_mask,
             std_floor=self.config.advantage_std_floor,
         )
+        profile["normalize"] = time.perf_counter() - start
+        profile["total"] = time.perf_counter() - started
+        self.prepare_profile = profile
         return batch.with_advantages(normalized)
 
     # -- forward -----------------------------------------------------------
@@ -120,6 +149,29 @@ class PPOLearner:
         return (values * mask).sum() / mask.sum().clamp_min(1.0)
 
     def _forward(self, batch: RolloutBatch) -> dict:
+        terms = self._forward_terms(batch)
+        return {
+            "loss": terms["loss_unscaled"] + self.config.value_coefficient * terms["value_mean"],
+            "policy_loss": terms["policy_mean"],
+            "value_loss": terms["value_mean_detached"],
+            "entropy": terms["entropy_mean"],
+            "uniform_kl": terms["uniform_kl_mean"],
+            "approx_kl": terms["approx_kl_mean"],
+            "ratio_mean": terms["ratio_mean"],
+            "clip_fraction": terms["clip_fraction"],
+            "actor_rows": terms["actor_count"],
+            "valid_rows": terms["value_count"],
+        }
+
+    def _forward_terms(self, batch: RolloutBatch) -> dict:
+        """Raw sufficient statistics of one micro/minibatch.
+
+        Every metric is returned as a *sum plus its denominator* instead of a
+        mean, so the caller can aggregate exactly over microbatches that hold
+        different numbers of valid actor rows (padding, uneven actor masks, the
+        last partial minibatch). The loss terms stay attached to the graph; the
+        reported scalars are detached.
+        """
         with torch.amp.autocast(
             device_type=self.device.type,
             dtype=torch.float16,
@@ -148,35 +200,45 @@ class PPOLearner:
             clip_epsilon=self.config.clip_epsilon,
         )
         value = value_loss(values[valid], batch.returns[valid])
-        entropy = self._row_masked_mean(
-            evaluation.request_entropy.float(), actor_mask
-        )
-        uniform_kl = self._row_masked_mean(
-            evaluation.request_uniform_kl.float(), actor_mask
-        )
+        actor_f = actor_mask.to(ratio.dtype)
+        actor_count = actor_mask.sum()
+        value_count = valid.sum()
+        actor_denom = actor_count.clamp_min(1)
+        entropy_sum = (evaluation.request_entropy.float() * actor_f).sum()
+        uniform_kl_sum = (evaluation.request_uniform_kl.float() * actor_f).sum()
+        entropy = entropy_sum / actor_denom
+        uniform_kl = uniform_kl_sum / actor_denom
         loss = (
             policy
-            + self.config.value_coefficient * value
             - self.config.entropy_coefficient * entropy
             + self.config.uniform_kl_coefficient * uniform_kl
         )
         with torch.no_grad():
             row_kl = ((ratio - 1.0) - torch.log(ratio.clamp_min(1e-12)))
-            actor_count = actor_mask.sum().clamp_min(1)
+            kl_sum = (row_kl * actor_f).sum()
+            ratio_sum = (ratio * actor_f).sum()
+            clip_sum = (
+                ((ratio - 1.0).abs() > self.config.clip_epsilon).to(ratio.dtype) * actor_f
+            ).sum()
             stats = {
-                "loss": loss,
-                "policy_loss": policy.detach(),
-                "value_loss": value.detach(),
-                "entropy": entropy.detach(),
-                "uniform_kl": uniform_kl.detach(),
-                "approx_kl": (row_kl * actor_mask).sum().detach() / actor_count,
-                "ratio_mean": (ratio * actor_mask).sum().detach() / actor_count,
-                "clip_fraction": (
-                    ((ratio - 1.0).abs() > self.config.clip_epsilon).float() * actor_mask
-                ).sum().detach()
-                / actor_count,
-                "actor_rows": actor_mask.sum().detach(),
-                "valid_rows": valid.sum().detach(),
+                "loss_unscaled": loss,
+                "value_mean": value,
+                "policy_mean": policy.detach(),
+                "value_mean_detached": value.detach(),
+                "entropy_mean": entropy.detach(),
+                "uniform_kl_mean": uniform_kl.detach(),
+                "approx_kl_mean": (kl_sum / actor_denom).detach(),
+                "ratio_mean": (ratio_sum / actor_denom).detach(),
+                "clip_fraction": (clip_sum / actor_denom).detach(),
+                "actor_count": actor_count.detach(),
+                "value_count": value_count.detach(),
+                "policy_sum": policy.detach() * actor_count.detach(),
+                "value_sum": value.detach() * value_count.detach(),
+                "entropy_sum": entropy_sum.detach(),
+                "uniform_kl_sum": uniform_kl_sum.detach(),
+                "kl_sum": kl_sum.detach(),
+                "ratio_sum": ratio_sum.detach(),
+                "clip_sum": clip_sum.detach(),
             }
         return stats
 
@@ -199,77 +261,134 @@ class PPOLearner:
             committed_matches=self.scheduler.matches,
         )
         self.model.train()
-        accumulation = self.config.effective_accumulation
-        totals = {
-            "policy_loss": 0.0,
-            "value_loss": 0.0,
-            "entropy": 0.0,
-            "uniform_kl": 0.0,
-            "approx_kl": 0.0,
-            "ratio_mean": 0.0,
-            "clip_fraction": 0.0,
-        }
-        batches = 0
+        sum_keys = (
+            "policy_sum", "value_sum", "entropy_sum", "uniform_kl_sum",
+            "kl_sum", "ratio_sum", "clip_sum", "actor_count", "value_count",
+        )
+        totals = {key: torch.zeros((), dtype=torch.float32, device=self.device) for key in sum_keys}
+        exact = self.config.exact_row_weighted_accumulation
+        profile = self._blank_profile()
+        update_started = time.perf_counter()
 
         for epoch in range(self.config.ppo_epochs):
-            epoch_kl = 0.0
+            epoch_sums = {key: torch.zeros((), dtype=torch.float32, device=self.device) for key in sum_keys}
             epoch_batches = 0
-            for minibatch in batch.iter_minibatches(
+            start = time.perf_counter()
+            minibatch_iter = batch.iter_minibatches(
                 self.config.global_minibatch_size,
                 shuffle=True,
                 generator=generator,
                 drop_last=self.config.drop_last_minibatch,
-            ):
-                minibatch = minibatch.to(self.device)
+            )
+            for minibatch in minibatch_iter:
+                profile["minibatch_select"] += time.perf_counter() - start
+                start = time.perf_counter()
                 weight = minibatch.sample_weight if self.config.sample_weighted_ddp_reduction else 1.0
+                # Denominators of this minibatch's objective: the actor terms
+                # average over valid actor rows, the value term over valid rows.
+                # Counted on the CPU copy so no GPU scalar is read per minibatch.
+                minibatch_actor = float(
+                    (minibatch.actor_mask & minibatch.row_valid).sum().item()
+                )
+                minibatch_valid = float(minibatch.row_valid.sum().item())
                 self.optimizer.zero_grad(set_to_none=True)
-                microbatches = list(minibatch.iter_microbatches(self.config.microbatch_size))
+                # Drop padding-only microbatches on the CPU (the GPU-side
+                # `int(micro.row_valid.sum())` check forced one device sync per
+                # microbatch). The minibatch itself moves to the GPU once; the
+                # micro views are then sliced on the device.
+                micro_ranges = []
+                for begin in range(0, len(minibatch), self.config.microbatch_size):
+                    end = min(begin + self.config.microbatch_size, len(minibatch))
+                    if bool(minibatch.row_valid[begin:end].any().item()):
+                        micro_ranges.append((begin, end))
+                h2d_start = time.perf_counter()
+                minibatch = minibatch.to(self.device)
+                profile["h2d"] += time.perf_counter() - h2d_start
                 used = 0
-                for micro in microbatches:
-                    if int(micro.row_valid.sum()) == 0:
-                        continue  # padding-only chunk carries no experience
-                    stats = self._forward(micro)
-                    scale = micro.sample_weight / max(1, len(microbatches))
-                    self.scaler.scale(stats["loss"] * scale).backward()
+                for begin, end in micro_ranges:
+                    forward_start = time.perf_counter()
+                    micro = minibatch.select(
+                        torch.arange(begin, end, dtype=torch.long,
+                                     device=minibatch.old_logprob.device)
+                    )
+                    terms = self._forward_terms(micro)
+                    profile["forward"] += time.perf_counter() - forward_start
+                    forward_start = time.perf_counter()
+                    if exact:
+                        # Exact full-minibatch objective: each micro contributes
+                        # its share of the minibatch's valid actor/value rows.
+                        actor_scale = terms["actor_count"] / max(minibatch_actor, 1.0)
+                        value_scale = terms["value_count"] / max(minibatch_valid, 1.0)
+                        loss = weight * (
+                            terms["loss_unscaled"] * actor_scale
+                            + self.config.value_coefficient * terms["value_mean"] * value_scale
+                        )
+                    else:  # legacy sample_weight/len(microbatches) accumulation
+                        scale = micro.sample_weight / max(1, len(micro_ranges))
+                        loss = weight * scale * (
+                            terms["loss_unscaled"]
+                            + self.config.value_coefficient * terms["value_mean"]
+                        )
+                    self.scaler.scale(loss).backward()
+                    profile["backward"] += time.perf_counter() - forward_start
+                    forward_start = time.perf_counter()
+                    for key in sum_keys:
+                        epoch_sums[key] = epoch_sums[key] + terms[key].float()
+                    profile["metrics"] += time.perf_counter() - forward_start
                     used += 1
                 if used == 0:
                     self.optimizer.zero_grad(set_to_none=True)
+                    start = time.perf_counter()
                     continue
+                optimizer_start = time.perf_counter()
+                scale_before = self.scaler.get_scale()
                 self.scaler.unscale_(self.optimizer)
                 grad_norm = torch.nn.utils.clip_grad_norm_(
                     self.model.parameters(), self.config.max_grad_norm
                 )
                 self.scaler.step(self.optimizer)
                 self.scaler.update()
-                self.optimizer_steps += 1
+                profile["optimizer"] += time.perf_counter() - optimizer_start
+                stepped = self.scaler.get_scale() >= scale_before
+                if stepped:
+                    self.optimizer_steps += 1
+                else:
+                    report.optimizer_steps_skipped += 1
 
-                report.grad_norm = float(grad_norm)
+                report.grad_norm = float(grad_norm.detach())
+                report.grad_norm_max = max(report.grad_norm_max, report.grad_norm)
                 report.scaler_scale = float(self.scaler.get_scale())
                 report.optimizer_steps = self.optimizer_steps
-                for key in totals:
-                    totals[key] += float(stats[key]) * weight
-                batches += 1
-                epoch_kl += float(stats["approx_kl"]) * weight
                 epoch_batches += 1
+                start = time.perf_counter()
 
             if epoch_batches == 0:
                 break
-            epoch_kl /= max(1e-9, epoch_batches)
+            for key in sum_keys:
+                totals[key] = totals[key] + epoch_sums[key]
+            actor_total = float(epoch_sums["actor_count"].clamp_min(1).item())
+            value_total = float(epoch_sums["value_count"].clamp_min(1).item())
+            epoch_kl = float(epoch_sums["kl_sum"].item()) / actor_total
+            profile["epoch_sync"] += time.perf_counter() - start
             report.epoch_approx_kl.append(epoch_kl)
             report.epochs_run = epoch + 1
+            start = time.perf_counter()
             if epoch_kl > self.config.target_approx_kl:
                 report.stopped_early = True
                 break
 
-        if batches:
-            denominator = float(batches)
-            report.policy_loss = totals["policy_loss"] / denominator
-            report.value_loss = totals["value_loss"] / denominator
-            report.entropy = totals["entropy"] / denominator
-            report.uniform_kl = totals["uniform_kl"] / denominator
-            report.approx_kl = totals["approx_kl"] / denominator
-            report.ratio_mean = totals["ratio_mean"] / denominator
-            report.clip_fraction = totals["clip_fraction"] / denominator
+        if report.epochs_run:
+            actor_total = float(totals["actor_count"].clamp_min(1).item())
+            value_total = float(totals["value_count"].clamp_min(1).item())
+            report.policy_loss = float(totals["policy_sum"].item()) / actor_total
+            report.value_loss = float(totals["value_sum"].item()) / value_total
+            report.entropy = float(totals["entropy_sum"].item()) / actor_total
+            report.uniform_kl = float(totals["uniform_kl_sum"].item()) / actor_total
+            report.approx_kl = float(totals["kl_sum"].item()) / actor_total
+            report.ratio_mean = float(totals["ratio_sum"].item()) / actor_total
+            report.clip_fraction = float(totals["clip_sum"].item()) / actor_total
+        profile["total"] = time.perf_counter() - update_started
+        self.profile = profile
         report.learning_rate = self.scheduler.learning_rate
         return report
 

@@ -63,6 +63,8 @@ def parse_args():
     parser.add_argument("--manifest", default="", help="run_manifest path (defaults next to --report)")
     parser.add_argument("--checkpoint", default="")
     parser.add_argument("--tag", default="", help="free-form label recorded in the report")
+    parser.add_argument("--profile-trace", default="",
+                        help="write a PyTorch profiler Chrome trace of the learner update to this path")
     parser.add_argument("--recompute-tolerance", type=float, default=None,
                         help="declared mixed-precision parity gate (default 1e-4 fp32 / 1e-3 fp16)")
     return parser.parse_args()
@@ -79,6 +81,17 @@ def sha256_file(path):
 def git_output(*args):
     try:
         return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, check=True).stdout.strip()
+    except Exception:  # pragma: no cover - diagnostics only
+        return None
+
+
+def git_diff_hash():
+    """Identify a dirty tree precisely instead of only flagging it."""
+    try:
+        diff = subprocess.run(["git", "diff", "HEAD"], cwd=ROOT, capture_output=True, check=True).stdout
+        untracked = subprocess.run(["git", "status", "--porcelain"], cwd=ROOT,
+                                   capture_output=True, check=True).stdout
+        return hashlib.sha256(diff + untracked).hexdigest()
     except Exception:  # pragma: no cover - diagnostics only
         return None
 
@@ -146,6 +159,7 @@ def run_repeat(args, repeat):
     buffer = collector.collect(args.games)
     collect_wall = time.perf_counter() - wall_start
     ppo_wall = 0.0
+    checkpoint_wall = 0.0
     update = None
     recompute_diff = None
     if args.mode == "full" and learner is not None:
@@ -155,13 +169,44 @@ def run_repeat(args, repeat):
     if args.mode == "full" and learner is not None:
         wall = time.perf_counter()
         batch = learner.prepare_batch(buffer)
-        update = learner.update(batch, committed_matches=collector.stats.games).as_dict()
+        profile_extra: dict = {}
+        if args.profile_trace:
+            os.makedirs(os.path.dirname(os.path.abspath(args.profile_trace)), exist_ok=True)
+            from torch.profiler import ProfilerActivity, profile as torch_profile
+
+            with torch_profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]) as prof:
+                update = learner.update(batch, committed_matches=collector.stats.games).as_dict()
+            prof.export_chrome_trace(args.profile_trace)
+            kernel_totals: dict[str, float] = {}
+            for entry in prof.key_averages():
+                if entry.device_type == torch.autograd.DeviceType.CUDA:
+                    kernel_totals[entry.key] = float(entry.device_time_total)
+            profile_extra = {
+                "trace_path": os.path.abspath(args.profile_trace),
+                "top_cuda_kernels": sorted(kernel_totals.items(), key=lambda kv: -kv[1])[:15],
+            }
+        else:
+            update = learner.update(batch, committed_matches=collector.stats.games).as_dict()
+        profile_extra["prepare_profile"] = dict(learner.prepare_profile)
+        profile_extra["update_profile"] = dict(learner.profile)
         ppo_wall = time.perf_counter() - wall
+        if args.checkpoint:
+            # Real crash-safe checkpoint write inside the measured all-in window
+            # (atomic temp file -> fsync -> rename).
+            wall = time.perf_counter()
+            target = os.path.abspath(args.checkpoint)
+            os.makedirs(os.path.dirname(target), exist_ok=True)
+            temporary = f"{target}.tmp-{os.getpid()}"
+            torch.save(learner.state_dict(), temporary)
+            with open(temporary, "rb") as handle:
+                os.fsync(handle.fileno())
+            os.replace(temporary, target)
+            checkpoint_wall = time.perf_counter() - wall
     if device.type == "cuda":
         end_event.record()
         torch.cuda.synchronize(device)
     stats = collector.stats.as_dict()
-    total_wall = collect_wall + ppo_wall
+    total_wall = collect_wall + ppo_wall + checkpoint_wall
     report = {
         "repeat": repeat,
         "mode": args.mode,
@@ -177,8 +222,13 @@ def run_repeat(args, repeat):
         "wins": stats["wins"], "losses": stats["losses"], "draws": stats["draws"],
         "actor_collect_wall_s": collect_wall,
         "ppo_update_wall_s": ppo_wall,
+        "checkpoint_write_wall_s": checkpoint_wall,
+        "checkpoint_path": os.path.abspath(args.checkpoint) if args.checkpoint else None,
+        "bounded_ppo_games_per_s": stats["games"] / max(collect_wall + ppo_wall, 1e-9),
         "all_in_wall_s": total_wall,
         "all_in_committed_games_per_s": stats["games"] / max(total_wall, 1e-9),
+        "report_includes": ["collect", "gae", "prepare", "4_epoch_update", "scheduler",
+                            "grad_scaler"] + (["checkpoint_write"] if args.checkpoint else []),
         "actor_games_per_s": stats["games"] / max(collect_wall, 1e-9),
         "decisions_per_s": stats["decisions"] / max(collect_wall, 1e-9),
         "stage_seconds": {
@@ -208,25 +258,48 @@ def run_repeat(args, repeat):
         report["ppo_update"] = {
             key: update[key] for key in (
                 "epochs_run", "policy_loss", "value_loss", "entropy", "uniform_kl", "approx_kl",
-                "epoch_approx_kl", "ratio_mean", "clip_fraction", "grad_norm", "optimizer_steps",
-                "stopped_early", "learning_rate", "committed_matches", "rows", "actor_rows",
+                "epoch_approx_kl", "ratio_mean", "clip_fraction", "grad_norm", "grad_norm_max",
+                "optimizer_steps", "optimizer_steps_skipped", "stopped_early", "learning_rate",
+                "committed_matches", "rows", "actor_rows",
             )
         }
+        if profile_extra:
+            report["learner_profile"] = profile_extra
     if recompute_diff is not None:
-        report["logprob_recompute_max_abs_diff"] = recompute_diff
+        report["logprob_recompute"] = recompute_diff
+        report["logprob_recompute_max_abs_diff"] = recompute_diff["max_abs_diff"]
         tolerance = args.recompute_tolerance if args.recompute_tolerance is not None else (
             1e-3 if args.precision == "fp16" else 1e-4)
         report["logprob_recompute_tolerance"] = tolerance
-        report["logprob_recompute_within_gate"] = bool(recompute_diff <= tolerance)
+        report["logprob_recompute_within_gate"] = bool(
+            recompute_diff["max_abs_diff"] <= tolerance
+        )
     del collector, learner
     if device.type == "cuda":
         torch.cuda.empty_cache()
     return report
 
 
-def recompute_check(learner, buffer, device, limit=1024, amp=False):
-    rows = list(buffer.rows)[:limit]
-    batch = buffer.to_batch(rows, device=device)
+def recompute_check(learner, buffer, device, limit=1024, amp=False, per_stratum=96):
+    """Stratified sampled/recomputed log-probability parity gate.
+
+    A first-N-rows check cannot be extrapolated to the whole iteration, so rows
+    are sampled per (request kind, branch count, actor active) stratum and every
+    stratum's row count and max absolute difference is reported.
+    """
+    strata: dict[tuple, list] = {}
+    for row in buffer.rows:
+        key = (int(row.request_kind), int(row.branch_count), bool(row.actor_active))
+        strata.setdefault(key, []).append(row)
+    sampled = []
+    for _key, group in sorted(strata.items()):
+        if len(group) <= per_stratum:
+            sampled.extend(group)
+        else:
+            step = len(group) / per_stratum
+            sampled.extend(group[int(index * step)] for index in range(per_stratum))
+    sampled = sampled[: max(limit, 1)]
+    batch = buffer.to_batch(sampled, device=device)
     # Recompute under the same forward precision that sampled the rollout, as
     # the plan requires for mixed-precision parity.
     context = (
@@ -236,8 +309,27 @@ def recompute_check(learner, buffer, device, limit=1024, amp=False):
     with torch.no_grad(), context:
         encoded = learner.model.encode(batch.observation)
         evaluation = learner.model.evaluate_encoded(encoded, batch.candidates, selected=batch.candidates.selected)
-    stored = torch.tensor([row.old_logprob for row in rows], dtype=torch.float32, device=device)
-    return float((evaluation.request_logprob.float() - stored).abs().max().item())
+    stored = torch.tensor([row.old_logprob for row in sampled], dtype=torch.float32, device=device)
+    difference = (evaluation.request_logprob.float() - stored).abs()
+    per_row = difference.detach().cpu().tolist()
+    stratum_report: dict[str, dict] = {}
+    for index, row in enumerate(sampled):
+        key = (f"kind{int(row.request_kind)}_branches{int(row.branch_count)}"
+               f"_actor{int(bool(row.actor_active))}")
+        entry = stratum_report.setdefault(key, {"rows": 0, "max_abs_diff": 0.0})
+        entry["rows"] += 1
+        entry["max_abs_diff"] = max(entry["max_abs_diff"], float(per_row[index]))
+    tolerance = 1e-3 if amp else 1e-4
+    return {
+        "rows": len(sampled),
+        "total_rollout_rows": len(buffer.rows),
+        "sampled_fraction": len(sampled) / max(len(buffer.rows), 1),
+        "strata": stratum_report,
+        "max_abs_diff": float(difference.max().item()) if len(sampled) else 0.0,
+        "mean_abs_diff": float(difference.mean().item()) if len(sampled) else 0.0,
+        "tolerance": tolerance,
+        "within_gate": bool(float(difference.max().item()) <= tolerance) if len(sampled) else True,
+    }
 
 
 def main():
@@ -251,6 +343,7 @@ def main():
         "git_sha": git_output("rev-parse", "HEAD"),
         "git_branch": git_output("rev-parse", "--abbrev-ref", "HEAD"),
         "git_dirty": bool(git_output("status", "--porcelain")),
+        "git_diff_hash": git_diff_hash() if git_output("status", "--porcelain") else None,
         "torch": torch.__version__, "cuda_runtime": torch.version.cuda,
         "python": sys.version.split()[0],
         "arch_list": torch.cuda.get_arch_list() if torch.cuda.is_available() else [],
@@ -283,8 +376,14 @@ def main():
     stage_totals = {}
     for stage in repeats[0]["stage_seconds"]:
         values = sorted(result["stage_seconds"][stage] for result in repeats)
+        shares = sorted(
+            result["stage_seconds"][stage] / max(result["actor_collect_wall_s"], 1e-9)
+            for result in repeats
+        )
+        # The share is the median of each repeat's own stage/collect ratio, so it
+        # never pairs a stage median with another repeat's wall.
         stage_totals[stage] = {"median_s": values[len(values) // 2],
-                               "share_of_wall": values[len(values) // 2] / max(repeats[0]["all_in_wall_s"], 1e-9)}
+                               "median_share_of_collect": shares[len(shares) // 2]}
     report = {**manifest, "repeats": repeats, "summary": summary, "stage_medians": stage_totals}
     with open(args.report, "w") as handle:
         json.dump(report, handle, indent=2, sort_keys=True)

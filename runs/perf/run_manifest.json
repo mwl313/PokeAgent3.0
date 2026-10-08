@@ -8,12 +8,12 @@
     "sm_86",
     "sm_90"
   ],
-  "command": "python scripts/bench_pa3_end_to_end.py --games 10000 --envs 1024 --workers 16 --repeats 1 --mode full --observations fixed --precision fp16 --inference-mode --candidate-wire packed --device cuda:0 --report runs/perf/allin-fp16-10k-fastrows.json --tag allin-fastrows",
+  "command": "python scripts/bench_pa3_end_to_end.py --games 2048 --envs 1024 --workers 16 --repeats 1 --mode full --observations fixed --precision fp16 --inference-mode --candidate-wire packed --device cuda:0 --report runs/perf/v2_telemetry_2k.json --checkpoint runs/perf/v2_ckpt.pt --tag v2-telemetry",
   "config": {
     "candidate_wire": "packed",
     "device": "cuda:0",
     "envs": 1024,
-    "games": 10000,
+    "games": 2048,
     "inference_mode": true,
     "mode": "full",
     "observations": "fixed",
@@ -26,8 +26,9 @@
   "dataset_id": "mb-mc-v3-userteam-all-train",
   "dataset_manifest_sha256": "f0509c08544c89a0b0c043218e33795c91af7af2f78e2d6fb83bae69f3babaef",
   "git_branch": "optimization/pa3-realpolicy-throughput",
+  "git_diff_hash": "d5f84d812f687de952d103abde47de202e9a7de18a6122479d11244662b3ba8c",
   "git_dirty": true,
-  "git_sha": "aa74653e2b4dc6e6f2c81a8efc01b760777b7f85",
+  "git_sha": "b72f5f4c73dc8cbdf06584a5e0ed9c0ea7f6b8d8",
   "gpus": [
     {
       "driver_version": "580.178.04",
@@ -37,7 +38,7 @@
       "name": "Tesla V100-PCIE-32GB",
       "pci_bus_id": "00000000:05:00.0",
       "power_limit_w": 175.0,
-      "temperature_c": 41,
+      "temperature_c": 34,
       "utilization_pct": 0
     },
     {
@@ -54,6 +55,6 @@
   ],
   "python": "3.12.3",
   "readiness_note": "readiness_check is 10/16 PASS; this benchmark does not change it",
-  "run_id": "bench-1791470065-allin-fastrows",
+  "run_id": "bench-1791473663-v2-telemetry",
   "torch": "2.14.0+cu126"
 }

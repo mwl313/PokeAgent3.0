@@ -23,6 +23,11 @@ class PPOConfig:
     drop_last_minibatch: bool = False
     pad_and_mask_final_minibatch: bool = True
     sample_weighted_ddp_reduction: bool = True
+    # Exact full-minibatch objective under gradient accumulation: every
+    # microbatch contributes its share of the minibatch's valid actor rows (for
+    # policy/entropy/KL) and valid value rows (for the value term) instead of
+    # the legacy sample_weight/microbatch-count approximation.
+    exact_row_weighted_accumulation: bool = True
 
     # PPO objective
     clip_epsilon: float = 0.2

@@ -379,6 +379,10 @@ class RolloutBuffer:
         rows: Optional[Sequence[RolloutRow]] = None,
         device: torch.device | str | None = None,
     ) -> "RolloutBatch":
+        import time as _time
+
+        self.profile = {"observations": 0.0, "candidates": 0.0, "columns": 0.0, "move": 0.0}
+        _t = _time.perf_counter()
         rows = list(self.rows if rows is None else rows)
         if not rows:
             raise ValueError("cannot build a batch from an empty rollout")
@@ -392,6 +396,8 @@ class RolloutBuffer:
                 observations = observations.cat(
                     [self.observation(row.observation_ref) for row in rows[1:]]
                 )
+        self.profile["observations"] = _time.perf_counter() - _t
+        _t = _time.perf_counter()
         # Build the candidate table straight from the stored rows: the typed
         # ActionRef/CandidateSet round trip is equivalent but costs one Python
         # object per candidate and was the dominant learner-side cost.
@@ -401,6 +407,8 @@ class RolloutBuffer:
             branch_capacity=BRANCH_CAPACITY,
             device=device,
         )
+        self.profile["candidates"] = _time.perf_counter() - _t
+        _t = _time.perf_counter()
 
         def _column(name: str, dtype: torch.dtype) -> torch.Tensor:
             values = [getattr(row, name) for row in rows]
@@ -413,7 +421,7 @@ class RolloutBuffer:
             return torch.tensor(values, dtype=dtype)
 
         batch = RolloutBatch(
-            observation=observations if device is None else observations.to(device),
+            observation=observations,
             candidates=candidates,
             old_logprob=_column("old_logprob", torch.float32),
             values=_column("value", torch.float32),
@@ -430,8 +438,13 @@ class RolloutBuffer:
             request_kind=_column("request_kind", torch.long),
             policy_ids=[row.policy_id for row in rows],
         )
+        # Columns + the row-table selection inside the candidate builder are the
+        # CPU-side costs; the device move is measured separately.
+        self.profile["columns"] = _time.perf_counter() - _t
+        _t = _time.perf_counter()
         if device is not None:
             batch = batch.to(device)
+            self.profile["move"] = _time.perf_counter() - _t
         return batch
 
     def iter_minibatches(
