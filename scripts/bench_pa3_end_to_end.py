@@ -71,6 +71,8 @@ def parse_args():
                         help="learner microbatch size (global minibatch stays 4096)")
     parser.add_argument("--minibatch", type=int, default=None,
                         help="learner global minibatch size (default 4096)")
+    parser.add_argument("--streaming-minibatch", action="store_true",
+                        help="materialize one minibatch at a time instead of the whole iteration")
     return parser.parse_args()
 
 
@@ -183,14 +185,23 @@ def run_repeat(args, repeat):
         recompute_diff = recompute_check(learner, buffer, device, amp=(args.precision == "fp16"))
     if args.mode == "full" and learner is not None:
         wall = time.perf_counter()
-        batch = learner.prepare_batch(buffer)
+        streaming_plan = None
+        if args.streaming_minibatch:
+            streaming_plan = learner.prepare_streaming(buffer)
+            batch = None
+        else:
+            batch = learner.prepare_batch(buffer)
         profile_extra: dict = {}
         if args.profile_trace:
             os.makedirs(os.path.dirname(os.path.abspath(args.profile_trace)), exist_ok=True)
             from torch.profiler import ProfilerActivity, profile as torch_profile
 
             with torch_profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]) as prof:
-                update = learner.update(batch, committed_matches=collector.stats.games).as_dict()
+                update = (
+                    learner.update_streaming(streaming_plan, committed_matches=collector.stats.games)
+                    if streaming_plan is not None
+                    else learner.update(batch, committed_matches=collector.stats.games)
+                ).as_dict()
             prof.export_chrome_trace(args.profile_trace)
             kernel_totals: dict[str, float] = {}
             for entry in prof.key_averages():
@@ -201,7 +212,11 @@ def run_repeat(args, repeat):
                 "top_cuda_kernels": sorted(kernel_totals.items(), key=lambda kv: -kv[1])[:15],
             }
         else:
-            update = learner.update(batch, committed_matches=collector.stats.games).as_dict()
+            update = (
+                learner.update_streaming(streaming_plan, committed_matches=collector.stats.games)
+                if streaming_plan is not None
+                else learner.update(batch, committed_matches=collector.stats.games)
+            ).as_dict()
         profile_extra["prepare_profile"] = dict(learner.prepare_profile)
         profile_extra["update_profile"] = dict(learner.profile)
         ppo_wall = time.perf_counter() - wall
@@ -369,6 +384,7 @@ def main():
             "repeats": args.repeats, "seed": args.seed, "device": args.device,
             "mode": args.mode, "observations": args.observations, "precision": args.precision,
             "candidate_wire": args.candidate_wire,
+            "streaming_minibatch": bool(args.streaming_minibatch),
             "global_minibatch": args.minibatch or PPOConfig().global_minibatch_size,
             "microbatch": args.microbatch or PPOConfig().microbatch_size,
             "inference_mode": bool(args.inference_mode),

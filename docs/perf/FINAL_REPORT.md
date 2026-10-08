@@ -39,7 +39,8 @@ noise. FP32 control with the same stack: 78.57 games/s.
 | Single GPU, real-policy actor-only (10,240 games) | 101.44 games/s |
 | Single GPU, full PPO all-in (10,240 games, 4 epochs, typed learner build) | 20.87 committed games/s |
 | Single GPU, full PPO all-in with the packed from_rows learner build | 26.43 committed games/s |
-| Single GPU, full PPO all-in, v2 correctness + 1024-row microbatch (3 repeats) | **32.80 committed games/s** |
+| Single GPU, full PPO all-in, v2 correctness + 1024-row microbatch (3 repeats) | 32.80 committed games/s |
+| Single GPU, full PPO all-in, v2 + microbatch 1024 + streaming, 10,240 matches | **33.37 committed games/s** (peak RSS 7.34 GiB) |
 | Dual GPU, real-policy actor-only (2x2,048 games) | 162.73 games/s wall-aligned |
 | PPO learner phase alone (10,240-game iteration) | 389.7 s |
 | Engine-only reference (Rust, single thread) | 2,585 games/s (not AI) |

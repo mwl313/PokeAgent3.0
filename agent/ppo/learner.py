@@ -19,7 +19,7 @@ Implements exactly the numeric contract of Full Spec 1.1 §8:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Optional
 import time
 
@@ -65,6 +65,21 @@ class UpdateReport:
         data = self.__dict__.copy()
         data["epoch_approx_kl"] = list(self.epoch_approx_kl)
         return data
+
+
+@dataclass
+class StreamingPlan:
+    """Whole-iteration plan without materializing the iteration.
+
+    ``rows`` stay as the compact per-row records; ``advantages`` holds the
+    row-normalized advantages, and each minibatch is materialized on demand
+    from the buffer's compact store.
+    """
+
+    buffer: RolloutBuffer
+    rows: list
+    advantages: torch.Tensor
+    actor_rows: int
 
 
 class PPOLearner:
@@ -142,6 +157,32 @@ class PPOLearner:
         profile["total"] = time.perf_counter() - started
         self.prepare_profile = profile
         return batch.with_advantages(normalized)
+
+    def prepare_streaming(
+        self, buffer: RolloutBuffer, rows: Optional[list] = None
+    ) -> StreamingPlan:
+        """GAE + advantage normalization without materializing the iteration."""
+        profile = {"gae": 0.0, "normalize": 0.0, "total": 0.0}
+        started = time.perf_counter()
+        rows = list(buffer.rows if rows is None else rows)
+        start = time.perf_counter()
+        buffer.compute_gae(
+            gamma=self.config.gamma, gae_lambda=self.config.gae_lambda, rows=rows
+        )
+        profile["gae"] = time.perf_counter() - start
+        start = time.perf_counter()
+        raw = torch.tensor([row.advantage for row in rows], dtype=torch.float32)
+        actor = torch.tensor([row.actor_active for row in rows], dtype=torch.bool)
+        normalized = normalize_advantages(
+            raw, actor_mask=actor, std_floor=self.config.advantage_std_floor
+        )
+        profile["normalize"] = time.perf_counter() - start
+        profile["total"] = time.perf_counter() - started
+        self.prepare_profile = profile
+        return StreamingPlan(
+            buffer=buffer, rows=rows, advantages=normalized,
+            actor_rows=int(actor.sum().item()),
+        )
 
     # -- forward -----------------------------------------------------------
     def _row_masked_mean(self, values: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
@@ -243,6 +284,103 @@ class PPOLearner:
         return stats
 
     # -- update -------------------------------------------------------------
+    def _process_minibatch(self, minibatch, sum_keys, epoch_sums, exact, profile, report) -> int:
+        """Micro loop + optimizer step for one minibatch; returns micro count."""
+        weight = minibatch.sample_weight if self.config.sample_weighted_ddp_reduction else 1.0
+        # Denominators of this minibatch's objective: the actor terms average
+        # over valid actor rows, the value term over valid rows. Counted on the
+        # CPU copy so no GPU scalar is read per minibatch.
+        minibatch_actor = float((minibatch.actor_mask & minibatch.row_valid).sum().item())
+        minibatch_valid = float(minibatch.row_valid.sum().item())
+        self.optimizer.zero_grad(set_to_none=True)
+        # Drop padding-only microbatches on the CPU (a GPU-side
+        # `int(micro.row_valid.sum())` check forces one device sync per micro).
+        micro_ranges = []
+        for begin in range(0, len(minibatch), self.config.microbatch_size):
+            end = min(begin + self.config.microbatch_size, len(minibatch))
+            if bool(minibatch.row_valid[begin:end].any().item()):
+                micro_ranges.append((begin, end))
+        h2d_start = time.perf_counter()
+        minibatch = minibatch.to(self.device)
+        profile["h2d"] += time.perf_counter() - h2d_start
+        used = 0
+        for begin, end in micro_ranges:
+            forward_start = time.perf_counter()
+            micro = minibatch.select(
+                torch.arange(begin, end, dtype=torch.long,
+                             device=minibatch.old_logprob.device)
+            )
+            terms = self._forward_terms(micro)
+            profile["forward"] += time.perf_counter() - forward_start
+            forward_start = time.perf_counter()
+            if exact:
+                # Exact full-minibatch objective: each micro contributes its
+                # share of the minibatch's valid actor/value rows.
+                actor_scale = terms["actor_count"] / max(minibatch_actor, 1.0)
+                value_scale = terms["value_count"] / max(minibatch_valid, 1.0)
+                loss = weight * (
+                    terms["loss_unscaled"] * actor_scale
+                    + self.config.value_coefficient * terms["value_mean"] * value_scale
+                )
+            else:  # legacy sample_weight/len(microbatches) accumulation
+                scale = micro.sample_weight / max(1, len(micro_ranges))
+                loss = weight * scale * (
+                    terms["loss_unscaled"]
+                    + self.config.value_coefficient * terms["value_mean"]
+                )
+            self.scaler.scale(loss).backward()
+            profile["backward"] += time.perf_counter() - forward_start
+            forward_start = time.perf_counter()
+            for key in sum_keys:
+                epoch_sums[key] = epoch_sums[key] + terms[key].float()
+            profile["metrics"] += time.perf_counter() - forward_start
+            used += 1
+        if used == 0:
+            self.optimizer.zero_grad(set_to_none=True)
+            return 0
+        optimizer_start = time.perf_counter()
+        scale_before = self.scaler.get_scale()
+        self.scaler.unscale_(self.optimizer)
+        grad_norm = torch.nn.utils.clip_grad_norm_(
+            self.model.parameters(), self.config.max_grad_norm
+        )
+        self.scaler.step(self.optimizer)
+        self.scaler.update()
+        profile["optimizer"] += time.perf_counter() - optimizer_start
+        stepped = self.scaler.get_scale() >= scale_before
+        if stepped:
+            self.optimizer_steps += 1
+        else:
+            report.optimizer_steps_skipped += 1
+        report.grad_norm = float(grad_norm.detach())
+        report.grad_norm_max = max(report.grad_norm_max, report.grad_norm)
+        report.scaler_scale = float(self.scaler.get_scale())
+        report.optimizer_steps = self.optimizer_steps
+        return used
+
+    def _new_report(self, rows, actor_rows, committed_matches) -> UpdateReport:
+        if committed_matches is not None:
+            self.scheduler.step_to(int(committed_matches))
+        return UpdateReport(
+            rows=rows,
+            actor_rows=int(actor_rows),
+            learning_rate=self.scheduler.learning_rate,
+            committed_matches=self.scheduler.matches,
+        )
+
+    def _finish_report(self, report, totals, sum_keys) -> None:
+        if report.epochs_run:
+            actor_total = float(totals["actor_count"].clamp_min(1).item())
+            value_total = float(totals["value_count"].clamp_min(1).item())
+            report.policy_loss = float(totals["policy_sum"].item()) / actor_total
+            report.value_loss = float(totals["value_sum"].item()) / value_total
+            report.entropy = float(totals["entropy_sum"].item()) / actor_total
+            report.uniform_kl = float(totals["uniform_kl_sum"].item()) / actor_total
+            report.approx_kl = float(totals["kl_sum"].item()) / actor_total
+            report.ratio_mean = float(totals["ratio_sum"].item()) / actor_total
+            report.clip_fraction = float(totals["clip_sum"].item()) / actor_total
+        report.learning_rate = self.scheduler.learning_rate
+
     def update(
         self,
         batch: RolloutBatch,
@@ -252,13 +390,8 @@ class PPOLearner:
         """Run at most ``ppo_epochs`` epochs; stop early on target KL."""
         if batch.advantages is None:
             raise ValueError("call prepare_batch() before update()")
-        if committed_matches is not None:
-            self.scheduler.step_to(int(committed_matches))
-        report = UpdateReport(
-            rows=len(batch),
-            actor_rows=int((batch.actor_mask & batch.row_valid).sum().item()),
-            learning_rate=self.scheduler.learning_rate,
-            committed_matches=self.scheduler.matches,
+        report = self._new_report(
+            len(batch), int((batch.actor_mask & batch.row_valid).sum().item()), committed_matches
         )
         self.model.train()
         sum_keys = (
@@ -283,83 +416,11 @@ class PPOLearner:
             for minibatch in minibatch_iter:
                 profile["minibatch_select"] += time.perf_counter() - start
                 start = time.perf_counter()
-                weight = minibatch.sample_weight if self.config.sample_weighted_ddp_reduction else 1.0
-                # Denominators of this minibatch's objective: the actor terms
-                # average over valid actor rows, the value term over valid rows.
-                # Counted on the CPU copy so no GPU scalar is read per minibatch.
-                minibatch_actor = float(
-                    (minibatch.actor_mask & minibatch.row_valid).sum().item()
+                used = self._process_minibatch(
+                    minibatch, sum_keys, epoch_sums, exact, profile, report
                 )
-                minibatch_valid = float(minibatch.row_valid.sum().item())
-                self.optimizer.zero_grad(set_to_none=True)
-                # Drop padding-only microbatches on the CPU (the GPU-side
-                # `int(micro.row_valid.sum())` check forced one device sync per
-                # microbatch). The minibatch itself moves to the GPU once; the
-                # micro views are then sliced on the device.
-                micro_ranges = []
-                for begin in range(0, len(minibatch), self.config.microbatch_size):
-                    end = min(begin + self.config.microbatch_size, len(minibatch))
-                    if bool(minibatch.row_valid[begin:end].any().item()):
-                        micro_ranges.append((begin, end))
-                h2d_start = time.perf_counter()
-                minibatch = minibatch.to(self.device)
-                profile["h2d"] += time.perf_counter() - h2d_start
-                used = 0
-                for begin, end in micro_ranges:
-                    forward_start = time.perf_counter()
-                    micro = minibatch.select(
-                        torch.arange(begin, end, dtype=torch.long,
-                                     device=minibatch.old_logprob.device)
-                    )
-                    terms = self._forward_terms(micro)
-                    profile["forward"] += time.perf_counter() - forward_start
-                    forward_start = time.perf_counter()
-                    if exact:
-                        # Exact full-minibatch objective: each micro contributes
-                        # its share of the minibatch's valid actor/value rows.
-                        actor_scale = terms["actor_count"] / max(minibatch_actor, 1.0)
-                        value_scale = terms["value_count"] / max(minibatch_valid, 1.0)
-                        loss = weight * (
-                            terms["loss_unscaled"] * actor_scale
-                            + self.config.value_coefficient * terms["value_mean"] * value_scale
-                        )
-                    else:  # legacy sample_weight/len(microbatches) accumulation
-                        scale = micro.sample_weight / max(1, len(micro_ranges))
-                        loss = weight * scale * (
-                            terms["loss_unscaled"]
-                            + self.config.value_coefficient * terms["value_mean"]
-                        )
-                    self.scaler.scale(loss).backward()
-                    profile["backward"] += time.perf_counter() - forward_start
-                    forward_start = time.perf_counter()
-                    for key in sum_keys:
-                        epoch_sums[key] = epoch_sums[key] + terms[key].float()
-                    profile["metrics"] += time.perf_counter() - forward_start
-                    used += 1
-                if used == 0:
-                    self.optimizer.zero_grad(set_to_none=True)
-                    start = time.perf_counter()
-                    continue
-                optimizer_start = time.perf_counter()
-                scale_before = self.scaler.get_scale()
-                self.scaler.unscale_(self.optimizer)
-                grad_norm = torch.nn.utils.clip_grad_norm_(
-                    self.model.parameters(), self.config.max_grad_norm
-                )
-                self.scaler.step(self.optimizer)
-                self.scaler.update()
-                profile["optimizer"] += time.perf_counter() - optimizer_start
-                stepped = self.scaler.get_scale() >= scale_before
-                if stepped:
-                    self.optimizer_steps += 1
-                else:
-                    report.optimizer_steps_skipped += 1
-
-                report.grad_norm = float(grad_norm.detach())
-                report.grad_norm_max = max(report.grad_norm_max, report.grad_norm)
-                report.scaler_scale = float(self.scaler.get_scale())
-                report.optimizer_steps = self.optimizer_steps
-                epoch_batches += 1
+                if used:
+                    epoch_batches += 1
                 start = time.perf_counter()
 
             if epoch_batches == 0:
@@ -377,19 +438,84 @@ class PPOLearner:
                 report.stopped_early = True
                 break
 
-        if report.epochs_run:
-            actor_total = float(totals["actor_count"].clamp_min(1).item())
-            value_total = float(totals["value_count"].clamp_min(1).item())
-            report.policy_loss = float(totals["policy_sum"].item()) / actor_total
-            report.value_loss = float(totals["value_sum"].item()) / value_total
-            report.entropy = float(totals["entropy_sum"].item()) / actor_total
-            report.uniform_kl = float(totals["uniform_kl_sum"].item()) / actor_total
-            report.approx_kl = float(totals["kl_sum"].item()) / actor_total
-            report.ratio_mean = float(totals["ratio_sum"].item()) / actor_total
-            report.clip_fraction = float(totals["clip_sum"].item()) / actor_total
+        self._finish_report(report, totals, sum_keys)
         profile["total"] = time.perf_counter() - update_started
         self.profile = profile
-        report.learning_rate = self.scheduler.learning_rate
+        return report
+
+    def update_streaming(
+        self,
+        plan: StreamingPlan,
+        committed_matches: Optional[int] = None,
+        generator: Optional[torch.Generator] = None,
+    ) -> UpdateReport:
+        """Update from a `StreamingPlan`, materializing one minibatch at a time.
+
+        The global minibatch size, the micro split, the exact row-weighted
+        objective, the padded final minibatch and every reported statistic are
+        identical to `update()` over the same rows; only the host memory
+        footprint differs (the whole iteration is never expanded at once).
+        """
+        rows = plan.rows
+        report = self._new_report(len(rows), plan.actor_rows, committed_matches)
+        self.model.train()
+        sum_keys = (
+            "policy_sum", "value_sum", "entropy_sum", "uniform_kl_sum",
+            "kl_sum", "ratio_sum", "clip_sum", "actor_count", "value_count",
+        )
+        totals = {key: torch.zeros((), dtype=torch.float32, device=self.device) for key in sum_keys}
+        exact = self.config.exact_row_weighted_accumulation
+        profile = self._blank_profile()
+        batch_size = self.config.global_minibatch_size
+        update_started = time.perf_counter()
+
+        for epoch in range(self.config.ppo_epochs):
+            epoch_sums = {key: torch.zeros((), dtype=torch.float32, device=self.device) for key in sum_keys}
+            epoch_batches = 0
+            start = time.perf_counter()
+            order = torch.randperm(len(rows), generator=generator)
+            for begin in range(0, len(rows), batch_size):
+                chunk = order[begin:begin + batch_size]
+                real = len(chunk)
+                padding = batch_size - real
+                valid = torch.cat([
+                    torch.ones(real, dtype=torch.bool),
+                    torch.zeros(padding, dtype=torch.bool),
+                ])
+                indices = chunk if padding == 0 else torch.cat([chunk, chunk[:1].repeat(padding)])
+                minibatch_rows = [rows[int(index)] for index in indices.tolist()]
+                minibatch = plan.buffer.to_batch(minibatch_rows, device="cpu")
+                minibatch = replace(
+                    minibatch,
+                    row_valid=valid,
+                    advantages=plan.advantages[indices],
+                )
+                profile["minibatch_select"] += time.perf_counter() - start
+                start = time.perf_counter()
+                used = self._process_minibatch(
+                    minibatch, sum_keys, epoch_sums, exact, profile, report
+                )
+                if used:
+                    epoch_batches += 1
+                start = time.perf_counter()
+
+            if epoch_batches == 0:
+                break
+            for key in sum_keys:
+                totals[key] = totals[key] + epoch_sums[key]
+            actor_total = float(epoch_sums["actor_count"].clamp_min(1).item())
+            epoch_kl = float(epoch_sums["kl_sum"].item()) / actor_total
+            profile["epoch_sync"] += time.perf_counter() - start
+            report.epoch_approx_kl.append(epoch_kl)
+            report.epochs_run = epoch + 1
+            start = time.perf_counter()
+            if epoch_kl > self.config.target_approx_kl:
+                report.stopped_early = True
+                break
+
+        self._finish_report(report, totals, sum_keys)
+        profile["total"] = time.perf_counter() - update_started
+        self.profile = profile
         return report
 
     # -- checkpointing --------------------------------------------------------

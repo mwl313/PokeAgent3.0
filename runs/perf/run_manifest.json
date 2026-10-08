@@ -8,29 +8,30 @@
     "sm_86",
     "sm_90"
   ],
-  "command": "python scripts/bench_pa3_end_to_end.py --games 2048 --envs 1024 --workers 16 --repeats 3 --mode full --observations fixed --precision fp16 --inference-mode --candidate-wire packed --device cuda:0 --microbatch 1024 --report runs/perf/v2_micro_1024_x3.json --checkpoint runs/perf/v2_ckpt.pt --tag v2-micro-1024-x3",
+  "command": "python scripts/bench_pa3_end_to_end.py --games 10000 --envs 1024 --workers 16 --repeats 1 --mode full --observations fixed --precision fp16 --inference-mode --candidate-wire packed --device cuda:0 --microbatch 1024 --streaming-minibatch --report runs/perf/v2_stream_10k.json --checkpoint runs/perf/v2_ckpt.pt --tag v2-stream-10k",
   "config": {
     "candidate_wire": "packed",
     "device": "cuda:0",
     "envs": 1024,
-    "games": 2048,
+    "games": 10000,
     "global_minibatch": 4096,
     "inference_mode": true,
     "microbatch": 1024,
     "mode": "full",
     "observations": "fixed",
     "precision": "fp16",
-    "repeats": 3,
+    "repeats": 1,
     "seed": 20261006,
+    "streaming_minibatch": true,
     "workers": 16
   },
   "cuda_runtime": "12.6",
   "dataset_id": "mb-mc-v3-userteam-all-train",
   "dataset_manifest_sha256": "f0509c08544c89a0b0c043218e33795c91af7af2f78e2d6fb83bae69f3babaef",
   "git_branch": "optimization/pa3-realpolicy-throughput",
-  "git_diff_hash": "13c1f5050807efdba7a183daa945dd8830f73b9daceb14892cd32d02334611cc",
+  "git_diff_hash": "3e84208c98b5c102e3186fa7cd3493a4efe821b5a49c1a3448bbf83ab4440a42",
   "git_dirty": true,
-  "git_sha": "33bac069af01df92a81aa54400454c9f5f5ca03b",
+  "git_sha": "78728bf159c0aa82bc66e8c37fc466ec8c36d23e",
   "gpus": [
     {
       "driver_version": "580.178.04",
@@ -57,6 +58,6 @@
   ],
   "python": "3.12.3",
   "readiness_note": "readiness_check is 10/16 PASS; this benchmark does not change it",
-  "run_id": "bench-1791474324-v2-micro-1024-x3",
+  "run_id": "bench-1791474736-v2-stream-10k",
   "torch": "2.14.0+cu126"
 }

@@ -82,6 +82,21 @@ class InlineObservationStore(ObservationStore):
         }
         return ObservationBatch.from_compact_numpy(combined)
 
+    def stacked_indices(self, indices) -> ObservationBatch:
+        """Stack only the selected rows (streaming minibatch materialization)."""
+        import numpy as _np
+
+        chosen = [self._rows[int(index)] for index in indices]
+        if not chosen:
+            raise ValueError("observation selection is empty")
+        if len(chosen) == 1:
+            return ObservationBatch.from_compact_numpy(chosen[0])
+        combined = {
+            key: _np.concatenate([row[key] for row in chosen], axis=0)
+            for key in chosen[0]
+        }
+        return ObservationBatch.from_compact_numpy(combined)
+
 
 @dataclass
 class RolloutRow:
@@ -390,6 +405,12 @@ class RolloutBuffer:
             row.observation_ref == index for index, row in enumerate(rows)
         ):
             observations = self.stacked_observations()
+        elif hasattr(self.observation_store, "stacked_indices"):
+            # Streaming path: materialize only the selected rows instead of
+            # stacking the whole iteration and slicing it.
+            observations = self.observation_store.stacked_indices(
+                [row.observation_ref for row in rows]
+            )
         else:
             observations = self.observation(rows[0].observation_ref)
             if len(rows) > 1:

@@ -109,3 +109,30 @@ Adoption note: `PPOConfig.microbatch_size` still defaults to the pinned 256.
 The 1024 setting is a measured launcher option
 (`bench_pa3_end_to_end.py --microbatch 1024`); the two-rank DDP path
 (`256 × 8 × 2`) must re-validate its own split before any change there.
+
+## P1.3 streaming minibatch materialization (opt-in, memory win)
+
+`RolloutBuffer.to_batch` can now materialize only the selected rows
+(`InlineObservationStore.stacked_indices`), and
+`PPOLearner.prepare_streaming` / `update_streaming` keep the iteration as
+compact rows plus one FP32 advantage vector, expanding one global minibatch at
+a time. The objective, the micro split, the padded final minibatch and every
+reported statistic are identical to `update()` (same helpers).
+
+Measured, 2,048-match iteration with microbatch 1024:
+
+| variant | PPO wall s | all-in games/s | peak RSS | GPU reserved |
+|---|---:|---:|---:|---:|
+| whole-iteration materialization | 42.9 | 31.57 | 5.13 GiB | 9.25 GiB |
+| streaming minibatch | 43.3 | 30.24 | **3.59 GiB** | 9.25 GiB |
+
+Speed is neutral (within repeat noise); the win is memory, and the 10,240-match
+confirmation shows the intended slope: collect 100.2 s, PPO 206.0 s,
+checkpoint 0.63 s, **all-in 33.37 games/s, peak RSS 7.34 GiB** (versus 18.0 GiB
+for the whole-iteration path at the same scale). 136,259 rows, 136 optimizer
+steps, 0 skipped, KL 0.0051 (epochs 0.0070/0.0046/0.0041/0.0047), ratio 1.0,
+recompute 6.8e-5 within the fp16 gate, 0 operational errors.
+
+The streaming path stays opt-in (`--streaming-minibatch`) until the two-rank
+path is validated; it is the recommended single-process setting because it
+removes the whole-iteration expansion that pushed the old run to 18–25 GiB.

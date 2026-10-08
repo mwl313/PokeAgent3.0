@@ -36,6 +36,13 @@ the measured evidence that should drive them.
   41.8–42.8 s, checkpoint 0.54–0.57 s inside the window, 28 steps, 0 skipped,
   GPU reserved 9.27 GiB of the 28 GiB budget. Recorded as a launcher option;
   the pinned default stays 256 and the DDP split keeps its own validation.
+* **P1.3 streaming minibatch (new, memory win):** `prepare_streaming` /
+  `update_streaming` expand one global minibatch at a time from the compact
+  store. Speed is neutral (2k: PPO 42.9 → 43.3 s) but the 10,240-match peak RSS
+  falls from **18.0 GiB to 7.34 GiB**, and the full 10,240-match all-in is
+  **33.37 games/s** (collect 100.2 s, PPO 206.0 s, checkpoint 0.63 s,
+  136,259 rows, 136 steps, 0 skipped, KL 0.0051, recompute 6.8e-5, 0 errors).
+  Opt-in via `--streaming-minibatch` until the two-rank path is validated.
 * 10,240-match scale reference (from the v1.2 commit): collect 96.8 s,
   PPO 290.7 s, 26.43 games/s, 18.0 GiB peak RSS. The v2 correctness changes are
   metric/accumulation corrections, not speed claims; the PPO wall is
