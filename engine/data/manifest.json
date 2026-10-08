@@ -39,8 +39,8 @@
   "dataset": {
     "id": "mb-mc-v3-userteam-all-train",
     "schema": "pa3-team-record-v2",
-    "manifest_sha256": "a74a6b4bdb4943247f5bc2ab4c479b152072417074c1da58ec1e0a2367495f8e",
+    "manifest_sha256": "f0509c08544c89a0b0c043218e33795c91af7af2f78e2d6fb83bae69f3babaef",
     "train_teams": 1137,
-    "source_input_sha256": "35553944731b5acee26685e3146cc1e06151e33d108eec91def3d7604ac16880"
+    "source_input_sha256": "3f3bc36d54e01a553c4026665ad7f7cb207dff7c25e77c13859a355821f12344"
   }
 }

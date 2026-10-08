@@ -190,6 +190,10 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const {record, receipt} = buildRecord(dir);
   const teamsPath = path.join(dir, 'teams.jsonl');
   fs.writeFileSync(teamsPath, JSON.stringify(record) + '\n');
+  const confirmationPath = path.join(dir, 'confirmations.json');
+  const confirmations = fs.existsSync(confirmationPath)
+    ? JSON.parse(fs.readFileSync(confirmationPath, 'utf8')).confirmations
+    : [];
   const summary = {
     submission: SUBMISSION,
     artifacts: Object.fromEntries(['html/c2cfbd453aa9172e.html', 'teams/UT20261008.txt', 'teams.jsonl']
@@ -200,9 +204,11 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       base_ability_ambiguity: receipt.base_ability_ambiguity,
       normalized_team: receipt.normalized_team.map(set => ({species: set.species, ability: set.ability, item: set.item, moves: set.moves})),
     },
+    user_confirmations: confirmations,
     notes: [
       'The source text is preserved verbatim; nothing in teams/UT20261008.txt was edited.',
       'The pinned reference accepts the team as written and resolves the declared Mega-form ability line to the base forme before battle.',
+      'Values the pinned reference had to resolve are confirmed by the user in confirmations.json; the source text itself is never edited.',
       'No move, item, nature or allocation value was changed or imputed.',
     ],
   };

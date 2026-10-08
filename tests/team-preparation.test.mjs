@@ -164,10 +164,16 @@ test('the approved manual source is imported without touching the frozen v2 reco
   assert.equal(resolution.reference_value, 'Blaze');
   assert.equal(resolution.policy, 'reference_validator_base_form_default');
   assert.deepEqual(resolution.base_ability_choices, ['Blaze', 'Solar Power']);
-  assert.equal(resolution.user_confirmation_required, true);
+  // The user confirmed Blaze explicitly (2026-10-08); the source text stays verbatim.
+  assert.equal(resolution.user_confirmation_required, false);
+  assert.equal(resolution.user_confirmed.by, 'user');
+  assert.equal(resolution.user_confirmed.resolved_value, 'Blaze');
   assert.deepEqual(manual[0].members.find(m => m.species_id === 'charizard').format_defaults.ability,
     {defaulted_by_format: true, policy: 'reference_validator_base_form_default', source_ability: 'Drought',
-      value: 'Blaze', base_ability_choices: ['Blaze', 'Solar Power'], user_confirmation_required: true});
+      value: 'Blaze', base_ability_choices: ['Blaze', 'Solar Power'], user_confirmation_required: false,
+      user_confirmed: resolution.user_confirmed});
+  assert.deepEqual(manifest.user_confirmations.map(row => [row.team_id, row.resolved_value, row.by]),
+    [[manual[0].team_id, 'Blaze', 'user']]);
   // Source index accounts for every row including the manual submission.
   const indexV3 = readRowsV3('source-index.jsonl');
   assert.equal(indexV3.length, 1208);

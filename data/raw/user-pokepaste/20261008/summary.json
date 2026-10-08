@@ -153,9 +153,21 @@
       }
     ]
   },
+  "user_confirmations": [
+    {
+      "member_index": 0,
+      "species": "Charizard",
+      "field": "ability",
+      "resolved_value": "Blaze",
+      "confirmed_by": "user",
+      "confirmed_at": "2026-10-08",
+      "statement": "charizard is blaze so you are correct"
+    }
+  ],
   "notes": [
     "The source text is preserved verbatim; nothing in teams/UT20261008.txt was edited.",
     "The pinned reference accepts the team as written and resolves the declared Mega-form ability line to the base forme before battle.",
+    "Values the pinned reference had to resolve are confirmed by the user in confirmations.json; the source text itself is never edited.",
     "No move, item, nature or allocation value was changed or imputed."
   ]
 }

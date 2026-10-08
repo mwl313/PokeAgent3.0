@@ -90,6 +90,28 @@ export function splitGroups(ids) {
 function issue(code, member, details) { return {code, member_index: member, details}; }
 
 /**
+ * The user's own confirmation for a value the pinned reference had to resolve
+ * (today: the manual submission's pre-Mega ability). It never edits the saved
+ * source text; it only clears the "needs confirmation" flag on the recorded
+ * resolution and attaches where the confirmation came from.
+ */
+export function applyUserConfirmations(resolutions, confirmations) {
+  for (const resolution of resolutions) {
+    const match = confirmations.find(entry =>
+      Number(entry.member_index) === resolution.member_index
+      && entry.field === resolution.field
+      && toID(entry.resolved_value) === toID(resolution.reference_value));
+    if (!match) continue;
+    resolution.user_confirmation_required = false;
+    resolution.user_confirmed = {
+      by: match.confirmed_by, at: match.confirmed_at, statement: match.statement,
+      resolved_value: resolution.reference_value,
+    };
+  }
+  return resolutions;
+}
+
+/**
  * A source that declares a Mega forme and lists that forme's ability is a
  * deterministic case for the pinned reference: it rewrites the set to the base
  * forme and fills the base-form ability with the first legal one. That default
@@ -238,7 +260,8 @@ function battleMembers(result, record, source, resolutions = []) {
         defaults.ability = resolution
           ? {defaulted_by_format: true, policy: resolution.policy, source_ability: resolution.source_value,
             value: set.ability, base_ability_choices: resolution.base_ability_choices,
-            user_confirmation_required: resolution.user_confirmation_required}
+            user_confirmation_required: resolution.user_confirmation_required,
+            ...(resolution.user_confirmed ? {user_confirmed: resolution.user_confirmed} : {})}
           : {defaulted_by_format: true, policy: 'unique_reference_base_ability', value: set.ability};
       }
       return {
@@ -283,6 +306,7 @@ export function prepare(outputDir = path.join(ROOT, 'data/teams', DATASET_ID), o
   for (const source of sources) {
     const root = path.join(ROOT, source.relative);
     let records;
+    let confirmations = [];
     if (source.kind === 'vgcpastes') {
       const collection = readJSON(path.join(ROOT, `docs/20261006-${source.tab}-team-collection.json`));
       for (const [name, digest] of Object.entries(collection.artifact_sha256)) {
@@ -302,9 +326,13 @@ export function prepare(outputDir = path.join(ROOT, 'data/teams', DATASET_ID), o
       assert.equal(stable(records[0]), stable(rebuilt), 'Manual source record is stale; re-run scripts/import_user_pokepaste.mjs');
       const summary = readJSON(path.join(root, 'summary.json'));
       assert.equal(summary.reference_validation.verdict, 'accepted_by_pinned_reference');
+      const confirmationFile = readJSON(path.join(root, 'confirmations.json'));
+      assert.equal(confirmationFile.submission_id, records[0].source.team_id);
+      confirmations = confirmationFile.confirmations;
       inputs.push({tab: source.source_tab, provider: source.provider, path: source.relative, records: records.length,
         teams_jsonl_sha256: hash(fs.readFileSync(path.join(root, 'teams.jsonl'))),
         summary_sha256: hash(fs.readFileSync(path.join(root, 'summary.json'))),
+        confirmations_sha256: hash(fs.readFileSync(path.join(root, 'confirmations.json'))),
         raw_html_sha256: hash(fs.readFileSync(path.join(root, records[0].raw_html_path))),
         team_text_sha256: hash(fs.readFileSync(path.join(root, records[0].team_text_path)))});
     }
@@ -315,6 +343,7 @@ export function prepare(outputDir = path.join(ROOT, 'data/teams', DATASET_ID), o
       assert.equal(hash(fs.readFileSync(path.join(root, record.team_text_path))), record.team_text_sha256, 'Saved team text changed');
       const result = normalizeRecord(record, source.tab,
         {approvedMegaAbilityDefault: source.kind === 'user' && options.approvedMegaAbilityDefault !== false});
+      if (source.kind === 'user') applyUserConfirmations(result.mega_ability_resolutions || [], confirmations);
       const sourceMeta = sourceRecord(record, source, result.normalizations || [], result.mega_ability_resolutions || []);
       if (result.problems.length) {
         quarantined.push({source: sourceMeta, reasons: result.problems, reference_problems: result.reference_problems || [], raw_members: record.members});
@@ -419,6 +448,11 @@ export function prepare(outputDir = path.join(ROOT, 'data/teams', DATASET_ID), o
         approval: USER_SUBMISSION.approval, scope_exception: USER_SUBMISSION.scope_exception},
     }));
     manifest.documented_normalizations = documentedNormalizations;
+    manifest.user_confirmations = documentedNormalizations.filter(row => row.user_confirmed).map(row => ({
+      source_team_id: row.source_team_id, team_id: row.team_id, member_index: row.member_index,
+      field: row.field, source_value: row.source_value, resolved_value: row.reference_value,
+      ...row.user_confirmed,
+    }));
     manifest.scope_exception_note = 'The only new accepted source in this dataset is the single user-approved Pokepaste. No crawl, discovery or automatic refresh ran, and no other team was added.';
   }
   // Write to a temporary sibling and refuse to replace a different frozen dataset.

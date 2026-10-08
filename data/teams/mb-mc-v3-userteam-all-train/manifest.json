@@ -25,12 +25,13 @@
       "path": "data/raw/user-pokepaste/20261008",
       "records": 1,
       "teams_jsonl_sha256": "b178252d591ccf14e9e1d18a5c6c4c96e6a649849fc40e391d312ddc01147165",
-      "summary_sha256": "42d5c4c5e0079a1c54381a554046eda5b75104464d88740850211ae1ba8f0c42",
+      "summary_sha256": "befc54b0d69429bc21fd4ad01d0e5156c8c2e4e34e5b73f4b6a5caa5e62b9c15",
+      "confirmations_sha256": "d2ccf9d0082411db5ff29ff653eaa1c3b3139304469a8afb36fcf782a0557279",
       "raw_html_sha256": "f659dfdba19f992555f08c6fa2365f6340002aac8fb5a691f053e4a10e6b9d28",
       "team_text_sha256": "b2efe483869c3ea5896b0f3212282b7e86cea77ca2e9a03612ab42b58849ca3c"
     }
   ],
-  "source_input_sha256": "35553944731b5acee26685e3146cc1e06151e33d108eec91def3d7604ac16880",
+  "source_input_sha256": "3f3bc36d54e01a553c4026665ad7f7cb207dff7c25e77c13859a355821f12344",
   "source_rows": 1208,
   "accepted_source_rows": 1152,
   "quarantined_source_rows": 56,
@@ -109,15 +110,34 @@
         "Blaze",
         "Solar Power"
       ],
-      "user_confirmation_required": true,
+      "user_confirmation_required": false,
+      "user_confirmed": {
+        "by": "user",
+        "at": "2026-10-08",
+        "statement": "charizard is blaze so you are correct",
+        "resolved_value": "Blaze"
+      },
       "source_team_id": "UT20261008",
       "team_id": "pa3-e06f6fdfc7d1657067bc846c248e8b657197dffb31e1dc23351106e88abacede",
       "source_url": "https://pokepast.es/c2cfbd453aa9172e"
     }
   ],
+  "user_confirmations": [
+    {
+      "source_team_id": "UT20261008",
+      "team_id": "pa3-e06f6fdfc7d1657067bc846c248e8b657197dffb31e1dc23351106e88abacede",
+      "member_index": 0,
+      "field": "ability",
+      "source_value": "Drought",
+      "resolved_value": "Blaze",
+      "by": "user",
+      "at": "2026-10-08",
+      "statement": "charizard is blaze so you are correct"
+    }
+  ],
   "scope_exception_note": "The only new accepted source in this dataset is the single user-approved Pokepaste. No crawl, discovery or automatic refresh ran, and no other team was added.",
   "artifact_sha256": {
-    "all.jsonl": "09ce448afeff20861a398548caae230da6ebc9ae74be78a0e832c21fbf5699e9",
+    "all.jsonl": "dfdc5af1e14bd7b8ec220f2431fa1c79489c5d0b2e6b3a52ef0179a39da4f652",
     "all_teams.txt": "f8e5f408612189a2e1a0a5b95730affc2cb392d05f1166ed708ec648309349fa",
     "dev.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "dev.showdown.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -128,7 +148,7 @@
     "inventory.json": "7bedb4300681becfa6e5ea7f5e3c21033520ce9cc2df2aff320421e4b6079dcb",
     "quarantine.jsonl": "3bfdf14c3cd4db9c6e57fead2227dc0b5ea62ed5ae092eb619a84b349640ad7b",
     "source-index.jsonl": "6eb70cce13014dec66b333319f78ce65f0343fe5b6f172af39084351c10e71fb",
-    "train.jsonl": "09ce448afeff20861a398548caae230da6ebc9ae74be78a0e832c21fbf5699e9",
+    "train.jsonl": "dfdc5af1e14bd7b8ec220f2431fa1c79489c5d0b2e6b3a52ef0179a39da4f652",
     "train.showdown.jsonl": "fe1d153137ea577f448b7b8e707c0465eef3fbe86040860dd5a7dfef4effae3b"
   }
 }

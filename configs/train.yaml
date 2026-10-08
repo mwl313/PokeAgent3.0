@@ -97,7 +97,7 @@ teams:
     crawled, discovered or added.
   dataset_id: mb-mc-v3-userteam-all-train
   dataset_manifest: data/teams/mb-mc-v3-userteam-all-train/manifest.json
-  dataset_manifest_sha256: a74a6b4bdb4943247f5bc2ab4c479b152072417074c1da58ec1e0a2367495f8e
+  dataset_manifest_sha256: f0509c08544c89a0b0c043218e33795c91af7af2f78e2d6fb83bae69f3babaef
   dataset_schema: pa3-team-record-v2
   dataset_schema_document: data/schemas/team-record-v2.schema.json
   train_path: data/teams/mb-mc-v3-userteam-all-train/train.jsonl

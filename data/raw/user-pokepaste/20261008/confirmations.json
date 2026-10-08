@@ -1,0 +1,16 @@
+{
+  "schema": "pa3-manual-source-confirmations-v1",
+  "submission_id": "UT20261008",
+  "note": "The user's own confirmations for values the pinned reference had to resolve for this manual submission. They are recorded here instead of editing the verbatim source text.",
+  "confirmations": [
+    {
+      "member_index": 0,
+      "species": "Charizard",
+      "field": "ability",
+      "resolved_value": "Blaze",
+      "confirmed_by": "user",
+      "confirmed_at": "2026-10-08",
+      "statement": "charizard is blaze so you are correct"
+    }
+  ]
+}
