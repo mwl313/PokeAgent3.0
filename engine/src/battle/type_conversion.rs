@@ -49,6 +49,10 @@ pub(super) struct ActiveMove<'a> {
     /// `moves:growth.onModifyMove`: the declared boosts replaced for this
     /// action (the sun branch grants +2/+2 as one boost).
     pub boost_override: Option<[i8; 7]>,
+    /// One id per resolved move instance: the reference's `attackedBy` keeps a
+    /// single entry per move with that move's accumulated damage, so the
+    /// per-hit damage sites merge into the entry carrying this id.
+    pub move_uid: u32,
 }
 impl Deref for ActiveMove<'_> {
     type Target = crate::assets::Move;
@@ -81,6 +85,7 @@ impl BattleState {
             infiltrates: false,
             fling: None,
             boost_override: None,
+            move_uid: 0,
         };
         // `abilities:stalwart.onModifyMove` (priority 1): the holder's moves
         // ignore redirection. Stalwart has no `breakable` flag, so Mold Breaker

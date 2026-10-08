@@ -899,6 +899,15 @@ pub enum MoveBehavior {
     FellStinger,
     /// `lastresort`: fails until every other move slot has been used.
     LastResort,
+    /// `counter` / `mirrorcoat`: the user gains a one-turn retaliation
+    /// volatile at the start of the turn, records the last qualifying hit in
+    /// it, and damages that attacker for `2 * recorded damage`.
+    Counter,
+    MirrorCoat,
+    /// `metalburst` / `comeuppance`: damages the last non-ally attacker for
+    /// `floor(1.5 * recorded damage)` and fails unless it hit this turn.
+    MetalBurst,
+    Comeuppance,
     /// `clearsmog`: damages and then resets the target's boost stages.
     ClearSmog,
     /// `powerswap` / `guardswap`: the two attack (or defense) boost stages swap
@@ -1103,6 +1112,10 @@ impl MoveBehavior {
             "spite" => Self::Spite,
             "fellstinger" => Self::FellStinger,
             "lastresort" => Self::LastResort,
+            "counter" => Self::Counter,
+            "mirrorcoat" => Self::MirrorCoat,
+            "metalburst" => Self::MetalBurst,
+            "comeuppance" => Self::Comeuppance,
             "helpinghand" => Self::HelpingHand,
             "followme" => Self::FollowMe,
             "ragepowder" => Self::RagePowder,
@@ -1268,6 +1281,15 @@ pub struct NativeEffects {
     pub trapper: Id,
     /// `moves:aquaring.condition`: the residual heal volatile.
     pub aqua_ring: Id,
+    /// `moves:counter.condition`: the one-turn retaliation volatile that
+    /// records the last qualifying Physical hit (`moves:mirrorcoat.condition`
+    /// does the same for Special hits).
+    pub counter: Id,
+    pub mirrorcoat: Id,
+    /// `moves:counter` / `moves:mirrorcoat` (the moves, not the conditions):
+    /// their `damageCallback` reads the matching volatile.
+    pub counter_move: Id,
+    pub mirrorcoat_move: Id,
     /// `moves:powerswap`: the Stat Swap behaviour needs to know which pair of
     /// stages it moves.
     pub power_swap_move: Id,
@@ -1584,6 +1606,10 @@ pub enum QueuedKind {
     /// Reference `priorityChargeMove` (queue order 107): the queued move's
     /// `priorityChargeCallback` runs before every move of the turn.
     PriorityCharge,
+    /// Reference `beforeTurnMove` (queue order 5): the queued move's
+    /// `beforeTurnCallback` runs before every move of the turn (Counter and
+    /// Mirror Coat add their one-turn retaliation volatile).
+    BeforeTurnMove,
     Switch,
     RunSwitch,
     Mega,

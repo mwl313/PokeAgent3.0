@@ -1101,6 +1101,7 @@ impl BattleState {
         dex: &Dex,
         actor: Entity,
         targets: &[Entity],
+        damages: &[u16],
         m: &ActiveMove<'_>,
     ) -> Result<()> {
         if m.category == Category::Status {
@@ -1113,6 +1114,41 @@ impl BattleState {
                     target,
                     0,
                     Priority {
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
+            // `moves:counter|mirrorcoat.condition.onDamagingHit`: a volatile
+            // handler, so it precedes the holder's ability handlers. The last
+            // qualifying hit this turn is recorded with its attacker.
+            if self
+                .mon(target)
+                .volatiles
+                .contains_key(&dex.effects.counter)
+            {
+                handlers.push((
+                    target,
+                    21,
+                    Priority {
+                        sub_order: 2,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
+            if self
+                .mon(target)
+                .volatiles
+                .contains_key(&dex.effects.mirrorcoat)
+            {
+                handlers.push((
+                    target,
+                    22,
+                    Priority {
+                        sub_order: 2,
                         speed: self.mon(target).cached_speed,
                         ..Default::default()
                     },
@@ -1382,7 +1418,37 @@ impl BattleState {
             }
         }
         handlers.sort_by(|a, b| a.2.compare_left_to_right(a.3, &b.2, b.3));
-        for (target, kind, _, _) in handlers {
+        for (target, kind, _, index) in handlers {
+            if kind == 21 || kind == 22 {
+                // `onDamagingHit`: Counter records the last Physical hit this
+                // turn, Mirror Coat the last Special one, each as
+                // `2 * damage` with the attacker. `!source.isAlly(target)`
+                // gates the record.
+                let wanted = if kind == 21 {
+                    dex.effects.counter
+                } else {
+                    dex.effects.mirrorcoat
+                };
+                let category_ok = if kind == 21 {
+                    m.category == Category::Physical
+                } else {
+                    m.category == Category::Special
+                };
+                if category_ok && target.side != actor.side {
+                    let damage = damages.get(index).copied().unwrap_or(0);
+                    let Some(slot) = self.mon(actor).active_slot else {
+                        continue;
+                    };
+                    if let Some(state) = self.mon_mut(target).volatiles.get_mut(&wanted) {
+                        state.values = vec![
+                            i64::from(damage) * 2,
+                            i64::from(actor.side),
+                            i64::from(slot),
+                        ];
+                    }
+                }
+                continue;
+            }
             if kind == 1 {
                 if m.contact {
                     self.item_damage(dex, actor, target, self.mon(actor).stats[0] / 6)?;

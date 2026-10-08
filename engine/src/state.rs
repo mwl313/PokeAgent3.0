@@ -126,6 +126,21 @@ pub struct MoveState {
     pub used: bool,
 }
 
+/// One reference `Pokemon#attackedBy` entry: the attacker, the total damage of
+/// that move (accumulated across a multi-hit move's hits) and the move
+/// instance it belongs to. `move_uid` merges the per-hit records of one move
+/// instance exactly like the reference's `moveDamage` accumulator.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AttackedBy {
+    pub move_uid: u32,
+    pub source_side: SideId,
+    /// Reference `source.getSlot()`: the attacker's absolute active slot, so a
+    /// slot that a pivot refilled before the retaliation resolves is read
+    /// through `getAtSlot`, exactly like the reference.
+    pub source_slot: u8,
+    pub damage: u16,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PokemonState {
     pub active_turns: u16,
@@ -214,6 +229,14 @@ pub struct PokemonState {
     /// does not reset it).
     #[serde(default)]
     pub last_move_target_location: i8,
+    /// Reference `attackedBy`: one entry per damaging move this Pokémon took
+    /// this turn, with the move's total damage and its attacker. Metal Burst
+    /// and Comeuppance read the last non-ally entry and fail once the turn
+    /// rolls over. Entries are cleared at the turn boundary (`nextTurn` leaves
+    /// older entries in the reference list, but every reader gates on
+    /// `thisTurn`, so a cleared bucket is behaviourally identical).
+    #[serde(default)]
+    pub attacked_by: Vec<AttackedBy>,
     /// Reference `timesAttacked`: landed hits this Pokémon has taken since it
     /// last entered the field. Rage Fist's `basePowerCallback` reads it.
     #[serde(default)]
@@ -348,6 +371,7 @@ impl PokemonState {
             last_move: 0,
             last_move_target_location: 0,
             times_attacked: 0,
+            attacked_by: Vec::new(),
             move_this_turn_result: MoveResult::Undefined,
             move_last_turn_result: MoveResult::Undefined,
             hurt_this_turn: 0,
@@ -409,12 +433,16 @@ impl Outcome {
 /// `move.sourceEffect`).
 /// 15: requests carry `revive_targets` / `SlotRequest.reviving`, and sides
 /// persist the `revivalblessing` slot condition.
-pub const SNAPSHOT_SCHEMA: u32 = 16;
+pub const SNAPSHOT_SCHEMA: u32 = 17;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BattleState {
     schema: u32,
     pub(crate) next_effect_order: u32,
+    /// Monotonic id for one resolved move instance (`attackedBy` accumulation
+    /// and Metal Burst's per-move damage). Deliberately separate from
+    /// `next_effect_order`, whose value participates in event tie-breaks.
+    pub(crate) next_move_uid: u32,
     asset_digest: String,
     pub(crate) sides: [SideState; 2],
     pub(crate) knowledge: [Knowledge; 2],
@@ -566,6 +594,7 @@ impl BattleState {
         let mut state = Self {
             schema: SNAPSHOT_SCHEMA,
             next_effect_order: 0,
+            next_move_uid: 0,
             asset_digest: dex.asset_digest.clone(),
             sides,
             knowledge: Default::default(),
@@ -626,6 +655,16 @@ impl BattleState {
             .checked_add(1)
             .ok_or_else(|| EngineError::InvalidInput("effect creation order exhausted".into()))?;
         Ok(order)
+    }
+
+    /// One id per resolved move instance, used to accumulate `attackedBy`
+    /// entries across a multi-hit move's hits.
+    pub(crate) fn allocate_move_uid(&mut self) -> Result<u32> {
+        let uid = self.next_move_uid;
+        self.next_move_uid = uid
+            .checked_add(1)
+            .ok_or_else(|| EngineError::InvalidInput("move instance id exhausted".into()))?;
+        Ok(uid)
     }
 
     pub fn snapshot(&self) -> Result<Vec<u8>> {
@@ -790,6 +829,10 @@ impl BattleState {
                                     .chain(m.moves.iter())
                                     .any(|mv| mv.id == m.last_move)))
                     || !(-2..=2).contains(&m.last_move_target_location)
+                    || m
+                        .attacked_by
+                        .iter()
+                        .any(|entry| entry.source_side.index() > 1 || entry.source_slot > 1)
                 {
                     return Err(EngineError::InvalidInput("invalid snapshot Pokémon".into()));
                 }
@@ -1151,7 +1194,20 @@ impl BattleState {
                         effect.duration.is_none()
                             && effect.values.is_empty()
                             && effect.source.is_some()
-                    
+                    } else if id == dex.effects.counter || id == dex.effects.mirrorcoat {
+                        // `moves:counter|mirrorcoat.condition`: a one-turn
+                        // retaliation volatile. Before a qualifying hit it
+                        // carries nothing (`slot === null`); afterwards
+                        // `[2 * damage, attacker side, attacker slot]`. The
+                        // source is the holder, exactly like the reference's
+                        // sourceless `addVolatile('counter')`.
+                        effect.duration == Some(1)
+                            && (effect.values.is_empty()
+                                || (effect.values.len() == 3
+                                    && effect.values[0] >= 0
+                                    && (0..=1).contains(&effect.values[1])
+                                    && (0..=1).contains(&effect.values[2])))
+                            && effect.source.is_some()
                     } else {
                         return Err(EngineError::Unsupported(format!("snapshot volatile {id}")));
                     };

@@ -277,6 +277,12 @@ pub enum FixedDamage {
     Endeavor,
     /// Final Gambit: the user's current HP, fainting the user immediately.
     UserHp,
+    /// Counter / Mirror Coat: the recorded `2 * damage` of the last qualifying
+    /// hit this turn, or 1 when that recorded value is zero.
+    CounterStored,
+    /// Metal Burst / Comeuppance: `floor(1.5 * damage)` of the last
+    /// non-ally damage this turn, or 1 when that recorded value is zero.
+    LastDamagedBy,
 }
 
 #[derive(Debug, Clone)]
@@ -442,6 +448,27 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:superfang.damageCallback",
     "moves:endeavor.damageCallback",
     "moves:finalgambit.damageCallback",
+    // Retaliation family: Counter / Mirror Coat record the last qualifying hit
+    // in their one-turn volatile; Metal Burst / Comeuppance read the turn's
+    // `attackedBy` record and retarget the recorded attacker.
+    "moves:counter.beforeTurnCallback",
+    "moves:counter.damageCallback",
+    "moves:counter.onTry",
+    "moves:counter.condition.onStart",
+    "moves:counter.condition.onRedirectTarget",
+    "moves:counter.condition.onDamagingHit",
+    "moves:mirrorcoat.beforeTurnCallback",
+    "moves:mirrorcoat.damageCallback",
+    "moves:mirrorcoat.onTry",
+    "moves:mirrorcoat.condition.onStart",
+    "moves:mirrorcoat.condition.onRedirectTarget",
+    "moves:mirrorcoat.condition.onDamagingHit",
+    "moves:metalburst.damageCallback",
+    "moves:metalburst.onTry",
+    "moves:metalburst.onModifyTarget",
+    "moves:comeuppance.damageCallback",
+    "moves:comeuppance.onTry",
+    "moves:comeuppance.onModifyTarget",
     "moves:acrobatics.basePowerCallback",
     "moves:electroball.basePowerCallback",
     "moves:eruption.basePowerCallback",
@@ -1154,6 +1181,9 @@ const HANDLED_VOLATILES: &[&str] = &[
     "curse",
     // The Outrage / Thrash / Petal Dance / Raging Fury rampage lock.
     "lockedmove",
+    // Counter / Mirror Coat's one-turn recorded-hit volatiles.
+    "counter",
+    "mirrorcoat",
 ];
 
 /// Status/volatile payloads of every declared effect must already have native
@@ -1905,6 +1935,18 @@ impl Dex {
                         Some(key) if key.ends_with("finalgambit.damageCallback") => {
                             Some(FixedDamage::UserHp)
                         }
+                        Some(key)
+                            if key.ends_with("counter.damageCallback")
+                                || key.ends_with("mirrorcoat.damageCallback") =>
+                        {
+                            Some(FixedDamage::CounterStored)
+                        }
+                        Some(key)
+                            if key.ends_with("metalburst.damageCallback")
+                                || key.ends_with("comeuppance.damageCallback") =>
+                        {
+                            Some(FixedDamage::LastDamagedBy)
+                        }
                         _ => None,
                     },
                 },
@@ -2141,6 +2183,10 @@ impl Dex {
             trapped: lookup("conditions", "trapped")?,
             trapper: lookup("conditions", "trapper")?,
             aqua_ring: lookup("conditions", "aquaring")?,
+            counter: lookup("conditions", "counter")?,
+            mirrorcoat: lookup("conditions", "mirrorcoat")?,
+            counter_move: lookup("moves", "counter")?,
+            mirrorcoat_move: lookup("moves", "mirrorcoat")?,
             power_swap_move: lookup("moves", "powerswap")?,
             items: native_items,
             no_trace_abilities,

@@ -297,6 +297,19 @@ impl BattleState {
                             .volatiles
                             .contains_key(&dex.effects.must_recharge);
                         let target = self.queued_target(dex, actor, m.id);
+                        // Reference `resolveAction`: a move declaring
+                        // `beforeTurnCallback` unshifts an order-5
+                        // `beforeTurnMove` sub-action *before* the move action
+                        // resolves its own target, and that sub-action samples
+                        // its own random target when none was chosen.
+                        let before_turn_move = matches!(
+                            dex.effects.moves[m.id as usize],
+                            MoveBehavior::Counter | MoveBehavior::MirrorCoat
+                        );
+                        let mut before_turn_location = action.target_location;
+                        if before_turn_move && before_turn_location == 0 {
+                            before_turn_location = self.random_target_location(actor, target);
+                        }
                         if recharge_lock {
                             self.sample_random_foe(actor);
                         } else {
@@ -340,6 +353,26 @@ impl BattleState {
                                 destination: NO_SLOT,
                                 priority: Priority {
                                     order: 107,
+                                    speed: self.speed(dex, actor),
+                                    ..Default::default()
+                                },
+                            });
+                        }
+                        // Reference `BattleQueue#resolveAction`: a move
+                        // declaring `beforeTurnCallback` queues a
+                        // `beforeTurnMove` action (order 5) that runs its
+                        // callback before every move of the turn.
+                        if before_turn_move {
+                            self.queue.push(QueuedAction {
+                                kind: QueuedKind::BeforeTurnMove,
+                                actor: Some(actor),
+                                move_slot: NO_SLOT,
+                                move_id: queued.move_id,
+                                source_effect: 0,
+                                target_location: before_turn_location,
+                                destination: NO_SLOT,
+                                priority: Priority {
+                                    order: 5,
                                     speed: self.speed(dex, actor),
                                     ..Default::default()
                                 },
@@ -1512,6 +1545,7 @@ impl BattleState {
         mon.hurt_this_turn = 0;
         mon.stats_raised_this_turn = false;
         mon.stats_lowered_this_turn = false;
+        mon.attacked_by.clear();
         mon.ability = mon.base_ability;
         mon.species = mon.base_species;
         mon.types = dex.species[mon.species as usize].types.clone();
@@ -1609,6 +1643,51 @@ impl BattleState {
                     );
                 }
                 QueuedKind::Residual => self.residual(dex)?,
+                QueuedKind::BeforeTurnMove => {
+                    // Reference `runAction` case `beforeTurnMove`: the queued
+                    // move's `beforeTurnCallback` runs before any move of the
+                    // turn. The action resolves its stored target first
+                    // (`getTarget`) and is skipped when no target exists; the
+                    // Counter / Mirror Coat callback then adds its one-turn
+                    // retaliation volatile (whose `onStart` clears slot and
+                    // damage).
+                    let actor = action.actor.unwrap();
+                    if !self.mon(actor).fainted && self.mon(actor).active_slot.is_some() {
+                        let target = dex.moves[action.move_id as usize].target;
+                        let resolved_loc =
+                            self.resolve_target_location(actor, target, action.target_location);
+                        if self.at_location(actor, resolved_loc).is_some() {
+                            let volatile = if dex.effects.moves[action.move_id as usize]
+                                == MoveBehavior::MirrorCoat
+                            {
+                                dex.effects.mirrorcoat
+                            } else {
+                                dex.effects.counter
+                            };
+                            if !self.mon(actor).volatiles.contains_key(&volatile) {
+                                let order = self.allocate_effect_order()?;
+                                self.mon_mut(actor).volatiles.insert(
+                                    volatile,
+                                    EffectState {
+                                        id: volatile,
+                                        duration: Some(1),
+                                        effect_order: order,
+                                        effect_order_assigned: true,
+                                        source: Some((
+                                            if actor.side == 0 {
+                                                SideId::P1
+                                            } else {
+                                                SideId::P2
+                                            },
+                                            actor.roster,
+                                        )),
+                                        ..Default::default()
+                                    },
+                                );
+                            }
+                        }
+                    }
+                }
                 QueuedKind::Mega => self.run_mega(dex, action.actor.unwrap())?,
             }
             // Reference phazing runs directly after the action and before the
@@ -1750,8 +1829,18 @@ impl BattleState {
 
     fn resolve_target_location(&mut self, actor: Entity, target: Target, loc: i8) -> i8 {
         let slot = self.mon(actor).active_slot.unwrap_or(0);
+        // Reference `Battle#getTarget` validates the stored location with
+        // `validTargetLoc`, where a `scripted` move resolves exactly like a
+        // `normal` one (adjacent slot, never the user's own). The served
+        // request still never offers it a chosen location, because
+        // `Target#chooses_target` stays false for `scripted`.
+        let valid = if target == Target::Scripted {
+            loc != 0 && loc != -(slot as i8 + 1) && (-2..=2).contains(&loc)
+        } else {
+            target.valid_location(slot, loc)
+        };
         if target != Target::RandomNormal
-            && target.valid_location(slot, loc)
+            && valid
             && let Some(e) = self.at_location(actor, loc)
         {
             if !self.mon(e).fainted {
@@ -2138,6 +2227,7 @@ impl BattleState {
         }
         let weather = self.effective_weather(dex);
         let mut action = self.active_move(dex, actor, m, behavior);
+        action.move_uid = self.allocate_move_uid()?;
         action.calls_move = called;
         action.has_bounced = call.bounced;
         // `moves:round.basePowerCallback`: a Round action that another Round
@@ -2185,6 +2275,36 @@ impl BattleState {
                 return Ok(());
             }
         }
+        // `moves:counter|mirrorcoat.onTry`: the retaliation fails without its
+        // one-turn volatile or before a qualifying hit was recorded in it
+        // (`slot === null`).
+        if matches!(behavior, MoveBehavior::Counter | MoveBehavior::MirrorCoat) {
+            let volatile = if behavior == MoveBehavior::MirrorCoat {
+                dex.effects.mirrorcoat
+            } else {
+                dex.effects.counter
+            };
+            let recorded = self
+                .mon(actor)
+                .volatiles
+                .get(&volatile)
+                .is_some_and(|state| state.values.len() == 3);
+            if !recorded {
+                self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+                return Ok(());
+            }
+        }
+        // `moves:metalburst|comeuppance.onTry`: the retaliation fails unless a
+        // non-ally damaged the user this turn (`getLastDamagedBy(true)` with
+        // its `thisTurn` flag).
+        if matches!(
+            behavior,
+            MoveBehavior::MetalBurst | MoveBehavior::Comeuppance
+        ) && self.last_damaged_by(actor).is_none()
+        {
+            self.mon_mut(actor).move_this_turn_result = MoveResult::Failed;
+            return Ok(());
+        }
         let fling_ready = behavior != MoveBehavior::Fling
             || self.fling_prepare(dex, actor, &mut action)?;
         if !fling_ready {
@@ -2217,6 +2337,67 @@ impl BattleState {
         {
             targets.clear();
             targets.push(target);
+        }
+        // `moves:counter|mirrorcoat.condition.onRedirectTarget` (priority -1)
+        // and `moves:metalburst|comeuppance.onModifyTarget` both aim the
+        // retaliation at the attacker recorded this turn, but only when no
+        // higher-priority redirector (Follow Me, Rage Powder, a redirection
+        // ability) already claimed the move. The recorded value is an absolute
+        // slot: `getAtSlot` reads whoever occupies it now, so a pivot that
+        // refilled the slot is followed, and a fainted occupant leaves Counter
+        // and Mirror Coat without a target (the reference's `-fail`) while
+        // Metal Burst and Comeuppance re-sample a live foe.
+        if matches!(
+            behavior,
+            MoveBehavior::Counter
+                | MoveBehavior::MirrorCoat
+                | MoveBehavior::MetalBurst
+                | MoveBehavior::Comeuppance
+        ) && redirected == selected
+        {
+            let counter_move = matches!(behavior, MoveBehavior::Counter | MoveBehavior::MirrorCoat);
+            let recorded = if counter_move {
+                let volatile = if behavior == MoveBehavior::MirrorCoat {
+                    dex.effects.mirrorcoat
+                } else {
+                    dex.effects.counter
+                };
+                self.mon(actor).volatiles.get(&volatile).and_then(|state| {
+                    if state.values.len() == 3 {
+                        Some((
+                            if state.values[1] == 0 {
+                                SideId::P1
+                            } else {
+                                SideId::P2
+                            },
+                            state.values[2] as u8,
+                        ))
+                    } else {
+                        None
+                    }
+                })
+            } else {
+                self.last_damaged_by(actor).map(|(side, slot, _)| (side, slot))
+            };
+            if let Some((side, slot)) = recorded {
+                match self
+                    .entity_at_slot(side, slot)
+                    .filter(|e| !self.mon(*e).fainted && self.mon(*e).hp > 0)
+                {
+                    Some(target) => {
+                        targets.clear();
+                        targets.push(target);
+                    }
+                    None if counter_move => targets.clear(),
+                    None => match self.sample_random_foe(actor) {
+                        Some(target) => {
+                            targets.clear();
+                            targets.push(target);
+                        }
+                        None => targets.clear(),
+                    },
+                }
+            }
         }
         // `moves:curse.onModifyMove` (Ghost branch): a Ghost user whose chosen
         // target is an ally - or that has no target at all - re-samples a
@@ -4146,6 +4327,9 @@ impl BattleState {
         // i.e. each damaged target's HP before this move's damage, into the
         // Emergency Exit check at the end of the action.
         let mut hit_before: SmallVec<[(Entity, u16); 4]> = SmallVec::new();
+        // Per-target damage for the `DamagingHit` event, parallel to
+        // `effect_targets` (the reference passes `damagedDamage`).
+        let mut hit_damages: SmallVec<[u16; 4]> = SmallVec::new();
         for (target, damage) in damages {
             // `abilities:disguise.onDamage` (onDamagePriority 1, so it runs
             // before Sturdy, Focus Sash and Endure): the first damaging move
@@ -4164,6 +4348,10 @@ impl BattleState {
                 hit_any = true;
                 let count = self.mon(target).times_attacked;
                 self.mon_mut(target).times_attacked = count.saturating_add(1);
+                // `abilities:disguise.onDamage` sets the damage to 0 rather
+                // than false, so the hit still records a `gotAttacked` entry.
+                self.record_attacked_by(target, actor, m.move_uid, 0);
+                hit_damages.push(0);
                 hit_before.push((target, self.mon(target).hp));
                 self.emit(
                     EventKind::Damage,
@@ -4188,6 +4376,7 @@ impl BattleState {
             let hp_before = self.mon(target).hp;
             hit_before.push((target, hp_before));
             let actual = damage.min(hp_before);
+            hit_damages.push(actual);
             total_damage += u32::from(actual);
             hit_any = true;
             self.mon_mut(target).hp -= actual;
@@ -4200,6 +4389,9 @@ impl BattleState {
             if target != actor {
                 let count = self.mon(target).times_attacked;
                 self.mon_mut(target).times_attacked = count.saturating_add(1);
+                // Reference `gotAttacked` records one entry per move with the
+                // move's accumulated damage (merged across this move's hits).
+                self.record_attacked_by(target, actor, m.move_uid, actual);
             }
             if self.mon(target).hp == 0 {
                 self.faint_queue.push(FaintData {
@@ -5093,7 +5285,7 @@ impl BattleState {
         // check runs right after the DamagingHit event, with the HP it had
         // before that event (Rough Skin-style recoil can drop it under half).
         let user_hp_before_damaging_hit = self.mon(actor).hp;
-        self.damaging_hit(dex, actor, &effect_targets, m)?;
+        self.damaging_hit(dex, actor, &effect_targets, &hit_damages, m)?;
         // `moves:ceaselessedge.onAfterHit` / `moves:stoneaxe.onAfterHit`: an
         // alive user scatters its hazard for every damaged target unless Sheer
         // Force consumed the action's secondary (`!move.hasSheerForce`).
@@ -5570,6 +5762,7 @@ impl BattleState {
                     self.mon_mut(target).disguise_busted = true;
                     let count = self.mon(target).times_attacked;
                     self.mon_mut(target).times_attacked = count.saturating_add(1);
+                    self.record_attacked_by(target, actor, m.move_uid, 0);
                     self.emit(
                         EventKind::Damage,
                         target,
@@ -5622,6 +5815,7 @@ impl BattleState {
                 if target != actor {
                     let count = self.mon(target).times_attacked;
                     self.mon_mut(target).times_attacked = count.saturating_add(1);
+                    self.record_attacked_by(target, actor, m.move_uid, actual);
                 }
                 if self.mon(target).hp == 0 {
                     self.faint_queue.push(FaintData {
@@ -5681,7 +5875,7 @@ impl BattleState {
                     }
                 }
                 let user_hp_before_damaging_hit = self.mon(actor).hp;
-                self.damaging_hit(dex, actor, std::slice::from_ref(&target), m)?;
+                self.damaging_hit(dex, actor, std::slice::from_ref(&target), &[actual], m)?;
                 self.emergency_exit_check(dex, actor, user_hp_before_damaging_hit)?;
             }
             if missed {
@@ -6623,6 +6817,32 @@ impl BattleState {
             FixedDamage::UserHp => {
                 let _ = dex;
                 Some(u32::from(self.mon(actor).hp))
+            }
+            FixedDamage::CounterStored => {
+                // `moves:counter|mirrorcoat.damageCallback`: the volatile's
+                // recorded `2 * damage`, or 1 when that value is zero.
+                let volatile = if m.id == dex.effects.counter_move {
+                    dex.effects.counter
+                } else {
+                    dex.effects.mirrorcoat
+                };
+                let stored = self
+                    .mon(actor)
+                    .volatiles
+                    .get(&volatile)
+                    .and_then(|state| state.values.first())
+                    .copied()
+                    .unwrap_or(0);
+                Some(u32::try_from(stored).unwrap_or(0).max(1))
+            }
+            FixedDamage::LastDamagedBy => {
+                // `moves:metalburst|comeuppance.damageCallback`:
+                // `floor(1.5 * damage) || 1` against the recorded attacker.
+                let damage = self
+                    .last_damaged_by(actor)
+                    .map(|(_, _, damage)| u32::from(damage))
+                    .unwrap_or(0);
+                Some((damage * 3 / 2).max(1))
             }
         }
     }
@@ -9074,6 +9294,58 @@ impl BattleState {
         Ok(true)
     }
 
+    /// Reference `Pokemon#gotAttacked`: one `attackedBy` entry per move
+    /// instance per target, carrying the damage of that move's *last* hit (the
+    /// reference replaces `moveDamage` on every hit of its hit loop and records
+    /// it once afterwards, so a multi-hit move keeps only the final hit) and
+    /// the attacker. Metal Burst and Comeuppance read the last non-ally entry.
+    fn record_attacked_by(&mut self, target: Entity, source: Entity, uid: u32, damage: u16) {
+        let Some(slot) = self.mon(source).active_slot else {
+            return;
+        };
+        let list = &mut self.mon_mut(target).attacked_by;
+        if let Some(last) = list.last_mut()
+            && last.move_uid == uid
+            && last.source_side.index() == usize::from(source.side)
+            && last.source_slot == slot
+        {
+            last.damage = damage;
+            return;
+        }
+        list.push(crate::state::AttackedBy {
+            move_uid: uid,
+            source_side: if source.side == 0 {
+                SideId::P1
+            } else {
+                SideId::P2
+            },
+            source_slot: slot,
+            damage,
+        });
+    }
+
+    /// The last `attackedBy` entry whose attacker is not an ally of `holder`,
+    /// mirroring `getLastDamagedBy(true)`. A cleared bucket behaves exactly
+    /// like the reference's stale `thisTurn: false` entries because every
+    /// reader gates on the current turn.
+    fn last_damaged_by(&self, holder: Entity) -> Option<(SideId, u8, u16)> {
+        self.mon(holder)
+            .attacked_by
+            .iter()
+            .rev()
+            .find(|entry| entry.source_side.index() != usize::from(holder.side))
+            .map(|entry| (entry.source_side, entry.source_slot, entry.damage))
+    }
+
+    /// Reference `Battle#getAtSlot`: the Pokémon currently occupying the
+    /// recorded attacker's absolute slot, or `None` when that slot is empty.
+    fn entity_at_slot(&self, side: SideId, slot: u8) -> Option<Entity> {
+        self.sides[side.index()].active[usize::from(slot)].map(|roster| Entity {
+            side: side.index() as u8,
+            roster,
+        })
+    }
+
     /// `moves:charge.condition.onAfterMove|onMoveAborted`: any Electric-type
     /// move other than Charge itself consumes the volatile (silently ending).
     fn charge_after_move(&mut self, dex: &Dex, actor: Entity, move_id: Id) -> Result<()> {
@@ -9650,6 +9922,11 @@ impl BattleState {
                 mon.hurt_this_turn = 0;
                 mon.stats_raised_this_turn = false;
                 mon.stats_lowered_this_turn = false;
+                // Reference turn-loop rollover: older `attackedBy` entries lose
+                // `thisTurn` (or drop when their attacker left the field);
+                // Metal Burst / Comeuppance only ever read the current turn, so
+                // the bucket is cleared outright.
+                mon.attacked_by.clear();
                 // Reference `choicelock.onDisableMove`: the lock is dropped
                 // lazily when the holder no longer has a Choice item (Knock
                 // Off, Trick, …) or no longer knows the locked move.
