@@ -530,6 +530,12 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     // Dire Claw's Champions secondary samples one of three major statuses and
     // applies it with `trySetStatus`; the 30% chance stays declarative.
     "moves:direclaw.secondary.onHit",
+    // Trapping family: the `trapped` volatile pins the holder for as long as
+    // the trapper stays active.
+    "moves:block.onHit",
+    "moves:meanlook.onHit",
+    "moves:jawlock.onHit",
+    "moves:spiritshackle.secondary.onHit",
     "moves:direclaw.secondaries.0.onHit",
     // Throat Chop's 100% secondary adds the two-turn sound-lock volatile.
     "moves:throatchop.secondary.onHit",
@@ -2115,6 +2121,8 @@ impl Dex {
             abilities: native_abilities,
             fling: lookup("conditions", "fling")?,
             fling_items,
+            trapped: lookup("conditions", "trapped")?,
+            trapper: lookup("conditions", "trapper")?,
             power_swap_move: lookup("moves", "powerswap")?,
             items: native_items,
             no_trace_abilities,

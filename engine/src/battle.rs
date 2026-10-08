@@ -1440,7 +1440,56 @@ impl BattleState {
         Ok(())
     }
 
+    /// `Pokemon#removeLinkedVolatiles`: the `trapped`/`trapper` pair stores the
+    /// other side as its source, so clearing either clears the partner silently
+    /// (neither condition declares an End callback).
+    fn clear_linked_trap(&mut self, dex: &Dex, e: Entity) {
+        let slot = (
+            if e.side == 0 { SideId::P1 } else { SideId::P2 },
+            e.roster,
+        );
+        if let Some(link) = self
+            .mon(e)
+            .volatiles
+            .get(&dex.effects.trapped)
+            .and_then(|state| state.source)
+        {
+            let holder = Entity {
+                side: link.0.index() as u8,
+                roster: link.1,
+            };
+            if self
+                .mon(holder)
+                .volatiles
+                .get(&dex.effects.trapper)
+                .is_some_and(|state| state.source == Some(slot))
+            {
+                self.mon_mut(holder).volatiles.remove(&dex.effects.trapper);
+            }
+        }
+        if let Some(link) = self
+            .mon(e)
+            .volatiles
+            .get(&dex.effects.trapper)
+            .and_then(|state| state.source)
+        {
+            let holder = Entity {
+                side: link.0.index() as u8,
+                roster: link.1,
+            };
+            if self
+                .mon(holder)
+                .volatiles
+                .get(&dex.effects.trapped)
+                .is_some_and(|state| state.source == Some(slot))
+            {
+                self.mon_mut(holder).volatiles.remove(&dex.effects.trapped);
+            }
+        }
+    }
+
     fn clear_volatile(&mut self, dex: &Dex, e: Entity) {
+        self.clear_linked_trap(dex, e);
         let mon = self.mon_mut(e);
         mon.boosts = [0; 7];
         mon.volatiles.clear();
@@ -4309,6 +4358,39 @@ impl BattleState {
                     )?;
                 }
                 did_anything = true;
+            } else if behavior == MoveBehavior::TrapTarget {
+                // `moves:block|meanlook.onHit`: the `trapped` volatile is added
+                // with the user as its source and the add's result is the
+                // move's success. A Ghost still receives the marker (and its
+                // public activation) but stays immune to the actual trap.
+                did_anything |= self.start_selection_volatile(
+                    dex,
+                    target,
+                    Some(actor),
+                    dex.effects.trapped,
+                    false,
+                    false,
+                )?;
+            } else if behavior == MoveBehavior::JawLock {
+                // `moves:jawlock.onHit`: both sides are pinned (each sourced by
+                // the other); the landed damage already marks the move.
+                self.start_selection_volatile(
+                    dex,
+                    target,
+                    Some(actor),
+                    dex.effects.trapped,
+                    false,
+                    false,
+                )?;
+                self.start_selection_volatile(
+                    dex,
+                    actor,
+                    Some(target),
+                    dex.effects.trapped,
+                    false,
+                    false,
+                )?;
+                did_anything = true;
             } else if behavior == MoveBehavior::Defog {
                 // `moves:defog.onHit`: the evasion drop (skipped behind a
                 // decoy unless the user infiltrates), then the target side's
@@ -4791,6 +4873,21 @@ impl BattleState {
                     }
                     if hooks & crate::effects::hook::DIRE_CLAW != 0 && !absorbed {
                         self.dire_claw_secondary(dex, actor, target)?;
+                    }
+                    if behavior == MoveBehavior::SpiritShackle
+                        && !absorbed
+                        && self.mon(actor).active_slot.is_some()
+                    {
+                        // `moves:spiritshackle.secondary.onHit`: the 100%
+                        // secondary pins the target (its roll is the loop's).
+                        self.start_selection_volatile(
+                            dex,
+                            target,
+                            Some(actor),
+                            dex.effects.trapped,
+                            false,
+                            false,
+                        )?;
                     }
                     if hooks & crate::effects::hook::THROAT_CHOP != 0 && !absorbed {
                         self.throat_chop_secondary(dex, actor, target)?;
@@ -7265,6 +7362,7 @@ impl BattleState {
                 || volatile == dex.effects.partially_trapped
                 || volatile == dex.effects.leech_seed
                 || volatile == dex.effects.heal_block
+                || volatile == dex.effects.trapped
             {
                 changed |= self.start_selection_volatile(
                     dex,
@@ -7453,6 +7551,15 @@ impl BattleState {
         // `onRestart`; the rest of this family does not restart, and
         // `moves:minimize.condition.onRestart` returns null, which is refused
         // the same way (the caller has already applied the move's boosts).
+        //
+        // `Pokemon#addVolatile` also runs `runStatusImmunity`: the `trapped`
+        // pseudo-type is refused outright by Ghost types, which makes Block,
+        // Mean Look, Jaw Lock and Spirit Shackle fail against them.
+        if volatile == dex.effects.trapped
+            && self.mon(target).types.contains(&dex.effects.ghost)
+        {
+            return Ok(false);
+        }
         if self.mon(target).volatiles.contains_key(&volatile) {
             return Ok(false);
         }
@@ -7709,6 +7816,35 @@ impl BattleState {
             0,
             false,
         )?;
+        // `addVolatile(..., linkedStatus)`: a `trapped` marker links a silent
+        // `trapper` partner onto its source, each side storing the other as its
+        // source so that clearing either clears the pair.
+        if volatile == dex.effects.trapped
+            && let Some(source_entity) = source
+            && source_entity != target
+        {
+            let slot = (
+                if target.side == 0 {
+                    SideId::P1
+                } else {
+                    SideId::P2
+                },
+                target.roster,
+            );
+            if !self.mon(source_entity).volatiles.contains_key(&dex.effects.trapper) {
+                let order = self.allocate_effect_order()?;
+                self.mon_mut(source_entity).volatiles.insert(
+                    dex.effects.trapper,
+                    EffectState {
+                        id: dex.effects.trapper,
+                        source: Some(slot),
+                        effect_order: order,
+                        effect_order_assigned: true,
+                        ..Default::default()
+                    },
+                );
+            }
+        }
         Ok(true)
     }
 
@@ -8836,6 +8972,20 @@ impl BattleState {
         // holder in place (`tryTrap` always succeeds for the holder).
         if self.mon(e).volatiles.contains_key(&dex.effects.no_retreat) {
             trapped = Some(false);
+        }
+        // `moves:trapped.condition.onTrapPokemon`: the marker pins its holder
+        // while the trapper recorded as its source is still active.
+        if let Some(state) = self.mon(e).volatiles.get(&dex.effects.trapped) {
+            let source_active = state.source.is_some_and(|(side, roster)| {
+                let source = Entity {
+                    side: side.index() as u8,
+                    roster,
+                };
+                self.mon(source).hp > 0 && self.mon(source).active_slot.is_some()
+            });
+            if source_active {
+                trapped = Some(false);
+            }
         }
         if self
             .mon(e)

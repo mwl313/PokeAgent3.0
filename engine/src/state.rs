@@ -1079,6 +1079,21 @@ impl BattleState {
                         effect.duration.is_none()
                             && effect.values.is_empty()
                             && effect.source.is_none()
+                    } else if id == dex.effects.trapped {
+                        // `moves:trapped.condition`: the pseudo-type marker
+                        // carries its trapper as the source, no payload and no
+                        // duration; `onTrapPokemon` re-checks that the source is
+                        // still active.
+                        effect.duration.is_none()
+                            && effect.values.is_empty()
+                            && effect.source.is_some()
+                    } else if id == dex.effects.trapper {
+                        // `conditions:trapper`: the silent linked partner the
+                        // `trapped` add places on the trapper, with the trapped
+                        // Pokemon as its source and no payload or duration.
+                        effect.duration.is_none()
+                            && effect.values.is_empty()
+                            && effect.source.is_some()
                     } else if usize::from(id) < dex.moves.len()
                         && dex.moves[id as usize].charge.is_some()
                     {

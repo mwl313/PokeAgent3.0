@@ -880,6 +880,12 @@ pub enum MoveBehavior {
     Fling,
     /// `topsyturvy`: inverts every nonzero boost stage of the target.
     TopsyTurvy,
+    /// `block` / `meanlook`: pin the target with the `trapped` volatile.
+    TrapTarget,
+    /// `jawlock`: the damaging hit pins both the target and the user.
+    JawLock,
+    /// `spiritshackle`: a 100% secondary pins the target.
+    SpiritShackle,
     /// `clearsmog`: damages and then resets the target's boost stages.
     ClearSmog,
     /// `powerswap` / `guardswap`: the two attack (or defense) boost stages swap
@@ -1077,6 +1083,9 @@ impl MoveBehavior {
             "speedswap" => Self::SpeedSwap,
             "topsyturvy" => Self::TopsyTurvy,
             "clearsmog" => Self::ClearSmog,
+            "block" | "meanlook" => Self::TrapTarget,
+            "jawlock" => Self::JawLock,
+            "spiritshackle" => Self::SpiritShackle,
             "helpinghand" => Self::HelpingHand,
             "followme" => Self::FollowMe,
             "ragepowder" => Self::RagePowder,
@@ -1234,6 +1243,12 @@ pub struct NativeEffects {
     /// `conditions:fling`: the marker volatile whose `onUpdate` consumes the
     /// thrown item after the action.
     pub fling: Id,
+    /// `conditions:trapped`: the pseudo-type marker Block, Mean Look, Jaw Lock
+    /// and Spirit Shackle add (Ghost types stay immune to the actual trap).
+    pub trapped: Id,
+    /// `conditions:trapper`: the silent partner marker the linked
+    /// `addVolatile('trapped', ..., 'trapper')` adds to the trapper.
+    pub trapper: Id,
     /// `moves:powerswap`: the Stat Swap behaviour needs to know which pair of
     /// stages it moves.
     pub power_swap_move: Id,
