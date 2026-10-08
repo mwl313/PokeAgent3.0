@@ -310,6 +310,19 @@ impl BattleState {
                         if before_turn_move && before_turn_location == 0 {
                             before_turn_location = self.random_target_location(actor, target);
                         }
+                        // Reference `resolveAction`: the order-107
+                        // `priorityChargeMove` sub-action is built with the move
+                        // but *no* chosen targetLoc, so its own
+                        // `getRandomTarget` runs before the outer action
+                        // resolves its location and can consume a sample.
+                        // Chilly Reception targets itself (no draw), while a
+                        // foe-targeted priority-charge move (Beak Blast, Focus
+                        // Punch) resolves a random foe here.
+                        let priority_charge_location = if m.priority_charge {
+                            self.random_target_location(actor, target)
+                        } else {
+                            0
+                        };
                         if recharge_lock {
                             self.sample_random_foe(actor);
                         } else {
@@ -349,7 +362,7 @@ impl BattleState {
                                 move_slot: NO_SLOT,
                                 move_id: queued.move_id,
                                 source_effect: 0,
-                                target_location: 0,
+                                target_location: priority_charge_location,
                                 destination: NO_SLOT,
                                 priority: Priority {
                                     order: 107,
