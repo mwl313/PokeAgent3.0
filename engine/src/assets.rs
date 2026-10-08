@@ -738,6 +738,13 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:icespinner.onAfterSubDamage",
     "moves:mortalspin.onAfterHit",
     "moves:mortalspin.onAfterSubDamage",
+    // Rapid Spin shares Mortal Spin's shed payload.
+    "moves:rapidspin.onAfterHit",
+    "moves:rapidspin.onAfterSubDamage",
+    // Hazard sweep: Tidy Up's self-targeted cleanup and Court Change's side
+    // condition swap.
+    "moves:tidyup.onHit",
+    "moves:courtchange.onHitField",
     // Ability-transfer moves: the gates and the setAbility payloads.
     "moves:entrainment.onTryHit",
     "moves:entrainment.onHit",
@@ -970,6 +977,7 @@ fn move_hooks(id: &str) -> u64 {
         "simplebeam" => hook::SIMPLE_BEAM,
         "icespinner" => hook::ICE_SPINNER,
         "mortalspin" => hook::MORTAL_SPIN,
+        "rapidspin" => hook::RAPID_SPIN,
         "noretreat" => hook::NO_RETREAT,
         "eeriespell" => hook::EERIE_SPELL,
         "burnup" => hook::BURN_UP,

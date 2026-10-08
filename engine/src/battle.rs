@@ -3136,6 +3136,59 @@ impl BattleState {
             self.mon_mut(actor).move_this_turn_result = MoveResult::Success;
             return Ok(());
         }
+        if behavior == MoveBehavior::CourtChange {
+            // `moves:courtchange.onHitField` (a field move, so it bypasses the
+            // hit loop like Haze): every listed side condition moves across to
+            // the other side, keeping its state object. With neither side
+            // holding one the move fails. Both sides' conditions are public, so
+            // the knowledge entries move with them.
+            let mine = actor.side as usize;
+            let foe = 1 - mine;
+            let swappable = [
+                dex.effects.spikes,
+                dex.effects.toxic_spikes,
+                dex.effects.stealth_rock,
+                dex.effects.sticky_web,
+                dex.effects.reflect,
+                dex.effects.light_screen,
+                dex.effects.aurora_veil,
+                dex.effects.safeguard,
+                dex.effects.tailwind,
+            ];
+            let mut swapped = false;
+            for id in swappable {
+                let own = self.sides[mine].conditions.remove(&id);
+                let theirs = self.sides[foe].conditions.remove(&id);
+                if own.is_none() && theirs.is_none() {
+                    continue;
+                }
+                swapped = true;
+                if let Some(state) = own {
+                    self.sides[foe].conditions.insert(id, state);
+                }
+                if let Some(state) = theirs {
+                    self.sides[mine].conditions.insert(id, state);
+                }
+                for viewer in 0..2 {
+                    let rel_mine = usize::from(mine != viewer);
+                    let rel_foe = usize::from(foe != viewer);
+                    let moved = self.knowledge[viewer].sides[rel_mine].remove(&id);
+                    let other = self.knowledge[viewer].sides[rel_foe].remove(&id);
+                    if let Some(entry) = moved {
+                        self.knowledge[viewer].sides[rel_foe].insert(id, entry);
+                    }
+                    if let Some(entry) = other {
+                        self.knowledge[viewer].sides[rel_mine].insert(id, entry);
+                    }
+                }
+            }
+            self.mon_mut(actor).move_this_turn_result = if swapped {
+                MoveResult::Success
+            } else {
+                MoveResult::Failed
+            };
+            return Ok(());
+        }
         if behavior == MoveBehavior::SideCondition {
             // Side-target moves use tryMoveHit, bypassing the Pokémon hit loop
             // and its two Update events. The queue runs the post-action Update.
@@ -4662,6 +4715,59 @@ impl BattleState {
                     )?;
                     did_anything = true;
                 }
+            } else if behavior == MoveBehavior::TidyUp {
+                // `moves:tidyup.onHit`: every Substitute on the field is
+                // removed, the entry hazards are cleared on the user's side and
+                // on any foe side that holds them, and Attack and Speed rise by
+                // one as a self-boost. The move reports failure when neither
+                // happened (`!!this.boost(...) || success`).
+                let mut success = false;
+                for e in self.active_entities(true) {
+                    if self
+                        .mon_mut(e)
+                        .volatiles
+                        .remove(&dex.effects.substitute)
+                        .is_some()
+                    {
+                        success = true;
+                        self.emit(
+                            EventKind::EffectEnd,
+                            e,
+                            None,
+                            EffectRef::Condition(dex.effects.substitute),
+                            0,
+                            false,
+                        )?;
+                    }
+                }
+                for side in [target.side as usize, (1 - target.side) as usize] {
+                    for id in [
+                        dex.effects.spikes,
+                        dex.effects.toxic_spikes,
+                        dex.effects.stealth_rock,
+                        dex.effects.sticky_web,
+                    ] {
+                        if self.sides[side].conditions.remove(&id).is_some() {
+                            success = true;
+                            self.emit(
+                                EventKind::SideEffectEnd,
+                                target,
+                                Some(target),
+                                EffectRef::Condition(id),
+                                0,
+                                false,
+                            )?;
+                        }
+                    }
+                }
+                let boosted = self.boost(
+                    dex,
+                    target,
+                    target,
+                    [1, 0, 0, 0, 1, 0, 0],
+                    BoostCause::Move { secondary: false },
+                )?;
+                did_anything |= success || boosted;
             } else if behavior == MoveBehavior::Spite {
                 // `moves:spite.onHit`: the target's last move loses four PP
                 // (`deductPP` marks the slot used and clamps at zero); the move
@@ -5307,10 +5413,10 @@ impl BattleState {
         if hooks & crate::effects::hook::ICE_SPINNER != 0 && self.mon(actor).hp > 0 {
             self.clear_terrain(dex, actor)?;
         }
-        // `moves:mortalspin.onAfterHit`: the user sheds Leech Seed, its own
-        // entry hazards and partial trapping unless Sheer Force suppressed the
-        // action's effects.
-        if hooks & crate::effects::hook::MORTAL_SPIN != 0
+        // `moves:mortalspin|rapidspin.onAfterHit`: the user sheds Leech Seed,
+        // its own entry hazards and partial trapping unless Sheer Force
+        // suppressed the action's effects.
+        if hooks & (crate::effects::hook::MORTAL_SPIN | crate::effects::hook::RAPID_SPIN) != 0
             && !m.sheer_force
             && self.mon(actor).hp > 0
         {
@@ -7226,8 +7332,9 @@ impl BattleState {
         // cannot see the action marker, so recompute the `onModifyMove` rule.
         let sheer_force = !m.secondaries.is_empty()
             && dex.effects.abilities[self.mon(source).ability as usize] == Ability::Sheerforce;
-        // `moves:mortalspin.onAfterSubDamage`: the same shed as `onAfterHit`.
-        if m.hooks & crate::effects::hook::MORTAL_SPIN != 0
+        // `moves:mortalspin|rapidspin.onAfterSubDamage`: the same shed as
+        // `onAfterHit`.
+        if m.hooks & (crate::effects::hook::MORTAL_SPIN | crate::effects::hook::RAPID_SPIN) != 0
             && !sheer_force
             && self.mon(source).hp > 0
         {
@@ -7263,8 +7370,8 @@ impl BattleState {
         Ok(())
     }
 
-    /// `moves:mortalspin.onAfterHit|onAfterSubDamage`: drop the user's Leech
-    /// Seed, partial trapping and its own entry hazards.
+    /// `moves:mortalspin|rapidspin.onAfterHit|onAfterSubDamage`: drop the
+    /// user's Leech Seed, partial trapping and its own entry hazards.
     fn mortal_spin_shed(&mut self, dex: &Dex, user: Entity) -> Result<()> {
         self.mon_mut(user).volatiles.remove(&dex.effects.leech_seed);
         self.mon_mut(user).volatiles.remove(&dex.effects.partially_trapped);

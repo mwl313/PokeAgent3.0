@@ -124,6 +124,9 @@ pub mod hook {
     /// `moves:mortalspin.onAfterHit|onAfterSubDamage`: the user sheds Leech
     /// Seed, its own entry hazards and partial trapping.
     pub const MORTAL_SPIN: u64 = 1 << 44;
+    /// `moves:rapidspin.onAfterHit|onAfterSubDamage`: the same shed, which the
+    /// move shares with Mortal Spin.
+    pub const RAPID_SPIN: u64 = 1 << 52;
     /// `moves:noretreat.onTry`: the move fails while its own marker volatile
     /// is present.
     pub const NO_RETREAT: u64 = 1 << 45;
@@ -908,6 +911,13 @@ pub enum MoveBehavior {
     /// `floor(1.5 * recorded damage)` and fails unless it hit this turn.
     MetalBurst,
     Comeuppance,
+    /// `tidyup`: removes every Substitute on the field, clears the entry
+    /// hazards on the user's side and any foe side that has them, then raises
+    /// Attack and Speed by one.
+    TidyUp,
+    /// `courtchange`: swaps the listed side conditions between the two sides
+    /// and fails when neither side had one.
+    CourtChange,
     /// `clearsmog`: damages and then resets the target's boost stages.
     ClearSmog,
     /// `powerswap` / `guardswap`: the two attack (or defense) boost stages swap
@@ -1116,6 +1126,8 @@ impl MoveBehavior {
             "mirrorcoat" => Self::MirrorCoat,
             "metalburst" => Self::MetalBurst,
             "comeuppance" => Self::Comeuppance,
+            "tidyup" => Self::TidyUp,
+            "courtchange" => Self::CourtChange,
             "helpinghand" => Self::HelpingHand,
             "followme" => Self::FollowMe,
             "ragepowder" => Self::RagePowder,
