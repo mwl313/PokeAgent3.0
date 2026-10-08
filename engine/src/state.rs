@@ -1563,7 +1563,14 @@ impl BattleState {
                                     .map(|(slot, m)| MoveChoice {
                                         id: m.id,
                                         slot: slot as u8,
-                                        target: dex.moves[m.id as usize].target,
+                                        target: state.served_target(
+                                            dex,
+                                            crate::effects::Entity {
+                                                side: side_index as u8,
+                                                roster,
+                                            },
+                                            m.id,
+                                        ),
                                         disabled: m.disabled,
                                         hidden: m.hidden,
                                         pp: m.pp,

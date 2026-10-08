@@ -292,17 +292,18 @@ impl BattleState {
                             .mon(actor)
                             .volatiles
                             .contains_key(&dex.effects.must_recharge);
+                        let target = self.queued_target(dex, actor, m.id);
                         if recharge_lock {
                             self.sample_random_foe(actor);
                         } else {
                             if queued.target_location == 0 {
                                 queued.target_location =
-                                    self.random_target_location(actor, m.target);
+                                    self.random_target_location(actor, target);
                             }
                             // getActionSpeed resolves a target even for a
                             // constant priority. That resolution can consume a
                             // reference RNG draw.
-                            self.resolve_target_location(actor, m.target, queued.target_location);
+                            self.resolve_target_location(actor, target, queued.target_location);
                         }
                         if action.resource == Resource::Mega {
                             self.queue.push(QueuedAction {
@@ -473,6 +474,52 @@ impl BattleState {
             }
         }
         types
+    }
+
+    /// `Pokemon#getMoves` substitutes the *served* target class before the
+    /// request advertises a move, and `Side#chooseMove` validates the submitted
+    /// location against that served value rather than the raw dex row:
+    ///   - `case 'curse': if (!this.hasType('Ghost')) target = 'self';`
+    ///   - `case 'pollenpuff': if (this.volatiles['healblock']) target =
+    ///     'adjacentFoe';`
+    ///   - `case 'terastarstorm'`: Terapagos-Stellar advertises
+    ///     `allAdjacentFoes` (that forme is outside the pinned regulation).
+    ///
+    /// The action mask has to serve exactly what the reference validates, so
+    /// the non-Ghost Curse choice is location-less and a Heal-Blocked Pollen
+    /// Puff cannot address its ally.
+    pub(crate) fn served_target(&self, dex: &Dex, e: Entity, move_id: Id) -> Target {
+        let hooks = dex.effects.move_hooks[move_id as usize];
+        if hooks & crate::effects::hook::CURSE != 0
+            && !self.effective_types(dex, e).contains(&dex.effects.ghost)
+        {
+            Target::SelfOnly
+        } else if hooks & crate::effects::hook::POLLEN_PUFF != 0
+            && self.mon(e).volatiles.contains_key(&dex.effects.heal_block)
+        {
+            Target::AdjacentFoe
+        } else {
+            dex.moves[move_id as usize].target
+        }
+    }
+
+    /// `battle-queue.ts#insertChoice` clones the queued move and applies the
+    /// champions mod's Curse rewrite (`!hasType('Ghost')` -> `target = 'self'`)
+    /// before every later target read, so the queue-time target of a
+    /// location-less Curse choice is never the raw dex row: the first
+    /// `getRandomTarget`, each `getActionSpeed`'s `getTarget`, the `runMove`
+    /// read and the Encore `changeAction` re-insert all resolve a non-Ghost
+    /// Curse as self and never sample a foe.
+    fn queued_target(&self, dex: &Dex, actor: Entity, move_id: Id) -> Target {
+        if dex.effects.move_hooks[move_id as usize] & crate::effects::hook::CURSE != 0
+            && !self
+                .effective_types(dex, actor)
+                .contains(&dex.effects.ghost)
+        {
+            Target::SelfOnly
+        } else {
+            dex.moves[move_id as usize].target
+        }
     }
 
     /// Reference `Pokemon#setType`: replace the stored type list outright.
@@ -1463,9 +1510,10 @@ impl BattleState {
                     }
                     if self.queue[i].kind == QueuedKind::Move {
                         let q = &self.queue[i];
+                        let target = self.queued_target(dex, q.actor.unwrap(), q.move_id);
                         self.resolve_target_location(
                             q.actor.unwrap(),
-                            dex.moves[q.move_id as usize].target,
+                            target,
                             q.target_location,
                         );
                     }
@@ -1826,7 +1874,15 @@ impl BattleState {
             self.sample_random_foe(actor);
             loc
         } else {
-            self.resolve_target_location(actor, m.target, loc)
+            // A queued action reads the insertChoice-hooked target; a nested
+            // `useMove` (Sleep Talk, Magic Bounce) resolves the called move's
+            // own class instead.
+            let target = if called {
+                m.target
+            } else {
+                self.queued_target(dex, actor, m.id)
+            };
+            self.resolve_target_location(actor, target, loc)
         };
         // The reference runs the BeforeMove event once per *action*, before
         // `useMove`; a move called by another move (Sleep Talk) must not run it
@@ -5566,7 +5622,6 @@ impl BattleState {
             return Ok(());
         };
         self.update_speed(dex);
-        let m = &dex.moves[move_id as usize];
         let mut action = QueuedAction {
             kind: QueuedKind::Move,
             actor: Some(actor),
@@ -5585,8 +5640,9 @@ impl BattleState {
         // `resolveAction`: an action without a chosen location samples a random
         // valid target; `getActionSpeed` then resolves it again exactly as the
         // commit-time queue builder does.
-        action.target_location = self.random_target_location(actor, m.target);
-        self.resolve_target_location(actor, m.target, action.target_location);
+        let target = self.queued_target(dex, actor, move_id);
+        action.target_location = self.random_target_location(actor, target);
+        self.resolve_target_location(actor, target, action.target_location);
         let mut first = None;
         let mut last = None;
         for (index, current) in self.queue.iter().enumerate() {
@@ -8659,7 +8715,14 @@ impl BattleState {
                         .map(|(slot, mv)| MoveChoice {
                             id: mv.id,
                             slot: slot as u8,
-                            target: dex.moves[mv.id as usize].target,
+                            target: self.served_target(
+                                dex,
+                                Entity {
+                                    side: side as u8,
+                                    roster,
+                                },
+                                mv.id,
+                            ),
                             disabled: mv.disabled,
                             hidden: mv.hidden,
                             pp: mv.pp,
@@ -9012,7 +9075,14 @@ impl BattleState {
                         .map(|(slot, mv)| MoveChoice {
                             id: mv.id,
                             slot: slot as u8,
-                            target: dex.moves[mv.id as usize].target,
+                            target: self.served_target(
+                                dex,
+                                Entity {
+                                    side: side as u8,
+                                    roster,
+                                },
+                                mv.id,
+                            ),
                             disabled: mv.disabled,
                             hidden: mv.hidden,
                             pp: mv.pp,

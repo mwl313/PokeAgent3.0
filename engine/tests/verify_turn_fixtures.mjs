@@ -55,11 +55,19 @@ const requestDetail = (session, side) => {
         moves: [{id: ids.moves[locked], pp: slotData?.pp ?? 0, disabled: false,
           target: slotData?.target ?? 'normal'}]};
     }
-    // World move list and raw disable flag: the served choice legality.
+    // World move list and raw disable flag: the served choice legality. The
+    // target is the *served* value (`Pokemon#getMoves` rewrites a non-Ghost
+    // Curse to `self`, a Heal-Blocked Pollen Puff to `adjacentFoe` and Tera
+    // Starstorm to `allAdjacentFoes`), which is what `Side#chooseMove` checks -
+    // read only when the served entry still belongs to this move slot (a locked
+    // or all-disabled request substitutes its own list, e.g. Struggle).
     return {present: !p.fainted, requires_replacement: forced, can_mega: Boolean(info?.canMegaEvo),
       trapped: Boolean(info?.trapped), maybe_trapped: Boolean(info?.maybeTrapped),
-      moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp,
-        disabled: Boolean(m.disabled), target: m.target}))};
+      moves: p.moveSlots.map((m, i) => {
+        const served = info?.moves?.[i];
+        const target = served && served.id === m.id ? served.target ?? m.target : m.target;
+        return {id: ids.moves[m.id], pp: m.pp, disabled: Boolean(m.disabled), target};
+      })};
   });
   const bench = side.pokemon.map((p, i) => [p, i])
     .filter(([p]) => !p.fainted && !side.active.includes(p)).map(([p]) => roster(p));

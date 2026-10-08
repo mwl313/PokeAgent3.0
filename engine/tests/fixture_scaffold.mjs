@@ -61,8 +61,18 @@ export function createScaffold() {
       if (!p) return {present: false, requires_replacement: forced, can_mega: false, moves: []};
       return {present: !p.fainted, requires_replacement: forced, can_mega: Boolean(info?.canMegaEvo),
         trapped: Boolean(info?.trapped), maybe_trapped: Boolean(info?.maybeTrapped),
-        moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp,
-          disabled: Boolean(m.disabled), target: m.target}))};
+        moves: p.moveSlots.map((m, i) => {
+          // The *served* request (`Pokemon#getMoves`) rewrites the target class
+          // for a non-Ghost Curse (self), a Heal-Blocked Pollen Puff
+          // (adjacentFoe) and Tera Starstorm (allAdjacentFoes). That rewritten
+          // value is what `Side#chooseMove` validates, so record it instead of
+          // the raw move-slot value - but only when the served entry still
+          // belongs to this move slot (a locked or all-disabled request
+          // substitutes its own list, e.g. Struggle).
+          const served = info?.moves?.[i];
+          const target = served && served.id === m.id ? served.target ?? m.target : m.target;
+          return {id: ids.moves[m.id], pp: m.pp, disabled: Boolean(m.disabled), target};
+        })};
     });
     const bench = side.pokemon.map((p, i) => [p, i])
       .filter(([p]) => !p.fainted && !side.active.includes(p)).map(([p]) => roster(p));
