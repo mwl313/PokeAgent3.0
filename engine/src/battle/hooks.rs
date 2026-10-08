@@ -1013,6 +1013,13 @@ impl BattleState {
         (base + bonus).min(4)
     }
 
+    /// `abilities:shielddust.onModifySecondaries`: the filter keeps only
+    /// entries that carry a `self` payload (`!!effect.self`), so a target-side
+    /// secondary is dropped before its chance roll is consumed.
+    pub(super) fn shield_dust_blocks(&self, dex: &Dex, target: Entity, has_self: bool) -> bool {
+        dex.effects.abilities[self.mon(target).ability as usize] == Ability::Shielddust && !has_self
+    }
+
     /// Reference `BattleQueue#willMove(pokemon)`: the Pokémon still has an
     /// unexecuted queued move action. Analytic boosts while every other active
     /// Pokémon has already acted.
@@ -3084,10 +3091,7 @@ impl Ability {
             | Ability::Ripen
             | Ability::Runaway
             | Ability::Sandspit
-            | Ability::Shedskin
-            | Ability::Shielddust
             | Ability::Shieldsdown
-            | Ability::Stall
             | Ability::Steadfast
             | Ability::Stench
             | Ability::Stickyhold

@@ -296,6 +296,9 @@ impl BattleState {
                             .mon(actor)
                             .volatiles
                             .contains_key(&dex.effects.must_recharge);
+                        // `abilities:stall.onFractionalPriority`: the holder's
+                        // moves resolve last inside their priority bracket.
+                        queued.priority.priority += self.fractional_priority(dex, actor);
                         let target = self.queued_target(dex, actor, m.id);
                         // Reference `resolveAction`: a move declaring
                         // `beforeTurnCallback` unshifts an order-5
@@ -1821,10 +1824,13 @@ impl BattleState {
                         self.queue[i].priority.speed = self.speed(dex, e);
                         if self.queue[i].kind == QueuedKind::Move {
                             // Reference re-resolves priority through
-                            // getActionSpeed for every queued action here.
+                            // getActionSpeed for every queued action here; that
+                            // recomputation keeps the stored fractional priority
+                            // (`priority + action.fractionalPriority`).
                             let move_id = self.queue[i].move_id;
                             self.queue[i].priority.priority =
-                                i32::from(self.effective_priority(dex, e, move_id)) * 10000;
+                                i32::from(self.effective_priority(dex, e, move_id)) * 10000
+                                    + self.fractional_priority(dex, e);
                         }
                     }
                     if self.queue[i].kind == QueuedKind::Move {
@@ -5716,6 +5722,9 @@ impl BattleState {
             // while its own payload is dropped and a secondary `self` applies.
             let absorbed = sub_absorbed.contains(&target);
             for secondary in m.secondaries.iter().filter(|_| !m.sheer_force) {
+                if self.shield_dust_blocks(dex, target, secondary.own.is_some()) {
+                    continue;
+                }
                 if self.rng.below(100) < u32::from(secondary.chance) {
                     if !absorbed {
                         self.hit_effect_from_move(dex, target, actor, &secondary.target, true, m)?;
@@ -6419,6 +6428,9 @@ impl BattleState {
                     self.hit_effect(dex, actor, actor, effect, false)?;
                 }
                 for secondary in m.secondaries.iter().filter(|_| !m.sheer_force) {
+                    if self.shield_dust_blocks(dex, target, secondary.own.is_some()) {
+                        continue;
+                    }
                     if self.rng.below(100) < u32::from(secondary.chance) {
                         self.hit_effect_from_move(dex, target, actor, &secondary.target, true, m)?;
                         if m.hooks & crate::effects::hook::DIRE_CLAW != 0 {
@@ -9089,6 +9101,21 @@ impl BattleState {
                     },
                 ));
             }
+            // `abilities:shedskin.onResidual` also sits at order 5, sub-order
+            // 3; the 33% roll runs only while the holder carries a status.
+            if dex.effects.abilities[self.mon(e).ability as usize] == Ability::Shedskin {
+                handlers.push((
+                    e,
+                    self.mon(e).ability,
+                    18,
+                    Priority {
+                        order: 5,
+                        sub_order: 3,
+                        speed: self.mon(e).cached_speed,
+                        ..Default::default()
+                    },
+                ));
+            }
             if dex.effects.abilities[self.mon(e).ability as usize] == Ability::SpeedBoost {
                 handlers.push((
                     e,
@@ -9690,6 +9717,17 @@ impl BattleState {
                     self.reveal_ability(e)?;
                     self.cure_status(e)?;
                 }
+            } else if status == 18 {
+                // `abilities:shedskin.onResidual`: a 33% `randomChance(33,
+                // 100)` roll cures the holder's status; the roll is only
+                // consumed while a status is present.
+                if self.mon(e).ability == id
+                    && self.mon(e).status != 0
+                    && self.rng.chance(33, 100)
+                {
+                    self.reveal_ability(e)?;
+                    self.cure_status(e)?;
+                }
             } else if status == 14 {
                 // `abilities:healer.onResidual`: every statused adjacent ally
                 // is cured on the Champions even 1/2 roll (the base game uses
@@ -9972,6 +10010,19 @@ impl BattleState {
     /// Reference `BattleQueue#willMove`: the queue still holds a move action
     /// for this Pokémon (`null` for a fainted one). The action being resolved
     /// has already been shifted off the queue, exactly like the reference.
+    ///
+    /// Reference `Battle#getActionSpeed` folds the action's stored
+    /// `fractionalPriority` into `priority` on every resolution. Priorities are
+    /// scaled by 10,000, so -0.1 (Stall) is -1000; every other fractional
+    /// source in the pinned regulation is unused today.
+    fn fractional_priority(&self, dex: &Dex, actor: Entity) -> i32 {
+        if dex.effects.abilities[self.mon(actor).ability as usize] == Ability::Stall {
+            -1000
+        } else {
+            0
+        }
+    }
+
     pub(crate) fn queued_to_move(&self, e: Entity) -> bool {
         if self.mon(e).fainted {
             return false;
