@@ -94,7 +94,7 @@ fn main() {
         // superseded) are skipped instead of aborting the probe, so the open
         // entries stay replayable.
         let merged: serde_json::Value =
-            serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap();
+            serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap();
         let mut artifacts: Vec<serde_json::Value> = [
             include_str!("../data/more_interactions.json"),
             include_str!("../data/more_move_coverage.json"),
@@ -134,7 +134,7 @@ fn main() {
     } else if std::env::args().any(|a| a == "--ability-corpus") {
         serde_json::from_str(include_str!("../data/ability-interactions.json")).unwrap()
     } else {
-        serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap()
+        serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap()
     };
     let needle = positional.first().expect("fixture name");
     let limits: usize = positional
@@ -253,3 +253,6 @@ fn main() {
         }
     }
 }
+
+#[path = "../test_support/corpus.rs"]
+mod corpus;

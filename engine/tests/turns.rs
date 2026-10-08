@@ -133,7 +133,7 @@ struct ExpectedMon {
 fn static_is_revealed_before_status_and_lum_cure() {
     use pa3_engine::knowledge::EventKind;
     let dex = Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap();
-    let corpus: Corpus = serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap();
+    let corpus: Corpus = serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap();
     let static_id = dex.id("abilities", "static").unwrap();
     let lum = dex.id("items", "lumberry").unwrap();
     let paralysis = dex.id("conditions", "par").unwrap();
@@ -185,19 +185,26 @@ fn static_is_revealed_before_status_and_lum_cure() {
 #[test]
 fn native_battles_match_reference_at_every_decision_boundary() {
     let dex = Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap();
-    let corpus: Corpus = serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap();
+    let corpus: Corpus = serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap();
     assert_eq!(corpus.oracle_commit, pa3_engine::ORACLE_COMMIT);
     assert_eq!(corpus.format, pa3_engine::FORMAT);
     use sha2::{Digest, Sha256};
     let manifest: serde_json::Value =
         serde_json::from_str(include_str!("../data/manifest.json")).unwrap();
-    assert_eq!(
-        manifest["files"]["turn-fixtures.json"]["sha256"],
-        format!(
-            "{:x}",
-            Sha256::digest(include_bytes!("../data/turn-fixtures.json"))
-        )
-    );
+    // The corpus is split into size-bounded parts; every committed part is
+    // hash-checked so a hand edit cannot hide behind the merged loader.
+    for (name, bytes) in corpus::corpus_parts(&corpus::data_dir()) {
+        assert_eq!(
+            manifest["files"][&name]["sha256"],
+            format!("{:x}", Sha256::digest(&bytes)),
+            "{name} hash"
+        );
+        assert_eq!(
+            manifest["files"][&name]["bytes"].as_u64(),
+            Some(bytes.len() as u64),
+            "{name} byte count"
+        );
+    }
     // Development aid: `PA3_SKIP_FIXTURES=a,b` skips named corpus entries so a
     // single known-divergent battle does not hide the rest of the report. The
     // skipped set is empty in normal runs, so no coverage is silently dropped.
@@ -523,7 +530,7 @@ fn native_battles_match_reference_at_every_decision_boundary() {
 #[test]
 fn two_16_worker_batches_match_serial_for_2048_complete_battles() {
     let dex = Arc::new(Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap());
-    let corpus: Corpus = serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap();
+    let corpus: Corpus = serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap();
     let fixtures = Arc::new(corpus.fixtures);
     let teams = Arc::new(
         fixtures
@@ -626,7 +633,7 @@ fn two_16_worker_batches_match_serial_for_2048_complete_battles() {
 #[test]
 fn batch_preflight_is_atomic_and_pending_choices_are_private() {
     let dex = Arc::new(Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap());
-    let corpus: Corpus = serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap();
+    let corpus: Corpus = serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap();
     let f = &corpus.fixtures[0];
     let mut batch = BattleBatch::new(dex.clone(), Arc::new(f.teams.to_vec()), 2).unwrap();
     let handles = batch
@@ -704,7 +711,7 @@ fn batch_preflight_is_atomic_and_pending_choices_are_private() {
 #[test]
 fn unsupported_effects_are_replayable_operational_failures() {
     let dex = Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap();
-    let corpus: Corpus = serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap();
+    let corpus: Corpus = serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap();
     let f = &corpus.fixtures[0];
     // The probe needs an unimplemented move the first fixture's lead can
     // legally hold: the pinned learnsets only overlap some of the open
@@ -774,7 +781,7 @@ fn unsupported_effects_are_replayable_operational_failures() {
 fn active_views_and_masks_exclude_hidden_opponent_world_fields() {
     use sha2::{Digest, Sha256};
     let dex = Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap();
-    let corpus: Corpus = serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap();
+    let corpus: Corpus = serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap();
     let f = &corpus.fixtures[0];
     let mut state = BattleState::reset(&dex, [&f.teams[0], &f.teams[1]], f.seed, [0, 1]).unwrap();
     for step in &f.steps[..4] {
@@ -871,7 +878,7 @@ fn active_views_and_masks_exclude_hidden_opponent_world_fields() {
 #[test]
 fn reused_buffers_preserve_sparse_order_and_preflight_atomicity() {
     let dex = Arc::new(Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap());
-    let corpus: Corpus = serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap();
+    let corpus: Corpus = serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap();
     let f = &corpus.fixtures[0];
     let mut batch = BattleBatch::new(dex.clone(), Arc::new(f.teams.to_vec()), 2).unwrap();
     let handles = batch
@@ -976,7 +983,7 @@ fn reused_buffers_preserve_sparse_order_and_preflight_atomicity() {
 fn snapshot_suppression_lifecycle_is_private_and_rejects_impossible_end_state() {
     use sha2::{Digest, Sha256};
     let dex = Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap();
-    let corpus: Corpus = serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap();
+    let corpus: Corpus = serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap();
     let cloud_nine = dex.id("abilities", "Cloud Nine").unwrap();
     let f = corpus
         .fixtures
@@ -1059,3 +1066,6 @@ fn snapshot_suppression_lifecycle_is_private_and_rejects_impossible_end_state() 
         "fixture must reach a persisted ability End state"
     );
 }
+
+#[path = "../test_support/corpus.rs"]
+mod corpus;

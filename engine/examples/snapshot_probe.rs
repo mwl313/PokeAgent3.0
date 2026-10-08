@@ -26,7 +26,7 @@ fn main() {
     let dir = format!("{}/data", env!("CARGO_MANIFEST_DIR"));
     let dex = Dex::load(Path::new(&dir)).unwrap();
     let corpus: Corpus =
-        serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap();
+        serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap();
     let filter = std::env::args().nth(1);
     let mut failures = 0usize;
     for fixture in &corpus.fixtures {
@@ -89,3 +89,6 @@ fn main() {
 fn roundtrip(dex: &Dex, state: &BattleState) -> Result<(), pa3_engine::EngineError> {
     BattleState::restore(dex, &state.snapshot()?).map(|_| ())
 }
+
+#[path = "../test_support/corpus.rs"]
+mod corpus;

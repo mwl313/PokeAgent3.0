@@ -43,7 +43,7 @@ fn dex() -> Arc<Dex> {
     .clone()
 }
 fn fixture(name: &str) -> Fixture {
-    let corpus: Corpus = serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap();
+    let corpus: Corpus = serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap();
     corpus
         .fixtures
         .into_iter()
@@ -131,3 +131,6 @@ fn poltergeist_gate_protection_and_immunity_never_reveal_the_item() {
         assert!(!state.observe(SideId::P1).knowledge.pokemon[6].item.known);
     }
 }
+
+#[path = "../test_support/corpus.rs"]
+mod corpus;

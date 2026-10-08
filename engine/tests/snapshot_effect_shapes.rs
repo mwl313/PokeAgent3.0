@@ -20,7 +20,7 @@ fn signed(world: &Value) -> Vec<u8> {
 fn resources() -> (Dex, Value) {
     (
         Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap(),
-        serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap(),
+        serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap(),
     )
 }
 fn initial(dex: &Dex, fixture: &Value) -> BattleState {
@@ -226,3 +226,6 @@ fn exhausted_order_counter_is_operational_and_its_failed_world_remains_restorabl
         snapshot
     );
 }
+
+#[path = "../test_support/corpus.rs"]
+mod corpus;

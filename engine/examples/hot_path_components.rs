@@ -129,14 +129,7 @@ fn sort_primitive() {
 }
 fn main() {
     let dex = Arc::new(Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap());
-    let corpus: Corpus = serde_json::from_slice(
-        &std::fs::read(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/data/turn-fixtures.json"
-        ))
-        .unwrap(),
-    )
-    .unwrap();
+    let corpus: Corpus = serde_json::from_str(&corpus::corpus_json(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data")))).unwrap();
     assert_eq!(corpus.oracle_commit, pa3_engine::ORACLE_COMMIT);
     assert_eq!(corpus.format, pa3_engine::FORMAT);
     let teams: Arc<Vec<Team>> = Arc::new(
@@ -156,3 +149,6 @@ fn main() {
     idle_scan(dex, teams, 16);
     sort_primitive();
 }
+
+#[path = "../test_support/corpus.rs"]
+mod corpus;

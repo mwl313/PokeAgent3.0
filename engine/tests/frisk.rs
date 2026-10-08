@@ -42,7 +42,7 @@ fn dex() -> Arc<Dex> {
 }
 
 fn fixture(name: &str) -> Fixture {
-    let corpus: Corpus = serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap();
+    let corpus: Corpus = serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap();
     corpus
         .fixtures
         .into_iter()
@@ -115,3 +115,6 @@ fn frisk_stays_hidden_without_any_foe_item() {
     let foe_view = state.observe(SideId::P2);
     assert!(!foe_view.knowledge.pokemon[6].ability.known);
 }
+
+#[path = "../test_support/corpus.rs"]
+mod corpus;

@@ -20,7 +20,7 @@ fn signed(world: &Value) -> Vec<u8> {
 fn resources() -> (Dex, Value) {
     (
         Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap(),
-        serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap(),
+        serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap(),
     )
 }
 fn initial(dex: &Dex, fixture: &Value) -> BattleState {
@@ -111,3 +111,6 @@ fn genuine_phases_restore_and_inconsistent_phases_are_rejected() {
         assert!(saw.contains(phase), "missing real phase {phase}");
     }
 }
+
+#[path = "../test_support/corpus.rs"]
+mod corpus;

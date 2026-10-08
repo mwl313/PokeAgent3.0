@@ -70,7 +70,7 @@ fn p1_mask(state: &BattleState) -> Vec<AtomicAction> {
 fn hidden_opponent_state_cannot_change_p1_observation_or_mask() {
     let dex = Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap();
     let corpus: Corpus =
-        serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap();
+        serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap();
     let fixture = &corpus.fixtures[0];
     let boundary = 6usize.min(fixture.steps.len());
 
@@ -176,3 +176,6 @@ fn hidden_opponent_state_cannot_change_p1_observation_or_mask() {
         );
     }
 }
+
+#[path = "../test_support/corpus.rs"]
+mod corpus;

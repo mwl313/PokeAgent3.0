@@ -83,7 +83,7 @@ fn replay(fixture: &Fixture, dex: &Dex, boundary: usize, mutate: Option<Mutation
 fn every_player_known_state_field_reaches_the_observation_tensor() {
     let dex = Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap();
     let corpus: Corpus =
-        serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap();
+        serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap();
     let fixture = &corpus.fixtures[0];
     let boundary = 6usize.min(fixture.steps.len());
     let baseline = replay(fixture, &dex, boundary, None);
@@ -162,7 +162,7 @@ fn every_player_known_state_field_reaches_the_observation_tensor() {
 fn revealed_lock_conditions_reach_the_observation_tensor() {
     let dex = Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap();
     let corpus: Corpus =
-        serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap();
+        serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap();
     let mut found: BTreeSet<u16> = BTreeSet::new();
     for fixture in &corpus.fixtures {
         for step in &fixture.steps {
@@ -195,3 +195,6 @@ fn revealed_lock_conditions_reach_the_observation_tensor() {
         );
     }
 }
+
+#[path = "../test_support/corpus.rs"]
+mod corpus;

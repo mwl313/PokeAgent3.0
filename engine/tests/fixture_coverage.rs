@@ -51,7 +51,7 @@ fn every_executable_move_has_a_differential_fixture() {
     let scope: Scope =
         serde_json::from_str(include_str!("../data/scope.json")).unwrap();
     let corpus: Corpus =
-        serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap();
+        serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap();
     let covered: BTreeSet<String> = corpus
         .fixtures
         .iter()
@@ -101,7 +101,7 @@ fn every_executable_move_has_a_differential_fixture() {
 fn every_executable_dynamic_caller_has_a_differential_fixture() {
     let dex = Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap();
     let corpus: Corpus =
-        serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap();
+        serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap();
     let covered: BTreeSet<String> = corpus
         .fixtures
         .iter()
@@ -130,3 +130,6 @@ fn every_executable_dynamic_caller_has_a_differential_fixture() {
         "executable dynamic callers without a differential fixture: {missing:?}"
     );
 }
+
+#[path = "../test_support/corpus.rs"]
+mod corpus;

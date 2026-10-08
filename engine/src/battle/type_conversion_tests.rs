@@ -51,7 +51,7 @@ fn all_seven_type_callbacks_match_pinned_primary_primitives() {
         serde_json::from_str(include_str!("../../tests/type_conversion_fixtures.json")).unwrap();
     assert_eq!(corpus.oracle_commit, crate::ORACLE_COMMIT);
     assert_eq!(corpus.cases.len(), 203);
-    let turns: Turns = serde_json::from_str(include_str!("../../data/turn-fixtures.json")).unwrap();
+    let turns: Turns = serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap();
     let fixture = &turns.fixtures[0];
     let mut base = BattleState::reset(
         &dex,
@@ -216,7 +216,7 @@ fn synchronize_failed_reflection_keeps_activation_but_allocates_no_source_status
     // Pinned abilities.ts:onAfterSetStatus activates first, then calls
     // source.trySetStatus; HP0 and grounded Misty are that attempt's rejections.
     let dex = Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap();
-    let turns: Turns = serde_json::from_str(include_str!("../../data/turn-fixtures.json")).unwrap();
+    let turns: Turns = serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap();
     let f = &turns.fixtures[0];
     let mut base = BattleState::reset(&dex, [&f.teams[0], &f.teams[1]], f.seed, [0, 1]).unwrap();
     for s in f.steps.iter().take(2) {
@@ -305,3 +305,6 @@ fn synchronize_failed_reflection_keeps_activation_but_allocates_no_source_status
         }
     }
 }
+
+#[path = "../../test_support/corpus.rs"]
+mod corpus;

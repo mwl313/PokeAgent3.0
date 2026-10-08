@@ -92,10 +92,7 @@ fn main() {
     // Witness evidence: an "executable" entity is only proven by a differential
     // fixture that actually ran it (moves additionally allow a documented
     // exemption, mirroring engine/tests/fixture_coverage.rs).
-    let corpus: serde_json::Value = serde_json::from_slice(
-        &std::fs::read(Path::new(&dir).join("turn-fixtures.json")).expect("turn fixtures"),
-    )
-    .expect("turn fixtures json");
+    let corpus: serde_json::Value = serde_json::from_str(&corpus::corpus_json(Path::new(&dir))).expect("turn fixtures json");
     let mut witnessed_moves: BTreeSet<String> = BTreeSet::new();
     let mut witnessed_abilities: BTreeSet<String> = BTreeSet::new();
     for fixture in corpus["fixtures"].as_array().into_iter().flatten() {
@@ -433,3 +430,6 @@ fn main() {
         std::process::exit(1);
     }
 }
+
+#[path = "../test_support/corpus.rs"]
+mod corpus;

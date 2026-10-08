@@ -37,7 +37,7 @@ fn dex() -> Arc<Dex> {
     .clone()
 }
 fn fixture(name: &str) -> Fixture {
-    let corpus: Corpus = serde_json::from_str(include_str!("../data/turn-fixtures.json")).unwrap();
+    let corpus: Corpus = serde_json::from_str(&corpus::corpus_json(&corpus::data_dir())).unwrap();
     corpus
         .fixtures
         .into_iter()
@@ -300,3 +300,6 @@ fn active_flash_fire_snapshot_preserves_public_source_and_rejects_resigned_inval
         assert_eq!(alternate.observe(viewer), state.observe(viewer));
     }
 }
+
+#[path = "../test_support/corpus.rs"]
+mod corpus;

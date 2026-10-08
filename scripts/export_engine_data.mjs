@@ -253,6 +253,47 @@ for (const [name, value] of Object.entries(files)) {
 }
 // Complete-battle fixtures use legal synthetic teams, independently of the training pool.
 execFileSync(process.execPath, [path.join(root, 'engine/tests/generate_turn_fixtures.mjs')], {cwd: root});
+// The merged corpus is committed as size-bounded parts so no single file can
+// cross the 100 MiB host limit as coverage grows; every reader merges the
+// parts back into one logical corpus. KEYS: keep the part naming in sync with
+// engine/test_support/corpus.rs and engine/tests/verify_turn_fixtures.mjs.
+const CORPUS_PART_LIMIT = 64 * 1024 * 1024;
+function corpusPartName(index) {
+  return index === 0 ? 'turn-fixtures.json' : `turn-fixtures-${index + 1}.json`;
+}
+function writeCorpusParts(corpus) {
+  const parts = [];
+  let current = [];
+  let size = 0;
+  for (const fixture of corpus.fixtures) {
+    const bytes = JSON.stringify(fixture).length + 1;
+    if (current.length && size + bytes > CORPUS_PART_LIMIT) {
+      parts.push(current);
+      current = [];
+      size = 0;
+    }
+    current.push(fixture);
+    size += bytes;
+  }
+  parts.push(current);
+  const written = [];
+  parts.forEach((fixtures, index) => {
+    const name = corpusPartName(index);
+    const bytes = JSON.stringify({
+      oracle_commit: corpus.oracle_commit, format: corpus.format, fixtures,
+    }) + '\n';
+    fs.writeFileSync(path.join(output, name), bytes);
+    manifest.files[name] = {sha256: hash(bytes), bytes: Buffer.byteLength(bytes)};
+    written.push(name);
+  });
+  for (const name of fs.readdirSync(output)) {
+    if (/^turn-fixtures(?:-\d+)?\.json$/.test(name) && !written.includes(name)) {
+      fs.unlinkSync(path.join(output, name));
+    }
+  }
+  console.log(`corpus parts: ${written.map(name => `${name} (${(fs.statSync(path.join(output, name)).size / 1048576).toFixed(1)} MiB)`).join(', ')}`);
+  return written;
+}
 // Additional corpus generators (generate_more_*.mjs) each write one JSON file
 // next to turn-fixtures.json; their fixtures are merged into the same corpus so
 // every differential test sees one authoritative boundary list.
@@ -288,10 +329,9 @@ if (extraGenerators.length) {
     assert(generated.has(name), `known-mismatches entry ${name} has no generated fixture (stale ledger)`);
     assert(!names.has(name), `known-mismatches entry ${name} is still merged into the corpus`);
   }
-  fs.writeFileSync(path.join(output, 'turn-fixtures.json'), JSON.stringify(merged) + '\n');
+  writeCorpusParts(merged);
 }
-const turnBytes = fs.readFileSync(path.join(output, 'turn-fixtures.json'));
-manifest.files['turn-fixtures.json'] = {sha256: hash(turnBytes), bytes: turnBytes.length};
+if (!extraGenerators.length) writeCorpusParts(JSON.parse(fs.readFileSync(path.join(output, 'turn-fixtures.json'), 'utf8')));
 fs.writeFileSync(path.join(output, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
 fs.copyFileSync(path.join(ref, 'LICENSE'), path.join(output, 'SHOWDOWN-LICENSE'));
 console.log(JSON.stringify({starting_species: starting.length, battle_forms: battleForms.length, mega_forms: scope.mega_forms.length,

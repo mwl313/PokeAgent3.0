@@ -28,8 +28,12 @@
       "bytes": 1358768
     },
     "turn-fixtures.json": {
-      "sha256": "f4e07d0e73be37187efa34e5c79cf272696e826ebd3c7744c2d80114c4c4c477",
-      "bytes": 104836122
+      "sha256": "b98928c8765705b74e217a995828d5edf971d7993c1630a3d0d565d95e9da3ce",
+      "bytes": 67089058
+    },
+    "turn-fixtures-2.json": {
+      "sha256": "9625940bd9e4b9adf64680cebd504a84fb36694ac9b5b8923b03827f3ae40625",
+      "bytes": 38586644
     }
   }
 }

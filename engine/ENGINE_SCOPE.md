@@ -639,3 +639,15 @@ Blessing 12 -> Minimize 9 -> Ally Switch 8 -> Steel Roller 8 -> Stockpile family
 the remaining pool teams, and finally the full-coverage corpus regeneration and
 the 2,048-environment throughput re-measurement. `readiness_check` exiting 0
 across all 16 criteria remains the only acceptable readiness signal.
+
+#### Corpus storage (2026-10-08)
+
+`engine/data/turn-fixtures.json` crossed GitHub's 100 MiB hard file limit as
+coverage grew, so the differential corpus is now committed as size-bounded
+parts: `turn-fixtures.json`, `turn-fixtures-2.json`, ... (64 MiB target per
+part, merged back into one logical `{oracle_commit, format, fixtures}` view).
+`scripts/export_engine_data.mjs` writes the parts and hashes every one into the
+manifest; `engine/test_support/corpus.rs` is the shared loader used by tests and
+examples (`#[path = ".../test_support/corpus.rs"] mod corpus;`), and
+`engine/tests/verify_turn_fixtures.mjs` merges the same parts for the
+independent reference replay.

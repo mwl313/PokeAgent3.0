@@ -51,10 +51,7 @@ fn main() {
 
     // Witnessed coverage: an executable move still needs a differential fixture
     // that actually ran it, otherwise "executable" overstates readiness.
-    let corpus: serde_json::Value = serde_json::from_slice(
-        &std::fs::read(Path::new(&dir).join("turn-fixtures.json")).unwrap_or_default(),
-    )
-    .unwrap_or(serde_json::Value::Null);
+    let corpus: serde_json::Value = serde_json::from_str(&corpus::corpus_json(Path::new(&dir))).unwrap_or(serde_json::Value::Null);
     let witnessed: BTreeSet<String> = corpus["fixtures"]
         .as_array()
         .into_iter()
@@ -209,3 +206,6 @@ fn main() {
     dump("pool_blocked_abilities", pool_abilities);
     dump("pool_blocked_items", pool_items);
 }
+
+#[path = "../test_support/corpus.rs"]
+mod corpus;

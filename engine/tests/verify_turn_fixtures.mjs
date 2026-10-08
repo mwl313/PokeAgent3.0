@@ -94,7 +94,14 @@ function sets(team, side) {
 }
 
 verifyReference();
-const corpus = JSON.parse(fs.readFileSync(new URL('engine/data/turn-fixtures.json', root), 'utf8'));
+// The corpus is committed as size-bounded parts (`turn-fixtures.json`,
+// `turn-fixtures-2.json`, ...); merge them back into one logical corpus.
+const corpusParts = fs.readdirSync(new URL('engine/data', root))
+  .filter(name => /^turn-fixtures(?:-\d+)?\.json$/.test(name))
+  .sort((a, b) => (Number(a.match(/-(\d+)\.json$/)?.[1] ?? 1) - Number(b.match(/-(\d+)\.json$/)?.[1] ?? 1)));
+const corpus = corpusParts.map(name => JSON.parse(fs.readFileSync(new URL(`engine/data/${name}`, root), 'utf8')))
+  .reduce((merged, part) => ({oracle_commit: merged.oracle_commit ?? part.oracle_commit,
+    format: merged.format ?? part.format, fixtures: [...merged.fixtures, ...part.fixtures]}), {fixtures: []});
 
 // Report the first divergent JSON path instead of a 500-line deep diff, so a
 // one-value regression names the side/roster/move it came from.

@@ -242,14 +242,7 @@ fn scenario(
 fn main() {
     let allocations = std::env::args().any(|s| s == "--count-allocations");
     let dex = Arc::new(Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap());
-    let mut corpus: Corpus = serde_json::from_slice(
-        &std::fs::read(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/data/turn-fixtures.json"
-        ))
-        .unwrap(),
-    )
-    .unwrap();
+    let mut corpus: Corpus = serde_json::from_str(&corpus::corpus_json(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data")))).unwrap();
     // Compare identical historical inputs after subsequent mechanic additions;
     // the default benchmark and differential suite retain the entire corpus.
     if std::env::args().any(|s| s == "--audit-baseline") {
@@ -289,3 +282,6 @@ fn main() {
         }
     }
 }
+
+#[path = "../test_support/corpus.rs"]
+mod corpus;

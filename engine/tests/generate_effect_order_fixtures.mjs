@@ -3,7 +3,13 @@ import fs from 'node:fs';
 import {ReferenceSession, ORACLE_COMMIT, FORMAT, verifyReference} from '../reference.mjs';
 verifyReference();
 const tables = JSON.parse(fs.readFileSync(new URL('../data/dex.json',import.meta.url))).tables;
-const corpus = JSON.parse(fs.readFileSync(new URL('../data/turn-fixtures.json',import.meta.url)));
+// The corpus is committed as size-bounded parts; merge them back.
+const corpusParts = fs.readdirSync(new URL('../data',import.meta.url))
+  .filter(name=>/^turn-fixtures(?:-\d+)?\.json$/.test(name))
+  .sort((a,b)=>(Number(a.match(/-(\d+)\.json$/)?.[1]??1)-Number(b.match(/-(\d+)\.json$/)?.[1]??1)));
+const corpus = corpusParts.map(name=>JSON.parse(fs.readFileSync(new URL(`../data/${name}`,import.meta.url))))
+  .reduce((merged,part)=>({oracle_commit:merged.oracle_commit??part.oracle_commit,format:merged.format??part.format,
+    fixtures:[...merged.fixtures,...part.fixtures]}),{fixtures:[]});
 const name = (kind,id) => id ? tables[kind].find(row=>row.numeric_id===id).data.name : '';
 const keys=['hp','atk','def','spa','spd','spe'];
 const ids = Object.fromEntries(Object.entries(tables).map(([kind,rows])=>[kind,Object.fromEntries(rows.map(row=>[row.id,row.numeric_id]))]));
