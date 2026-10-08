@@ -484,6 +484,8 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:lowkick.basePowerCallback",
     // Rage Fist / Stomping Tantrum: hit-count and last-move-result formulas.
     "moves:ragefist.basePowerCallback",
+    "moves:payback.basePowerCallback",
+    "moves:avalanche.basePowerCallback",
     "moves:tripleaxel.basePowerCallback",
     "moves:stompingtantrum.basePowerCallback",
     "moves:powertrip.basePowerCallback",

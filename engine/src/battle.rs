@@ -830,6 +830,9 @@ impl BattleState {
         self.mon_mut(incoming).item_effect_order = item_order;
         self.mon_mut(incoming).active_turns = 0;
         self.mon_mut(incoming).active_move_actions = 0;
+        // Reference `Pokemon#switchIn`: `newlySwitched = true`, cleared at the
+        // next turn rollover.
+        self.mon_mut(incoming).newly_switched = true;
         if self.mon(incoming).status == dex.effects.toxic {
             self.mon_mut(incoming).status_state.values[0] = 0;
         }
@@ -9804,6 +9807,18 @@ impl BattleState {
         Ok(())
     }
 
+    /// Reference `BattleQueue#willMove`: the queue still holds a move action
+    /// for this Pokémon (`null` for a fainted one). The action being resolved
+    /// has already been shifted off the queue, exactly like the reference.
+    pub(crate) fn queued_to_move(&self, e: Entity) -> bool {
+        if self.mon(e).fainted {
+            return false;
+        }
+        self.queue
+            .iter()
+            .any(|q| q.kind == crate::effects::QueuedKind::Move && q.actor == Some(e))
+    }
+
     fn bench(&self, side: usize) -> SmallVec<[u8; 4]> {
         // Reference requests list switch destinations in request-team order
         // (the preview pick order), which never changes when Pokémon switch;
@@ -9908,6 +9923,7 @@ impl BattleState {
                 SideId::P2
             },
             source_slot: slot,
+            source_roster: source.roster,
             damage,
         });
     }
@@ -10529,6 +10545,7 @@ impl BattleState {
                 mon.hurt_this_turn = 0;
                 mon.stats_raised_this_turn = false;
                 mon.stats_lowered_this_turn = false;
+                mon.newly_switched = false;
                 // Reference turn-loop rollover: older `attackedBy` entries lose
                 // `thisTurn` (or drop when their attacker left the field);
                 // Metal Burst / Comeuppance only ever read the current turn, so

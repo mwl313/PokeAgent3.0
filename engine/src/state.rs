@@ -138,6 +138,12 @@ pub struct AttackedBy {
     /// slot that a pivot refilled before the retaliation resolves is read
     /// through `getAtSlot`, exactly like the reference.
     pub source_slot: u8,
+    /// Reference `source` object identity: the attacker's roster slot (stable
+    /// for the whole battle). Avalanche compares `p.source === target`
+    /// directly, which a slot lookup would not reproduce when a pivot
+    /// refilled the recorded slot.
+    #[serde(default)]
+    pub source_roster: u8,
     pub damage: u16,
 }
 
@@ -221,6 +227,11 @@ pub struct PokemonState {
     /// `circlethrow` mark the target and the post-action phazing step drags a
     /// random reserve in.
     pub force_switch_flag: bool,
+    /// Reference `newlySwitched`: set when the Pokémon enters the field and
+    /// cleared at the turn rollover, so Payback and Avalanche only double
+    /// against a target that has already acted this turn.
+    #[serde(default)]
+    pub newly_switched: bool,
     /// Reference `lastMove`: the move this Pokémon most recently used while
     /// active (0 = none). Encore, Disable, Torment and Cursed Body read it.
     pub last_move: Id,
@@ -368,6 +379,7 @@ impl PokemonState {
             switch_flag: None,
             plain_switch_flag: false,
             force_switch_flag: false,
+            newly_switched: false,
             last_move: 0,
             last_move_target_location: 0,
             times_attacked: 0,
@@ -433,7 +445,7 @@ impl Outcome {
 /// `move.sourceEffect`).
 /// 15: requests carry `revive_targets` / `SlotRequest.reviving`, and sides
 /// persist the `revivalblessing` slot condition.
-pub const SNAPSHOT_SCHEMA: u32 = 17;
+pub const SNAPSHOT_SCHEMA: u32 = 18;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BattleState {

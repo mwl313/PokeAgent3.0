@@ -159,6 +159,24 @@ impl BattleState {
                     declared
                 }
             }
+            // `moves:payback.basePowerCallback`: doubles unless the target just
+            // switched in or still has a move action queued
+            // (`target.newlySwitched || queue.willMove(target)`).
+            BasePowerKind::Payback => {
+                let boosted = !self.mon(target).newly_switched && !self.queued_to_move(target);
+                if boosted { declared * 2 } else { declared }
+            }
+            // `moves:avalanche.basePowerCallback` reads the *user's*
+            // `attackedBy`: the power doubles when the move's current target
+            // already dealt damage to the user this turn.
+            BasePowerKind::Avalanche => {
+                let damaged = self.mon(actor).attacked_by.iter().any(|entry| {
+                    entry.damage > 0
+                        && entry.source_side.index() == usize::from(target.side)
+                        && entry.source_roster == target.roster
+                });
+                if damaged { declared * 2 } else { declared }
+            }
             BasePowerKind::PowerTrip => {
                 let boosts: u32 = self.mon(actor).boosts.iter().map(|b| (*b).max(0) as u32).sum();
                 declared + 20 * boosts

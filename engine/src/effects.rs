@@ -1231,6 +1231,10 @@ pub enum BasePowerKind {
     BeatUp,
     /// `spitup`: 100 power per stored stockpile layer.
     Stockpile,
+    /// `payback` / `avalanche`: the declared power doubles when the target has
+    /// already acted this turn and did not just switch in.
+    Payback,
+    Avalanche,
     /// `watershuriken`: the declared power; the reference's Greninja-Ash /
     /// Battle Bond branch is unreachable because Battle Bond stays an explicit
     /// operational error.
@@ -1263,6 +1267,8 @@ impl BasePowerKind {
             "moves:ragefist.basePowerCallback" => Self::RageFist,
             "moves:tripleaxel.basePowerCallback" => Self::TripleAxel,
             "moves:stompingtantrum.basePowerCallback" => Self::StompingTantrum,
+            "moves:payback.basePowerCallback" => Self::Payback,
+            "moves:avalanche.basePowerCallback" => Self::Avalanche,
             "moves:watershuriken.basePowerCallback" => Self::WaterShuriken,
             "moves:powertrip.basePowerCallback" | "moves:storedpower.basePowerCallback" => {
                 Self::PowerTrip
