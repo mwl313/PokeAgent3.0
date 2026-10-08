@@ -118,3 +118,39 @@ Both are observation-contract decisions, not battle-mechanic ones, so they wait
 for the same review as Illusion's per-viewer identity. Ingrain and Octolock were
 ported in the same family because they only need the existing marker/trap and
 grounded models.
+
+## Focus Punch / Beak Blast (2026-10-08) - held out behind an undiagnosed divergence
+
+Both moves are ported in a local WIP patch
+(`tmp/focuspunch_beakblast_src.patch`, engine/src only, 13 KB): the
+`priorityChargeMove` action is generalised from Chilly Reception to the move's
+own condition, Focus Punch gets its `beforeMoveCallback` gate and the flinch
+refusal, Beak Blast burns contact attackers through the target's `Hit` handlers
+and drops its marker in its own `AfterMove`, and the snapshot validator accepts
+both one-turn markers.
+
+They are **not merged** because their two auto-generated coverage scenes
+(`move_focuspunch_7606`, `move_beakblast_30327`) expose a draw-count divergence
+in turn 1 that the corpus test catches at the first boundary:
+
+* the reference spends 59 draws in turn 1 of `move_focuspunch_7606`, the native
+  55 (and 50 vs 49 for `move_beakblast_30327`), with identical draws up to the
+  commit sample;
+* the shape difference sits in the pre-move phase: the reference's draws 8..16
+  are one `getRandomTarget` sample, one `BattleQueue.sort` shuffle and six
+  `eachEvent` shuffles before the first move resolves, while the native emits
+  five `each_update` draws and one re-sort draw in that window;
+* **the divergence reproduces with the whole new family disabled** (forcing the
+  priority-charge marker insertion to `continue` keeps the same off-by-N
+  counts), so it is pre-existing in the Update/tie structure rather than caused
+  by the new code. Chilly Reception scenes pass, so it is not the
+  `priorityChargeMove` action itself;
+* `tmp/pa3probe/replay_draws.mjs`, `replay_stacks.mjs` (per-draw reference
+  attribution) and `PA3_RNG_SITES=1` / `PA3_RNG_DBG=1` (native attribution)
+  reproduce the tracing above.
+
+Next step for whoever picks this up: diff the reference's `eachEvent('Update')`
+handler list against `BattleState::each_update`'s entity list for that scene
+(the reference sorts one handler per effect with an `onUpdate` callback, the
+native sorts the four active Pokémon), then decide whether the native must grow
+per-handler Update sorting before these two moves can be witnessed.
