@@ -886,6 +886,13 @@ pub enum MoveBehavior {
     JawLock,
     /// `spiritshackle`: a 100% secondary pins the target.
     SpiritShackle,
+    /// `aquaring`: a self volatile that heals a sixteenth of the maximum HP
+    /// every residual.
+    AquaRing,
+    /// `spite`: deducts four PP from the target's last move.
+    Spite,
+    /// `fellstinger`: gains Attack +3 when the hit KOs its target.
+    FellStinger,
     /// `clearsmog`: damages and then resets the target's boost stages.
     ClearSmog,
     /// `powerswap` / `guardswap`: the two attack (or defense) boost stages swap
@@ -1086,6 +1093,9 @@ impl MoveBehavior {
             "block" | "meanlook" => Self::TrapTarget,
             "jawlock" => Self::JawLock,
             "spiritshackle" => Self::SpiritShackle,
+            "aquaring" => Self::AquaRing,
+            "spite" => Self::Spite,
+            "fellstinger" => Self::FellStinger,
             "helpinghand" => Self::HelpingHand,
             "followme" => Self::FollowMe,
             "ragepowder" => Self::RagePowder,
@@ -1249,6 +1259,8 @@ pub struct NativeEffects {
     /// `conditions:trapper`: the silent partner marker the linked
     /// `addVolatile('trapped', ..., 'trapper')` adds to the trapper.
     pub trapper: Id,
+    /// `moves:aquaring.condition`: the residual heal volatile.
+    pub aqua_ring: Id,
     /// `moves:powerswap`: the Stat Swap behaviour needs to know which pair of
     /// stages it moves.
     pub power_swap_move: Id,

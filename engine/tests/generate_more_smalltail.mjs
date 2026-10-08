@@ -1,150 +1,73 @@
-// Development-only corpus for three tail moves:
-// - Synthesis / Moonlight / Morning Sun heal a weather-scaled fraction of the
-//   user's maximum HP (half, two thirds in sun, a quarter in other weather),
-// - Burn Up fails once the user is no longer Fire-type and strips that type
-//   from the user on a landed hit (the `'???'` placeholder),
-// - Tri Attack's 20% secondary samples burn, paralysis or freeze.
+// Development-only corpus for three small self/control moves:
+// - Aqua Ring adds a self volatile that heals a sixteenth of the maximum HP at
+//   residual order 6,
+// - Spite removes four PP from the target's last move (and fails when it cannot),
+// - Fell Stinger raises the user's Attack by three stages when the hit KOs.
 // Every fixture is a complete legal synthetic reference battle with the pinned
 // Showdown state recorded at every decision boundary.
 import {createScaffold} from './fixture_scaffold.mjs';
-const {ids, setOf, offensive, logHas, monAt, runTrials} = createScaffold();
+const {ids, setOf, offensive, foeTeam, foeWith, logHas, everHas, runTrials} = createScaffold();
 
-const POOL = [
-  ['Metagross', 'Clear Body', ['Iron Head', 'Protect', 'Psychic']],
-  ['Milotic', 'Competitive', ['Surf', 'Protect', 'Ice Beam']],
-  ['Torterra', 'Shell Armor', ['Seed Bomb', 'Protect', 'Body Slam']],
-  ['Falinks', 'Battle Armor', ['Smart Strike', 'Protect', 'Close Combat']],
-  ['Chimecho', 'Levitate', ['Dazzling Gleam', 'Protect', 'Psychic']],
-  ['Aggron', 'Sturdy', ['Iron Head', 'Protect', 'Body Slam']],
-  ['Ariados', 'Swarm', ['Leech Life', 'Protect', 'Sucker Punch']],
-];
 const team = (...heads) => [
   ...heads,
-  ...POOL.filter(([species]) => !heads.some(head => head.species === species))
-    .map(([species, ability, moves]) => offensive(species, ability, moves)),
+  ...foeTeam().filter(p => !heads.some(head => head.species === p.species)),
 ].slice(0, 6);
-
-// Extract the HP restored by a heal line for one ident (`|-heal|p1a: s0|H/MAX|`),
-// using the last HP value logged for that ident before the heal. Lines whose
-// maximum does not equal the Pokémon's maximum are the percentage duplicates
-// the protocol emits for the opponent view and are skipped.
-const healDelta = (log, ident, maxHp) => {
-  const hpOf = line => {
-    const parts = line.split('|');
-    if (parts[2] !== ident) return null;
-    const value = parts[3] ? parts[3].split(' ')[0] : '';
-    if (!/^\d+\/\d+$/.test(value)) return null;
-    const [hp, max] = value.split('/').map(Number);
-    return max === maxHp ? hp : null;
-  };
-  for (let i = 0; i < log.length; i++) {
-    const line = log[i];
-    if (!line.startsWith('|-heal|' + ident + '|')) continue;
-    const after = hpOf(line);
-    if (after == null) continue;
-    let before = null;
-    for (let j = i - 1; j >= 0; j--) {
-      const value = hpOf(log[j]);
-      if (value != null) { before = value; break; }
-    }
-    if (before == null) return null;
-    return {before, after};
-  }
-  return null;
-};
+const ppAt = (fixture, side, roster) => fixture.steps.flatMap(step => step.expected.sides[side].pokemon
+  .filter(p => p.roster === roster).map(p => p.pp.join('/')));
+const boostsAt = (fixture, side, roster) => fixture.steps.flatMap(step => step.expected.sides[side].pokemon
+  .filter(p => p.roster === roster).map(p => p.boosts));
 
 const TRIALS = [
   {
-    name: 'smalltail_synthesis_heals_half_in_clear_weather',
-    p1: () => team(setOf('Gogoat', 'Sap Sipper', ['Synthesis', 'Protect', 'Leaf Blade'])),
-    p2: () => team(offensive('Metagross', 'Clear Body', ['Iron Head', 'Protect', 'Psychic'])),
+    name: 'smalltail_aqua_ring_heals_every_residual',
+    p1: () => team(setOf('Azumarill', 'Huge Power', ['Aqua Ring', 'Protect'])),
+    p2: () => foeTeam(),
     script: [
-      {p1: [{move: 'leafblade', target: 1}, 'protect'], p2: [{move: 'ironhead', target: 1}, 'protect']},
-      {p1: [{move: 'synthesis', target: 0}, 'protect'], p2: ['protect', 'protect']},
-      {p1: ['protect', 'protect'], p2: ['protect', 'protect']},
+      {p1: [{move: 'aquaring'}, 'protect'], p2: [{move: 'ironhead', target: 1}, {move: 'bodyslam', target: 1}]},
       {p1: ['protect', 'protect'], p2: ['protect', 'protect']},
     ],
-    coverage: {move: 'synthesis'},
+    coverage: {move: 'aquaring'},
     verify(fixture, session) {
-      // The heal amount is read from the protocol stream: the state snapshots
-      // only record turn boundaries, so a heal followed by same-turn damage
-      // would be invisible there.
-      const max = fixture.steps[0].expected.sides[0].pokemon.find(p => p.roster === 0).max_hp;
-      const heal = healDelta(session.battle.log, 'p1a: s0', max);
-      if (!heal) return 'no Synthesis heal appeared';
-      const expected = Math.min(Math.floor(max * 0.5), max - heal.before);
-      if (heal.after - heal.before !== expected) {
-        return `the clear-weather heal was not half (${heal.after - heal.before} vs ${expected})`;
-      }
+      if (!logHas(session, /\|move\|p1a: s0\|Aqua Ring\|/)) return 'Aqua Ring never executed';
+      if (!logHas(session, /\|-start\|p1a: s0\|Aqua Ring/)) return 'the volatile was never announced';
+      const hps = fixture.steps.flatMap(step => step.expected.sides[0].pokemon
+        .filter(p => p.roster === 0).map(p => p.hp));
+      if (!hps.some((hp, i) => i > 0 && hp > hps[i - 1])) return 'the residual never healed';
       return null;
     },
   },
   {
-    name: 'smalltail_synthesis_heals_two_thirds_in_sun',
-    p1: () => team(setOf('Gogoat', 'Sap Sipper', ['Synthesis', 'Protect', 'Leaf Blade'])),
-    p2: () => team(setOf('Torkoal', 'Shell Armor', ['Sunny Day', 'Protect', 'Body Press'])),
+    name: 'smalltail_spite_deducts_four_pp',
+    p1: () => team(setOf('Arbok', 'Intimidate', ['Spite', 'Protect'])),
+    p2: () => foeTeam(),
     script: [
-      {p1: [{move: 'leafblade', target: 1}, 'protect'], p2: [{move: 'sunnyday', target: 0}, {move: 'ironhead', target: 1}]},
-      {p1: [{move: 'leafblade', target: 1}, 'protect'], p2: ['protect', {move: 'ironhead', target: 1}]},
-      {p1: [{move: 'synthesis', target: 0}, 'protect'], p2: ['protect', 'protect']},
-      {p1: ['protect', 'protect'], p2: ['protect', 'protect']},
+      {p1: ['protect', 'protect'], p2: [{move: 'ironhead', target: 1}, 'protect']},
+      {p1: [{move: 'spite', target: 1}, 'protect'], p2: [{move: 'ironhead', target: 1}, 'protect']},
     ],
-    coverage: {move: 'synthesis'},
+    coverage: {move: 'spite'},
     verify(fixture, session) {
-      if (!logHas(session, /\|move\|p1a: s0\|Synthesis\|/)) return 'Synthesis never executed';
-      const max = fixture.steps[0].expected.sides[0].pokemon.find(p => p.roster === 0).max_hp;
-      const heal = healDelta(session.battle.log, 'p1a: s0', max);
-      if (!heal) return 'no Synthesis heal appeared';
-      const expected = Math.min(Math.floor(max * 0.667), max - heal.before);
-      if (Math.floor(max * 0.667) >= max - heal.before) return 'the sun heal was capped';
-      if (heal.after - heal.before !== expected) {
-        return `the sun heal was not two thirds (${heal.after - heal.before} vs ${expected})`;
-      }
-      if (!logHas(session, /\|move\|p2a: s0\|Sunny Day\|/)) return 'Sunny Day never set the weather';
+      if (!logHas(session, /\|move\|p1a: s0\|Spite\|p2a: s0/)) return 'Spite never executed';
+      const pp = ppAt(fixture, 1, 0);
+      if (!pp.some((value, i) => i > 0 && value !== pp[i - 1])) return 'the PP never dropped';
       return null;
     },
   },
   {
-    name: 'smalltail_burnup_strips_fire_type',
-    p1: () => team(setOf('Arcanine', 'Intimidate', ['Burn Up', 'Protect', 'Flare Blitz'])),
-    p2: () => team(setOf('Metagross', 'Clear Body', ['Iron Head', 'Protect', 'Psychic'])),
+    name: 'smalltail_fellstinger_boosts_after_a_ko',
+    p1: () => team(setOf('Beedrill', 'Swarm', ['Fell Stinger', 'Protect']), setOf('Snorlax', 'Thick Fat', ['Crunch', 'Protect'])),
+    p2: () => foeWith(setOf('Alakazam', 'Magic Guard', ['Calm Mind', 'Protect'])),
     script: [
-      {p1: [{move: 'burnup', target: 1}, 'protect'], p2: ['protect', 'protect']},
-      {p1: [{move: 'burnup', target: 1}, 'protect'], p2: ['protect', 'protect']},
-      {p1: ['protect', 'protect'], p2: ['protect', 'protect']},
+      {p1: ['protect', {move: 'crunch', target: 1}], p2: [{move: 'calmmind'}, 'protect']},
+      {p1: [{move: 'fellstinger', target: 1}, 'protect'], p2: [{move: 'calmmind'}, 'protect']},
     ],
-    coverage: {move: 'burnup'},
+    coverage: {move: 'fellstinger'},
     verify(fixture, session) {
-      if (!logHas(session, /\|move\|p1a: s0\|Burn Up\|/)) return 'Burn Up never executed';
-      if (!logHas(session, /\|-start\|p1a: s0\|typechange\|/)) return 'the type change never appeared';
-      const stripped = fixture.steps
-        .map(step => step.expected.sides[0].pokemon.find(p => p.roster === 0))
-        .find(p => p && p.types.includes(0));
-      if (!stripped) return 'the Fire type was never replaced by the placeholder';
-      const fails = session.battle.log.filter(line => line.startsWith('|-fail|p1a: s0')).length;
-      if (!fails) return 'the second Burn Up did not fail without the Fire type';
-      return null;
-    },
-  },
-  {
-    name: 'smalltail_triattack_secondary_samples_status',
-    p1: () => team(setOf('Alakazam', 'Magic Guard', ['Tri Attack', 'Protect', 'Psychic'])),
-    p2: () => team(setOf('Milotic', 'Competitive', ['Surf', 'Protect', 'Ice Beam'])),
-    script: [
-      {p1: [{move: 'triattack', target: 1}, 'protect'], p2: ['protect', 'protect']},
-      {p1: [{move: 'triattack', target: 1}, 'protect'], p2: ['protect', 'protect']},
-      {p1: [{move: 'triattack', target: 1}, 'protect'], p2: ['protect', 'protect']},
-      {p1: [{move: 'triattack', target: 1}, 'protect'], p2: ['protect', 'protect']},
-    ],
-    coverage: {move: 'triattack'},
-    verify(fixture, session) {
-      if (!logHas(session, /\|move\|p1a: s0\|Tri Attack\|/)) return 'Tri Attack never executed';
-      const statuses = [ids.conditions.brn, ids.conditions.par, ids.conditions.frz];
-      const afflicted = monAt(fixture, 1, 0).find(p => statuses.includes(p.status));
-      if (!afflicted) return 'no sampled status ever landed';
+      if (!logHas(session, /\|move\|p1a: s0\|Fell Stinger\|p2a: s0/)) return 'Fell Stinger never executed';
+      if (!logHas(session, /\|-damage\|p2a: s0\|0 fnt/)) return 'the target never fainted to Fell Stinger';
+      if (!boostsAt(fixture, 0, 0).some(b => b[0] === 3)) return 'the Attack boost never applied';
       return null;
     },
   },
 ];
 
-runTrials(TRIALS, {seedBase: 20000, artifact: 'more_smalltail.json', debugEnv: 'DEBUG_SMALLTAIL'});
+runTrials(TRIALS, {seedBase: 8900, artifact: 'more_smalltail.json', debugEnv: 'DEBUG_SMALLTAIL'});

@@ -4391,6 +4391,67 @@ impl BattleState {
                     false,
                 )?;
                 did_anything = true;
+            } else if behavior == MoveBehavior::AquaRing {
+                // `moves:aquaring`: the self volatile announces itself and
+                // heals a sixteenth of the maximum HP every residual. A
+                // repeated use fails (the condition declares no `onRestart`).
+                if !self
+                    .mon(target)
+                    .volatiles
+                    .contains_key(&dex.effects.aqua_ring)
+                {
+                    let order = self.allocate_effect_order()?;
+                    self.mon_mut(target).volatiles.insert(
+                        dex.effects.aqua_ring,
+                        EffectState {
+                            id: dex.effects.aqua_ring,
+                            source: Some((
+                                if target.side == 0 {
+                                    SideId::P1
+                                } else {
+                                    SideId::P2
+                                },
+                                target.roster,
+                            )),
+                            effect_order: order,
+                            effect_order_assigned: true,
+                            ..Default::default()
+                        },
+                    );
+                    self.emit(
+                        EventKind::EffectStart,
+                        target,
+                        None,
+                        EffectRef::Condition(dex.effects.aqua_ring),
+                        0,
+                        false,
+                    )?;
+                    did_anything = true;
+                }
+            } else if behavior == MoveBehavior::Spite {
+                // `moves:spite.onHit`: the target's last move loses four PP
+                // (`deductPP` marks the slot used and clamps at zero); the move
+                // fails when nothing could be deducted.
+                let last = self.mon(target).last_move;
+                let deducted = self
+                    .mon(target)
+                    .moves
+                    .iter()
+                    .position(|mv| last != 0 && mv.id == last)
+                    .map(|slot| {
+                        // `moveSlots` aliases `baseMoveSlots`, so a PP change
+                        // must land on both (a faint or switch-out rebuilds the
+                        // slots from the base copy).
+                        let mon = self.mon_mut(target);
+                        let before = mon.moves[slot].pp;
+                        let after = before.saturating_sub(4);
+                        mon.moves[slot].pp = after;
+                        mon.moves[slot].used = true;
+                        mon.base_moves[slot].pp = after;
+                        i32::from(before - after)
+                    })
+                    .unwrap_or(0);
+                did_anything |= deducted > 0;
             } else if behavior == MoveBehavior::Defog {
                 // `moves:defog.onHit`: the evasion drop (skipped behind a
                 // decoy unless the user infiltrates), then the target side's
@@ -5049,6 +5110,22 @@ impl BattleState {
         self.each_update(dex)?;
         self.process_faints(dex, self.mon(actor).hp == 0)?;
         self.each_update(dex)?;
+        // `moves:fellstinger.onAfterMoveSecondarySelf`: Attack +3 when the move
+        // KO'd its target (the reference's `!target || target.fainted ||
+        // target.hp <= 0`).
+        if behavior == MoveBehavior::FellStinger
+            && hit_targets
+                .iter()
+                .any(|t| self.mon(*t).fainted || self.mon(*t).hp == 0)
+        {
+            self.boost(
+                dex,
+                actor,
+                actor,
+                [3, 0, 0, 0, 0, 0, 0],
+                BoostCause::Move { secondary: false },
+            )?;
+        }
         // `abilities:magician.onAfterMoveSecondarySelf`: a damaging move steals
         // the first item found among the hit targets in speed order, but only
         // while the user's own hands are empty. The reference speed-sorts the
@@ -8192,6 +8269,7 @@ impl BattleState {
                 if state.duration.is_some()
                     || id == dex.effects.leech_seed
                     || id == dex.effects.curse
+                    || id == dex.effects.aqua_ring
                 {
                     // Reference `onResidualOrder`: Taunt 15, Encore 16, Disable
                     // 17, Throat Chop 22; other timed volatiles stay unordered.
@@ -8218,6 +8296,9 @@ impl BattleState {
                     } else if id == dex.effects.curse {
                         // `moves:curse.condition.onResidualOrder: 12`.
                         (12, 0)
+                    } else if id == dex.effects.aqua_ring {
+                        // `moves:aquaring.condition.onResidualOrder: 6`.
+                        (6, 0)
                     } else {
                         (0, 0)
                     };
@@ -8365,6 +8446,27 @@ impl BattleState {
                     self.process_faints(dex, true)?;
                     if self.outcome.terminated {
                         return Ok(());
+                    }
+                }
+                continue;
+            }
+            if status == 0 && id == dex.effects.aqua_ring {
+                // `moves:aquaring.condition.onResidual` (order 6): recover a
+                // sixteenth of the maximum HP; Heal Block refuses the recovery
+                // while the volatile stays in place.
+                if self.mon(e).hp > 0 && !self.heal_blocked(dex, e) {
+                    let max = u32::from(self.mon(e).stats[0]);
+                    let amount = (max / 16).max(1).min(max - u32::from(self.mon(e).hp));
+                    if amount > 0 {
+                        self.mon_mut(e).hp += amount as u16;
+                        self.emit(
+                            EventKind::Heal,
+                            e,
+                            None,
+                            EffectRef::Condition(id),
+                            amount as i32,
+                            true,
+                        )?;
                     }
                 }
                 continue;

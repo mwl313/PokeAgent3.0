@@ -536,6 +536,13 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:meanlook.onHit",
     "moves:jawlock.onHit",
     "moves:spiritshackle.secondary.onHit",
+    // Aqua Ring: the self volatile's Start message and its residual heal.
+    "moves:aquaring.condition.onStart",
+    "moves:aquaring.condition.onResidual",
+    // Spite: four PP off the target's last move.
+    "moves:spite.onHit",
+    // Fell Stinger: Attack +3 when the hit KOs its target.
+    "moves:fellstinger.onAfterMoveSecondarySelf",
     "moves:direclaw.secondaries.0.onHit",
     // Throat Chop's 100% secondary adds the two-turn sound-lock volatile.
     "moves:throatchop.secondary.onHit",
@@ -2123,6 +2130,7 @@ impl Dex {
             fling_items,
             trapped: lookup("conditions", "trapped")?,
             trapper: lookup("conditions", "trapper")?,
+            aqua_ring: lookup("conditions", "aquaring")?,
             power_swap_move: lookup("moves", "powerswap")?,
             items: native_items,
             no_trace_abilities,

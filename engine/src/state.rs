@@ -1094,6 +1094,13 @@ impl BattleState {
                         effect.duration.is_none()
                             && effect.values.is_empty()
                             && effect.source.is_some()
+                    } else if id == dex.effects.aqua_ring {
+                        // `moves:aquaring.condition`: the residual heal marker
+                        // carries the user as its source, no payload and no
+                        // duration.
+                        effect.duration.is_none()
+                            && effect.values.is_empty()
+                            && effect.source.is_some()
                     } else if usize::from(id) < dex.moves.len()
                         && dex.moves[id as usize].charge.is_some()
                     {
