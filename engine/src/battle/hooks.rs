@@ -625,8 +625,91 @@ impl BattleState {
         self.mon_mut(e).item_effect_order = None;
         self.mon_mut(e).previous_item = item;
         self.emit(EventKind::EndItem, e, None, EffectRef::Item(item), 0, false)?;
-        self.activate_unburden(dex, e)?;
+        self.after_use_item(dex, e)?;
         Ok(item)
+    }
+
+    /// `Pokemon#eatItem` / `Pokemon#useItem` close with
+    /// `runEvent('AfterUseItem', this, null, null, item)`: a speed-sorted
+    /// handler set built from the user's own `onAfterUseItem` (Unburden) and
+    /// every live ally's `onAllyAfterUseItem` (Symbiosis). The reference
+    /// `speedSort` only shuffles groups of two or more tied handlers, so a set
+    /// with a single handler spends no draw.
+    pub(super) fn after_use_item(&mut self, dex: &Dex, user: Entity) -> Result<()> {
+        let mut handlers: SmallVec<[(Entity, Priority); 4]> = SmallVec::new();
+        if dex.effects.abilities[self.mon(user).ability as usize] == Ability::Unburden {
+            handlers.push((
+                user,
+                Priority {
+                    speed: self.mon(user).cached_speed,
+                    ..Default::default()
+                },
+            ));
+        }
+        // `target.alliesAndSelf()`: every unfainted active on the user's side,
+        // including the user itself.
+        for (slot, roster) in self.sides[user.side as usize].active.iter().enumerate() {
+            let _ = slot;
+            let Some(roster) = roster else { continue };
+            let ally = Entity {
+                side: user.side,
+                roster: *roster,
+            };
+            let p = self.mon(ally);
+            if p.hp == 0 || dex.effects.abilities[p.ability as usize] != Ability::Symbiosis {
+                continue;
+            }
+            handlers.push((
+                ally,
+                Priority {
+                    speed: p.cached_speed,
+                    ..Default::default()
+                },
+            ));
+        }
+        speed_sort(&mut handlers, &mut self.rng, |(_, priority)| *priority);
+        for (holder, _) in handlers {
+            if dex.effects.abilities[self.mon(holder).ability as usize] == Ability::Symbiosis {
+                self.symbiosis_transfer(dex, holder, user)?;
+            } else {
+                self.activate_unburden(dex, holder)?;
+            }
+        }
+        Ok(())
+    }
+
+    /// `abilities:symbiosis.onAllyAfterUseItem`: the holder hands its held item
+    /// to the ally that just consumed one. `source.takeItem()` runs the item's
+    /// own TakeItem refusal first (`source.item` stays on a refusal), the
+    /// receiver's TakeItem singleEvent can refuse the gift (Mega Stones key on
+    /// the receiving species), and `Pokemon#setItem` only accepts a live active
+    /// recipient. Either refusal restores the raw `source.item = myItem.id`
+    /// assignment: no message, no Start event and no `lastItem` provenance.
+    pub(super) fn symbiosis_transfer(
+        &mut self,
+        dex: &Dex,
+        holder: Entity,
+        user: Entity,
+    ) -> Result<()> {
+        // `if (pokemon.switchFlag) return;`
+        if self.mon(user).switch_flag.is_some() || self.mon(user).plain_switch_flag {
+            return Ok(());
+        }
+        let TakeOutcome::Taken(item) = self.take_item_checked(dex, holder)? else {
+            return Ok(());
+        };
+        let refuses = dex.item_take_refused(item, self.mon(user).base_species)
+            || self.mon(user).hp == 0
+            || self.mon(user).active_slot.is_none();
+        if refuses {
+            self.mon_mut(holder).item = item;
+            return Ok(());
+        }
+        self.reveal_ability(holder)?;
+        let order = self.allocate_effect_order()?;
+        self.mon_mut(user).item = item;
+        self.mon_mut(user).item_effect_order = Some(order);
+        super::item_ports::start(self, dex, user)
     }
 
     /// `abilities:unburden.onAfterUseItem` / `onTakeItem`: losing the held item
@@ -2895,7 +2978,6 @@ impl Ability {
             | Ability::Suctioncups
             | Ability::Supersweetsyrup
             | Ability::Sweetveil
-            | Ability::Symbiosis
             | Ability::Vitalspirit
             | Ability::Whitesmoke
         )

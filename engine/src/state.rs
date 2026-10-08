@@ -1070,6 +1070,15 @@ impl BattleState {
                             && effect.values.len() == 1
                             && (0..=1).contains(&effect.values[0])
                             && effect.source.is_some()
+                    } else if id == dex.effects.unburden {
+                        // `abilities:unburden.condition`: the item-loss speed
+                        // doubling marker. `addVolatile('unburden')` passes no
+                        // source, so the state carries no payload and no
+                        // duration; `unburden.onEnd` removes it with the
+                        // ability.
+                        effect.duration.is_none()
+                            && effect.values.is_empty()
+                            && effect.source.is_none()
                     } else if usize::from(id) < dex.moves.len()
                         && dex.moves[id as usize].charge.is_some()
                     {
