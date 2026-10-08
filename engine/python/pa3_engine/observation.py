@@ -187,3 +187,36 @@ def split_batch_ragged(batch: dict, index: int) -> dict:
         out[name] = np.frombuffer(ragged, dtype=dtype, count=total, offset=offset)
         offset += total * dtype.itemsize
     return out
+
+
+PACKED_CANDIDATE_FIELDS = 6
+"""Number of `u8` fields in one packed candidate record."""
+
+
+def parse_packed_candidates(counts: bytes, actions: bytes, request_count: int) -> dict:
+    """Zero-copy decode of `NativeEngine.candidates_packed_batch`.
+
+    `counts` is one little-endian `u16` per request and `actions` holds
+    `sum(counts)` fixed 6-field `u8` records in request order:
+    `(kind, own_slot, move_slot, target_as_i8, destination, resource)`.
+    """
+    counts_array = np.frombuffer(counts, dtype="<u2", count=request_count)
+    total = int(counts_array.sum())
+    expected = total * PACKED_CANDIDATE_FIELDS
+    if len(actions) != expected:
+        raise ValueError(f"packed candidate bytes {len(actions)} != {expected}")
+    records = np.frombuffer(actions, dtype=np.uint8).reshape(total, PACKED_CANDIDATE_FIELDS)
+    offsets = np.zeros(request_count + 1, dtype=np.int64)
+    np.cumsum(counts_array, out=offsets[1:])
+    return {"counts": counts_array, "records": records, "offsets": offsets}
+
+
+def packed_candidate_rows(packed: dict) -> tuple:
+    """Row index and in-row position of every packed candidate record."""
+    counts = packed["counts"]
+    row = np.repeat(np.arange(len(counts), dtype=np.int64), counts)
+    position = (
+        np.arange(len(packed["records"]), dtype=np.int64)
+        - np.repeat(packed["offsets"][:-1], counts)
+    )
+    return row, position

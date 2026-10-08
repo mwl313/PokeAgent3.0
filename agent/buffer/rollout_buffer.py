@@ -57,6 +57,11 @@ class InlineObservationStore(ObservationStore):
         self._rows.append(observation.to_compact_numpy())
         return len(self._rows) - 1
 
+    def add_compact(self, row: dict[str, Any]) -> int:
+        """Store an already-compact row (same dtypes as ``to_compact_numpy``)."""
+        self._rows.append(row)
+        return len(self._rows) - 1
+
     def get(self, index: int) -> ObservationBatch:
         row = self._rows[index]
         return ObservationBatch.from_compact_numpy(row)
@@ -249,6 +254,81 @@ class RolloutBuffer:
             reward=float(reward),
             done=bool(done),
             actor_active=bool(request.actor_active),
+            seed_ref=seed_ref,
+        )
+        return self.add_row(row)
+
+    def record_packed(
+        self,
+        observation_compact: dict,
+        *,
+        branch_records: Sequence,
+        entity_token: Sequence[Sequence[int]],
+        move_token: Sequence[Sequence[int]],
+        selected: Sequence[int],
+        old_logprob: float,
+        value: float,
+        match_id: int,
+        side: int,
+        policy_id: str,
+        opponent_policy_id: str,
+        team_ids: tuple[int, int],
+        request_index: int,
+        turn: int,
+        request_kind: RequestKind,
+        branch_slots: Sequence[int],
+        reward: float = 0.0,
+        done: bool = False,
+        actor_active: bool = True,
+        seed_ref: Optional[int] = None,
+    ) -> RolloutRow:
+        """Record one row from packed candidate records without typed objects.
+
+        ``branch_records[j]`` is the `[n_j, 6]` record array of branch `j`
+        exactly as the engine returned it at the sampled prefix, so the learner's
+        recomputation sees the same candidate tables and masks.
+        """
+        selected = tuple(int(i) for i in selected)
+        action_ids = []
+        masks = []
+        for level in branch_records:
+            records = tuple(map(tuple, level.tolist())) if hasattr(level, "tolist") else tuple(
+                tuple(int(v) for v in record) for record in level
+            )
+            if not records:
+                raise ValueError("packed branch without a legal candidate")
+            action_ids.append(records)
+            masks.append(tuple([True] * len(records)))
+        if len(selected) != len(action_ids):
+            raise ValueError(
+                f"selected prefix has {len(selected)} entries for {len(action_ids)} branches"
+            )
+        for index, mask in zip(selected, masks):
+            if not 0 <= index < len(mask):
+                raise ValueError("selected prefix index out of range")
+        observation_ref = self.observation_store.add_compact(observation_compact)
+        row = RolloutRow(
+            match_id=int(match_id),
+            side=int(side),
+            policy_id=str(policy_id),
+            opponent_policy_id=str(opponent_policy_id),
+            team_ids=(int(team_ids[0]), int(team_ids[1])),
+            request_index=int(request_index),
+            turn=int(turn),
+            request_kind=RequestKind(request_kind),
+            observation_ref=observation_ref,
+            branch_slots=tuple(int(slot) for slot in branch_slots),
+            action_ids=tuple(action_ids),
+            candidate_mask=tuple(masks),
+            entity_token=tuple(tuple(int(v) for v in level) for level in entity_token),
+            move_token=tuple(tuple(int(v) for v in level) for level in move_token),
+            selected=selected,
+            selected_actions=tuple(action_ids[level][selected[level]] for level in range(len(selected))),
+            old_logprob=float(old_logprob),
+            value=float(value),
+            reward=float(reward),
+            done=bool(done),
+            actor_active=bool(actor_active),
             seed_ref=seed_ref,
         )
         return self.add_row(row)

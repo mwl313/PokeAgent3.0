@@ -1,0 +1,135 @@
+#!/usr/bin/env python3
+"""Phase 2 parity audit: legacy candidate tuples vs the packed byte wire.
+
+Walks real engine decisions level by level (the mask is prefix-dependent) and
+asserts that `candidates_packed_batch` reproduces `candidates_batch` exactly:
+same request order, same candidate order, same six fields including the signed
+target location, and no truncation of the largest legal set.
+
+Usage:
+    PYTHONPATH=engine/python:. .venv/bin/python scripts/audit_candidate_wire.py [--envs 64]
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import random
+import sys
+
+import numpy as np
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "engine", "python"))
+
+import pa3_engine  # noqa: E402
+from pa3_engine.observation import parse_packed_candidates  # noqa: E402
+
+
+def packed_to_tuples(packed, index):
+    start = int(packed["offsets"][index])
+    stop = int(packed["offsets"][index + 1])
+    return [
+        (int(record[0]), int(record[1]), int(record[2]), int(np.int8(record[3])),
+         int(record[4]), int(record[5]))
+        for record in packed["records"][start:stop]
+    ]
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--envs", type=int, default=64)
+    parser.add_argument("--workers", type=int, default=8)
+    parser.add_argument("--levels", type=int, default=4)
+    parser.add_argument("--data", default=os.path.join(ROOT, "engine", "data"))
+    parser.add_argument("--teams", default=os.path.join(ROOT, "engine", "data", "training-teams.json"))
+    parser.add_argument("--report", default=os.path.join(ROOT, "docs", "perf", "CANDIDATE_WIRE.md"))
+    args = parser.parse_args()
+
+    engine = pa3_engine.NativeEngine(args.data, args.teams, workers=args.workers)
+    rng = random.Random(20261008)
+    teams = engine.team_count()
+    handles = engine.reset_batch(
+        [rng.randrange(teams) for _ in range(args.envs)],
+        [rng.randrange(teams) for _ in range(args.envs)],
+        [tuple(rng.randrange(1 << 16) for _ in range(4)) for _ in range(args.envs)],
+        [(0, 1)] * args.envs,
+    )
+    stats = {"levels_compared": 0, "requests_compared": 0, "candidates_compared": 0,
+             "max_candidates": 0, "singleton_levels": 0, "empty_levels": 0, "mismatches": []}
+    for round_index in range(args.levels):
+        requests = []
+        for handle in handles:
+            for side in (0, 1):
+                kind, slots = engine.request_info_batch([(handle[0], handle[1], side)])[0]
+                if int(kind) in (0, 1, 2):
+                    requests.append((handle, side, tuple(int(s) for s in slots)))
+        if not requests:
+            break
+        prefixes = {index: [] for index in range(len(requests))}
+        for level in range(max(len(slots) for _, _, slots in requests)):
+            active = [index for index, (_, _, slots) in enumerate(requests) if level < len(slots)]
+            specs = [(requests[i][0][0], requests[i][0][1], requests[i][1], list(prefixes[i])) for i in active]
+            if not specs:
+                break
+            oracle = engine.candidates_batch(specs)
+            counts_bytes, actions_bytes, max_count = engine.candidates_packed_batch(specs)
+            packed = parse_packed_candidates(counts_bytes, actions_bytes, len(specs))
+            stats["levels_compared"] += 1
+            stats["max_candidates"] = max(stats["max_candidates"], int(max_count))
+            for position, index in enumerate(active):
+                expected = [tuple(int(v) for v in row) for row in oracle[position]]
+                actual = packed_to_tuples(packed, position)
+                stats["requests_compared"] += 1
+                stats["candidates_compared"] += len(expected)
+                if len(expected) <= 1:
+                    stats["singleton_levels"] += 1
+                if not expected:
+                    stats["empty_levels"] += 1
+                if expected != actual:
+                    stats["mismatches"].append({"round": round_index, "level": level, "request": index,
+                                                "expected": expected[:8], "actual": actual[:8]})
+                chosen = actual[rng.randrange(len(actual))] if actual else None
+                if chosen is not None:
+                    prefixes[index].append(chosen)
+        submissions = {}
+        for index, (handle, side, slots) in enumerate(requests):
+            prefix = prefixes[index][: len(slots)]
+            if len(prefix) == len(slots):
+                submissions.setdefault(handle, []).append((side, prefix))
+        if submissions:
+            engine.step_batch([(handle[0], handle[1], rows) for handle, rows in submissions.items()])
+
+    os.makedirs(os.path.dirname(os.path.abspath(args.report)), exist_ok=True)
+    lines = [
+        "# Candidate wire parity audit (packed vs legacy tuples)",
+        "",
+        "Generated by `scripts/audit_candidate_wire.py` on real engine state; the "
+        "mask is re-queried after every sampled prefix.",
+        "",
+        f"- levels compared: {stats['levels_compared']}",
+        f"- requests compared: {stats['requests_compared']}",
+        f"- candidates compared: {stats['candidates_compared']}",
+        f"- largest legal candidate set seen: {stats['max_candidates']}",
+        f"- singleton levels: {stats['singleton_levels']}, empty levels: {stats['empty_levels']}",
+        f"- mismatches: {len(stats['mismatches'])}",
+        "",
+    ]
+    if stats["mismatches"]:
+        lines.append("```json")
+        lines.append(json.dumps(stats["mismatches"][:5], indent=1))
+        lines.append("```")
+    with open(args.report, "w") as handle:
+        handle.write("\n".join(lines))
+    print(json.dumps({key: stats[key] for key in
+                      ("levels_compared", "requests_compared", "candidates_compared",
+                       "max_candidates", "singleton_levels", "empty_levels")}, indent=2))
+    print(f"mismatches: {len(stats['mismatches'])}")
+    if stats["mismatches"]:
+        raise SystemExit("candidate wire mismatch")
+
+
+if __name__ == "__main__":
+    main()

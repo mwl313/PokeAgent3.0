@@ -178,8 +178,15 @@ def main():
             "metrics are scaled by the real-row fraction of each minibatch; the "
             "effect is negligible once a minibatch is full (4096 rows)"
         )
-        update = learner.update(batch, committed_matches=args.games).as_dict()
+        # The LR clock advances on the *actual* naturally completed matches
+        # (including cohort overshoot), never on the requested target.
+        update = learner.update(batch, committed_matches=int(stats["games"])).as_dict()
         report["ppo_update"] = update
+        report["committed_matches_actual"] = int(stats["games"])
+        report["matches_target"] = args.games
+        checks["committed_matches_use_actual_natural_completions"] = (
+            int(update["committed_matches"]) == int(stats["games"])
+        )
         checks["approx_kl_after_update"] = update["epoch_approx_kl"]
         checks["grad_norm_finite"] = bool(torch.isfinite(torch.tensor(update["grad_norm"])).item())
         checks["policy_loss_finite"] = bool(torch.isfinite(torch.tensor(update["policy_loss"])).item())

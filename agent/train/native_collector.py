@@ -50,6 +50,15 @@ class NativeCollectorConfig:
     record_rows: bool = True
     device: str = "cuda"
     prefer_cuda: bool = True
+    # "perview": one packed PyBytes per request (legacy). "fixed": one fixed
+    # stride buffer plus a ragged sidecar for the whole decision batch.
+    observation_mode: str = "perview"
+    # "tuples": legacy Vec<Vec<ActionTuple>> crossing. "packed": one
+    # (counts, actions) byte crossing decoded as a structured numpy view.
+    candidate_wire: str = "tuples"
+    # Actor-only inference flags (A/B measured; probabilities stay FP32).
+    amp: bool = False
+    inference_mode: bool = False
 
 
 @dataclass
@@ -64,11 +73,22 @@ class NativeCollectorStats:
     candidates_returned: int = 0
     operational_errors: int = 0
     observation_seconds: float = 0.0
+    request_info_seconds: float = 0.0
+    parse_seconds: float = 0.0
+    h2d_seconds: float = 0.0
     candidate_seconds: float = 0.0
+    table_seconds: float = 0.0
+    readback_seconds: float = 0.0
+    spec_seconds: float = 0.0
+    assemble_seconds: float = 0.0
     model_seconds: float = 0.0
     step_seconds: float = 0.0
+    record_seconds: float = 0.0
     reset_seconds: float = 0.0
     wall_seconds: float = 0.0
+    unaccounted_seconds: float = 0.0
+    cpu_seconds: float = 0.0
+    cpu_fraction_of_one_core: float = 0.0
     reward_sum: float = 0.0
     wins: int = 0
     losses: int = 0
@@ -166,12 +186,108 @@ class NativeCollector:
             selected=torch.full((batch, 1), -1, dtype=torch.long, device=self.device),
         )
 
+    def _level_table_packed(self, counts, records, offsets) -> BranchCandidatesBatch:
+        """Vectorized single-branch table from the packed candidate wire.
+
+        No per-candidate Python object is created: the `[B, 1, P, 6]` action
+        block, the mask and the entity/move token references are all computed
+        with numpy from the flat `u8` records.
+        """
+        import numpy as np
+
+        from pa3_engine.observation import packed_candidate_rows
+
+        batch = len(counts)
+        total = len(records)
+        capacity = max(int(counts.max()) if batch else 0, 1)
+        action_ids = np.zeros((batch, 1, capacity, 6), dtype=np.int64)
+        mask = np.zeros((batch, 1, capacity), dtype=bool)
+        if total:
+            row, position = packed_candidate_rows({"counts": counts, "records": records, "offsets": offsets})
+            action_ids[row, 0, position] = records.astype(np.int64)
+            mask[row, 0, position] = True
+        kind = action_ids[..., 0]
+        own_slot = action_ids[..., 1]
+        move_slot = action_ids[..., 2]
+        destination = action_ids[..., 4]
+        # Same token mapping as ActionRef.resolve, vectorized.
+        slot_for_entity = np.where(kind == 0, destination, own_slot)
+        valid_entity = (slot_for_entity >= 0) & (slot_for_entity < 6) & mask
+        entity = np.where(valid_entity, self.layout.POKEMON_START + slot_for_entity, -1)
+        valid_move = (kind == 1) & (own_slot >= 0) & (own_slot < 6) & (move_slot >= 0) & (move_slot < 4) & mask
+        move_token = np.where(
+            valid_move, self.layout.MOVES_START + own_slot * 4 + move_slot, -1
+        )
+        return BranchCandidatesBatch(
+            action_ids=torch.as_tensor(action_ids).to(self.device),
+            mask=torch.as_tensor(mask).to(self.device),
+            entity_token=torch.as_tensor(entity.astype(np.int64)).to(self.device),
+            move_token=torch.as_tensor(move_token.astype(np.int64)).to(self.device),
+            branch_valid=torch.ones((batch, 1), dtype=torch.bool, device=self.device),
+            selected=torch.full((batch, 1), -1, dtype=torch.long, device=self.device),
+        )
+
+    @staticmethod
+    def _packed_action(packed, index: int, pick: int) -> tuple:
+        """One packed record as the engine's action tuple (target re-signed)."""
+        import numpy as np
+
+        record = packed["records"][int(packed["offsets"][index]) + int(pick)]
+        return (int(record[0]), int(record[1]), int(record[2]), int(np.int8(record[3])),
+                int(record[4]), int(record[5]))
+
+    @staticmethod
+    def _prefix_actions(prefix_buf, offset: int, branch_count: int) -> list:
+        """Packed prefix slab row as engine action tuples."""
+        import numpy as np
+
+        return [
+            (int(record[0]), int(record[1]), int(record[2]), int(np.int8(record[3])),
+             int(record[4]), int(record[5]))
+            for record in prefix_buf[offset, :branch_count]
+        ]
+
+    def _packed_candidates(self, packed, index: int) -> list:
+        """All packed records of one request as engine action tuples."""
+        import numpy as np
+
+        start = int(packed["offsets"][index])
+        stop = int(packed["offsets"][index + 1])
+        return [ (int(record[0]), int(record[1]), int(record[2]), int(np.int8(record[3])),
+                  int(record[4]), int(record[5]))
+                 for record in packed["records"][start:stop] ]
+
+    def _packed_row_inputs(self, packed_by_level, offset: int, branch_count: int):
+        """Per-level record arrays plus vectorized entity/move token references."""
+        import numpy as np
+
+        records = []
+        entities = []
+        moves = []
+        for level in range(branch_count):
+            packed = packed_by_level[level]
+            start = int(packed["offsets"][offset])
+            stop = int(packed["offsets"][offset + 1])
+            record = packed["records"][start:stop]
+            records.append(record)
+            kind = record[:, 0].astype(np.int64)
+            own_slot = record[:, 1].astype(np.int64)
+            move_slot = record[:, 2].astype(np.int64)
+            destination = record[:, 4].astype(np.int64)
+            slot_for_entity = np.where(kind == 0, destination, own_slot)
+            valid_entity = (slot_for_entity >= 0) & (slot_for_entity < 6)
+            entities.append(np.where(valid_entity, self.layout.POKEMON_START + slot_for_entity, -1))
+            valid_move = ((kind == 1) & (own_slot >= 0) & (own_slot < 6)
+                          & (move_slot >= 0) & (move_slot < 4))
+            moves.append(np.where(valid_move, self.layout.MOVES_START + own_slot * 4 + move_slot, -1))
+        return records, entities, moves
+
     def _record(
         self,
         observation: ObservationBatch,
         request: RequestRow,
-        sampled,
-        row_index: int,
+        selected: Sequence[int],
+        old_logprob: float,
         value: float,
         match_id: int,
         side: int,
@@ -181,12 +297,11 @@ class NativeCollector:
     ) -> None:
         if not self.config.record_rows:
             return
-        selected = [int(sampled.selected[row_index, level].item()) for level in range(request.branch_count)]
         self.buffer.record(
             observation=observation,
             request=request,
-            selected=selected,
-            old_logprob=float(sampled.request_logprob[row_index].detach()),
+            selected=list(selected),
+            old_logprob=float(old_logprob),
             value=value,
             match_id=match_id,
             side=side,
@@ -200,6 +315,18 @@ class NativeCollector:
         )
         self.stats.learner_rows += 1
 
+    def _inference_context(self):
+        """Actor forward context: optional fp16 autocast + inference_mode."""
+        from contextlib import nullcontext
+
+        context = (
+            torch.autocast(device_type="cuda", dtype=torch.float16)
+            if self.config.amp and self.device.type == "cuda"
+            else nullcontext()
+        )
+        grad = torch.inference_mode() if self.config.inference_mode else torch.no_grad()
+        return context, grad
+
     # -- one collection round ---------------------------------------------
     def _collect_round(self, handles, roles, team_ids, match_ids, request_index, turn, finished):
         pending = []
@@ -210,9 +337,11 @@ class NativeCollector:
                 pending.append((env, handles[env], side))
         if not pending:
             return False
+        start_info = time.perf_counter()
         info = self.engine.request_info_batch(
             [(handle[0], handle[1], side) for _, handle, side in pending]
         )
+        self.stats.request_info_seconds += time.perf_counter() - start_info
         decision = []
         for (env, handle, side), (kind, slots) in zip(pending, info):
             if int(kind) in (0, 1, 2):
@@ -220,98 +349,230 @@ class NativeCollector:
         if not decision:
             return False
         start = time.perf_counter()
-        blobs = self.engine.observe_encoded_batch(
-            [(handle[0], handle[1]) for _, handle, _, _, _ in decision],
-            [side for _, _, side, _, _ in decision],
-        )
-        observation_seconds = time.perf_counter() - start
-        self.stats.observation_seconds += observation_seconds
-        from pa3_engine.observation import parse_view
+        handle_rows = [(handle[0], handle[1]) for _, handle, _, _, _ in decision]
+        side_rows = [side for _, _, side, _, _ in decision]
+        from pa3_engine.observation import parse_batch, parse_view
 
-        observations = [
-            ObservationBatch.from_native_payload(parse_view(blob), layout=self.layout)
-            for blob in blobs
-        ]
+        # "fixed": one fixed-stride buffer plus a ragged sidecar for the whole
+        # decision batch, decoded as a single structured numpy view.
+        # "perview": one packed PyBytes per request (legacy path).
+        batch_observations = None
+        observations = None
+        if self.config.observation_mode == "fixed":
+            fixed_bytes, ragged_bytes = self.engine.observe_fixed_batch(handle_rows, side_rows)
+            self.stats.observation_seconds += time.perf_counter() - start
+            start = time.perf_counter()
+            batch_observations = ObservationBatch.from_native_payload(
+                parse_batch(fixed_bytes, ragged_bytes, len(decision)), layout=self.layout
+            )
+            self.stats.parse_seconds += time.perf_counter() - start
+        else:
+            blobs = self.engine.observe_encoded_batch(handle_rows, side_rows)
+            self.stats.observation_seconds += time.perf_counter() - start
+            start = time.perf_counter()
+            observations = [
+                ObservationBatch.from_native_payload(parse_view(blob), layout=self.layout)
+                for blob in blobs
+            ]
+            self.stats.parse_seconds += time.perf_counter() - start
         # Group requests by branch count so a batched sequential sample is
         # well-formed for every row in the group.
         groups: dict[int, list[int]] = {}
         for index, entry in enumerate(decision):
             groups.setdefault(len(entry[4]), []).append(index)
         submissions: dict[int, list[tuple[int, list]]] = {}
+        # Batch-level compact observation (one conversion for the whole round)
+        # for the packed rollout fast path.
+        compact_batch = batch_observations.to_compact_numpy() if batch_observations is not None else None
         for branch_count, indices in sorted(groups.items()):
-            subset_obs = observations[indices[0]].cat([observations[i] for i in indices[1:]]) \
-                if len(indices) > 1 else observations[indices[0]]
-            subset_obs = subset_obs.to(self.device)
             start = time.perf_counter()
-            with torch.no_grad():
+            if batch_observations is not None:
+                subset_obs = batch_observations.select(indices).to(self.device)
+            else:
+                subset_obs = observations[indices[0]].cat([observations[i] for i in indices[1:]]) \
+                    if len(indices) > 1 else observations[indices[0]]
+                subset_obs = subset_obs.to(self.device)
+            self.stats.h2d_seconds += time.perf_counter() - start
+            amp_context, grad_context = self._inference_context()
+            start = time.perf_counter()
+            with grad_context, amp_context:
                 encoded = self.model.encode(subset_obs)
                 hidden = self.model.scorer.initial_state(
                     encoded.tokens.shape[0], device=encoded.tokens.device, dtype=encoded.tokens.dtype
                 )
+            self.stats.model_seconds += time.perf_counter() - start
             steps = []
+            picks_by_level: list[list[int]] = []
+            packed_by_level: list = []
             candidate_rows_per_level: list[list[Sequence[Sequence[int]]]] = [[] for _ in range(branch_count)]
             prefixes: list[list[tuple]] = [[] for _ in indices]
+            # Packed walk state: one [B, branch, 6] uint8 slab, updated with the
+            # sampled rows. No per-request Python prefix list is built.
+            prefix_buf = None
+            walk_handles = walk_sides = None
+            if self.config.candidate_wire == "packed":
+                import numpy as np
+
+                prefix_buf = np.zeros((len(indices), branch_count, 6), dtype=np.uint8)
+                walk_handles = [(decision[i][1][0], decision[i][1][1]) for i in indices]
+                walk_sides = [decision[i][2] for i in indices]
             for level in range(branch_count):
+                start_spec = time.perf_counter()
                 specs = []
-                for offset, request_index_in_decision in enumerate(indices):
-                    env, handle, side, _kind, _slots = decision[request_index_in_decision]
-                    specs.append((handle[0], handle[1], side, list(prefixes[offset])))
+                if prefix_buf is None:
+                    for offset, request_index_in_decision in enumerate(indices):
+                        env, handle, side, _kind, _slots = decision[request_index_in_decision]
+                        specs.append((handle[0], handle[1], side, list(prefixes[offset])))
+                self.stats.spec_seconds += time.perf_counter() - start_spec
                 start_candidates = time.perf_counter()
-                candidate_lists = self.engine.candidates_batch(specs)
+                packed = None
+                candidate_lists = None
+                if self.config.candidate_wire == "packed":
+                    import numpy as np
+
+                    from pa3_engine.observation import parse_packed_candidates
+
+                    prefix_bytes = np.ascontiguousarray(prefix_buf[:, :level, :]).tobytes()
+                    counts_bytes, actions_bytes, _max_count = self.engine.candidates_packed_walk(
+                        walk_handles, walk_sides, level, prefix_bytes
+                    )
+                    packed = parse_packed_candidates(counts_bytes, actions_bytes, len(indices))
+                    self.stats.candidates_returned += int(packed["counts"].sum())
+                    for offset in range(len(indices)):
+                        kind = int(packed["records"][int(packed["offsets"][offset])][0])
+                        self.stats.action_kinds[kind] = self.stats.action_kinds.get(kind, 0) + 1
+                else:
+                    candidate_lists = self.engine.candidates_batch(specs)
+                    self.stats.candidates_returned += sum(len(row) for row in candidate_lists)
+                    for offset, candidates in enumerate(candidate_lists):
+                        candidate_rows_per_level[level].append(candidates)
+                        # Raw packed tuples carry kind in field 0; no object is
+                        # built for the histogram.
+                        kind = int(candidates[0][0])
+                        self.stats.action_kinds[kind] = self.stats.action_kinds.get(kind, 0) + 1
                 self.stats.candidate_seconds += time.perf_counter() - start_candidates
                 self.stats.candidate_calls += 1
-                self.stats.candidates_returned += sum(len(row) for row in candidate_lists)
-                for offset, candidates in enumerate(candidate_lists):
-                    candidate_rows_per_level[level].append(candidates)
-                    self.stats.action_kinds[int(AtomicAction.from_tuple(candidates[0]).kind)] = (
-                        self.stats.action_kinds.get(int(AtomicAction.from_tuple(candidates[0]).kind), 0) + 1
+                packed_by_level.append(packed)
+                with grad_context, amp_context:
+                    start_table = time.perf_counter()
+                    level_table = (
+                        self._level_table_packed(packed["counts"], packed["records"], packed["offsets"])
+                        if packed is not None else self._level_table(candidate_lists)
                     )
-                start_model = time.perf_counter()
-                with torch.no_grad():
+                    self.stats.table_seconds += time.perf_counter() - start_table
+                    start_model = time.perf_counter()
                     step = self.model.sample_level_step(
                         encoded,
                         hidden,
-                        self._level_table(candidate_lists),
+                        level_table,
                         temperature=1.0,
                         generator=self.generator,
                     )
-                self.stats.model_seconds += time.perf_counter() - start_model
+                    self.stats.model_seconds += time.perf_counter() - start_model
                 steps.append(step)
                 hidden = step.hidden
-                for offset, candidates in enumerate(candidate_lists):
-                    # The next level's mask is conditional on this sampled pick.
-                    prefixes[offset].append(tuple(candidates[int(step.pick[offset])]))
+                start_readback = time.perf_counter()
+                if packed is not None:
+                    import numpy as np
+
+                    # One bulk D2H per level, then a vectorized prefix update.
+                    picks_np = step.pick.detach().to("cpu").numpy().astype(np.int64)
+                    picks_by_level.append([int(value) for value in picks_np])
+                    selected_rows = packed["records"][packed["offsets"][:-1] + picks_np]
+                    prefix_buf[:, level, :] = selected_rows
+                else:
+                    picks = [int(value) for value in step.pick.tolist()]
+                    picks_by_level.append(picks)
+                    for offset, candidates in enumerate(candidate_lists):
+                        # The next level's mask is conditional on this sampled pick.
+                        prefixes[offset].append(tuple(candidates[picks[offset]]))
+                self.stats.readback_seconds += time.perf_counter() - start_readback
             sampled = assemble_level_result(steps)
             start_model = time.perf_counter()
-            with torch.no_grad():
+            with grad_context, amp_context:
                 values = self.model.value(encoded)
             self.stats.model_seconds += time.perf_counter() - start_model
+            start_readback = time.perf_counter()
+            old_logprobs = [float(value) for value in
+                            sampled.request_logprob.detach().float().cpu().tolist()]
+            value_list = [float(value) for value in values.detach().float().cpu().tolist()]
+            self.stats.readback_seconds += time.perf_counter() - start_readback
             for offset, decision_index in enumerate(indices):
                 env, handle, side, kind, slots = decision[decision_index]
-                branches = tuple(
-                    CandidateSet.from_tuples(list(candidate_rows_per_level[level][offset]))
-                    for level in range(branch_count)
+                action = (
+                    self._prefix_actions(prefix_buf, offset, branch_count)
+                    if prefix_buf is not None else [tuple(value) for value in prefixes[offset]]
                 )
-                request = RequestRow(
-                    observation=subset_obs.select([offset]),
-                    kind=RequestKind(kind),
-                    branch_slots=slots,
-                    branches=branches,
-                )
-                action = [tuple(value) for value in prefixes[offset]]
                 if side == self._learner_side(roles[env]):
-                    self._record(
-                        observation=subset_obs.select([offset]),
-                        request=request,
-                        sampled=sampled,
-                        row_index=offset,
-                        value=float(values[offset].detach()),
-                        match_id=match_ids[env],
-                        side=side,
-                        team_ids=team_ids[env],
-                        request_index=request_index[env],
-                        turn=turn[env],
-                    )
+                    start_record = time.perf_counter()
+                    selected_prefix = [picks_by_level[level][offset] for level in range(branch_count)]
+                    if packed_by_level[0] is not None and compact_batch is not None:
+                        # Fast path: no typed ActionRef/CandidateSet objects and
+                        # no per-row torch copy — compact numpy rows only.
+                        records, entities, moves = self._packed_row_inputs(
+                            packed_by_level, offset, branch_count
+                        )
+                        # compact_batch is indexed by the round-wide decision
+                        # index, while `offset` is the index inside this branch
+                        # group. Using the group index here silently pairs a row
+                        # with another request's observation.
+                        decision_offset = indices[offset]
+                        self.buffer.record_packed(
+                            {key: value[decision_offset:decision_offset + 1].copy()
+                             for key, value in compact_batch.items()},
+                            branch_records=records,
+                            entity_token=entities,
+                            move_token=moves,
+                            selected=selected_prefix,
+                            old_logprob=old_logprobs[offset],
+                            value=value_list[offset],
+                            match_id=match_ids[env],
+                            side=side,
+                            policy_id=self.policy_id,
+                            opponent_policy_id=self.policy_id,
+                            team_ids=team_ids[env],
+                            request_index=request_index[env],
+                            turn=turn[env],
+                            request_kind=RequestKind(kind),
+                            branch_slots=slots,
+                            actor_active=len(slots) > 0 and any(
+                                int(packed_by_level[level]["counts"][offset]) >= 2
+                                for level in range(branch_count)
+                            ),
+                        )
+                        self.stats.learner_rows += 1
+                    else:
+                        # Typed path (legacy wire or per-view observations).
+                        row_observation = subset_obs.select([offset])
+                        if packed_by_level[0] is not None:
+                            branches = tuple(
+                                CandidateSet.from_tuples(self._packed_candidates(packed_by_level[level], offset))
+                                for level in range(branch_count)
+                            )
+                        else:
+                            branches = tuple(
+                                CandidateSet.from_tuples(list(candidate_rows_per_level[level][offset]))
+                                for level in range(branch_count)
+                            )
+                        request = RequestRow(
+                            observation=row_observation,
+                            kind=RequestKind(kind),
+                            branch_slots=slots,
+                            branches=branches,
+                        )
+                        self._record(
+                            observation=row_observation,
+                            request=request,
+                            selected=selected_prefix,
+                            old_logprob=old_logprobs[offset],
+                            value=value_list[offset],
+                            match_id=match_ids[env],
+                            side=side,
+                            team_ids=team_ids[env],
+                            request_index=request_index[env],
+                            turn=turn[env],
+                        )
+                    self.stats.record_seconds += time.perf_counter() - start_record
                     self._row_cursor[(env, side)] = len(self.buffer.rows) - 1
                 else:
                     self.stats.opponent_requests += 1
@@ -319,9 +580,11 @@ class NativeCollector:
                 self.stats.decisions += 1
         specs = []
         order = sorted(submissions)
+        start_assemble = time.perf_counter()
         for env in order:
             handle = handles[env]
             specs.append((handle[0], handle[1], submissions[env]))
+        self.stats.assemble_seconds += time.perf_counter() - start_assemble
         start = time.perf_counter()
         results = self.engine.step_batch(specs)
         self.stats.step_seconds += time.perf_counter() - start
@@ -363,6 +626,9 @@ class NativeCollector:
 
     # -- collection -------------------------------------------------------
     def collect(self, target_games: int) -> RolloutBuffer:
+        import resource
+
+        usage_before = resource.getrusage(resource.RUSAGE_SELF)
         self._row_cursor: dict[tuple[int, int], int] = {}
         self.model.eval()
         started = time.perf_counter()
@@ -387,4 +653,14 @@ class NativeCollector:
                 open_games = sum(1 for value in finished if not value)
                 self.stats.max_open_games = max(self.stats.max_open_games, open_games)
         self.stats.wall_seconds = time.perf_counter() - started
+        accounted = (self.stats.reset_seconds + self.stats.observation_seconds + self.stats.parse_seconds
+                     + self.stats.h2d_seconds + self.stats.request_info_seconds
+                     + self.stats.candidate_seconds + self.stats.table_seconds + self.stats.model_seconds
+                     + self.stats.readback_seconds + self.stats.spec_seconds + self.stats.assemble_seconds
+                     + self.stats.step_seconds + self.stats.record_seconds)
+        self.stats.unaccounted_seconds = max(self.stats.wall_seconds - accounted, 0.0)
+        usage_after = resource.getrusage(resource.RUSAGE_SELF)
+        self.stats.cpu_seconds = ((usage_after.ru_utime - usage_before.ru_utime)
+                                  + (usage_after.ru_stime - usage_before.ru_stime))
+        self.stats.cpu_fraction_of_one_core = self.stats.cpu_seconds / max(self.stats.wall_seconds, 1e-9)
         return self.buffer

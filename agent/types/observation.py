@@ -196,6 +196,14 @@ class ObservationBatch:
                 value = value[None, ...]
             if value.ndim != dims + 1:
                 raise ValueError(f"payload[{name!r}] has unexpected rank {value.ndim}")
+            # A field sliced out of the fixed-stride structured batch keeps the
+            # struct stride, which torch cannot wrap. numpy still calls a
+            # single-request batch "C contiguous" (the stride of a size-1
+            # dimension is irrelevant to it) while torch rejects it, so test the
+            # stride condition torch actually enforces and copy once per field.
+            itemsize = value.itemsize
+            if itemsize and any(stride % itemsize for stride in value.strides):
+                value = np.array(value, dtype=value.dtype, order="C", copy=True)
             tensor = torch.as_tensor(value)
             if kind == "bool":
                 tensor = tensor.to(torch.bool)
