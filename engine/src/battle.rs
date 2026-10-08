@@ -3888,6 +3888,9 @@ impl BattleState {
                     || self
                         .status_immune_ability(dex, target, dex.effects.sleep)
                         .is_some()
+                    // `abilities:sweetveil.onAllyTryAddVolatile`: the ally
+                    // aura refuses the Yawn marker too.
+                    || self.sweet_veil_holder(dex, target).is_some()
                     || self.terrain_id(dex) == dex.effects.electric_terrain
                         && self.grounded(dex, target))
             {
@@ -5818,6 +5821,14 @@ impl BattleState {
                     self.reveal_ability(target)?;
                     continue;
                 }
+                // `abilities:guarddog.onDragOut` (priority 1) refuses the drag
+                // and announces itself.
+                if dex.effects.abilities[self.mon(target).ability as usize]
+                    == Ability::Guarddog
+                {
+                    self.reveal_ability(target)?;
+                    continue;
+                }
                 self.mon_mut(target).force_switch_flag = true;
             }
         }
@@ -7063,6 +7074,17 @@ impl BattleState {
             }
         }
         if self.mon(e).volatiles.contains_key(&dex.effects.flinch) {
+            // `conditions:flinch.onBeforeMove` runs the `Flinch` event, which
+            // is where `abilities:steadfast.onFlinch` raises Speed by one.
+            if dex.effects.abilities[self.mon(e).ability as usize] == Ability::Steadfast {
+                self.boost(
+                    dex,
+                    e,
+                    e,
+                    [0, 0, 0, 0, 1, 0, 0],
+                    BoostCause::Ability(Ability::Steadfast),
+                )?;
+            }
             return Ok(Some(MoveResult::Failed));
         }
         // `moves:throatchop.condition.onBeforeMove` and
@@ -8131,6 +8153,19 @@ impl BattleState {
                     }
                     return Ok(false);
                 }
+            }
+            // `abilities:sweetveil.onAllySetStatus`: an active Sweet Veil
+            // holder (the target itself included) refuses sleep from another
+            // Pokémon. The public block message is skipped for secondary and
+            // ability sources.
+            if status == fx.sleep
+                && target != source
+                && let Some(holder) = self.sweet_veil_holder(dex, target)
+            {
+                if !secondary && ability_source.is_none() {
+                    self.reveal_ability(holder)?;
+                }
+                return Ok(false);
             }
             if ![
                 fx.burn,

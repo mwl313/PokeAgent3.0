@@ -1020,6 +1020,16 @@ impl BattleState {
         dex.effects.abilities[self.mon(target).ability as usize] == Ability::Shielddust && !has_self
     }
 
+    /// `abilities:sweetveil.onAllySetStatus|onAllyTryAddVolatile`: the active
+    /// Sweet Veil holder on the target's side (the target itself included), or
+    /// `None`.
+    pub(super) fn sweet_veil_holder(&self, dex: &Dex, target: Entity) -> Option<Entity> {
+        self.active_entities(false).into_iter().find(|h| {
+            h.side == target.side
+                && dex.effects.abilities[self.mon(*h).ability as usize] == Ability::Sweetveil
+        })
+    }
+
     /// Reference `BattleQueue#willMove(pokemon)`: the Pokémon still has an
     /// unexecuted queued move action. Analytic boosts while every other active
     /// Pokémon has already acted.
@@ -1326,6 +1336,34 @@ impl BattleState {
                 handlers.push((
                     target,
                     13,
+                    Priority {
+                        sub_order: 7,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
+            // `abilities:sandspit.onDamagingHit`: any damaging hit starts a
+            // sandstorm with the holder as its source (default order).
+            if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Sandspit {
+                handlers.push((
+                    target,
+                    23,
+                    Priority {
+                        sub_order: 7,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
+            // `abilities:rattled.onDamagingHit`: Dark/Bug/Ghost hits raise the
+            // holder's Speed by one (default order).
+            if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Rattled {
+                handlers.push((
+                    target,
+                    24,
                     Priority {
                         sub_order: 7,
                         speed: self.mon(target).cached_speed,
@@ -1747,6 +1785,24 @@ impl BattleState {
                 // the Charge volatile (no boost), named in the start message.
                 self.reveal_ability(target)?;
                 self.add_charge_volatile(dex, target, Some(target))?;
+            } else if kind == 23 {
+                // `abilities:sandspit.onDamagingHit`: `setWeather` runs with
+                // the ability as its source, so the reveal and the weather
+                // replacement both follow the ordinary weather rules (an
+                // already-active sandstorm fails before any message).
+                self.start_weather(dex, target, dex.effects.sand, true)?;
+            } else if kind == 24 {
+                // `abilities:rattled.onDamagingHit`: Dark/Bug/Ghost damage
+                // raises the holder's Speed by one.
+                if [dex.effects.dark, dex.effects.bug, dex.effects.ghost].contains(&m.move_type) {
+                    self.boost(
+                        dex,
+                        target,
+                        target,
+                        [0, 0, 0, 0, 1, 0, 0],
+                        BoostCause::Ability(Ability::Rattled),
+                    )?;
+                }
             } else if m.move_type == dex.effects.fire {
                 self.cure_status(target)?;
             }
@@ -2184,11 +2240,29 @@ impl BattleState {
                             | Ability::OwnTempo
                             | Ability::Oblivious
                             | Ability::Scrappy
+                            // `abilities:guarddog.onTryBoostPriority: 2`: the
+                            // drop is deleted, then the holder raises its own
+                            // Attack by one below.
+                            | Ability::Guarddog
                     ))
             {
                 *change = 0;
                 blocked = true;
             }
+        }
+        // `abilities:guarddog.onTryBoost`: `this.boost({atk: 1}, target,
+        // target, null, false, true)` — a self-boost applied while the
+        // Intimidate table resolves.
+        if intimidate && ability == Ability::Guarddog && source != target && source.side != target.side
+        {
+            let _ = blocked;
+            self.boost(
+                dex,
+                target,
+                target,
+                [1, 0, 0, 0, 0, 0, 0],
+                BoostCause::Ability(Ability::Guarddog),
+            )?;
         }
         // `abilities:mirrorarmor.onTryBoost`: negative boosts from another
         // Pokémon are removed from the incoming table and applied back to the
@@ -3071,7 +3145,6 @@ impl Ability {
             | Ability::Embodyaspectwellspring
             | Ability::Forewarn
             | Ability::Gluttony
-            | Ability::Guarddog
             | Ability::Gulpmissile
             | Ability::Harvest
             | Ability::Heavymetal
@@ -3086,17 +3159,13 @@ impl Ability {
             | Ability::Opportunist
             | Ability::Pickup
             | Ability::Quickdraw
-            | Ability::Rattled
             | Ability::Receiver
             | Ability::Ripen
             | Ability::Runaway
-            | Ability::Sandspit
             | Ability::Shieldsdown
-            | Ability::Steadfast
             | Ability::Stench
             | Ability::Stickyhold
             | Ability::Supersweetsyrup
-            | Ability::Sweetveil
         )
     }
 }
