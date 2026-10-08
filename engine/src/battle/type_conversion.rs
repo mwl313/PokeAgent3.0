@@ -43,6 +43,9 @@ pub(super) struct ActiveMove<'a> {
     /// `abilities:infiltrator.onModifyMove`: every move the holder uses
     /// ignores the target's decoy (and its side's screens).
     pub infiltrates: bool,
+    /// `moves:fling.onPrepareHit`: the thrown item and its payload kind for
+    /// this action, or `None` when the action is not a Fling.
+    pub fling: Option<(Id, crate::effects::FlingKind)>,
 }
 impl Deref for ActiveMove<'_> {
     type Target = crate::assets::Move;
@@ -73,6 +76,7 @@ impl BattleState {
             priority: None,
             tracks_target: data.tracks_target,
             infiltrates: false,
+            fling: None,
         };
         // `abilities:stalwart.onModifyMove` (priority 1): the holder's moves
         // ignore redirection. Stalwart has no `breakable` flag, so Mold Breaker

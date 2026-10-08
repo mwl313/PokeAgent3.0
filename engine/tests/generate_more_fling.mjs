@@ -20,6 +20,16 @@ const partner = () => setOf('Torterra', 'Shell Armor', ['Protect', 'Seed Bomb'])
 const throwTurn = [
   {p1: [{move: 'fling', target: 1}, 'protect'], p2: ['protect', 'protect']},
 ];
+// The same throw against a foe that does not Protect, so the item's on-hit
+// payload actually lands.
+const strikeTurn = [
+  {p1: [{move: 'fling', target: 1}, 'protect'], p2: [{move: 'ironhead', target: 1}, 'protect']},
+];
+// Same, but aimed at the foe's second slot (a Snorlax: a status payload needs a
+// target that can actually take the status).
+const strikeTurnB = [
+  {p1: [{move: 'fling', target: 2}, 'protect'], p2: ['protect', {move: 'bodyslam', target: 1}]},
+];
 // Log lines between the Fling announcement and the next action boundary: a
 // refused throw must not deal damage inside its own move window.
 const flingWindow = (session) => {
@@ -84,6 +94,77 @@ const TRIALS = [
       if (!everHas(fixture, 0, 0, p => p.item === ids.items.normalgem)) {
         return 'the fling-less item was consumed anyway';
       }
+      return null;
+    },
+  },
+  {
+    name: 'fling_sitrus_berry_heals_the_target',
+    p1: () => team(sneasler('Sitrus Berry'), partner()),
+    p2: () => foeTeam(),
+    script: [
+      {p1: ['protect', {move: 'seedbomb', target: 1}], p2: ['protect', 'protect']},
+      {p1: [{move: 'fling', target: 1}, 'protect'], p2: ['protect', 'protect']},
+    ],
+    coverage: {move: 'fling'},
+    verify(fixture, session) {
+      if (!logHas(session, /\|move\|p1a: s0\|Fling\|p2a: s0/)) return 'Fling never executed';
+      if (!logHas(session, /\|-heal\|p2a: s0\|.*Sitrus Berry/)) {
+        return 'the target never ate the flung Berry';
+      }
+      if (!everHas(fixture, 0, 0, p => p.item === 0)) return 'the user kept the thrown Berry';
+      return null;
+    },
+  },
+  {
+    name: 'fling_poison_barb_poisons_the_target',
+    p1: () => team(sneasler('Poison Barb'), partner()),
+    p2: () => foeTeam(),
+    script: strikeTurnB,
+    coverage: {move: 'fling'},
+    verify(fixture, session) {
+      if (!logHas(session, /\|move\|p1a: s0\|Fling\|p2b: s1/)) return 'Fling never executed';
+      if (!logHas(session, /\|-status\|p2b: s1\|psn/)) return 'the flung Poison Barb never poisoned';
+      if (!everHas(fixture, 1, 1, p => p.status === ids.conditions.psn)) {
+        return 'the poisoned status was never recorded';
+      }
+      return null;
+    },
+  },
+  {
+    name: 'fling_white_herb_clears_negative_boosts',
+    p1: () => team(sneasler('White Herb'), setOf('Milotic', 'Competitive', ['Icy Wind', 'Protect'])),
+    p2: () => foeTeam(),
+    script: [
+      {p1: ['protect', {move: 'icywind'}], p2: [{move: 'ironhead', target: 1}, 'protect']},
+      {p1: [{move: 'fling', target: 2}, 'protect'], p2: ['protect', {move: 'bodyslam', target: 1}]},
+    ],
+    coverage: {move: 'fling'},
+    verify(fixture, session) {
+      if (!logHas(session, /\|move\|p1a: s0\|Fling\|p2b: s1/)) return 'Fling never executed';
+      if (!logHas(session, /\|-unboost\|p2b: s1\|spe\|1/)) return 'the target never carried a negative boost';
+      const boosts = fixture.steps.map(step => step.expected.sides[1].pokemon
+        .find(p => p.roster === 1).boosts[4]);
+      const cleared = boosts.some((speed, i) => i > 0 && speed === 0 && boosts[i - 1] < 0);
+      if (!cleared) return 'the flung White Herb never cleared the drop';
+      return null;
+    },
+  },
+  {
+    name: 'fling_mental_herb_ends_the_taunt',
+    p1: () => team(setOf('Sneasler', 'Unburden', ['Taunt', 'Fling', 'Protect'], 'Mental Herb'), partner()),
+    p2: () => foeTeam(),
+    script: [
+      {p1: [{move: 'taunt', target: 1}, 'protect'], p2: [{move: 'ironhead', target: 1}, 'protect']},
+      {p1: [{move: 'fling', target: 1}, 'protect'], p2: [{move: 'ironhead', target: 1}, 'protect']},
+    ],
+    coverage: {move: 'fling'},
+    verify(fixture, session) {
+      if (!logHas(session, /\|move\|p1a: s0\|Fling\|p2a: s0/)) return 'Fling never executed';
+      if (!logHas(session, /\|-start\|p2a: s0\|move: Taunt/)) return 'the target was never taunted';
+      const taunted = fixture.steps.map(step => step.expected.sides[1].pokemon
+        .find(p => p.roster === 0).volatiles.includes('taunt'));
+      const ended = taunted.some((value, i) => i > 0 && !value && taunted[i - 1]);
+      if (!ended) return 'the flung Mental Herb never ended the taunt';
       return null;
     },
   },

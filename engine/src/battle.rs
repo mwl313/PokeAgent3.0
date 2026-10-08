@@ -1259,13 +1259,14 @@ impl BattleState {
         if dex.item_take_refused(item, self.mon(actor).base_species) {
             return Ok(false);
         }
-        if spec.kind != crate::effects::FlingKind::Plain {
+        if spec.kind == crate::effects::FlingKind::Unsupported {
             return Err(EngineError::Unsupported(format!(
                 "fling payload {}",
                 dex.names["items"][item as usize]
             )));
         }
         action.power = spec.base_power;
+        action.fling = Some((item, spec.kind));
         if !self.mon(actor).volatiles.contains_key(&dex.effects.fling) {
             let order = self.allocate_effect_order()?;
             self.mon_mut(actor).volatiles.insert(
@@ -4152,6 +4153,61 @@ impl BattleState {
                 did_anything = true;
                 continue;
             }
+            // `moves:fling.onPrepareHit`'s per-item `move.onHit`: the thrown
+            // Berry is eaten by the target through its `onEat`, and the two
+            // herb callbacks clear the target's volatiles or negative boosts.
+            // All three apply per target right after its damage, before the
+            // action's `secondaries` phase.
+            if let Some((item, kind)) = m.fling {
+                match kind {
+                    crate::effects::FlingKind::Berry => {
+                        self.eat_berry(dex, target, item)?;
+                    }
+                    crate::effects::FlingKind::MentalHerb => {
+                        let mut conditions = vec![
+                            dex.effects.taunt,
+                            dex.effects.encore,
+                            dex.effects.torment,
+                            dex.effects.disable,
+                            dex.effects.heal_block,
+                        ];
+                        // The Attract move itself stays unported, so its
+                        // volatile is looked up opportunistically.
+                        if let Ok(attract) = dex.id("conditions", "attract") {
+                            conditions.push(attract);
+                        }
+                        if conditions
+                            .iter()
+                            .any(|id| self.mon(target).volatiles.contains_key(id))
+                        {
+                            for id in conditions {
+                                if self.mon_mut(target).volatiles.remove(&id).is_some() {
+                                    self.emit(
+                                        EventKind::EffectEnd,
+                                        target,
+                                        None,
+                                        EffectRef::Condition(id),
+                                        0,
+                                        false,
+                                    )?;
+                                }
+                            }
+                        }
+                    }
+                    crate::effects::FlingKind::WhiteHerb => {
+                        let boosts = self.mon(target).boosts;
+                        if boosts.iter().any(|b| *b < 0) {
+                            let mon = self.mon_mut(target);
+                            for boost in mon.boosts.iter_mut() {
+                                if *boost < 0 {
+                                    *boost = 0;
+                                }
+                            }
+                        }
+                    }
+                    _ => {}
+                }
+            }
             if behavior == MoveBehavior::Trick {
                 // Trick/Switcheroo decide success themselves: the empty generic
                 // payload must not mark a refused swap as "did anything", or
@@ -4662,6 +4718,30 @@ impl BattleState {
                     }
                     if let Some(effect) = &secondary.own {
                         self.hit_effect(dex, actor, actor, effect, true)?;
+                    }
+                }
+            }
+            // `secondaries()` rolls `random(100)` for every entry and the
+            // thrown item's status/volatile entry declares no chance, so the
+            // roll is consumed and the effect always applies.
+            if let Some((_, kind)) = m.fling {
+                let effect = match kind {
+                    crate::effects::FlingKind::Status(status) => Some(crate::effects::HitEffect {
+                        status,
+                        ..Default::default()
+                    }),
+                    crate::effects::FlingKind::Volatile(volatile) => {
+                        Some(crate::effects::HitEffect {
+                            volatile,
+                            ..Default::default()
+                        })
+                    }
+                    _ => None,
+                };
+                if let Some(effect) = effect {
+                    self.rng.below(100);
+                    if !absorbed {
+                        self.hit_effect_from_move(dex, target, actor, &effect, true, m)?;
                     }
                 }
             }
