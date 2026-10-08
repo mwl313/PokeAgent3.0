@@ -392,24 +392,15 @@ class RolloutBuffer:
                 observations = observations.cat(
                     [self.observation(row.observation_ref) for row in rows[1:]]
                 )
-        requests = [
-            row.to_request_row(observations.select([index]))
-            for index, row in enumerate(rows)
-        ]
-        candidates = BranchCandidatesBatch.from_requests(
-            requests,
+        # Build the candidate table straight from the stored rows: the typed
+        # ActionRef/CandidateSet round trip is equivalent but costs one Python
+        # object per candidate and was the dominant learner-side cost.
+        candidates = BranchCandidatesBatch.from_rows(
+            rows,
             candidate_padding=64,
             branch_capacity=BRANCH_CAPACITY,
             device=device,
         )
-        selected = torch.tensor(
-            [
-                list(row.selected) + [-1] * (BRANCH_CAPACITY - row.branch_count)
-                for row in rows
-            ],
-            dtype=torch.long,
-        )
-        candidates = candidates.with_selected(selected)
 
         def _column(name: str, dtype: torch.dtype) -> torch.Tensor:
             values = [getattr(row, name) for row in rows]

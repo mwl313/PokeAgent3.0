@@ -46,11 +46,21 @@ PPO health on that iteration: 4 epochs, 136 optimizer steps, 136,259 rows
 ratio mean 0.977, clip 0.052 (earlier measurement), grad norm 0.759, no NaN/Inf,
 no early stop. Sampled vs recomputed log-probability differs by **0.0**.
 
-The learner phase is now 79% of the all-in wall. `RolloutBuffer.to_batch`
-materializes the whole iteration (all observations, candidate tables and typed
-`ActionRef` objects) before minibatching, which is also what drives the 25.2 GiB
-peak host RSS (over the plan's 24 GiB rollout budget). Streaming the minibatch
-build is the top next optimization.
+The learner phase was 79% of that all-in wall. `RolloutBuffer.to_batch` built
+the candidate table through a typed `ActionRef` object per candidate; building
+it directly from the stored packed rows (`BranchCandidatesBatch.from_rows`)
+removes that object churn. Re-measured on the identical 10,240-match workload:
+
+| all-in variant | collect s | PPO s | all-in s | all-in games/s | peak RSS |
+|---|---:|---:|---:|---:|---:|
+| typed candidate build | 100.9 | 389.7 | 490.6 | 20.87 | 25.2 GiB |
+| packed `from_rows` build | 96.8 | 290.7 | 387.5 | **26.43** | **18.0 GiB** |
+
+PPO health is unchanged (KL 0.00523, ratio 0.977, grad 0.798, 4 epochs,
+recompute 0.0) and peak RSS is now inside the plan's 24 GiB rollout budget.
+The learner is still 75% of the all-in wall, so streaming per-minibatch
+materialization (instead of one whole-iteration batch) remains the top next
+optimization.
 
 ## Dual-GPU real-policy actor (Phase 6)
 

@@ -192,6 +192,72 @@ class BranchCandidatesBatch:
 
     # -- builders ---------------------------------------------------------
     @classmethod
+    def from_rows(
+        cls,
+        rows: Sequence,
+        candidate_padding: int = 64,
+        branch_capacity: int = BRANCH_CAPACITY,
+        device: torch.device | str | None = None,
+    ) -> "BranchCandidatesBatch":
+        """Build the candidate table straight from stored rollout rows.
+
+        `RolloutRow` already holds the packed action tuples, masks and the
+        entity/move token references, so the learner does not need to
+        reconstruct `ActionRef`/`CandidateSet` objects per candidate. The output
+        is identical to `from_requests(row.to_request_row(...))`.
+        """
+        import numpy as np
+
+        batch = len(rows)
+        if batch == 0:
+            raise ValueError("cannot build an empty candidate batch")
+        action_ids = np.zeros((batch, branch_capacity, candidate_padding, ACTION_FIELDS), dtype=np.int64)
+        mask = np.zeros((batch, branch_capacity, candidate_padding), dtype=bool)
+        entity = np.zeros((batch, branch_capacity, candidate_padding), dtype=np.int64)
+        move = np.full((batch, branch_capacity, candidate_padding), NO_TOKEN, dtype=np.int64)
+        branch_valid = np.zeros((batch, branch_capacity), dtype=bool)
+        selected = np.full((batch, branch_capacity), -1, dtype=np.int64)
+        for index, row in enumerate(rows):
+            count = row.branch_count
+            if count > branch_capacity:
+                raise ValueError(
+                    f"request has {count} branches, capacity is {branch_capacity}"
+                )
+            for level in range(count):
+                actions = row.action_ids[level]
+                if len(actions) > candidate_padding:
+                    raise ValueError(
+                        f"branch {level} has {len(actions)} candidates, padding is "
+                        f"{candidate_padding}; candidate capacity must be resolved "
+                        "from the full scope instead of truncating"
+                    )
+                branch_valid[index, level] = True
+                if actions:
+                    action_ids[index, level, : len(actions)] = np.asarray(actions, dtype=np.int64)
+                    mask[index, level, : len(actions)] = np.asarray(
+                        row.candidate_mask[level], dtype=bool
+                    )
+                    entity[index, level, : len(actions)] = np.asarray(
+                        row.entity_token[level], dtype=np.int64
+                    )
+                    move[index, level, : len(actions)] = np.asarray(
+                        row.move_token[level], dtype=np.int64
+                    )
+            for level, pick in enumerate(row.selected):
+                selected[index, level] = int(pick)
+        out = cls(
+            action_ids=torch.as_tensor(action_ids),
+            mask=torch.as_tensor(mask),
+            entity_token=torch.as_tensor(entity),
+            move_token=torch.as_tensor(move),
+            branch_valid=torch.as_tensor(branch_valid),
+            selected=torch.as_tensor(selected),
+        )
+        if device is not None:
+            out = out.to(device)
+        return out
+
+    @classmethod
     def from_requests(
         cls,
         rows: Sequence[RequestRow],

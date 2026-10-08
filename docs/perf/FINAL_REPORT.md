@@ -37,14 +37,16 @@ noise. FP32 control with the same stack: 78.57 games/s.
 |---|---:|
 | Single GPU, real-policy actor-only (2,048 games x3) | 103.44 games/s |
 | Single GPU, real-policy actor-only (10,240 games) | 101.44 games/s |
-| Single GPU, full PPO all-in (10,240 games, 4 epochs) | 20.87 committed games/s |
+| Single GPU, full PPO all-in (10,240 games, 4 epochs, typed learner build) | 20.87 committed games/s |
+| Single GPU, full PPO all-in with the packed from_rows learner build | **26.43 committed games/s** |
 | Dual GPU, real-policy actor-only (2x2,048 games) | 162.73 games/s wall-aligned |
 | PPO learner phase alone (10,240-game iteration) | 389.7 s |
 | Engine-only reference (Rust, single thread) | 2,585 games/s (not AI) |
 | GPU model forward reference | 101.44 games/s of decisions inside the actor |
 
-Resource telemetry: actor RSS 2.4-2.6 GiB per 2,048 games; all-in peak 25.2 GiB
-(above the 24 GiB rollout budget - the learner stacks the whole iteration);
+Resource telemetry: actor RSS 2.4-2.6 GiB per 2,048 games; all-in peak 18.0 GiB
+after the packed learner build (25.2 GiB before it, above the 24 GiB rollout
+budget - the learner stacks the whole iteration);
 GPU reserved 2.80 GiB FP16 vs 4.32 GiB FP32 per card; 0 operational errors,
 0 illegal actions, natural matches = wins + losses + draws in every run.
 
@@ -73,9 +75,10 @@ measurement above.
 
 ## 6. Remaining bottlenecks and next steps
 
-1. Learner minibatch materialization (79% of all-in, 25.2 GiB peak): stream
-   minibatches from the compact store, reuse packed candidate columns instead
-   of typed `ActionRef` objects.
+1. Learner minibatch materialization (75% of all-in, 18.0 GiB peak after the
+   packed `from_rows` build): stream per-minibatch materialization from the
+   compact store instead of stacking the whole iteration, then reuse the packed
+   candidate columns end to end.
 2. Serial per-round actor pipeline: Phase 8 double-buffering across independent
    cohorts and rolling slot refill.
 3. Rust observation packing (17% of actor): f16 float block / columnar wire.
