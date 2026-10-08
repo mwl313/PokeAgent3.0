@@ -804,6 +804,13 @@ const PORTED_MOVE_CALLBACK_KEYS: &[&str] = &[
     "moves:temperflare.basePowerCallback",
     "moves:lashout.onBasePower",
     "moves:barbbarrage.onBasePower",
+    // `moves:venoshock.onBasePower`: the same doubling against a poisoned
+    // target.
+    "moves:venoshock.onBasePower",
+    // `moves:topsyturvy.onHit`: invert the target's boost stages.
+    "moves:topsyturvy.onHit",
+    // `moves:clearsmog.onHit`: reset the target's boost stages after the hit.
+    "moves:clearsmog.onHit",
     "moves:alluringvoice.secondary.onHit",
     "moves:alluringvoice.secondaries.0.onHit",
 ];
@@ -925,6 +932,7 @@ fn move_hooks(id: &str) -> u64 {
         "ragingbull" => hook::RAGING_BULL,
         "pollenpuff" => hook::POLLEN_PUFF,
         "curse" => hook::CURSE,
+        "venoshock" => hook::VENOSHOCK,
         _ => 0,
     }
 }

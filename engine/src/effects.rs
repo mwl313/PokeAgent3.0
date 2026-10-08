@@ -139,6 +139,8 @@ pub mod hook {
     /// (quarter-max-HP drain per residual, half the user's HP paid on use); any
     /// other user instead boosts itself.
     pub const CURSE: u64 = 1 << 48;
+    /// `moves:venoshock.onBasePower`: doubles against a poisoned target.
+    pub const VENOSHOCK: u64 = 1 << 49;
     /// `moves:burnup.onTryMove|self.onHit`: fails without the Fire type and
     /// strips it from the user on a landed hit.
     pub const BURN_UP: u64 = 1 << 35;
@@ -876,6 +878,10 @@ pub enum MoveBehavior {
     /// `fling`: the thrown item sets the action's base power and payload; the
     /// item is consumed by the marker volatile's `onUpdate`.
     Fling,
+    /// `topsyturvy`: inverts every nonzero boost stage of the target.
+    TopsyTurvy,
+    /// `clearsmog`: damages and then resets the target's boost stages.
+    ClearSmog,
     /// `powerswap` / `guardswap`: the two attack (or defense) boost stages swap
     /// with the target through a direct `setBoost` write.
     StatSwap,
@@ -1069,6 +1075,8 @@ impl MoveBehavior {
             "fling" => Self::Fling,
             "powerswap" | "guardswap" => Self::StatSwap,
             "speedswap" => Self::SpeedSwap,
+            "topsyturvy" => Self::TopsyTurvy,
+            "clearsmog" => Self::ClearSmog,
             "helpinghand" => Self::HelpingHand,
             "followme" => Self::FollowMe,
             "ragepowder" => Self::RagePowder,

@@ -2357,6 +2357,12 @@ impl BattleState {
                 {
                     add(actor, 0, 8192);
                 }
+                // `moves:venoshock.onBasePower`: the same doubling.
+                if m.hooks & crate::effects::hook::VENOSHOCK != 0
+                    && (d.status == dex.effects.poison || d.status == dex.effects.toxic)
+                {
+                    add(actor, 0, 8192);
+                }
                 // `moves:facade.onBasePower`: doubles while the user carries a
                 // major status (burn, paralysis, poison or bad poison).
                 if m.hooks & crate::effects::hook::FACADE != 0

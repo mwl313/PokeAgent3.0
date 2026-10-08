@@ -4269,6 +4269,46 @@ impl BattleState {
                 self.mon_mut(actor).stats[5] = target_spe;
                 self.mon_mut(target).stats[5] = actor_spe;
                 did_anything = true;
+            } else if behavior == MoveBehavior::TopsyTurvy {
+                // `moves:topsyturvy.onHit`: every nonzero stage flips sign and
+                // the whole move reports failure when nothing changed.
+                let boosts = self.mon(target).boosts;
+                let mut inverted = false;
+                for (stat, old) in boosts.iter().copied().enumerate() {
+                    if old == 0 {
+                        continue;
+                    }
+                    self.mon_mut(target).boosts[stat] = -old;
+                    inverted = true;
+                    self.emit(
+                        EventKind::Boost,
+                        target,
+                        Some(actor),
+                        EffectRef::Stat(stat as Id),
+                        -2 * i32::from(old),
+                        false,
+                    )?;
+                }
+                did_anything |= inverted;
+            } else if behavior == MoveBehavior::ClearSmog {
+                // `moves:clearsmog.onHit`: the damaging hit lands first and the
+                // target's stages reset afterwards.
+                let boosts = self.mon(target).boosts;
+                for (stat, old) in boosts.iter().copied().enumerate() {
+                    if old == 0 {
+                        continue;
+                    }
+                    self.mon_mut(target).boosts[stat] = 0;
+                    self.emit(
+                        EventKind::Boost,
+                        target,
+                        Some(actor),
+                        EffectRef::Stat(stat as Id),
+                        -i32::from(old),
+                        false,
+                    )?;
+                }
+                did_anything = true;
             } else if behavior == MoveBehavior::Defog {
                 // `moves:defog.onHit`: the evasion drop (skipped behind a
                 // decoy unless the user infiltrates), then the target side's
