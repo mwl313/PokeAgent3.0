@@ -5239,7 +5239,7 @@ impl BattleState {
                 // run) even when the target holds nothing; the per-target
                 // `-fail` message is a log detail the native model omits.
                 if let crate::battle::hooks::TakeOutcome::Taken(item) =
-                    self.take_item_checked(dex, target)?
+                    self.take_item_checked(dex, target, actor, false)?
                 {
                     self.emit(
                         EventKind::EndItem,
@@ -5306,7 +5306,7 @@ impl BattleState {
                     && item != 0
                     && dex.effects.berry_items[item as usize]
                     && let crate::battle::hooks::TakeOutcome::Taken(item) =
-                        self.take_item_checked(dex, target)?
+                        self.take_item_checked(dex, target, actor, false)?
                 {
                     self.emit(
                         EventKind::EndItem,
@@ -5903,7 +5903,7 @@ impl BattleState {
         // user removes the item of every target the move damaged.
         if m.hooks & crate::effects::hook::KNOCK_OFF != 0 && self.mon(actor).hp > 0 {
             for &target in &effect_targets {
-                self.take_item(dex, target, actor)?;
+                self.take_item(dex, target, actor, true)?;
             }
         }
         // `moves:thief|covet.onAfterHit`: an empty-handed, alive user takes the
@@ -5918,7 +5918,7 @@ impl BattleState {
                     continue;
                 }
                 let crate::battle::hooks::TakeOutcome::Taken(item) =
-                    self.take_item_checked(dex, target)?
+                    self.take_item_checked(dex, target, actor, false)?
                 else {
                     continue;
                 };
@@ -5997,7 +5997,7 @@ impl BattleState {
                     continue;
                 }
                 let crate::battle::hooks::TakeOutcome::Taken(item) =
-                    self.take_item_checked(dex, target)?
+                    self.take_item_checked(dex, target, actor, false)?
                 else {
                     continue;
                 };
@@ -6030,7 +6030,7 @@ impl BattleState {
                     continue;
                 }
                 let crate::battle::hooks::TakeOutcome::Taken(item) =
-                    self.take_item_checked(dex, actor)?
+                    self.take_item_checked(dex, actor, target, false)?
                 else {
                     continue;
                 };
@@ -6745,8 +6745,8 @@ impl BattleState {
 
     fn trick_swap(&mut self, dex: &Dex, actor: Entity, target: Entity) -> Result<bool> {
         use crate::battle::hooks::TakeOutcome;
-        let yours = self.take_item_checked(dex, target)?;
-        let mine = self.take_item_checked(dex, actor)?;
+        let yours = self.take_item_checked(dex, target, actor, false)?;
+        let mine = self.take_item_checked(dex, actor, target, false)?;
         if matches!(yours, TakeOutcome::Refused)
             || matches!(mine, TakeOutcome::Refused)
             || (yours == TakeOutcome::Empty && mine == TakeOutcome::Empty)

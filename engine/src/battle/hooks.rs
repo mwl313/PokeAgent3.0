@@ -706,7 +706,7 @@ impl BattleState {
         if self.mon(user).switch_flag.is_some() || self.mon(user).plain_switch_flag {
             return Ok(());
         }
-        let TakeOutcome::Taken(item) = self.take_item_checked(dex, holder)? else {
+        let TakeOutcome::Taken(item) = self.take_item_checked(dex, holder, user, false)? else {
             return Ok(());
         };
         let refuses = dex.item_take_refused(item, self.mon(user).base_species)
@@ -755,10 +755,23 @@ impl BattleState {
         &mut self,
         dex: &Dex,
         target: Entity,
+        source: Entity,
+        knock_off: bool,
     ) -> Result<TakeOutcome> {
         let item = self.mon(target).item;
         if item == 0 {
             return Ok(TakeOutcome::Empty);
+        }
+        // `abilities:stickyhold.onTakeItem`: another Pokémon's removal (or any
+        // Knock Off) is refused while the holder is alive and not holding a
+        // Sticky Barb; the refusal announces the ability.
+        if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Stickyhold
+            && self.mon(target).hp > 0
+            && dex.effects.items[item as usize] != Item::StickyBarb
+            && (source != target || knock_off)
+        {
+            self.reveal_ability(target)?;
+            return Ok(TakeOutcome::Refused);
         }
         if dex.item_take_refused(item, self.mon(target).base_species) {
             return Ok(TakeOutcome::Refused);
@@ -772,8 +785,14 @@ impl BattleState {
     /// Silent take plus the public item End event, used by removal moves.
     /// The reference never records a taken item in `lastItem`; only
     /// `useItem`/`eatItem` set that provenance.
-    pub(super) fn take_item(&mut self, dex: &Dex, target: Entity, source: Entity) -> Result<Id> {
-        let TakeOutcome::Taken(item) = self.take_item_checked(dex, target)? else {
+    pub(super) fn take_item(
+        &mut self,
+        dex: &Dex,
+        target: Entity,
+        source: Entity,
+        knock_off: bool,
+    ) -> Result<Id> {
+        let TakeOutcome::Taken(item) = self.take_item_checked(dex, target, source, knock_off)? else {
             return Ok(0);
         };
         // Reference `Pokemon.takeItem` clears the slot without recording
@@ -3234,7 +3253,6 @@ impl Ability {
             | Ability::Ripen
             | Ability::Runaway
             | Ability::Shieldsdown
-            | Ability::Stickyhold
         )
     }
 }
