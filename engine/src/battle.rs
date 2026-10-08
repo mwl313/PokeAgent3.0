@@ -7105,7 +7105,20 @@ impl BattleState {
                 // rolling a new timer, and the whole effect reports failure so
                 // the move's per-hit Update events are skipped exactly as the
                 // reference does when every target effect returns false.
-                if !self.mon(target).volatiles.contains_key(&volatile) {
+                //
+                // `abilities:owntempo.onTryAddVolatile` refuses the confusion
+                // outright (no message, no timer roll), and
+                // `conditions:safeguard.onTryAddVolatile` refuses one that a
+                // different Pokémon tried to inflict while the target's side
+                // holds Safeguard. Both run before the add and neither reveals
+                // an ability.
+                let own_tempo =
+                    dex.effects.abilities[self.mon(target).ability as usize] == Ability::OwnTempo;
+                let safeguarded = target != source
+                    && self.sides[target.side as usize]
+                        .conditions
+                        .contains_key(&dex.effects.safeguard);
+                if !own_tempo && !safeguarded && !self.mon(target).volatiles.contains_key(&volatile) {
                     // Reference `onStart`: `effectState.time = this.random(2, 6)`.
                     let time = i64::from(self.rng.range(2, 6));
                     let order = self.allocate_effect_order()?;
