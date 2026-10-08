@@ -82,3 +82,30 @@ a neutral change is documented rather than sold as an optimization.
 4. GPU utilization during the learner phase measured at 69–80% SM with
    150–175 W on GPU0 (GPU1 idle), so the learner is genuinely GPU-fed; the
    remaining CPU share is Python dispatch, not GPU starvation.
+
+## P2.3 microbatch size (measured, adopted as a launcher option)
+
+The global minibatch stays 4,096 and the optimizer-step count is unchanged
+(28 steps for the 2,048-match iteration) for every split; the exact
+row-weighted accumulation (`exact_row_weighted_accumulation`) makes a different
+micro split mathematically equivalent, which the new regression tests prove.
+Measured on the same 2,048-match workload, one repeat each:
+
+| microbatch | PPO wall s | all-in games/s | backward s | forward s | GPU reserved |
+|---:|---:|---:|---:|---:|---:|
+| 128 | 79.3 | 20.46 | 33.2 | 34.0 | 2.84 GiB |
+| 256 (spec default) | 60.0 | 24.66 | 19.1 | 29.0 | 2.86 GiB |
+| 512 | 48.2 | 29.14 | 10.3 | 24.3 | 4.88 GiB |
+| **1024** | **42.9** | **31.57** | 5.3 | 21.7 | 9.25 GiB |
+
+Policy statistics are identical across splits (ratio 1.0004, clip ≈0.046,
+entropy 0.9987, value loss 0.2759), which is the equivalence evidence the plan
+requires. Three-repeat confirmation at 1024: actor median 102.19 games/s,
+**all-in median 32.80 games/s** (min 31.68), PPO 41.8–42.8 s, checkpoint
+0.54–0.57 s inside the window, 28 optimizer steps, 0 skipped, KL 0.0044–0.0050,
+recompute within the fp16 gate, GPU reserved 9.27 GiB (soft budget 28 GiB).
+
+Adoption note: `PPOConfig.microbatch_size` still defaults to the pinned 256.
+The 1024 setting is a measured launcher option
+(`bench_pa3_end_to_end.py --microbatch 1024`); the two-rank DDP path
+(`256 × 8 × 2`) must re-validate its own split before any change there.

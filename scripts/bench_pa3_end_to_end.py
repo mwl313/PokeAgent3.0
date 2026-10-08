@@ -67,6 +67,10 @@ def parse_args():
                         help="write a PyTorch profiler Chrome trace of the learner update to this path")
     parser.add_argument("--recompute-tolerance", type=float, default=None,
                         help="declared mixed-precision parity gate (default 1e-4 fp32 / 1e-3 fp16)")
+    parser.add_argument("--microbatch", type=int, default=None,
+                        help="learner microbatch size (global minibatch stays 4096)")
+    parser.add_argument("--minibatch", type=int, default=None,
+                        help="learner global minibatch size (default 4096)")
     return parser.parse_args()
 
 
@@ -131,7 +135,18 @@ def build_runner(args, seed_offset):
         torch.cuda.set_device(device)
     engine = pa3_engine.NativeEngine(args.data, args.teams, workers=args.workers)
     model = PA3Model(PA3Config())
-    learner = PPOLearner(model, PPOConfig(), device=device) if args.mode == "full" else None
+    ppo_config = PPOConfig()
+    if args.microbatch or args.minibatch:
+        ppo_config = PPOConfig(
+            global_minibatch_size=args.minibatch or ppo_config.global_minibatch_size,
+            microbatch_size=args.microbatch or ppo_config.microbatch_size,
+            per_rank_minibatch_size=args.minibatch or ppo_config.per_rank_minibatch_size,
+            grad_accumulation_per_rank=max(
+                1, (args.minibatch or ppo_config.global_minibatch_size)
+                // (args.microbatch or ppo_config.microbatch_size)
+            ),
+        )
+    learner = PPOLearner(model, ppo_config, device=device) if args.mode == "full" else None
     config = NativeCollectorConfig(
         envs=args.envs, workers=args.workers, seed=args.seed + seed_offset,
         device=str(device), observation_mode=args.observations,
@@ -354,6 +369,8 @@ def main():
             "repeats": args.repeats, "seed": args.seed, "device": args.device,
             "mode": args.mode, "observations": args.observations, "precision": args.precision,
             "candidate_wire": args.candidate_wire,
+            "global_minibatch": args.minibatch or PPOConfig().global_minibatch_size,
+            "microbatch": args.microbatch or PPOConfig().microbatch_size,
             "inference_mode": bool(args.inference_mode),
         },
         "readiness_note": "readiness_check is 10/16 PASS; this benchmark does not change it",

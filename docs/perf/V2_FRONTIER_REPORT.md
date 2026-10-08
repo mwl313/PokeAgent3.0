@@ -27,6 +27,15 @@ the measured evidence that should drive them.
   (collect 21.7 s, PPO 58.4 s, checkpoint 0.74 s); PPO health unchanged
   (KL 0.0045, epoch KLs 0.0057/0.0039/0.0037/0.0048, 28 steps, 0 skipped,
   gradient-norm max 10.0, recompute max 1.0e-4 within the declared fp16 gate).
+* **P2.3 microbatch selection (new):** with the exact row-weighted accumulation
+  the global 4,096 objective and the 28 optimizer steps are identical for any
+  micro split. Measured 2,048-match all-in: 128 → 20.46, 256 → 24.66,
+  512 → 29.14, **1024 → 31.57 games/s**, with matching policy statistics
+  (ratio 1.0004, clip 0.046, entropy 0.9987, value 0.2759). Three-repeat
+  confirmation at 1024: **all-in median 32.80 games/s** (min 31.68), PPO
+  41.8–42.8 s, checkpoint 0.54–0.57 s inside the window, 28 steps, 0 skipped,
+  GPU reserved 9.27 GiB of the 28 GiB budget. Recorded as a launcher option;
+  the pinned default stays 256 and the DDP split keeps its own validation.
 * 10,240-match scale reference (from the v1.2 commit): collect 96.8 s,
   PPO 290.7 s, 26.43 games/s, 18.0 GiB peak RSS. The v2 correctness changes are
   metric/accumulation corrections, not speed claims; the PPO wall is
