@@ -161,8 +161,10 @@ impl BattleState {
             i32::from(duration),
             false,
         )?;
-        // EachEvent WeatherChange sorts active Pokémon even with no callbacks.
-        self.field_change_order();
+        // EachEvent WeatherChange sorts active Pokémon even with no callbacks,
+        // then runs each active's own onWeatherChange handlers in that order.
+        let order = self.field_change_order();
+        self.weather_change_handlers(dex, &order)?;
         Ok(true)
     }
 
@@ -197,7 +199,10 @@ impl BattleState {
                 0,
                 false,
             )?;
-            self.field_change_order();
+            // Reference `Field#clearWeather`: the ending weather runs the same
+            // WeatherChange set as a fresh start.
+            let order = self.field_change_order();
+            self.weather_change_handlers(dex, &order)?;
             return Ok(());
         }
         let suppressed = self.weather_suppressed(dex);
@@ -276,6 +281,51 @@ impl BattleState {
         // faint-message boundary, allowing berries to activate after sand damage.
         self.each_update(dex)?;
         self.process_faints(dex, true)
+    }
+
+    /// Reference `Field#setWeather` / `Field#clearWeather` close with
+    /// `eachEvent('WeatherChange', sourceEffect)`: every active runs its own
+    /// `onWeatherChange` handlers in the already-sorted field-change order. A
+    /// fainted slot keeps its place in the sort but collects no handlers.
+    fn weather_change_handlers(&mut self, dex: &Dex, order: &[Entity]) -> Result<()> {
+        for &e in order {
+            if self.mon(e).fainted {
+                continue;
+            }
+            self.forecast_weather_change(dex, e)?;
+        }
+        Ok(())
+    }
+
+    /// `abilities:forecast.onWeatherChange` (and its `onStart`, which issues the
+    /// same singleEvent): Castform's forme follows the effective weather. The
+    /// handler runs with the ability as the active effect, so
+    /// `pokemon.effectiveWeather()` takes no Mega Sol override - it is the
+    /// plain field weather, or the empty string while Cloud Nine/Air Lock
+    /// suppresses it.
+    pub(super) fn forecast_weather_change(&mut self, dex: &Dex, e: Entity) -> Result<()> {
+        if dex.effects.abilities[self.mon(e).ability as usize] != Ability::Forecast {
+            return Ok(());
+        }
+        let castform = dex.id("species", "Castform")?;
+        let mon = self.mon(e);
+        if mon.transformed || dex.species[mon.base_species as usize].base_species != castform {
+            return Ok(());
+        }
+        let weather = self.effective_weather(dex);
+        let target = if weather == dex.effects.sun {
+            dex.id("species", "Castform-Sunny")?
+        } else if weather == dex.effects.rain {
+            dex.id("species", "Castform-Rainy")?
+        } else if weather == dex.effects.snow {
+            dex.id("species", "Castform-Snowy")?
+        } else {
+            castform
+        };
+        if self.mon(e).species == target {
+            return Ok(());
+        }
+        self.forme_change(dex, e, target)
     }
 
     /// `Pokemon#effectiveWeather` for the pinned regulation: a Mega Sol holder

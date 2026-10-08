@@ -1232,6 +1232,45 @@ impl BattleState {
     /// alone. The change is non-permanent: `base_species` keeps the submitted
     /// forme so switch-out reverts it, and only the stored stats are
     /// recomputed (both formes share the same base HP, so HP is preserved).
+    /// Reference `Pokemon#setSpecies` for a temporary forme change: the new
+    /// species' types and base stats replace the old ones, `speed` follows the
+    /// new base speed, and the public change reaches both viewers' knowledge.
+    /// `setSpecies` only initializes the max-HP/current-HP pair for a fresh
+    /// Pokémon, so an established forme keeps its HP values.
+    pub(super) fn forme_change(&mut self, dex: &Dex, e: Entity, species_id: Id) -> Result<()> {
+        let species = &dex.species[species_id as usize];
+        let mon = self.mon(e);
+        let mut new_stats = stats::champions_stats(
+            species.base_stats,
+            mon.points,
+            dex.natures[mon.nature as usize],
+            species.max_hp,
+        );
+        new_stats[0] = mon.stats[0];
+        let types = species.types.clone();
+        {
+            let mon = self.mon_mut(e);
+            mon.species = species_id;
+            mon.types = types.clone();
+            mon.stats = new_stats;
+            mon.cached_speed = i32::from(new_stats[5]);
+        }
+        self.emit(
+            EventKind::Forme,
+            e,
+            None,
+            EffectRef::Species(species_id),
+            0,
+            false,
+        )?;
+        // Both players see the new forme's typing immediately.
+        for viewer in 0..2 {
+            let index = e.roster as usize + if e.side as usize == viewer { 0 } else { 6 };
+            self.knowledge[viewer].pokemon[index].types = types.clone();
+        }
+        Ok(())
+    }
+
     fn stance_change(
         &mut self,
         dex: &Dex,

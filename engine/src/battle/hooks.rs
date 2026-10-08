@@ -1678,6 +1678,11 @@ impl BattleState {
 
 
     pub(super) fn ability_switch_in(&mut self, dex: &Dex, e: Entity) -> Result<()> {
+        // `abilities:forecast.onStart` (`onSwitchInPriority: -2`): the entrant
+        // re-evaluates its weather forme as soon as it hits the field, because
+        // its Start issues the same `WeatherChange` singleEvent the weather
+        // transitions run.
+        self.forecast_weather_change(dex, e)?;
         if self.mon(e).hp > 0
             && matches!(
                 dex.effects.abilities[self.mon(e).ability as usize],
@@ -2938,7 +2943,6 @@ impl Ability {
             | Ability::Embodyaspecthearthflame
             | Ability::Embodyaspectteal
             | Ability::Embodyaspectwellspring
-            | Ability::Forecast
             | Ability::Forewarn
             | Ability::Gluttony
             | Ability::Guarddog
