@@ -5886,7 +5886,10 @@ impl BattleState {
         // check runs right after the DamagingHit event, with the HP it had
         // before that event (Rough Skin-style recoil can drop it under half).
         let user_hp_before_damaging_hit = self.mon(actor).hp;
-        self.damaging_hit(dex, actor, &effect_targets, &hit_damages, m)?;
+        // Reference `move.totalDamage` accumulates *after* `spreadMoveHit`
+        // (and therefore after this event), so a single-hit move reports zero
+        // prior damage here.
+        self.damaging_hit(dex, actor, &effect_targets, &hit_damages, 0, m)?;
         // `moves:ceaselessedge.onAfterHit` / `moves:stoneaxe.onAfterHit`: an
         // alive user scatters its hazard for every damaged target unless Sheer
         // Force consumed the action's secondary (`!move.hasSheerForce`).
@@ -6526,7 +6529,17 @@ impl BattleState {
                     }
                 }
                 let user_hp_before_damaging_hit = self.mon(actor).hp;
-                self.damaging_hit(dex, actor, std::slice::from_ref(&target), &[actual], m)?;
+                // `move.totalDamage` holds the *earlier* hits of this move (the
+                // current hit is added after `spreadMoveHit` returns), so the
+                // running total minus this hit is the reference's value.
+                self.damaging_hit(
+                    dex,
+                    actor,
+                    std::slice::from_ref(&target),
+                    &[actual],
+                    total_damage - u32::from(actual),
+                    m,
+                )?;
                 self.emergency_exit_check(dex, actor, user_hp_before_damaging_hit)?;
             }
             if missed {

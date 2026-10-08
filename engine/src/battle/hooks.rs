@@ -1187,6 +1187,9 @@ impl BattleState {
         actor: Entity,
         targets: &[Entity],
         damages: &[u16],
+        // Reference `move.totalDamage`: the damage this move instance has
+        // accumulated across every hit and target so far.
+        move_total: u32,
         m: &ActiveMove<'_>,
     ) -> Result<()> {
         if m.category == Category::Status {
@@ -1434,6 +1437,21 @@ impl BattleState {
                 handlers.push((
                     target,
                     25,
+                    Priority {
+                        order: 1,
+                        sub_order: 7,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
+            // `abilities:innardsout.onDamagingHitOrder: 1`: the same order band,
+            // fired when the holder is knocked out.
+            if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Innardsout {
+                handlers.push((
+                    target,
+                    26,
                     Priority {
                         order: 1,
                         sub_order: 7,
@@ -1881,6 +1899,22 @@ impl BattleState {
                 if self.mon(target).hp == 0 && m.makes_contact() && self.mon(actor).hp > 0 {
                     self.reveal_ability(target)?;
                     let amount = (u32::from(self.mon(actor).stats[0]) / 4).max(1);
+                    self.indirect_damage(
+                        dex,
+                        actor,
+                        target,
+                        amount,
+                        EffectRef::Ability(self.mon(target).ability),
+                    )?;
+                }
+            } else if kind == 26 {
+                // `abilities:innardsout.onDamagingHit`: a knocked-out holder
+                // pays the attacker back the felling hit plus the move's running
+                // total (`move.totalDamage`).
+                if self.mon(target).hp == 0 && self.mon(actor).hp > 0 {
+                    let hit = damages.get(index).copied().unwrap_or(0);
+                    let amount = u32::from(hit) + move_total;
+                    self.reveal_ability(target)?;
                     self.indirect_damage(
                         dex,
                         actor,
@@ -3258,7 +3292,6 @@ impl Ability {
             | Ability::Iceface
             | Ability::Illusion
             | Ability::Imposter
-            | Ability::Innardsout
             | Ability::Klutz
             | Ability::Opportunist
             | Ability::Pickup
