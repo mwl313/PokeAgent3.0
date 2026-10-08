@@ -78,3 +78,20 @@ which runs one), so the extra `each_update` in the first draft shifted every
 later draw. Mirrored speed ties are fine (see the `tiecheck_*` probe scenes in
 `/tmp/pa3_generate_more_tiecheck.mjs`: the queue's Fischer-Yates break matches
 the reference for mirrored leads and partners).
+
+## Witness pass (2026-10-08) - 35 ported pool abilities witnessed
+
+`engine/tests/generate_more_witness_tail.mjs` adds one scene per ability that no
+corpus exercised before (cross-corpus check over `turn-fixtures.json` coverage
+tags plus the interaction corpus): pixilate, emergencyexit, torrent, speedboost,
+regenerator, toughclaws, moody, solarpower, swiftswim, liquidvoice, solidrock,
+snowcloak, infiltrator, reckless, synchronize, voltabsorb, libero, noguard,
+shellarmor, marvelscale, purepower, sandforce, sandveil, sapsipper, strongjaw,
+superluck, swarm, filter, hydration, liquidooze, plus, minus, motordrive,
+owntempo, quickfeet, slushrush. The boundary-by-boundary comparison is the real
+witness; each scene's `verify` only asserts that its precondition happened.
+
+The pass immediately paid off: the Own Tempo scene caught a live divergence
+(the native rolled the confusion timer and applied the volatile instead of
+refusing it), fixed in `hit_effect` together with the Safeguard gate it shares.
+Remaining witness gap after the pass: none.
