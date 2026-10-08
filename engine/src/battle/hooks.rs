@@ -883,13 +883,23 @@ impl BattleState {
         let fx = &dex.effects;
         let status = self.mon(eater).status;
         let is = |name: &str| dex.id("items", name).map(|id| id == berry).unwrap_or(false);
+        // `abilities:ripen.onTryHeal`: a berry's healing is doubled by the
+        // holder's Ripen (`chainModify(2)` on the TryHeal relay).
+        let ripen = dex.effects.abilities[self.mon(eater).ability as usize] == Ability::Ripen;
         if is("sitrusberry") {
+            let amount = if ripen {
+                u32::from(self.mon(eater).stats[0]) / 2
+            } else {
+                u32::from(self.mon(eater).stats[0]) / 4
+            };
             return self
-                .heal_for_move(dex, eater, u32::from(self.mon(eater).stats[0]) / 4)
+                .heal_for_move(dex, eater, amount)
                 .map(|_| ());
         }
         if is("oranberry") {
-            return self.heal_for_move(dex, eater, 10).map(|_| ());
+            return self
+                .heal_for_move(dex, eater, if ripen { 20 } else { 10 })
+                .map(|_| ());
         }
         if is("leppaberry") {
             // `onEat`: the first move at 0 PP, otherwise the first below max.
@@ -944,13 +954,18 @@ impl BattleState {
         match dex.effects.items[p.item as usize] {
             Item::SitrusBerry if u32::from(p.hp) * 2 <= u32::from(p.stats[0]) => {
                 if !self.unnerve_blocks_eat(dex, e) {
-                    self.item_heal(dex, e, p.stats[0] / 4, true)?;
+                    // `abilities:ripen.onTryHeal` doubles the berry's heal.
+                    let ripen =
+                        dex.effects.abilities[p.ability as usize] == Ability::Ripen;
+                    self.item_heal(dex, e, if ripen { p.stats[0] / 2 } else { p.stats[0] / 4 }, true)?;
                     self.cheek_pouch_heal(dex, e)?;
                 }
             }
             Item::OranBerry if u32::from(p.hp) * 2 <= u32::from(p.stats[0]) => {
                 if !self.unnerve_blocks_eat(dex, e) {
-                    self.item_heal(dex, e, 10, true)?;
+                    let ripen =
+                        dex.effects.abilities[p.ability as usize] == Ability::Ripen;
+                    self.item_heal(dex, e, if ripen { 20 } else { 10 }, true)?;
                     self.cheek_pouch_heal(dex, e)?;
                 }
             }
@@ -3226,7 +3241,6 @@ impl Ability {
         !matches!(
             self,
             Ability::Unimplemented
-            | Ability::Angerpoint
             | Ability::Anticipation
             | Ability::Battlebond
             | Ability::Berserk
@@ -3250,7 +3264,6 @@ impl Ability {
             | Ability::Pickup
             | Ability::Quickdraw
             | Ability::Receiver
-            | Ability::Ripen
             | Ability::Runaway
             | Ability::Shieldsdown
         )

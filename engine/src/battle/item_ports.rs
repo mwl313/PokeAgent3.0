@@ -148,6 +148,11 @@ pub(super) fn collect_hooks(
                     // unmodified.
                     state.consume_item(dex, target)?;
                     push(hooks, state, target, 0, 2048);
+                    // `abilities:ripen.onSourceModifyDamage` (priority -1): the
+                    // recorded weaken-berry eat adds a second halving.
+                    if dex.effects.abilities[state.mon(target).ability as usize] == Ability::Ripen {
+                        push(hooks, state, target, -1, 2048);
+                    }
                 }
             }
         }

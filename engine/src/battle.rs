@@ -4273,7 +4273,7 @@ impl BattleState {
         // effect phase below runs without them, exactly like the reference's
         // `runMoveEffects`/`selfDrops`/`forceSwitch` null-target handling.
         let mut sub_absorbed = SmallVec::<[Entity; 4]>::new();
-        let mut damages = SmallVec::<[(Entity, u16); 4]>::new();
+        let mut damages = SmallVec::<[(Entity, u16, bool); 4]>::new();
         // Reference `spreadMoveHit` runs `tryPrimaryHitEvent` before
         // `getSpreadDamage`: every decoy handler resolves its damage in a
         // pre-pass over the whole target list, so a decoy-absorbed target's
@@ -4332,7 +4332,7 @@ impl BattleState {
                 if self.intercept_substitute(dex, actor, target, m, amount, m.infiltrates)? {
                     sub_absorbed.push(target);
                 } else {
-                    damages.push((target, amount));
+                    damages.push((target, amount, false));
                 }
                 continue;
             }
@@ -4510,7 +4510,7 @@ impl BattleState {
             if self.intercept_substitute(dex, actor, target, m, damage, m.infiltrates || pollen_ally)? {
                 sub_absorbed.push(target);
             } else {
-                damages.push((target, damage));
+                damages.push((target, damage, critical));
             }
         }
         let effect_targets: SmallVec<[Entity; 4]> = hit_targets
@@ -4527,7 +4527,10 @@ impl BattleState {
         // Per-target damage for the `DamagingHit` event, parallel to
         // `effect_targets` (the reference passes `damagedDamage`).
         let mut hit_damages: SmallVec<[u16; 4]> = SmallVec::new();
-        for (target, damage) in damages {
+        // Parallel to `hit_damages`: whether that target's hit was critical,
+        // read by Anger Point once the move's own payload has resolved.
+        let mut hit_critical: SmallVec<[bool; 4]> = SmallVec::new();
+        for (target, damage, critical) in damages {
             // `abilities:disguise.onDamage` (onDamagePriority 1, so it runs
             // before Sturdy, Focus Sash and Endure): the first damaging move
             // against an undisguised Mimikyu is absorbed - the hit still lands
@@ -4549,6 +4552,7 @@ impl BattleState {
                 // than false, so the hit still records a `gotAttacked` entry.
                 self.record_attacked_by(target, actor, m.move_uid, 0);
                 hit_damages.push(0);
+                hit_critical.push(false);
                 hit_before.push((target, self.mon(target).hp));
                 self.emit(
                     EventKind::Damage,
@@ -4574,6 +4578,7 @@ impl BattleState {
             hit_before.push((target, hp_before));
             let actual = damage.min(hp_before);
             hit_damages.push(actual);
+            hit_critical.push(critical);
             total_damage += u32::from(actual);
             hit_any = true;
             self.mon_mut(target).hp -= actual;
@@ -4622,7 +4627,7 @@ impl BattleState {
         // success rather than a failure.
         let mut did_anything =
             m.category != Category::Status || !sub_absorbed.is_empty();
-        for &target in &effect_targets {
+        for (effect_index, &target) in effect_targets.iter().enumerate() {
             // Status moves also run the reference's TryPrimaryHit decoy stage
             // before `runMoveEffects`: a decoy absorbs the whole move (zero
             // damage) and the action still counts as a success.
@@ -5506,6 +5511,22 @@ impl BattleState {
                     };
                     did_anything |=
                         self.hit_effect_from_move(dex, target, actor, payload, false, m)?;
+                    // `abilities:angerpoint.onHit`: the `Hit` event runs right
+                    // after the move's own payload — a critical hit raises the
+                    // holder's Attack by twelve stages (±6 clamp).
+                    if hit_critical.get(effect_index).copied().unwrap_or(false)
+                        && self.mon(target).hp > 0
+                        && dex.effects.abilities[self.mon(target).ability as usize]
+                            == Ability::Angerpoint
+                    {
+                        self.boost(
+                            dex,
+                            target,
+                            target,
+                            [12, 0, 0, 0, 0, 0, 0],
+                            BoostCause::Ability(Ability::Angerpoint),
+                        )?;
+                    }
                 }
                 // `moves:magicpowder.onHit`: a pure-Psychic target refuses the
                 // move outright (`onHit` returns false), so the generic empty
@@ -6327,7 +6348,7 @@ impl BattleState {
                 if hit == 1 {
                     hit_before.push((target, self.mon(target).hp));
                 }
-                let damage = self.resolve_hit_damage(
+                let (damage, critical) = self.resolve_hit_damage(
                     dex,
                     actor,
                     target,
@@ -6443,6 +6464,23 @@ impl BattleState {
                 )?;
                 }
                 self.hit_effect_from_move(dex, target, actor, &m.hit, false, m)?;
+                // `abilities:angerpoint.onHit`: the move's own payload runs
+                // first, then the `Hit` event — a critical hit raises the
+                // holder's Attack by twelve stages, which the ±6 clamp turns
+                // into the maximum.
+                if critical
+                    && self.mon(target).hp > 0
+                    && dex.effects.abilities[self.mon(target).ability as usize]
+                        == Ability::Angerpoint
+                {
+                    self.boost(
+                        dex,
+                        target,
+                        target,
+                        [12, 0, 0, 0, 0, 0, 0],
+                        BoostCause::Ability(Ability::Angerpoint),
+                    )?;
+                }
                 if hit == 1
                     && let Some(effect) = m.self_effect.as_ref().filter(|_| !m.sheer_force)
                 {
@@ -6823,7 +6861,7 @@ impl BattleState {
         m: &ActiveMove<'_>,
         effectiveness: i8,
         phase: HitPhase,
-    ) -> Result<u16> {
+    ) -> Result<(u16, bool)> {
         let crit_ratio = self.crit_ratio(
             dex,
             actor,
@@ -6901,7 +6939,7 @@ impl BattleState {
         };
         let base_power = self.base_power(dex, m, actor, target, phase.hit);
         if base_power == 0 {
-            return Ok(0);
+            return Ok((0, critical));
         }
         let power = self.modify_value(dex, ModifierEvent::BasePower, context, base_power)?;
         attack = self.modify_value(
@@ -6963,7 +7001,10 @@ impl BattleState {
             .priority
             .unwrap_or_else(|| self.effective_priority(dex, actor, m.id));
         let bypassed = self.protection_bypassed(dex, actor, target, m, priority);
-        Ok(damage::finish_damage(damage, final_modifier, bypassed))
+        Ok((
+            damage::finish_damage(damage, final_modifier, bypassed),
+            critical,
+        ))
     }
 
     /// Reference `BattleQueue#changeAction` + `insertChoice`: replace the
