@@ -236,6 +236,12 @@ pub struct PokemonState {
     /// fires only once per battle, even across switch-outs.
     #[serde(default)]
     pub syrup_triggered: bool,
+    /// Reference `illusion` (Illusion): the roster of the party member this
+    /// Pokémon is disguised as while it is on the field. World state (species,
+    /// stats, damage, status) always describes the real Pokémon; only the
+    /// opponent's observed identity is masked.
+    #[serde(default)]
+    pub illusion: Option<u8>,
     /// Reference `lastMove`: the move this Pokémon most recently used while
     /// active (0 = none). Encore, Disable, Torment and Cursed Body read it.
     pub last_move: Id,
@@ -385,6 +391,7 @@ impl PokemonState {
             force_switch_flag: false,
             newly_switched: false,
             syrup_triggered: false,
+            illusion: None,
             last_move: 0,
             last_move_target_location: 0,
             times_attacked: 0,
@@ -450,7 +457,7 @@ impl Outcome {
 /// `move.sourceEffect`).
 /// 15: requests carry `revive_targets` / `SlotRequest.reviving`, and sides
 /// persist the `revivalblessing` slot condition.
-pub const SNAPSHOT_SCHEMA: u32 = 19;
+pub const SNAPSHOT_SCHEMA: u32 = 20;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BattleState {

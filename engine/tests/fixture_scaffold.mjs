@@ -237,7 +237,12 @@ export function createScaffold() {
               : choose(session, side, wanted);
             const result = session.choose(side ? 'p2' : 'p1', choice.command);
             if (!result.accepted) { failure = JSON.stringify({side, turn, wanted, choice, err: s.choice.error}); break; }
-            fixture.steps.push({side: side ? 'P2' : 'P1', ...choice, expected: compact(session)});
+            // Optional per-step public-identity surface: generators that probe
+            // effects the world-state `compact` cannot see (Illusion's masked
+            // identity) record what the reference protocol displays.
+            const observed = trial.observe?.(session);
+            fixture.steps.push({side: side ? 'P2' : 'P1', ...choice, expected: compact(session),
+              ...(observed === undefined ? {} : {observed})});
           }
           if (failure) break;
         }

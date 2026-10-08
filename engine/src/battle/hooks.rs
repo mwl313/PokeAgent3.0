@@ -1461,6 +1461,20 @@ impl BattleState {
                     index,
                 ));
             }
+            // `abilities:illusion.onDamagingHit` (default order): any landed
+            // damaging hit ends the disguise.
+            if self.mon(target).illusion.is_some() {
+                handlers.push((
+                    target,
+                    27,
+                    Priority {
+                        sub_order: 7,
+                        speed: self.mon(target).cached_speed,
+                        ..Default::default()
+                    },
+                    index,
+                ));
+            }
             // Spicy Spray burns the attacker on every damaging hit.
             if dex.effects.abilities[self.mon(target).ability as usize] == Ability::Spicyspray {
                 handlers.push((
@@ -1923,6 +1937,10 @@ impl BattleState {
                         EffectRef::Ability(self.mon(target).ability),
                     )?;
                 }
+            } else if kind == 27 {
+                // `abilities:illusion.onDamagingHit`: any landed damaging hit
+                // ends the disguise and makes the real identity public again.
+                self.restore_illusion(dex, target)?;
             } else if m.move_type == dex.effects.fire {
                 self.cure_status(target)?;
             }
@@ -3290,7 +3308,6 @@ impl Ability {
             | Ability::Harvest
             | Ability::Hungerswitch
             | Ability::Iceface
-            | Ability::Illusion
             | Ability::Imposter
             | Ability::Klutz
             | Ability::Opportunist

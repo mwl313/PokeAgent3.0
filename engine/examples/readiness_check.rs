@@ -105,11 +105,9 @@ fn main() {
     }
     // Mirrors engine/tests/fixture_coverage.rs::EXEMPT; keep the two in sync.
     let move_exempt: BTreeSet<&str> = [
-        "bittermalice",
         "decorate",
         "jetpunch",
         "kingsshield",
-        "nightdaze",
         "powershift",
         "pound",
         "softboiled",

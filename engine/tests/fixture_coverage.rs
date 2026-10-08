@@ -34,8 +34,6 @@ struct Coverage {
 /// reason. Each entry must stay justified: remove it as soon as a fixture
 /// exercises the move, and never add a move here that a fixture can cover.
 const EXEMPT: &[(&str, &str)] = &[
-    ("bittermalice", "no legal holder with an implemented ability yet"),
-    ("nightdaze", "no legal holder with an implemented ability yet"),
     ("pound", "no legal holder with an implemented ability yet"),
     ("softboiled", "no legal holder with an implemented ability yet"),
     // Power Shift is legal in the move list but no pinned-regulation species

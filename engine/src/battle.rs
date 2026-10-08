@@ -856,6 +856,31 @@ impl BattleState {
         // Reference `Pokemon#switchIn`: `newlySwitched = true`, cleared at the
         // next turn rollover.
         self.mon_mut(incoming).newly_switched = true;
+        // `abilities:illusion.onBeforeSwitchIn`: the entrant disguises itself
+        // as the last non-fainted party member strictly to its right in the
+        // party array. The reference recomputes it on every entry.
+        self.mon_mut(incoming).illusion = None;
+        if dex.effects.abilities[self.mon(incoming).ability as usize] == Ability::Illusion {
+            let side = incoming.side as usize;
+            let position = self.sides[side]
+                .positions
+                .iter()
+                .position(|roster| *roster == incoming.roster);
+            let partner = position.and_then(|position| {
+                self.sides[side].positions[position + 1..]
+                    .iter()
+                    .rev()
+                    .find(|roster| {
+                        !self.mon(Entity {
+                            side: incoming.side,
+                            roster: **roster,
+                        })
+                        .fainted
+                    })
+                    .copied()
+            });
+            self.mon_mut(incoming).illusion = partner;
+        }
         if self.mon(incoming).status == dex.effects.toxic {
             self.mon_mut(incoming).status_state.values[0] = 0;
         }
@@ -871,6 +896,11 @@ impl BattleState {
             i32::from(slot),
             true,
         )?;
+        // Illusion: the opponent's belief about this slot becomes the
+        // partner's identity (species, types, gender) while the real Pokémon's
+        // dynamic state (health, status, boosts, effects) is what the events
+        // keep updating. The owner keeps the true identity.
+        self.mask_illusion_knowledge(dex, incoming)?;
         // Reference insertChoice refreshes the entering Pokémon's cached speed.
         self.mon_mut(incoming).cached_speed = self.speed(dex, incoming);
         let priority = Priority {
@@ -1603,6 +1633,10 @@ impl BattleState {
         mon.move_this_turn_result = crate::state::MoveResult::Undefined;
         mon.move_last_turn_result = crate::state::MoveResult::Undefined;
         mon.disguise_busted = false;
+        // Reference `abilities:illusion.onEnd` while the Pokémon is being
+        // called back: the disguise drops without any public repair, and the
+        // next entry recomputes it.
+        mon.illusion = None;
         // Reference `Pokemon#clearVolatile`: the per-turn damage and stat
         // flags do not survive a switch-out.
         mon.hurt_this_turn = 0;
@@ -9020,6 +9054,9 @@ impl BattleState {
             if self.mon(e).fainted {
                 continue;
             }
+            // `abilities:illusion.onFaint`: the disguise drops silently, so the
+            // faint itself reveals the real identity (no `-end Illusion`).
+            self.restore_observed_identity(e, false)?;
             self.emit(EventKind::Faint, e, None, EffectRef::None, 0, true)?;
             // `moves:destinybond.condition.onFaint`: a faint caused by a foe's
             // move drags the source down with it. The counter-faint is queued
@@ -10144,6 +10181,76 @@ impl BattleState {
         } else {
             0
         }
+    }
+
+    /// `abilities:illusion`: the opponent's knowledge entry for a disguised
+    /// Pokémon carries the partner's species, types and gender while every
+    /// other field follows the real Pokémon through the ordinary event flow.
+    /// The owner's entry keeps the true identity.
+    fn mask_illusion_knowledge(&mut self, _dex: &Dex, e: Entity) -> Result<()> {
+        let Some(partner) = self.mon(e).illusion else {
+            return Ok(());
+        };
+        let partner = Entity {
+            side: e.side,
+            roster: partner,
+        };
+        let (species, types, gender) = {
+            let partner = self.mon(partner);
+            (partner.species, partner.types.clone(), partner.gender)
+        };
+        // Only the opponent is fooled; the owner keeps the true identity.
+        self.write_observed_identity(1 - e.side as usize, e, species, types, gender);
+        Ok(())
+    }
+
+    /// Reference `abilities:illusion.onEnd`: the disguise drops and the real
+    /// identity becomes public again (`replace` plus the `-end Illusion`
+    /// marker when the reference announces it).
+    fn restore_observed_identity(&mut self, e: Entity, announce: bool) -> Result<()> {
+        if self.mon(e).illusion.is_none() {
+            return Ok(());
+        }
+        self.mon_mut(e).illusion = None;
+        let (species, types, gender) = {
+            let mon = self.mon(e);
+            (mon.species, mon.types.clone(), mon.gender)
+        };
+        for viewer in 0..2 {
+            self.write_observed_identity(viewer, e, species, types.clone(), gender);
+        }
+        if announce {
+            self.emit(
+                EventKind::Ability,
+                e,
+                None,
+                EffectRef::Ability(self.mon(e).ability),
+                0,
+                false,
+            )?;
+        }
+        Ok(())
+    }
+
+    fn write_observed_identity(
+        &mut self,
+        viewer: usize,
+        e: Entity,
+        species: Id,
+        types: Vec<Id>,
+        gender: u8,
+    ) {
+        let index = e.roster as usize + if e.side as usize == viewer { 0 } else { 6 };
+        let mon = &mut self.knowledge[viewer].pokemon[index];
+        mon.species = species;
+        mon.types = types;
+        mon.gender = crate::knowledge::Known::new(gender);
+    }
+
+    /// Public entry point for the damaging-hit reveal (`onDamagingHit`).
+    pub(super) fn restore_illusion(&mut self, dex: &Dex, e: Entity) -> Result<()> {
+        let _ = dex;
+        self.restore_observed_identity(e, true)
     }
 
     pub(crate) fn queued_to_move(&self, e: Entity) -> bool {
