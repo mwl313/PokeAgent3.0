@@ -474,7 +474,9 @@ class RolloutBatch:
         )
 
     def select(self, indices: torch.Tensor, row_valid: Optional[torch.Tensor] = None) -> "RolloutBatch":
-        idx = indices.to(torch.long)
+        # Minibatch indices are produced on the CPU while the batch may live on
+        # a GPU; index_select requires both on the same device.
+        idx = indices.to(device=self.old_logprob.device, dtype=torch.long)
         return RolloutBatch(
             observation=self.observation.select(idx),
             candidates=self.candidates.select(idx),
@@ -488,7 +490,7 @@ class RolloutBatch:
             row_valid=(
                 self.row_valid.index_select(0, idx)
                 if row_valid is None
-                else row_valid.to(torch.bool)
+                else row_valid.to(device=self.old_logprob.device, dtype=torch.bool)
             ),
             match_ids=self.match_ids.index_select(0, idx),
             sides=self.sides.index_select(0, idx),

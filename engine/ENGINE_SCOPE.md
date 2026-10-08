@@ -651,3 +651,44 @@ manifest; `engine/test_support/corpus.rs` is the shared loader used by tests and
 examples (`#[path = ".../test_support/corpus.rs"] mod corpus;`), and
 `engine/tests/verify_turn_fixtures.mjs` merges the same parts for the
 independent reference replay.
+
+## 2026-10-08 miniDC session: v3 training pool, measured speed, bounded PPO smoke
+
+This session ran on the miniDC (2x Xeon E5-2673 v4, 2x V100-PCIE-32GB, driver
+580.178.04, CUDA toolkit 12.8.2, torch 2.14.0+cu126) from branch
+`training-pool/minidc-userteam-benchmark` (base
+`training-pool/minidc-speedtest-ready` @ `8d85db2`). No driver, toolkit, power,
+service or package change was made.
+
+- **Training pool v3.** The single user-approved Poképaste of 2026-10-08 is now
+  `mb-mc-v3-userteam-all-train`: 1,137 unique teams / 904 roster groups, 1,208
+  source rows (1,152 accepted, 56 quarantined). The 1,136 predecessor records
+  are verified byte-identical before the v3 dataset is written; the manual
+  source's only normalisation (the Mega-form ability line) is recorded and
+  flagged. See `docs/TEAM_POOL.md`.
+- **Engine compatibility after the pool change.** `coverage_report`: moves
+  486/515 executable, abilities 200/223, items 166/166, dynamic closure 33
+  callers / 11 blocked, pool blockers 0/0/0. `pool_run_report`: 1,137/1,137
+  trajectory completions, 1,137 statically complete, 0 blocked, mean 10.5
+  turns, 0 operational aborts. `readiness_check` still exits non-zero:
+  criteria 1,4,6,7,9-14 PASS; 2,3,5,8,15,16 FAIL. Full-engine readiness is not
+  claimed.
+- **Focused team probe.** `engine/examples/team_probe.rs` statically scans one
+  training team and plays it against deterministic opponents/seeds on both
+  sides. The approved manual team: 0 static gaps, 128/128 natural completions,
+  0 aborts.
+- **Measured speed (miniDC, dataset v3).** Engine-only (`pool_run_report`,
+  single thread) 2,579 / 2,585 / 2,689 games/s over three 22,740-game runs.
+  PyO3 two-rank actor (2x1,024 environments, 16 workers/rank): 304.1 and 325.0
+  games/s per rank, 592.6 games/s aggregate, 0 operational errors. Single-rank
+  actor: 522.7 games/s. Observation packing is ~76% of actor wall time and the
+  actor uses only ~3-4.8 of 16 workers, so tensor/observation work and
+  parallel efficiency, not Rust stepping (~7%), are the bottlenecks.
+- **Bounded PPO smoke.** The PA3-8M model and PPO learner (previous mock-tested
+  scaffolding) are now wired to the real `NativeEngine`: prefix-dependent
+  branch masks are queried per level, sampled sequentially
+  (`PA3Model.sample_levels`), recorded with their exact tables, and replayed by
+  the learner. A bounded smoke collected natural matches from the frozen
+  training pool, ran the PPO update, and verified checkpoint save/resume. It is
+  a correctness test, not a training run; the 100M-match run remains
+  unauthorized.

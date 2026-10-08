@@ -19,7 +19,7 @@ Contract highlights (Full Spec 1.1 §6, ``configs/train.yaml::model``):
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Sequence
 
 import torch
 from torch import nn
@@ -78,6 +78,60 @@ class SamplingResult:
         the real prefix of the request it sampled.
         """
         return self.selected[:, : int(branch_count)]
+
+
+@dataclass
+class LevelSamplingResult:
+    """Sampling result when each branch level carries its own candidate table.
+
+    The native engine's mask for branch ``j`` is computed *after* the branches
+    selected before it (preview picks cannot repeat a member, a used Mega flag
+    disappears from the second slot, and so on), so a faithful collector cannot
+    pre-build all branch tables in one pass. ``sample_levels`` walks the levels
+    in order with the prefix-dependent table for each one.
+    """
+
+    selected: torch.Tensor  # [B, L] long
+    logprob_selected: torch.Tensor  # [B, L]
+    entropy_normalized: torch.Tensor  # [B, L]
+    uniform_kl_normalized: torch.Tensor  # [B, L]
+    branch_k: torch.Tensor  # [B, L] long
+    request_logprob: torch.Tensor  # [B]
+    actor_active: torch.Tensor  # [B] bool
+
+
+@dataclass
+class LevelStepResult:
+    """One branch level of a sequential sample."""
+
+    pick: torch.Tensor  # [B] long
+    logprob: torch.Tensor  # [B]
+    entropy_normalized: torch.Tensor  # [B]
+    uniform_kl_normalized: torch.Tensor  # [B]
+    branch_k: torch.Tensor  # [B] long
+    hidden: torch.Tensor  # [B, D]
+
+
+def assemble_level_result(steps: Sequence[LevelStepResult]) -> LevelSamplingResult:
+    """Combine per-level sampling steps into one request-level result."""
+    if not steps:
+        raise ValueError("no sampled levels")
+    import torch as _torch
+
+    selected = _torch.stack([step.pick for step in steps], dim=1)
+    logprob = _torch.stack([step.logprob for step in steps], dim=1)
+    entropy = _torch.stack([step.entropy_normalized for step in steps], dim=1)
+    uniform_kl = _torch.stack([step.uniform_kl_normalized for step in steps], dim=1)
+    branch_k = _torch.stack([step.branch_k for step in steps], dim=1)
+    return LevelSamplingResult(
+        selected=selected,
+        logprob_selected=logprob,
+        entropy_normalized=entropy,
+        uniform_kl_normalized=uniform_kl,
+        branch_k=branch_k,
+        request_logprob=logprob.sum(dim=-1),
+        actor_active=(branch_k >= 2).any(dim=-1),
+    )
 
 
 class PA3Model(nn.Module):
@@ -353,4 +407,87 @@ class PA3Model(nn.Module):
             branch_k=evaluation.branch_k,
             actor_active=evaluation.actor_active,
             probabilities=probs,
+        )
+
+    @torch.no_grad()
+    def sample_levels(
+        self,
+        encoded: EncodedState,
+        tables: Sequence[BranchCandidatesBatch],
+        temperature: float = 1.0,
+        generator: Optional[torch.Generator] = None,
+    ) -> LevelSamplingResult:
+        """Sequential sampling with one candidate table per level.
+
+        ``tables[j]`` must be the engine mask for branch ``j`` computed after
+        the branches already selected, as a single-branch batch (``[B, 1, P]``).
+        The reference recomputation path (``evaluate_encoded`` over the stored
+        per-level tables and the stored selected prefix) produces exactly the
+        log-probabilities this method sampled, so the PPO ratio is 1 at the
+        start of the first epoch.
+        """
+        hidden = self.scorer.initial_state(
+            encoded.tokens.shape[0],
+            device=encoded.tokens.device,
+            dtype=encoded.tokens.dtype if encoded.tokens.dtype.is_floating_point else torch.float32,
+        )
+        steps = []
+        for table in tables:
+            # The GRU prefix state must advance with each selected candidate;
+            # a list comprehension here would silently reuse the initial state.
+            step = self.sample_level_step(
+                encoded, hidden, table, temperature=temperature, generator=generator
+            )
+            steps.append(step)
+            hidden = step.hidden
+        return assemble_level_result(steps)
+
+    @torch.no_grad()
+    def sample_level_step(
+        self,
+        encoded: EncodedState,
+        hidden: torch.Tensor,
+        table: BranchCandidatesBatch,
+        temperature: float = 1.0,
+        generator: Optional[torch.Generator] = None,
+    ) -> LevelStepResult:
+        """Score and sample one branch level from its prefix-dependent table.
+
+        The collector interleaves this with the engine's ``candidates_batch``:
+        level ``j+1``'s table needs the action sampled at level ``j``.
+        """
+        batch = encoded.tokens.shape[0]
+        if temperature <= 0.0:
+            raise ValueError("temperature must be positive")
+        if table.action_ids.shape[0] != batch or table.action_ids.shape[1] != 1:
+            raise ValueError(
+                f"level table must be [B, 1, P], got {tuple(table.action_ids.shape)}"
+            )
+        action_ids = table.action_ids[:, 0]
+        mask = table.mask[:, 0]
+        entity = table.entity_token[:, 0]
+        move = table.move_token[:, 0]
+        if not bool(mask.any(dim=-1).all()):
+            raise ValueError("level has a request without a legal candidate")
+        logits = self.scorer.score(encoded.tokens, hidden, action_ids, mask, entity, move)
+        if temperature != 1.0:
+            logits = logits / temperature
+        log_prob, probs, entropy, uniform_kl = self._branch_stats(logits, mask)
+        pick = torch.multinomial(probs, num_samples=1, generator=generator).squeeze(-1)
+        gathered = torch.gather(log_prob, 1, pick.unsqueeze(-1)).squeeze(-1)
+        step_action = torch.gather(
+            action_ids, 1, pick.view(-1, 1, 1).expand(-1, 1, action_ids.shape[-1])
+        ).squeeze(1)
+        step_entity = torch.gather(entity, 1, pick.unsqueeze(-1)).squeeze(-1)
+        step_move = torch.gather(move, 1, pick.unsqueeze(-1)).squeeze(-1)
+        next_hidden = self.scorer.advance(
+            encoded.tokens, hidden, step_action, step_entity, step_move
+        )
+        return LevelStepResult(
+            pick=pick,
+            logprob=gathered.detach(),
+            entropy_normalized=entropy.detach(),
+            uniform_kl_normalized=uniform_kl.detach(),
+            branch_k=mask.sum(dim=-1).to(torch.long),
+            hidden=next_hidden,
         )

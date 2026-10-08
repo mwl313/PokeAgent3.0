@@ -101,7 +101,11 @@ class PPOLearner:
         buffer.compute_gae(
             gamma=self.config.gamma, gae_lambda=self.config.gae_lambda, rows=rows
         )
-        batch = buffer.to_batch(rows, device=self.device)
+        # Keep the full iteration on the host: a 10k-match rollout holds hundreds
+        # of thousands of 96-token observations, and materializing all of them on
+        # the GPU at once exhausts a 32 GiB card. Minibatches are moved to the
+        # device one at a time in update() instead.
+        batch = buffer.to_batch(rows, device="cpu")
         actor_mask = batch.actor_mask & batch.row_valid
         normalized = normalize_advantages(
             batch.raw_advantages,
@@ -216,6 +220,7 @@ class PPOLearner:
                 generator=generator,
                 drop_last=self.config.drop_last_minibatch,
             ):
+                minibatch = minibatch.to(self.device)
                 weight = minibatch.sample_weight if self.config.sample_weighted_ddp_reduction else 1.0
                 self.optimizer.zero_grad(set_to_none=True)
                 microbatches = list(minibatch.iter_microbatches(self.config.microbatch_size))

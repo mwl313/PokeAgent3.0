@@ -96,3 +96,81 @@ setting was changed.
 6. **DDP path.** The learner runs single-process; the documented 2×V100
    `no_sync` accumulation path (per-rank minibatch 2,048, microbatch 256) is not
    exercised.
+
+---
+
+## 2026-10-08 miniDC session: real-engine collector and bounded PPO smoke
+
+The mock-only gap is closed for the training-pool path. `agent/train/native_collector.py`
+drives the compiled `pa3_engine.NativeEngine` with the PA3-8M policy sampled on
+the GPU:
+
+* one `request_info_batch`, one `observe_encoded_batch`, one `candidates_batch`
+  per branch level and one `step_batch` per round (the same crossing pattern as
+  the development actor),
+* the native branch mask is **prefix-dependent** (the probe in this session
+  measured 273 of 562 multi-branch requests where branch 1's candidate set
+  changes with branch 0's pick — a preview cannot pick the same member twice).
+  The collector therefore queries the mask after each sampled branch and
+  `PA3Model.sample_levels` / `sample_level_step` walks the levels with the GRU
+  prefix state advancing between them. A stale-hidden bug in the first version
+  of `sample_levels` was caught by the recomputation test and fixed; the
+  per-level tables are stored in the rollout row, so the learner's
+  `evaluate_encoded` recomputation reproduces the sampled log-probability,
+* terminal-only rewards (+1/-1/0) are paid once on the last request of the
+  learner seat's sequence, only the learner seat becomes a current-policy PPO
+  row, and operational errors raise instead of being counted as games,
+* `RolloutBuffer`/`BranchCandidatesBatch`/`PA3Model` now tolerate the native
+  encodings that the mock never produced: a move action with `NO_SLOT`
+  (Struggle) resolves to the learned null move embedding, minibatch index
+  tensors follow the batch device, and `PPOLearner.prepare_batch` keeps the
+  iteration on the host while `update()` streams minibatches to the GPU (a
+  10k-match rollout OOM-ed the 32 GiB card when the whole iteration was
+  materialized at once).
+
+### Bounded smoke runs (`scripts/run_ppo_smoke.py`)
+
+Both runs used the frozen 1,137-team training pool, the pinned stack, and GPU 0.
+Nothing was trained to convergence; this is a correctness test and the 100M
+match run is still not authorized.
+
+| Run | Matches | Envs/workers | Games/s | Rows (actor) | OP errors | Recompute max diff | PPO epochs | approx KL | Grad norm | Checkpoint |
+|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---|
+| 1 | 1,024 | 1,024 / 16 | 16.1 | 13,639 (12,839) | 0 | 2.0e-5 | 4 | 0.0045 | 1.26 | saved + resumed |
+| 2 | 10,240 (10,000 target + cohort overshoot) | 1,024 / 16 | 16.4 | 132,992 (124,864) | 0 | 1.9e-5 | 4 | 0.0047 | 0.92 | saved + resumed |
+
+Run 2 details: 625.9 s wall, 266,019 learner decisions, 10 cohorts / 598 rounds,
+1,499 batched candidate crossings returning 4,095,354 candidates, learner seat
+5,121 wins / 5,118 losses / 1 draw, model forward 185.0 s (29.6%), native
+observation 13.5 s, legal masks 2.2 s, Rust stepping 2.0 s, reset 0.15 s; the
+remainder is single-threaded Python orchestration (observation adaptation,
+per-level table building, buffer writes). Per-epoch approx KL
+[0.0057, 0.0043, 0.0046, 0.0044], policy loss -0.0077, value loss 0.274,
+normalized entropy 0.981, uniform KL 0.0025, clip fraction 0.052, gradient norm
+0.92, 132 optimizer steps, no early stop, learning rate 2.16e-5 at the
+10,000-match clock. GPU peak 3.0 GiB; the rollout buffer held every row's
+observation and the host process peaked at ~25 GiB (ps) during collection.
+
+Checks that must stay green (all green in run 1): natural matches accounted,
+zero operational errors, every learner request recorded, sampled vs recomputed
+log-probability within 1e-4, finite parameters before/after, finite losses and
+gradient norm, target-KL early stop never needed, checkpoint outputs identical
+after a `state_dict` round trip.
+
+The reported PPO metrics carry the learner's DDP sample-weighted reduction:
+with fewer than 4,096 real rows per minibatch the reported numbers are scaled by
+the real-row fraction (the 1,024-match run has ~13.6k rows, so three
+minibatches are full and the remainder is padded/masked).
+
+### What is still not done
+
+* The 2,048-environment, two-GPU, DDP `no_sync` accumulation path is not
+  exercised; the smoke is single-process on GPU 0.
+* The collector stores full observations in host memory (~2 GB per 1k matches,
+  ~24 GB per 10k matches in the first run) and re-encodes none of them; a
+  production collector should stream to a compact buffer or offload.
+* Opponent-policy sampling (history pool), evaluation, metrics files, the run
+  layout under `runs/<run_id>/` and the 100M-match clock are not implemented in
+  this integration.
+* Model-side categorical vocabularies are still the placeholder 8,192-slot
+  embedding; the Dex vocabulary export is required before a real run.

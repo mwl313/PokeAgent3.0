@@ -51,10 +51,14 @@ def resolve_action_tokens(
         return layout.self_pokemon_token(int(action.switch_destination)), NO_TOKEN
     if kind == ActionKind.MOVE:
         own_slot = int(action.own_slot)
-        return (
-            layout.self_pokemon_token(own_slot),
-            layout.move_token(own_slot, int(action.move_slot)),
-        )
+        move_slot = int(action.move_slot)
+        entity = layout.self_pokemon_token(own_slot) if 0 <= own_slot < 6 else NO_TOKEN
+        # Struggle (and engine-internal move encodings) carry NO_SLOT for the
+        # move slot; the scorer then substitutes its learned null move embedding
+        # instead of gathering a token that does not exist.
+        if 0 <= move_slot < 4 and 0 <= own_slot < 6:
+            return entity, layout.move_token(own_slot, move_slot)
+        return entity, NO_TOKEN
     if kind in (ActionKind.SWITCH, ActionKind.PASS):
         return layout.self_pokemon_token(int(action.own_slot)), NO_TOKEN
     raise ValueError(f"unsupported action kind {action.kind!r}")

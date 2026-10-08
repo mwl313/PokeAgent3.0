@@ -21,7 +21,7 @@ fallbacks, or a narrowed denominator.
 | 3 | Full legal ability coverage (all 223 legal abilities) | `Ability::is_ported`, the same predicate `validate_effects` uses at runtime |
 | 4 | Full legal item coverage (all 166 allowed items, Mega Stones via the stone mapping) | `Item` handler table + `mega_stones` |
 | 5 | Dynamic/reachable effect closure (called, copied, transformed, inherited effects) | machine-generated `engine/data/dynamic-closure.json` (from `scripts/dynamic_closure.mjs`); a caller passes only when it is executable **and** every universe it can reach is fully executable |
-| 6 | All 1,136 frozen training teams can execute every member | static member scan of `training-teams.json` |
+| 6 | All 1,137 frozen training teams can execute every member | static member scan of `training-teams.json` |
 | 7 | No silent fallback mechanics | `classify_move` requires every callback key and data field to be ported; `fixture_coverage` requires a differential witness or a documented exemption; `readiness_check` recomputes the unwitnessed-move set every run |
 | 8 | Zero unsupported-mechanic operational errors on the full-scope validation corpus | follows from 2-4 plus a full-scope corpus run |
 | 9 | Player-safe observation tensor complete | `observation.rs::knowledge_field_audit` (compile-time classification of every knowledge field) + `observation_leakage.rs` (hidden state cannot change tensor/mask) + `observation_completeness.rs` (known state must change tensor) |
@@ -70,10 +70,10 @@ fallbacks, or a narrowed denominator.
   ordering, request-mask shape, switch and target edge cases). A counter may
   only claim the tier its evidence proves; one encounter is never reported as
   interaction verification.
-- **Items: 165/166 is not "all items covered".** The remaining entry is the
-  legal held item **Metronome** (consecutive same-move damage bonus), which is
-  unimplemented and stays in the denominator; holding it raises an explicit
-  operational error. It is not a sentinel or a no-item representation.
+- **Items are counted entity by entity.** The last remaining legal held item,
+  **Metronome** (consecutive same-move damage bonus), was ported on 2026-10-08,
+  so the live figure is 166/166. It was never a sentinel or a no-item
+  representation, and the denominator never excluded it.
 - Pool frequency only orders the work. The final scope is the full pinned M-C
   regulation, including effects that can be reached by calling, copying,
   transforming into, or inheriting another effect. The authoritative caller

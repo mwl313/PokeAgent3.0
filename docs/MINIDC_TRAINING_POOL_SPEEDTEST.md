@@ -193,6 +193,39 @@ No model-backed inference benchmark is included here: the PA3-8M actor binding
 described in §5 is still being wired, and the random-policy number must not be
 reported as end-to-end training throughput.
 
+### E. Bounded PPO smoke (real engine + PA3-8M on GPU 0)
+
+`scripts/run_ppo_smoke.py` collects naturally completed matches from the frozen
+training pool with the PA3-8M policy sampled on the GPU, verifies that the
+sampled joint log-probability is reproducible by the learner, runs the PPO
+update on those rows and checks checkpoint save/resume. It is a correctness
+test, never a training run.
+
+Measured on the miniDC with 1,024 environments and 16 workers:
+
+| Run | Matches | Games/s | Rows (actor) | OP errors | Recompute max diff | PPO epochs | approx KL | Grad norm |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 1,024 | 16.1 | 13,639 (12,839) | 0 | 2.0e-5 | 4 | 0.0045 | 1.26 |
+| 2 | 10,240 (10,000 target + overshoot) | 16.4 | 132,992 (124,864) | 0 | 1.9e-5 | 4 | 0.0047 | 0.92 |
+
+Run 1 costs: observation 1.6 s, candidate masks 0.2 s, model 19.6 s, Rust
+stepping 0.2 s, wall 63.8 s - the GPU forward pass dominates once the policy is
+real, and the CPU actor work is single-threaded. GPU peak 3.0 GiB, host peak
+1.9 GiB, 0 operational errors, checkpoint saved and reloaded with identical
+outputs. This model-backed number is the only throughput in this document that
+includes policy inference; it is a smoke-scale measurement, not a training
+throughput claim.
+
+Run 2 (the bounded smoke requested for this session) completed 10,240 natural
+matches in 625.9 s with 0 operational errors, 266,019 learner decisions, 4.1 M
+candidate actions and a clean checkpoint round trip. Cost split: PA3-8M forward
+185.0 s (29.6%), native observation packing 13.5 s, legal masks 2.2 s, Rust
+stepping 2.0 s, reset 0.15 s; the remaining ~68% is single-threaded Python
+orchestration, which is the next optimization target for the training path.
+PPO health: 4 epochs, approx KL 0.0047 (per epoch 0.0057/0.0043/0.0046/0.0044),
+ratio mean 0.98, clip fraction 0.052, gradient norm 0.92, normalized entropy
+0.981, no NaN/Inf, no early stop. The 100M-match run is still not authorized.
+
 ## miniDC speedtest commands
 
 Run these on the miniDC in an approved project shell
