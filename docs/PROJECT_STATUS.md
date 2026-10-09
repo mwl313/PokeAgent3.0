@@ -64,10 +64,10 @@
 | 1 | ~~듀얼 micro 1024 A/B~~ **완료·승격 (v5 W1)** | 실측: 듀얼 256 median 26.25 → 1024 median 32.50 games/s(+23.8%, 3회 반복, 게이트 전부 PASS), update 57.5→42.2s/랭크 | 런처 기본값 1024로 승격 + 확인 런 32.50 | `docs/perf/V5_MICROBATCH_AB.md` |
 | 2 | 수집 record columnar화 — **측정 완료·미승격 (v5b T1)** | row-SHA 동일 게이트 PASS, 실측 collect +2.0%(역행)·all-in +1.6%(노이즈 내) | 기본 경로 유지, `--columnar-store` 플래그로 보존 | `docs/perf/V5_COLUMNAR_RECORD.md` |
 | 3 | 학습자 물질화 columnar + 후보 u8 — **부분 적용·미승격 (v5b T2)** | 물질화 −8.2%·update −2.0%, all-in +1.6%(노이즈 내); u8은 미착수(별도 결정) | 기본 경로 유지 | `docs/perf/V5_COLUMNAR_MATERIALIZATION.md` |
-| 4 | pinned + async H2D (수집/학습) | H2D 합 약 4.5s | -2-3s 전체 | profiler 타임라인 overlap 증거 |
-| 5 | optimizer 블록 정리(flat isfinite 등) | optimizer 8.5s/77.1s(11.0%) | -3-5s | global finite/skip parity |
-| 6 | digest/체크포인트/로그 정리 | 런처 오버헤드 약 9s/런 | 런당 수 초 | 증거 요건 유지 |
-| 7 | P2: rolling slots, round당 encode 1회화, CUDA Graph PoC | tail 미측정, 그룹별 encode 2-4회/round | 약 5-10% | rolling equivalence 테스트 |
+| 4 | pinned + async H2D (수집/학습) — **미실행 (v5c T1)** | H2D 약 1.7s/랭크(63s 중 2.7%) → 기대 이득이 ±2% 노이즈 내 | 다음 작업으로 이월 | profiler 타임라인 overlap 증거 |
+| 5 | optimizer 블록 정리(flat isfinite 등) — **미실행 (v5c T1)** | 실측 per-step 연산 ~19ms(타이머는 큐 드레인) | 이월 | global finite/skip parity |
+| 6 | digest/체크포인트/로그 정리 — **미실행 (v5c T1)** | 런처 오버헤드 서브초~수 초 | 이월 | 증거 요건 유지 |
+| 7 | P2: rolling slots — **구현·차단 (v5c T2)** | `reset_batch`가 배치 generation을 올려 부분 리필 시 잔여 핸들이 stale → 서브셋 리필 API/슬롯별 generation 필요(엔진 작업, 범위 밖) | `--rolling-slots` 플래그로 코드+계약 테스트(xfail) 보존 | `docs/perf/V5_ROLLING_SLOTS.md` |
 | 제외 | torch.compile/Triton | Triton이 CC 8.0+만 지원, V100 fp16 tl.dot open bug | 해당 없음 | — |
 
 - 계약 변경(별도 승인): 4 epochs→2, 관측 f16 wire, 모델 축소 — 천장을 움직이지만 학습 수학 변경이라 별도 A/B 필요.

@@ -74,6 +74,11 @@ class NativeCollectorConfig:
     # the per-row dict store. Row values/order/digests must stay identical;
     # the row-SHA gate proves it before any promotion.
     columnar_observation_store: bool = False
+    # v5c T2: rolling slot refill. Finished slots immediately start a new
+    # natural match (same frozen iteration policy) until the iteration quota is
+    # met; the remaining open games then drain (overshoot preserved). Contract
+    # gates: match counted once, terminal accounting, both seats, row schema.
+    rolling_slots: bool = False
 
 
 @dataclass
@@ -153,6 +158,7 @@ class NativeCollector:
         # Flag-gated, read-only drain-tail telemetry (v5 W2). Empty when off.
         self.telemetry: dict = {}
         self._round_active_envs = 0
+        self._slot_counter = 0
 
     # -- helpers ----------------------------------------------------------
     def _reset_cohort(self) -> tuple[list, list, list]:
@@ -172,6 +178,28 @@ class NativeCollector:
         self.stats.reset_seconds += time.perf_counter() - start
         self.stats.cohorts += 1
         self.stats.team_ids_seen += len(set(team_a) | set(team_b))
+        return handles, list(zip(team_a, team_b)), roles
+
+    def _reset_slots(self, count: int, rng) -> tuple[list, list, list]:
+        """Reset `count` slots from a persistent team RNG (rolling refill).
+
+        Same team/seed/role distributions as `_reset_cohort`; role alternation
+        continues across refills via a running slot counter so the learner seat
+        stays balanced over the iteration.
+        """
+        team_a, team_b, seeds, roles = [], [], [], []
+        for index in range(count):
+            team_a.append(rng.randrange(self._team_count))
+            team_b.append(rng.randrange(self._team_count))
+            seeds.append(tuple(rng.randrange(1 << 16) for _ in range(4)))
+            slot_index = self._slot_counter + index
+            roles.append((0, 1) if slot_index % 2 == 0 else (1, 0))
+        start = time.perf_counter()
+        handles = self.engine.reset_batch(team_a, team_b, seeds, roles)
+        self.stats.reset_seconds += time.perf_counter() - start
+        self.stats.cohorts += 1
+        self.stats.team_ids_seen += len(set(team_a) | set(team_b))
+        self._slot_counter += count
         return handles, list(zip(team_a, team_b)), roles
 
     def _learner_side(self, roles: Sequence[int]) -> int:
@@ -696,7 +724,9 @@ class NativeCollector:
                 "game_rounds": [],
                 "cohorts": [],
             }
-        while self.stats.games < target_games:
+        if self.config.rolling_slots:
+            self._collect_rolling(target_games)
+        while not self.config.rolling_slots and self.stats.games < target_games:
             handles, teams, roles = self._reset_cohort()
             cohort_started = time.perf_counter()
             finished = [False] * len(handles)
@@ -768,3 +798,103 @@ class NativeCollector:
                                   + (usage_after.ru_stime - usage_before.ru_stime))
         self.stats.cpu_fraction_of_one_core = self.stats.cpu_seconds / max(self.stats.wall_seconds, 1e-9)
         return self.buffer
+
+    def _collect_rolling(self, target_games: int) -> None:
+        """Rolling-slot collection (v5c T2): refill finished slots immediately."""
+        import random
+
+        telemetry = self.config.telemetry
+        if telemetry:
+            self.telemetry = {
+                "rounds": 0,
+                "round_seconds": [],
+                "active_envs": [],
+                "open_envs": [],
+                "idle_slot_seconds": 0.0,
+                "slot_seconds": 0.0,
+                "game_rounds": [],
+                "cohorts": [],
+            }
+        rng = random.Random(self.config.seed)
+        size = max(1, int(self.config.envs))
+        initial_games = self.stats.games
+        loop_started = time.perf_counter()
+        handles, teams, roles = self._reset_slots(size, rng)
+        match_ids = [self._match_counter + index for index in range(size)]
+        self._match_counter += size
+        request_index = [0] * size
+        turn = [0] * size
+        finished = [False] * size
+        env_rounds = [0] * size
+        self._row_cursor = {}
+        rounds = 0
+        round_budget = self.config.max_rounds_per_cohort * max(1, (target_games // size) + 2)
+        t50 = None
+        while True:
+            open_games = sum(1 for value in finished if not value)
+            quota_done = self.stats.games - initial_games >= target_games
+            if open_games == 0 and quota_done:
+                break
+            if rounds >= round_budget:
+                raise RuntimeError("rolling slots did not drain within the round budget")
+            if not quota_done:
+                refill = [index for index, value in enumerate(finished) if value]
+                if refill:
+                    for index in refill:
+                        self._row_cursor.pop((index, 0), None)
+                        self._row_cursor.pop((index, 1), None)
+                    new_handles, new_teams, new_roles = self._reset_slots(len(refill), rng)
+                    for slot, handle, team, role in zip(refill, new_handles, new_teams, new_roles):
+                        handles[slot] = handle
+                        teams[slot] = team
+                        roles[slot] = role
+                        match_ids[slot] = self._match_counter
+                        self._match_counter += 1
+                        request_index[slot] = 0
+                        turn[slot] = 0
+                        env_rounds[slot] = 0
+                        finished[slot] = False
+            round_started = time.perf_counter()
+            rounds += 1
+            finished_before = list(finished)
+            progressed = self._collect_round(
+                handles, roles, teams, match_ids, request_index, turn, finished
+            )
+            if not progressed:
+                raise RuntimeError("no actionable request while rolling slots are open")
+            open_games = sum(1 for value in finished if not value)
+            self.stats.max_open_games = max(self.stats.max_open_games, open_games)
+            if telemetry:
+                round_seconds = time.perf_counter() - round_started
+                finished_count_before = sum(1 for value in finished_before if value)
+                newly_finished = [
+                    index for index, value in enumerate(finished)
+                    if value and not finished_before[index]
+                ]
+                for index in newly_finished:
+                    self.telemetry["game_rounds"].append(env_rounds[index] + 1)
+                for index, value in enumerate(finished):
+                    if not value:
+                        env_rounds[index] += 1
+                self.telemetry["rounds"] += 1
+                self.telemetry["round_seconds"].append(round_seconds)
+                self.telemetry["active_envs"].append(int(self._round_active_envs))
+                self.telemetry["open_envs"].append(size - open_games)
+                self.telemetry["idle_slot_seconds"] += finished_count_before * round_seconds
+                self.telemetry["slot_seconds"] += size * round_seconds
+                if t50 is None and (self.stats.games - initial_games) * 2 >= target_games:
+                    t50 = time.perf_counter() - loop_started
+        if telemetry:
+            loop_wall = time.perf_counter() - loop_started
+            self.telemetry["cohorts"].append(
+                {
+                    "size": size,
+                    "rounds": rounds,
+                    "wall_seconds": loop_wall,
+                    "games_finished": self.stats.games - initial_games,
+                    "tail_seconds_50_to_100": (
+                        loop_wall - t50 if t50 is not None else None
+                    ),
+                    "mode": "rolling",
+                }
+            )

@@ -75,6 +75,11 @@ def parse_args():
         action="store_true",
         help="v5b T1: SoA observation store (must pass the row-SHA neutrality gate)",
     )
+    parser.add_argument(
+        "--rolling-slots",
+        action="store_true",
+        help="v5c T2: rolling slot refill (gated by the rolling-slot equivalence tests)",
+    )
     parser.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--port", type=int, default=0, help=argparse.SUPPRESS)
     return parser.parse_args()
@@ -171,6 +176,7 @@ def worker(args) -> None:
             observation_mode="fixed", candidate_wire="packed",
             amp=True, inference_mode=True,
             columnar_observation_store=args.columnar_store,
+            rolling_slots=args.rolling_slots,
         ),
         device=device,
     )
@@ -310,6 +316,8 @@ def parent(args) -> None:
             command.append("--no-recompute-gate")
         if args.columnar_store:
             command.append("--columnar-store")
+        if args.rolling_slots:
+            command.append("--rolling-slots")
         if numactl:
             command = [numactl, f"--cpunodebind={entry['numa']}", f"--membind={entry['numa']}", "--"] + command
         env = dict(os.environ)

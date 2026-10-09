@@ -46,6 +46,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=20261009)
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--telemetry", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--rolling-slots", action="store_true")
     parser.add_argument("--out", type=pathlib.Path, default=pathlib.Path("runs/perf/v5/tail.json"))
     return parser.parse_args()
 
@@ -114,6 +115,7 @@ def main() -> int:
             amp=True,
             inference_mode=True,
             telemetry=args.telemetry,
+            rolling_slots=args.rolling_slots,
         ),
         device=device,
     )
@@ -134,6 +136,7 @@ def main() -> int:
             "workers": args.workers,
             "seed": args.seed,
             "telemetry": bool(args.telemetry),
+            "rolling_slots": bool(args.rolling_slots),
             "device": str(device),
         },
         "model_sha256": model_sha.hexdigest(),
