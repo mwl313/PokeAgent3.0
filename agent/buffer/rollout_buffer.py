@@ -471,7 +471,9 @@ class RolloutBuffer:
 
     def stacked_observations(self) -> ObservationBatch:
         if self._stacked is None:
-            if not isinstance(self.observation_store, InlineObservationStore):
+            if not isinstance(
+                self.observation_store, (InlineObservationStore, ColumnarObservationStore)
+            ):
                 raise TypeError(
                     "this observation store cannot be stacked; materialize the "
                     "typed observation per row instead"
@@ -672,6 +674,13 @@ class RolloutBatch:
     def select(self, indices: torch.Tensor, row_valid: Optional[torch.Tensor] = None) -> "RolloutBatch":
         # Minibatch indices are produced on the CPU while the batch may live on
         # a GPU; index_select requires both on the same device.
+        # Keep the host indices for Python-only provenance. Converting `idx`
+        # back to a list after moving it to CUDA would synchronise every cached
+        # minibatch gather unnecessarily.
+        policy_ids = (
+            [self.policy_ids[int(i)] for i in indices.tolist()]
+            if self.policy_ids else self.policy_ids
+        )
         idx = indices.to(device=self.old_logprob.device, dtype=torch.long)
         return RolloutBatch(
             observation=self.observation.select(idx),
@@ -693,7 +702,7 @@ class RolloutBatch:
             request_index=self.request_index.index_select(0, idx),
             turns=self.turns.index_select(0, idx),
             request_kind=self.request_kind.index_select(0, idx),
-            policy_ids=[self.policy_ids[int(i)] for i in idx.tolist()],
+            policy_ids=policy_ids,
             advantages=(
                 self.advantages.index_select(0, idx)
                 if self.advantages is not None
@@ -739,7 +748,6 @@ class RolloutBatch:
     def iter_microbatches(self, microbatch_size: int) -> Iterator["RolloutBatch"]:
         for start in range(0, len(self), microbatch_size):
             stop = min(start + microbatch_size, len(self))
-            index = torch.arange(start, stop, dtype=torch.long, device=self.old_logprob.device)
             yield self.narrow(start, stop)
 
     def iter_minibatches(

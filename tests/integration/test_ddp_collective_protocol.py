@@ -31,8 +31,8 @@ def _free_port() -> int:
 CASES = ["uneven_trajectories", "empty_rank"]
 
 
-@pytest.fixture(scope="module")
-def protocol_results():
+@pytest.fixture(scope="module", params=("none", "cpu"), ids=("streaming", "cpu_cache"))
+def protocol_results(request):
     worker = pathlib.Path(__file__).parent / "ddp_protocol_worker.py"
     port = _free_port()
     with tempfile.TemporaryDirectory() as directory:
@@ -57,6 +57,8 @@ def protocol_results():
                     str(port),
                     "--out",
                     str(out_path),
+                    "--cache-device",
+                    request.param,
                 ],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,

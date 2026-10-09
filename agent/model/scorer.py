@@ -207,6 +207,20 @@ class ConditionalPrefixScorer(nn.Module):
     ) -> torch.Tensor:
         """Candidate logits ``[B, P]`` for one branch (masked entries are -inf)."""
         keys = self.build_keys(encoded_tokens, action_ids, entity_token, move_token)
+        return self.score_keys(keys, prefix_hidden, mask)
+
+    def score_keys(
+        self,
+        keys: torch.Tensor,
+        prefix_hidden: torch.Tensor,
+        mask: torch.Tensor,
+    ) -> torch.Tensor:
+        """Score prebuilt keys, which can also feed the selected-prefix GRU.
+
+        Candidate keys depend only on the observation and action tuple, not on
+        the prefix. Reusing the selected key avoids repeating its embeddings,
+        token gathers, projections and LayerNorm after scoring the branch.
+        """
         # The small policy output gain is applied last: normalizing the prefix
         # state first keeps the projection (and therefore the initial logits)
         # genuinely small, so the random policy starts near uniform.
@@ -225,7 +239,13 @@ class ConditionalPrefixScorer(nn.Module):
     ) -> torch.Tensor:
         """GRU update from the selected candidate into the prefix hidden state."""
         keys = self.build_keys(encoded_tokens, action_ids, entity_token, move_token)
-        return self.gru(keys, prefix_hidden)
+        return self.advance_keys(keys, prefix_hidden)
+
+    def advance_keys(
+        self, selected_keys: torch.Tensor, prefix_hidden: torch.Tensor
+    ) -> torch.Tensor:
+        """Advance the prefix using a selected key from ``build_keys``."""
+        return self.gru(selected_keys, prefix_hidden)
 
     def initial_state(self, batch_size: int, device: torch.device, dtype: torch.dtype) -> torch.Tensor:
         return self.initial_hidden.to(device=device, dtype=dtype).expand(batch_size, -1).contiguous()

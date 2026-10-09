@@ -69,7 +69,7 @@ def moments_by_name(learner):
     }
 
 
-def run_case(rank: int, world_size: int, case: dict, seed: int) -> dict:
+def run_case(rank: int, world_size: int, case: dict, seed: int, cache_device=None) -> dict:
     from agent.model import build_model
     from agent.ppo import PPOLearner
     from agent.ppo.ddp import DDPCommunication
@@ -104,7 +104,8 @@ def run_case(rank: int, world_size: int, case: dict, seed: int) -> dict:
     )
     learner.attach_ddp(ddp_model, world_size)
     communication = DDPCommunication(ddp_model)
-    plan = learner.prepare_streaming_ddp(buffer, rows=shard)
+    plan = learner.prepare_streaming_ddp(buffer, rows=shard, cache_device=cache_device)
+    assert (plan.cached_batch is not None) == (cache_device == "cpu" and bool(shard))
     fallback = buffer.to_batch(rows[:1], device="cpu") if not shard else None
     report = learner.update_ddp(
         plan,
@@ -191,6 +192,7 @@ def main() -> int:
     parser.add_argument("--world-size", type=int, default=2)
     parser.add_argument("--port", type=int, required=True)
     parser.add_argument("--seed", type=int, default=20261009)
+    parser.add_argument("--cache-device", choices=("none", "cpu"), default="none")
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
 
@@ -204,7 +206,10 @@ def main() -> int:
     )
     try:
         results = {
-            case["name"]: run_case(args.rank, args.world_size, case, args.seed)
+            case["name"]: run_case(
+                args.rank, args.world_size, case, args.seed,
+                None if args.cache_device == "none" else args.cache_device,
+            )
             for case in CASES
         }
         gathered = [None] * args.world_size

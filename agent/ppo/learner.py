@@ -19,7 +19,7 @@ Implements exactly the numeric contract of Full Spec 1.1 §8:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field, fields, is_dataclass, replace
 from typing import Optional
 import time
 
@@ -80,6 +80,7 @@ class StreamingPlan:
     rows: list
     advantages: torch.Tensor
     actor_rows: int
+    cached_batch: Optional[RolloutBatch] = None
 
 
 class PPOLearner:
@@ -163,7 +164,8 @@ class PPOLearner:
         return batch.with_advantages(normalized)
 
     def prepare_streaming(
-        self, buffer: RolloutBuffer, rows: Optional[list] = None
+        self, buffer: RolloutBuffer, rows: Optional[list] = None, *,
+        cache_device: Optional[str] = None, cache_max_bytes: int = 8 << 30,
     ) -> StreamingPlan:
         """GAE + advantage normalization without materializing the iteration."""
         profile = {"gae": 0.0, "normalize": 0.0, "total": 0.0}
@@ -183,16 +185,20 @@ class PPOLearner:
         profile["normalize"] = time.perf_counter() - start
         profile["total"] = time.perf_counter() - started
         self.prepare_profile = profile
-        return StreamingPlan(
+        plan = StreamingPlan(
             buffer=buffer, rows=rows, advantages=normalized,
             actor_rows=int(actor.sum().item()),
         )
+        return self._cache_plan(plan, cache_device, cache_max_bytes)
 
     def prepare_streaming_ddp(
         self,
         buffer: RolloutBuffer,
         rows: Optional[list] = None,
         group=None,
+        *,
+        cache_device: Optional[str] = None,
+        cache_max_bytes: int = 8 << 30,
     ) -> StreamingPlan:
         """Streaming plan whose advantages are normalised over **all ranks**.
 
@@ -227,10 +233,74 @@ class PPOLearner:
         profile["normalize"] = time.perf_counter() - start
         profile["total"] = time.perf_counter() - started
         self.prepare_profile = profile
-        return StreamingPlan(
+        plan = StreamingPlan(
             buffer=buffer, rows=rows, advantages=normalized.float(),
             actor_rows=int(actor.sum().item()),
         )
+        return self._cache_plan(plan, cache_device, cache_max_bytes)
+
+    @staticmethod
+    def _tensor_bytes(value) -> int:
+        if isinstance(value, torch.Tensor):
+            return value.numel() * value.element_size()
+        if is_dataclass(value):
+            return sum(PPOLearner._tensor_bytes(getattr(value, f.name)) for f in fields(value))
+        return 0
+
+    def _cache_plan(self, plan, cache_device, cache_max_bytes):
+        """Expand immutable rollout tensors once, within a bounded budget.
+
+        Large production rollouts retain streaming admission. CUDA caching
+        reserves 12 GiB for activations/minibatches and respects the 28 GiB
+        per-card soft budget; it never relies on an OOM to select a path.
+        """
+        if cache_device not in (None, "none", "cpu", "cuda"):
+            raise ValueError("cache_device must be none, cpu or cuda")
+        if cache_device in (None, "none") or not plan.rows:
+            return plan
+        if cache_device == "cuda" and self.device.type != "cuda":
+            raise ValueError("CUDA rollout cache requires a CUDA learner")
+        started = time.perf_counter()
+        probe = plan.buffer.to_batch(plan.rows[:1], device="cpu")
+        estimate = (self._tensor_bytes(probe) + 4) * len(plan.rows)
+        budget = max(0, int(cache_max_bytes))
+        if cache_device == "cuda":
+            free, total = torch.cuda.mem_get_info(self.device)
+            used = total - free
+            budget = min(budget, max(0, min(free, (28 << 30) - used) - (12 << 30)))
+        self.prepare_profile["cache_estimated_bytes"] = estimate
+        self.prepare_profile["cache_budget_bytes"] = budget
+        self.prepare_profile["cache_enabled"] = 0.0
+        if estimate <= budget:
+            batch = plan.buffer.to_batch(plan.rows, device="cpu").with_advantages(plan.advantages)
+            plan.cached_batch = batch.to(self.device if cache_device == "cuda" else "cpu")
+            self.prepare_profile["cache_enabled"] = 1.0
+        self.prepare_profile["cache_build"] = time.perf_counter() - started
+        self.prepare_profile["total"] += self.prepare_profile["cache_build"]
+        return plan
+
+    def _plan_minibatch(self, plan, indices, valid):
+        if plan.cached_batch is not None:
+            return plan.cached_batch.select(indices, row_valid=valid)
+        rows = [plan.rows[int(index)] for index in indices.tolist()]
+        return replace(
+            plan.buffer.to_batch(rows, device="cpu"),
+            row_valid=valid,
+            advantages=plan.advantages[indices],
+        )
+
+    def _update_distributed_scaler(self, globally_finite: bool) -> None:
+        # Manual SUM happens after unscale_ has recorded *local* overflow.
+        # All ranks must back off together, including those with finite local
+        # gradients. Public state APIs also reset the growth tracker exactly.
+        if self.scaler.is_enabled() and not globally_finite:
+            state = self.scaler.state_dict()
+            state["scale"] *= state["backoff_factor"]
+            state["_growth_tracker"] = 0
+            self.scaler.update(new_scale=state["scale"])
+            self.scaler.load_state_dict(state)
+        else:
+            self.scaler.update()
 
     # -- forward -----------------------------------------------------------
     def _row_masked_mean(self, values: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
@@ -295,13 +365,11 @@ class PPOLearner:
             actor_mask=actor_mask,
             clip_epsilon=self.config.clip_epsilon,
         )
-        value = value_loss(values[valid], batch.returns[valid])
-        if not value.requires_grad:
-            # Padding-only micro (a rank that has exhausted its rows in the
-            # fixed-step DDP protocol): `value_loss` returns a constant zero, so
-            # reattach the critic with an exactly-zero probe. The graph then
-            # still touches every parameter and DDP's reducer stays in step.
-            value = value + values.float().sum() * 0.0
+        # Boolean indexing invokes CUDA nonzero (a host synchronization) twice
+        # per micro. A fixed-shape masked reduction has the same objective and
+        # keeps padding-only micros connected to the critic graph.
+        squared_error = (values - batch.returns.float()).square()
+        value = 0.5 * torch.where(valid, squared_error, 0.0).sum() / valid.sum().clamp_min(1)
         actor_f = actor_mask.to(ratio.dtype)
         actor_count = actor_mask.sum()
         value_count = valid.sum()
@@ -558,11 +626,7 @@ class PPOLearner:
                                 torch.zeros(batch_size - real, dtype=torch.bool),
                             ]
                         )
-                    minibatch_rows = [rows[int(index)] for index in indices.tolist()]
-                    minibatch = plan.buffer.to_batch(minibatch_rows, device="cpu")
-                    minibatch = replace(
-                        minibatch, row_valid=valid, advantages=plan.advantages[indices]
-                    )
+                    minibatch = self._plan_minibatch(plan, indices, valid)
                 else:
                     take = min(len(fallback_batch), batch_size)
                     repeats = (batch_size + take - 1) // take
@@ -635,7 +699,8 @@ class PPOLearner:
                         finite = finite * torch.isfinite(parameter.grad).all().float()
                 all_reduce_flag(finite)
                 has_rows = actor_total > 0.0 or value_total > 0.0
-                do_step = bool(finite.item()) and has_rows
+                globally_finite = bool(finite.item())
+                do_step = globally_finite and has_rows
                 if do_step:
                     grad_norm = torch.nn.utils.clip_grad_norm_(
                         self.model.parameters(), self.config.max_grad_norm
@@ -644,7 +709,7 @@ class PPOLearner:
                 else:
                     grad_norm = torch.zeros((), device=self.device)
                     self.optimizer.zero_grad(set_to_none=True)
-                self.scaler.update()
+                self._update_distributed_scaler(globally_finite)
                 profile["optimizer"] += time.perf_counter() - optimizer_start
                 if do_step:
                     self.optimizer_steps += 1
@@ -775,11 +840,7 @@ class PPOLearner:
                                 torch.zeros(batch_size - real, dtype=torch.bool),
                             ]
                         )
-                    minibatch_rows = [rows[int(index)] for index in indices.tolist()]
-                    minibatch = plan.buffer.to_batch(minibatch_rows, device="cpu")
-                    minibatch = replace(
-                        minibatch, row_valid=valid, advantages=plan.advantages[indices]
-                    )
+                    minibatch = self._plan_minibatch(plan, indices, valid)
                 else:
                     take = min(len(fallback_batch), batch_size)
                     repeats = (batch_size + take - 1) // take
@@ -841,7 +902,8 @@ class PPOLearner:
                         finite = finite * torch.isfinite(parameter.grad).all().float()
                 all_reduce_flag(finite)
                 has_rows = actor_total > 0.0 or value_total > 0.0
-                do_step = bool(finite.item()) and has_rows
+                globally_finite = bool(finite.item())
+                do_step = globally_finite and has_rows
                 if do_step:
                     grad_norm = torch.nn.utils.clip_grad_norm_(
                         self.model.parameters(), self.config.max_grad_norm
@@ -850,7 +912,7 @@ class PPOLearner:
                 else:
                     grad_norm = torch.zeros((), device=self.device)
                     self.optimizer.zero_grad(set_to_none=True)
-                self.scaler.update()
+                self._update_distributed_scaler(globally_finite)
                 profile["optimizer"] += time.perf_counter() - optimizer_start
                 if do_step:
                     self.optimizer_steps += 1
@@ -984,13 +1046,7 @@ class PPOLearner:
                     torch.zeros(padding, dtype=torch.bool),
                 ])
                 indices = chunk if padding == 0 else torch.cat([chunk, chunk[:1].repeat(padding)])
-                minibatch_rows = [rows[int(index)] for index in indices.tolist()]
-                minibatch = plan.buffer.to_batch(minibatch_rows, device="cpu")
-                minibatch = replace(
-                    minibatch,
-                    row_valid=valid,
-                    advantages=plan.advantages[indices],
-                )
+                minibatch = self._plan_minibatch(plan, indices, valid)
                 profile["minibatch_select"] += time.perf_counter() - start
                 for key, value in getattr(plan.buffer, "profile", {}).items():
                     profile[f"materialize_{key}"] = (

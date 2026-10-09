@@ -38,12 +38,11 @@ def _sdpa_math(
     # Rows with no valid key at all: leave the (zeroed) first key so that the
     # softmax is finite; padded outputs are discarded by the block.
     empty_rows = ~valid.any(dim=-1)
-    if bool(empty_rows.any()):
-        scores = torch.where(
-            empty_rows.view(-1, 1, 1, 1),
-            torch.zeros_like(scores),
-            scores,
-        )
+    scores = torch.where(
+        empty_rows.view(-1, 1, 1, 1),
+        torch.zeros_like(scores),
+        scores,
+    )
     weights = torch.softmax(scores, dim=-1)
     return torch.matmul(weights, value)
 

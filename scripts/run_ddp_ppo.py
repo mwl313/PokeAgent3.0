@@ -46,9 +46,13 @@ RANKS = [{"rank": 0, "numa": 0, "cpus": "0-15", "gpu": 0},
          {"rank": 1, "numa": 1, "cpus": "20-35", "gpu": 1}]
 
 
-def parse_args():
+def parse_args(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--games", type=int, default=2048, help="natural matches per rank")
+    parser.add_argument(
+        "--iterations", type=int, default=1,
+        help="persistent collect/update iterations; steady-state summary excludes iteration 1",
+    )
     parser.add_argument("--envs", type=int, default=1024)
     parser.add_argument("--workers", type=int, default=16)
     # v5 A/B promotion (2026-10-09): dual default is now micro 1024
@@ -58,6 +62,10 @@ def parse_args():
     parser.add_argument("--seed", type=int, default=20261009)
     parser.add_argument("--epochs", type=int, default=0, help="override ppo_epochs (0 = config default)")
     parser.add_argument("--executor", choices=["ddp", "manual"], default="ddp")
+    parser.add_argument(
+        "--batch-cache", choices=["none", "cpu", "cuda"], default="none",
+        help="materialize the iteration's learner rows once on the selected device",
+    )
     parser.add_argument("--data", default=os.path.join(ROOT, "engine", "data"))
     parser.add_argument("--teams", default=os.path.join(ROOT, "engine", "data", "training-teams.json"))
     parser.add_argument("--report", default=os.path.join(ROOT, "runs", "perf", "v4_ddp.json"))
@@ -82,7 +90,10 @@ def parse_args():
     )
     parser.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--port", type=int, default=0, help=argparse.SUPPRESS)
-    return parser.parse_args()
+    args = parser.parse_args(argv)
+    if args.iterations < 1:
+        parser.error("--iterations must be at least 1")
+    return args
 
 
 def free_port() -> int:
@@ -115,10 +126,89 @@ def state_digest(model, optimizer) -> tuple[str, str]:
     return model_hash.hexdigest(), optimizer_hash.hexdigest()
 
 
+def source_provenance() -> dict:
+    """Record the checkout actually executed, including uncommitted changes."""
+    def git(*command):
+        return subprocess.check_output(
+            ["git", "-C", ROOT, *command], text=True, stderr=subprocess.DEVNULL,
+        ).strip()
+
+    try:
+        status = git("status", "--porcelain", "--untracked-files=normal")
+        return {
+            "git_sha": git("rev-parse", "HEAD"),
+            "git_branch": git("branch", "--show-current"),
+            "git_dirty": bool(status),
+            "git_status": status.splitlines(),
+            "tracked_diff_sha256": hashlib.sha256(
+                subprocess.check_output(["git", "-C", ROOT, "diff", "HEAD", "--binary"])
+            ).hexdigest(),
+        }
+    except (OSError, subprocess.CalledProcessError):
+        return {"git_sha": None, "git_dirty": None}
+
+
+STAGE_WALL_KEYS = (
+    "iteration_setup_wall_s", "collect_wall_s", "recompute_wall_s",
+    "lr_clock_wall_s", "prepare_wall_s", "update_wall_s", "checkpoint_wall_s",
+    "digest_wall_s", "cleanup_wall_s", "iteration_barrier_wall_s",
+)
+
+
+def summarize_iterations(rank_results: list[dict]) -> tuple[list[dict], dict | None]:
+    """Use each iteration's slowest rank, never the sum of rank durations.
+
+    Stage maxima are diagnostic only: different ranks can be critical in
+    different stages, so their sum is not the iteration's measured makespan.
+    The first iteration includes cold CUDA/engine work and is excluded from
+    the persistent steady-state summary. Both policies and optimizer moments
+    continue evolving across iterations; these are not independent repeats.
+    """
+    lengths = {len(rank["iterations"]) for rank in rank_results}
+    if len(lengths) != 1 or not lengths or next(iter(lengths)) == 0:
+        raise ValueError("all ranks must report the same nonzero iteration count")
+    summaries = []
+    for index in range(next(iter(lengths))):
+        rows = [rank["iterations"][index] for rank in rank_results]
+        clocks = {row["global_committed_matches"] for row in rows}
+        if len(clocks) != 1:
+            raise ValueError("ranks disagree about the global committed-match clock")
+        wall = max(row["iteration_wall_s"] for row in rows)
+        games = sum(row["games"] for row in rows)
+        summaries.append({
+            "iteration": index + 1,
+            "total_games": games,
+            "total_rows": sum(row["rows"] for row in rows),
+            "global_committed_matches": clocks.pop(),
+            "iteration_wall_s": wall,
+            "committed_games_per_s": games / max(wall, 1e-9),
+            "digests_equal": all(row["digests_equal"] for row in rows),
+            "operational_errors": sum(row["operational_errors"] for row in rows),
+            "max_rank_stage_wall_s": {
+                key: max(row.get(key, 0.0) for row in rows) for key in STAGE_WALL_KEYS
+            },
+        })
+    steady = summaries[1:]
+    steady_state = None
+    if steady:
+        wall = sum(row["iteration_wall_s"] for row in steady)
+        games = sum(row["total_games"] for row in steady)
+        steady_state = {
+            "first_iteration": 2,
+            "iterations": len(steady),
+            "total_games": games,
+            "total_rows": sum(row["total_rows"] for row in steady),
+            "wall_s": wall,
+            "committed_games_per_s": games / max(wall, 1e-9),
+        }
+    return summaries, steady_state
+
+
 def worker(args) -> None:
     """One rank: local rollout, fixed-step DDP update, per-rank metrics JSON."""
     import torch.distributed as dist
 
+    worker_started = time.perf_counter()
     rank = int(os.environ["RANK"])
     world_size = int(os.environ["WORLD_SIZE"])
     local_rank = int(os.environ["LOCAL_RANK"])
@@ -160,6 +250,10 @@ def worker(args) -> None:
     learner = PPOLearner(model, ppo_config, device=device)
     if args.executor == "manual":
         # No DDP wrapper: local FP32 gradients are summed explicitly.
+        # DDP performs this broadcast in its constructor. The manual executor
+        # must also start from identical weights despite rank-local RNG seeds.
+        for value in list(model.parameters()) + list(model.buffers()):
+            dist.broadcast(value.detach(), src=0)
         learner.attach_ddp(None, world_size)
         communication = None
     else:
@@ -169,121 +263,188 @@ def worker(args) -> None:
         )
         learner.attach_ddp(ddp_model, world_size)
         communication = DDPCommunication(ddp_model)
-    collector = NativeCollector(
-        engine, model,
-        NativeCollectorConfig(
-            envs=args.envs, workers=args.workers, seed=args.seed + rank, device=str(device),
-            observation_mode="fixed", candidate_wire="packed",
-            amp=True, inference_mode=True,
-            columnar_observation_store=args.columnar_store,
-            rolling_slots=args.rolling_slots,
-        ),
-        device=device,
-    )
-
-    started = time.perf_counter()
-    buffer = collector.collect(args.games)
-    collect_wall = time.perf_counter() - started
-    if not buffer.rows:
-        raise SystemExit(f"rank {rank} collected zero rows; refusing to run the DDP update")
-    note(f"collected {collector.stats.games} games / {len(buffer.rows)} rows in {collect_wall:.1f}s")
-
-    recompute = None
-    recompute_wall = 0.0
+    recompute_check = None
     if args.recompute_gate:
         scripts_dir = os.path.join(ROOT, "scripts")
         if scripts_dir not in sys.path:
             sys.path.insert(0, scripts_dir)
         from bench_pa3_end_to_end import recompute_check
 
-        gate_started = time.perf_counter()
-        recompute = recompute_check(learner, buffer, device, amp=True)
-        recompute_wall = time.perf_counter() - gate_started
+    # Keep all expensive resources and the shuffle RNG alive. A fresh collector
+    # is lightweight and avoids reusing cumulative stats, completed trajectories,
+    # observation stores or row cursors. Each iteration gets a distinct engine
+    # and policy-sampling seed; iteration 1 is identical to the legacy seed.
+    shuffle_generator = torch.Generator(device="cpu").manual_seed(args.seed + rank)
+    global_games = 0
+    iterations = []
+    torch.cuda.synchronize(device)
+    startup_wall = time.perf_counter() - worker_started
+    for index in range(args.iterations):
+        iteration_started = time.perf_counter()
+        timings = {key: 0.0 for key in STAGE_WALL_KEYS}
+
+        def finish_stage(key: str, started: float) -> None:
+            torch.cuda.synchronize(device)
+            timings[key] = time.perf_counter() - started
+
+        stage_started = time.perf_counter()
+        dist.barrier()
+        torch.cuda.reset_peak_memory_stats(device)
+        iteration_seed = args.seed + rank + index * world_size
+        collector = NativeCollector(
+            engine, model,
+            NativeCollectorConfig(
+                envs=args.envs, workers=args.workers, seed=iteration_seed, device=str(device),
+                observation_mode="fixed", candidate_wire="packed",
+                amp=True, inference_mode=True,
+                columnar_observation_store=args.columnar_store,
+                rolling_slots=args.rolling_slots,
+            ),
+            device=device,
+        )
+        if communication is not None:
+            communication.sync_calls = 0
+            communication.no_sync_calls = 0
+        finish_stage("iteration_setup_wall_s", stage_started)
+
+        stage_started = time.perf_counter()
+        buffer = collector.collect(args.games)
+        finish_stage("collect_wall_s", stage_started)
+        if not buffer.rows:
+            raise SystemExit(f"rank {rank} collected zero rows; refusing to run the DDP update")
         note(
-            f"recompute gate: {recompute['rows']} rows max|diff|="
-            f"{recompute['max_abs_diff']:.3e} (tol {recompute['tolerance']:.1e}) "
-            f"within={recompute['within_gate']}"
+            f"iteration {index + 1}/{args.iterations}: collected {collector.stats.games} games / "
+            f"{len(buffer.rows)} rows in {timings['collect_wall_s']:.1f}s"
         )
 
-    # One absolute LR clock: the sum of every rank's completed natural matches.
-    games_tensor = torch.tensor([float(collector.stats.games)], device=device)
-    dist.all_reduce(games_tensor, op=dist.ReduceOp.SUM)
-    global_games = int(games_tensor.item())
-    note(f"global committed matches this iteration: {global_games}")
+        recompute = None
+        if recompute_check is not None:
+            stage_started = time.perf_counter()
+            recompute = recompute_check(learner, buffer, device, amp=True)
+            finish_stage("recompute_wall_s", stage_started)
+            note(
+                f"recompute gate: {recompute['rows']} rows max|diff|="
+                f"{recompute['max_abs_diff']:.3e} (tol {recompute['tolerance']:.1e}) "
+                f"within={recompute['within_gate']}"
+            )
+            if not recompute["within_gate"]:
+                raise RuntimeError("sampled-vs-recomputed logprob gate failed; refusing PPO update")
 
-    plan = learner.prepare_streaming_ddp(buffer)
-    note("streaming plan ready (global advantage normalization)")
-    update_started = time.perf_counter()
-    update_kwargs = dict(
-        committed_matches=global_games,
-        generator=torch.Generator(device="cpu").manual_seed(args.seed + rank),
-    )
-    if args.executor == "manual":
-        report = learner.update_manual_allreduce(plan, **update_kwargs)
-    else:
-        report = learner.update_ddp(plan, communication=communication, **update_kwargs)
-    update_wall = time.perf_counter() - update_started
-    note(
-        f"ddp update done in {update_wall:.1f}s "
-        f"(epochs {report.epochs_run}, steps {report.optimizer_steps}, "
-        f"skipped {report.optimizer_steps_skipped})"
-    )
+        # The scheduler consumes the absolute global clock, not this iteration's
+        # count. Resetting it would silently repeat the LR warmup every iteration.
+        stage_started = time.perf_counter()
+        games_tensor = torch.tensor([collector.stats.games], dtype=torch.int64, device=device)
+        dist.all_reduce(games_tensor, op=dist.ReduceOp.SUM)
+        iteration_games = int(games_tensor.item())
+        global_games += iteration_games
+        finish_stage("lr_clock_wall_s", stage_started)
 
-    checkpoint_wall = 0.0
-    if args.checkpoint and rank == 0:
-        wall = time.perf_counter()
-        target = os.path.abspath(args.checkpoint)
-        os.makedirs(os.path.dirname(target), exist_ok=True)
-        temporary = f"{target}.tmp-{os.getpid()}"
-        torch.save(
-            {
-                **learner.state_dict(),
-                "global_committed_matches": global_games,
-                "rank_states": {
-                    "rank0_rows": len(buffer.rows),
-                    "rank0_games": int(collector.stats.games),
+        stage_started = time.perf_counter()
+        plan = learner.prepare_streaming_ddp(
+            buffer, cache_device=None if args.batch_cache == "none" else args.batch_cache,
+        )
+        finish_stage("prepare_wall_s", stage_started)
+        stage_started = time.perf_counter()
+        update_kwargs = dict(committed_matches=global_games, generator=shuffle_generator)
+        if args.executor == "manual":
+            report = learner.update_manual_allreduce(plan, **update_kwargs)
+        else:
+            report = learner.update_ddp(plan, communication=communication, **update_kwargs)
+        finish_stage("update_wall_s", stage_started)
+        note(
+            f"update done in {timings['update_wall_s']:.1f}s "
+            f"(epochs {report.epochs_run}, steps {report.optimizer_steps}, "
+            f"skipped {report.optimizer_steps_skipped}, global matches {global_games})"
+        )
+
+        stage_started = time.perf_counter()
+        if args.checkpoint and rank == 0:
+            target = os.path.abspath(args.checkpoint)
+            os.makedirs(os.path.dirname(target), exist_ok=True)
+            temporary = f"{target}.tmp-{os.getpid()}"
+            torch.save(
+                {
+                    **learner.state_dict(),
+                    "global_committed_matches": global_games,
+                    "iteration": index + 1,
+                    "rank_states": {
+                        "rank0_rows": len(buffer.rows),
+                        "rank0_games": int(collector.stats.games),
+                    },
                 },
-            },
-            temporary,
+                temporary,
+            )
+            with open(temporary, "rb") as handle:
+                os.fsync(handle.fileno())
+            os.replace(temporary, target)
+        finish_stage("checkpoint_wall_s", stage_started)
+
+        stage_started = time.perf_counter()
+        model_digest, optimizer_digest = state_digest(model, learner.optimizer)
+        digests = [None] * world_size
+        dist.all_gather_object(digests, {"model": model_digest, "optimizer": optimizer_digest})
+        digests_equal = all(entry == digests[0] for entry in digests)
+        finish_stage("digest_wall_s", stage_started)
+        if not digests_equal:
+            raise RuntimeError("ranks disagree on model/optimizer digests after update")
+
+        stats = collector.stats.as_dict()
+        metrics = {
+            "iteration": index + 1,
+            "seed": iteration_seed,
+            "rank": rank,
+            "numa": RANKS[rank]["numa"],
+            "gpu": local_rank,
+            "games": stats["games"],
+            "decisions": stats["decisions"],
+            "rows": len(buffer.rows),
+            "iteration_global_committed_matches": iteration_games,
+            "global_committed_matches": global_games,
+            "recompute": recompute,
+            "operational_errors": stats["operational_errors"],
+            # ru_maxrss is a process-lifetime peak; the CUDA peak is reset per
+            # iteration and includes the live model/optimizer allocation.
+            "rss_peak_gib": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1048576.0,
+            "gpu_peak_reserved_gib": torch.cuda.max_memory_reserved(device) / (1 << 30),
+            "model_digest": model_digest,
+            "optimizer_digest": optimizer_digest,
+            "digests_equal": bool(digests_equal),
+            "executor": args.executor,
+            "sync_calls": communication.sync_calls if communication is not None else None,
+            "no_sync_calls": communication.no_sync_calls if communication is not None else None,
+            "report": report.as_dict(),
+            "profile": dict(learner.profile),
+            "prepare_profile": dict(learner.prepare_profile),
+            "collector_stats": stats,
+        }
+        stage_started = time.perf_counter()
+        del plan, buffer, collector
+        finish_stage("cleanup_wall_s", stage_started)
+        stage_started = time.perf_counter()
+        dist.barrier()
+        finish_stage("iteration_barrier_wall_s", stage_started)
+        metrics.update(timings)
+        metrics["iteration_wall_s"] = time.perf_counter() - iteration_started
+        metrics["unaccounted_wall_s"] = max(
+            metrics["iteration_wall_s"] - sum(timings.values()), 0.0,
         )
-        with open(temporary, "rb") as handle:
-            os.fsync(handle.fileno())
-        os.replace(temporary, target)
-        checkpoint_wall = time.perf_counter() - wall
+        iterations.append(metrics)
+        note(f"iteration {index + 1} complete in {metrics['iteration_wall_s']:.1f}s, digests equal")
 
-    model_digest, optimizer_digest = state_digest(model, learner.optimizer)
-    digests = [None] * world_size
-    dist.all_gather_object(digests, {"model": model_digest, "optimizer": optimizer_digest})
-    digests_equal = all(entry == digests[0] for entry in digests)
-    note(f"digest gather done, equal={digests_equal}")
-
-    stats = collector.stats.as_dict()
-    metrics = {
-        "rank": rank,
-        "numa": RANKS[rank]["numa"],
-        "gpu": local_rank,
-        "games": stats["games"],
-        "decisions": stats["decisions"],
-        "rows": len(buffer.rows),
-        "global_committed_matches": global_games,
-        "collect_wall_s": collect_wall,
-        "recompute_wall_s": recompute_wall,
-        "recompute": recompute,
-        "update_wall_s": update_wall,
-        "checkpoint_wall_s": checkpoint_wall,
-        "operational_errors": stats["operational_errors"],
-        "rss_peak_gib": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1048576.0,
-        "gpu_peak_reserved_gib": torch.cuda.max_memory_reserved(device) / (1 << 30),
-        "model_digest": model_digest,
-        "optimizer_digest": optimizer_digest,
-        "digests_equal": bool(digests_equal),
-        "executor": args.executor,
-        "sync_calls": communication.sync_calls if communication is not None else None,
-        "no_sync_calls": communication.no_sync_calls if communication is not None else None,
-        "report": report.as_dict(),
-        "profile": learner.profile,
-        "prepare_profile": learner.prepare_profile,
-    }
+    # One-iteration consumers retain all original rank keys. For persistent
+    # runs, counters/durations below are totals and report/profile are the last
+    # update; the complete series is always available in `iterations`.
+    metrics = dict(iterations[-1])
+    for key in ("games", "decisions", "rows", "operational_errors", *STAGE_WALL_KEYS, "iteration_wall_s"):
+        metrics[key] = sum(item[key] for item in iterations)
+    for key in ("sync_calls", "no_sync_calls"):
+        metrics[key] = sum(item[key] for item in iterations) if communication is not None else None
+    metrics.update({
+        "iterations": iterations,
+        "startup_wall_s": startup_wall,
+        "worker_wall_s": time.perf_counter() - worker_started,
+        "digests_equal": all(item["digests_equal"] for item in iterations),
+    })
     rank_report = f"{os.path.abspath(args.report)}.rank{rank}.json"
     os.makedirs(os.path.dirname(rank_report), exist_ok=True)
     with open(rank_report, "w") as handle:
@@ -299,12 +460,14 @@ def parent(args) -> None:
     numactl = shutil.which("numactl")
     procs = []
     logs = []
+    provenance = source_provenance()
     started = time.perf_counter()
     os.makedirs(os.path.dirname(os.path.abspath(args.report)), exist_ok=True)
     for entry in RANKS:
         command = [
             sys.executable, os.path.abspath(__file__), "--worker",
             "--games", str(args.games), "--envs", str(args.envs),
+            "--iterations", str(args.iterations), "--batch-cache", args.batch_cache,
             "--workers", str(args.workers), "--microbatch", str(args.microbatch),
             "--minibatch", str(args.minibatch), "--seed", str(args.seed),
             "--epochs", str(args.epochs), "--timeout", str(args.timeout),
@@ -341,7 +504,7 @@ def parent(args) -> None:
         procs.append((entry, subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT, env=env, cwd=ROOT)))
 
     failures = []
-    deadline = time.time() + args.timeout + 300.0
+    deadline = time.time() + args.timeout * args.iterations + 300.0
     try:
         while any(proc.poll() is None for _, proc in procs):
             if time.time() > deadline:
@@ -376,6 +539,7 @@ def parent(args) -> None:
     wall = time.perf_counter() - started
     total_games = sum(item["games"] for item in results)
     global_games = results[0]["global_committed_matches"]
+    iteration_summaries, steady_state = summarize_iterations(results)
     report = {
         "mode": "real_policy_ddp_ppo_fixed_step",
         "ranks": results,
@@ -387,6 +551,26 @@ def parent(args) -> None:
         "digests_equal": all(item["digests_equal"] for item in results),
         "model_digests": [item["model_digest"] for item in results],
         "optimizer_digests": [item["optimizer_digest"] for item in results],
+        "iterations": iteration_summaries,
+        "steady_state": steady_state,
+        "steady_state_committed_games_per_s": (
+            steady_state["committed_games_per_s"] if steady_state is not None else None
+        ),
+        "provenance": {
+            **provenance,
+            "recorded_at_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "python": sys.version,
+            "torch": torch.__version__,
+            "cuda_runtime": torch.version.cuda,
+            "numa_binding": bool(numactl),
+        },
+        "measurement": {
+            "launcher_all_in": "parent spawn through rank report reads; includes startup and shutdown",
+            "iteration_wall": "slowest rank's measured wall, including prepare/recompute/checkpoint/digest/cleanup/barriers",
+            "steady_state": "weighted games/wall over iterations 2..N; excludes only the first iteration",
+            "persistent_state": "engine, model, optimizer, scaler and shuffle RNG; distinct rollout seed each iteration",
+            "rank_top_level": "summed games/rows/durations; final update report/profile; full series in iterations",
+        },
         "config": {key: value for key, value in vars(args).items() if key != "worker"},
     }
     with open(args.report, "w") as handle:

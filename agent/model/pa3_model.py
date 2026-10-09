@@ -196,11 +196,17 @@ class PA3Model(nn.Module):
         tokens = self.encoder(observation)
         global_index = observation.layout.GLOBAL
         token_mask = observation.token_mask
-        if tokens.shape[1] > global_index and bool(token_mask[:, global_index].any()):
-            global_repr = tokens[:, global_index]
+        weights = token_mask.unsqueeze(-1).to(tokens.dtype)
+        pooled = (tokens * weights).sum(1) / weights.sum(1).clamp_min(1.0)
+        if tokens.shape[1] > global_index:
+            # Keep the defensive batch-wide fallback on the device. Converting
+            # this reduction to bool forced a CUDA synchronization for every
+            # learner microbatch and collector encoding.
+            global_repr = torch.where(
+                token_mask[:, global_index].any(), tokens[:, global_index], pooled
+            )
         else:  # pragma: no cover - defensive contract fallback
-            weights = token_mask.unsqueeze(-1).to(tokens.dtype)
-            global_repr = (tokens * weights).sum(1) / weights.sum(1).clamp_min(1.0)
+            global_repr = pooled
         return EncodedState(
             tokens=tokens,
             global_repr=global_repr,
@@ -251,6 +257,7 @@ class PA3Model(nn.Module):
         temperature: float = 1.0,
         generator: Optional[torch.Generator] = None,
         deterministic: bool = False,
+        return_final_hidden: bool = True,
     ) -> tuple[BranchEvaluation, torch.Tensor, torch.Tensor, torch.Tensor]:
         """Shared branch loop for evaluation and sampling.
 
@@ -283,14 +290,13 @@ class PA3Model(nn.Module):
             mask = candidates.mask[:, branch]
             # Illegal candidates must be exactly zero-probability: the mask is
             # applied inside score() before any sampling or log-prob math.
-            logits = self.scorer.score(
+            keys = self.scorer.build_keys(
                 tokens,
-                hidden,
                 action_ids,
-                mask,
                 candidates.entity_token[:, branch],
                 candidates.move_token[:, branch],
             )
+            logits = self.scorer.score_keys(keys, hidden, mask)
             if temperature != 1.0:
                 logits = logits / temperature
             log_prob, probs, entropy, uniform_kl = self._branch_stats(logits, mask)
@@ -299,13 +305,11 @@ class PA3Model(nn.Module):
 
             if selected is None:
                 any_legal = mask.any(dim=-1, keepdim=True)
-                safe_probs = torch.where(any_legal, probs, torch.zeros_like(probs))
+                safe_probs = probs.clone()
                 # Rows without a legal candidate (padded branches) must not
                 # reach multinomial; the branch-valid mask discards them.
                 no_legal = (~any_legal).squeeze(-1)
-                if bool(no_legal.any()):
-                    safe_probs = safe_probs.clone()
-                    safe_probs[no_legal, 0] = 1.0
+                safe_probs[:, 0] += no_legal.to(safe_probs.dtype)
                 if deterministic:
                     pick = torch.argmax(
                         torch.where(mask, logits, torch.full_like(logits, float("-inf"))),
@@ -334,17 +338,16 @@ class PA3Model(nn.Module):
             )
             selected_out[:, branch] = pick
 
-            # GRU prefix update from the selected candidate only.
-            safe_pick = pick.clamp(0, padding - 1)
-            step_action = torch.gather(
-                action_ids,
-                1,
-                safe_pick.view(-1, 1, 1).expand(-1, 1, action_ids.shape[-1]),
-            ).squeeze(1)
-            step_entity = torch.gather(candidates.entity_token[:, branch], 1, safe_pick.unsqueeze(-1)).squeeze(-1)
-            step_move = torch.gather(candidates.move_token[:, branch], 1, safe_pick.unsqueeze(-1)).squeeze(-1)
-            updated = self.scorer.advance(tokens, hidden, step_action, step_entity, step_move)
-            hidden = torch.where(branch_valid.unsqueeze(-1), updated, hidden)
+            # Public evaluate/sample consume no final hidden state. Their last
+            # GRU update cannot affect a score; direct callers requesting the
+            # private helper's hidden state retain its complete prefix.
+            if return_final_hidden or branch + 1 < branch_capacity:
+                safe_pick = pick.clamp(0, padding - 1)
+                selected_keys = torch.gather(
+                    keys, 1, safe_pick[:, None, None].expand(-1, 1, keys.shape[-1])
+                ).squeeze(1)
+                updated = self.scorer.advance_keys(selected_keys, hidden)
+                hidden = torch.where(branch_valid.unsqueeze(-1), updated, hidden)
 
         k = candidates.branch_k
         branch_active = candidates.branch_valid & (k >= 2)
@@ -397,7 +400,8 @@ class PA3Model(nn.Module):
         if selected_tensor is None:
             raise ValueError("evaluate() needs a selected prefix")
         evaluation, _, _, _ = self._run_branches(
-            encoded, candidates, selected=selected_tensor, deterministic=True
+            encoded, candidates, selected=selected_tensor, deterministic=True,
+            return_final_hidden=False,
         )
         return evaluation
 
@@ -421,6 +425,7 @@ class PA3Model(nn.Module):
             temperature=temperature,
             generator=generator,
             deterministic=deterministic,
+            return_final_hidden=False,
         )
         return SamplingResult(
             selected=selected,
@@ -493,20 +498,17 @@ class PA3Model(nn.Module):
         move = table.move_token[:, 0]
         if not bool(mask.any(dim=-1).all()):
             raise ValueError("level has a request without a legal candidate")
-        logits = self.scorer.score(encoded.tokens, hidden, action_ids, mask, entity, move)
+        keys = self.scorer.build_keys(encoded.tokens, action_ids, entity, move)
+        logits = self.scorer.score_keys(keys, hidden, mask)
         if temperature != 1.0:
             logits = logits / temperature
         log_prob, probs, entropy, uniform_kl = self._branch_stats(logits, mask)
         pick = torch.multinomial(probs, num_samples=1, generator=generator).squeeze(-1)
         gathered = torch.gather(log_prob, 1, pick.unsqueeze(-1)).squeeze(-1)
-        step_action = torch.gather(
-            action_ids, 1, pick.view(-1, 1, 1).expand(-1, 1, action_ids.shape[-1])
+        selected_keys = torch.gather(
+            keys, 1, pick[:, None, None].expand(-1, 1, keys.shape[-1])
         ).squeeze(1)
-        step_entity = torch.gather(entity, 1, pick.unsqueeze(-1)).squeeze(-1)
-        step_move = torch.gather(move, 1, pick.unsqueeze(-1)).squeeze(-1)
-        next_hidden = self.scorer.advance(
-            encoded.tokens, hidden, step_action, step_entity, step_move
-        )
+        next_hidden = self.scorer.advance_keys(selected_keys, hidden)
         return LevelStepResult(
             pick=pick,
             logprob=gathered.detach(),
