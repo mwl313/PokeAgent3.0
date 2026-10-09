@@ -39,7 +39,10 @@ scripts/run_ddp_ppo.py --games 1024 --envs 1024 --workers 16 \
 ### 2.3 Results
 
 Code state: HEAD `fbf878e` (`v4 D2: manual executor switch in the two-rank
-launcher`); the working tree carried this untracked report only, no code diff.
+launcher`). The A0 run manifest records `git_sha =
+fbf878e124f35e9168aa0bf60b2662fa6f6b992e`, `git_branch =
+optimization/pa3-realpolicy-throughput`, `git_dirty = false`; the dual panels
+ran at the same HEAD.
 Every run: seed 20261009 (per-rank `seed + rank`), both-seat contract, fixed
 observations, packed candidate wire, fp16 autocast + GradScaler, 0 operational
 errors, 0 skipped optimizer steps.
