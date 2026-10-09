@@ -138,6 +138,42 @@ def state_digest(model, optimizer) -> tuple[str, str]:
     return model_hash.hexdigest(), optimizer_hash.hexdigest()
 
 
+def publish_verified_checkpoint(learner, path, metadata, *, digests_equal: bool) -> None:
+    """Replace the prior checkpoint only after the distributed state gate."""
+    if not digests_equal:
+        raise RuntimeError("refusing to publish a checkpoint with divergent rank digests")
+    target = os.path.abspath(path)
+    os.makedirs(os.path.dirname(target), exist_ok=True)
+    temporary = f"{target}.tmp-{os.getpid()}"
+    try:
+        torch.save({**learner.state_dict(), **metadata}, temporary)
+        with open(temporary, "rb") as handle:
+            os.fsync(handle.fileno())
+        os.replace(temporary, target)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+
+
+def stop_workers(processes, timeout: float = 10.0) -> None:
+    """Terminate/reap only the child process objects started by this launcher."""
+    for process in processes:
+        if process.poll() is None:
+            try:
+                process.terminate()
+            except ProcessLookupError:  # child exited between poll and signal
+                pass
+    for process in processes:
+        try:
+            process.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            try:
+                process.kill()
+            except ProcessLookupError:
+                pass
+            process.wait(timeout=timeout)
+
+
 def source_provenance() -> dict:
     """Record the checkout actually executed, including uncommitted changes."""
     def git(*command):
@@ -358,39 +394,20 @@ def worker(args) -> None:
         )
         finish_stage("prepare_wall_s", stage_started)
         stage_started = time.perf_counter()
+        optimizer_steps_before = learner.optimizer_steps
         update_kwargs = dict(committed_matches=global_games, generator=shuffle_generator)
         if args.executor == "manual":
             report = learner.update_manual_allreduce(plan, **update_kwargs)
         else:
             report = learner.update_ddp(plan, communication=communication, **update_kwargs)
         finish_stage("update_wall_s", stage_started)
+        optimizer_steps_this_iteration = learner.optimizer_steps - optimizer_steps_before
         note(
             f"update done in {timings['update_wall_s']:.1f}s "
-            f"(epochs {report.epochs_run}, steps {report.optimizer_steps}, "
+            f"(epochs {report.epochs_run}, steps {optimizer_steps_this_iteration}, "
+            f"cumulative steps {report.optimizer_steps}, "
             f"skipped {report.optimizer_steps_skipped}, global matches {global_games})"
         )
-
-        stage_started = time.perf_counter()
-        if args.checkpoint and rank == 0:
-            target = os.path.abspath(args.checkpoint)
-            os.makedirs(os.path.dirname(target), exist_ok=True)
-            temporary = f"{target}.tmp-{os.getpid()}"
-            torch.save(
-                {
-                    **learner.state_dict(),
-                    "global_committed_matches": global_games,
-                    "iteration": index + 1,
-                    "rank_states": {
-                        "rank0_rows": len(buffer.rows),
-                        "rank0_games": int(collector.stats.games),
-                    },
-                },
-                temporary,
-            )
-            with open(temporary, "rb") as handle:
-                os.fsync(handle.fileno())
-            os.replace(temporary, target)
-        finish_stage("checkpoint_wall_s", stage_started)
 
         stage_started = time.perf_counter()
         model_digest, optimizer_digest = state_digest(model, learner.optimizer)
@@ -400,6 +417,22 @@ def worker(args) -> None:
         finish_stage("digest_wall_s", stage_started)
         if not digests_equal:
             raise RuntimeError("ranks disagree on model/optimizer digests after update")
+
+        stage_started = time.perf_counter()
+        if args.checkpoint and rank == 0:
+            publish_verified_checkpoint(
+                learner, args.checkpoint,
+                {
+                    "global_committed_matches": global_games,
+                    "iteration": index + 1,
+                    "rank_states": {
+                        "rank0_rows": len(buffer.rows),
+                        "rank0_games": int(collector.stats.games),
+                    },
+                },
+                digests_equal=digests_equal,
+            )
+        finish_stage("checkpoint_wall_s", stage_started)
 
         stats = collector.stats.as_dict()
         metrics = {
@@ -413,6 +446,8 @@ def worker(args) -> None:
             "rows": len(buffer.rows),
             "iteration_global_committed_matches": iteration_games,
             "global_committed_matches": global_games,
+            "optimizer_steps_this_iteration": optimizer_steps_this_iteration,
+            "optimizer_steps_cumulative": learner.optimizer_steps,
             "recompute": recompute,
             "operational_errors": stats["operational_errors"],
             # ru_maxrss is a process-lifetime peak; the CUDA peak is reset per
@@ -454,6 +489,7 @@ def worker(args) -> None:
         metrics[key] = sum(item[key] for item in iterations) if communication is not None else None
     metrics.update({
         "iterations": iterations,
+        "optimizer_steps_total": sum(item["optimizer_steps_this_iteration"] for item in iterations),
         "startup_wall_s": startup_wall,
         "worker_wall_s": time.perf_counter() - worker_started,
         "digests_equal": all(item["digests_equal"] for item in iterations),
@@ -476,51 +512,51 @@ def parent(args) -> None:
     provenance = source_provenance()
     started = time.perf_counter()
     os.makedirs(os.path.dirname(os.path.abspath(args.report)), exist_ok=True)
-    for entry in RANKS:
-        command = [
-            sys.executable, os.path.abspath(__file__), "--worker",
-            "--games", str(args.games), "--envs", str(args.envs),
-            "--iterations", str(args.iterations), "--batch-cache", args.batch_cache,
-            "--workers", str(args.workers), "--microbatch", str(args.microbatch),
-            "--minibatch", str(args.minibatch), "--seed", str(args.seed),
-            "--epochs", str(args.epochs), "--timeout", str(args.timeout),
-            "--data", args.data, "--teams", args.teams, "--port", str(port),
-            "--report", args.report, "--checkpoint", args.checkpoint,
-            "--executor", args.executor,
-        ]
-        if not args.recompute_gate:
-            command.append("--no-recompute-gate")
-        if args.compact_candidates:
-            command.append("--compact-candidates")
-        if args.columnar_store:
-            command.append("--columnar-store")
-        if args.rolling_slots:
-            command.append("--rolling-slots")
-        if numactl:
-            command = [numactl, f"--cpunodebind={entry['numa']}", f"--membind={entry['numa']}", "--"] + command
-        env = dict(os.environ)
-        env.update({
-            "RANK": str(entry["rank"]), "LOCAL_RANK": str(entry["rank"]),
-            "WORLD_SIZE": str(len(RANKS)),
-            "PYTHONPATH": os.path.join(ROOT, "engine", "python") + os.pathsep + ROOT,
-            "NCCL_P2P_DISABLE": "1", "NCCL_SHM_DISABLE": "0",
-            # Localhost-only 2-process NCCL; without an explicit interface the
-            # transport selection can stall on this host.
-            "NCCL_SOCKET_IFNAME": "lo",
-            "OMP_NUM_THREADS": "1", "MKL_NUM_THREADS": "1",
-        })
-        if args.debug:
-            env["TORCH_DISTRIBUTED_DEBUG"] = "DETAIL"
-            env["TORCH_NCCL_DESYNC_DEBUG"] = "1"
-            env["TORCH_NCCL_TRACE_BUFFER_SIZE"] = "2048"
-        log_path = f"{os.path.abspath(args.report)}.rank{entry['rank']}.log"
-        log = open(log_path, "wb")
-        logs.append(log)
-        procs.append((entry, subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT, env=env, cwd=ROOT)))
-
     failures = []
-    deadline = time.time() + args.timeout * args.iterations + 300.0
     try:
+        for entry in RANKS:
+            command = [
+                sys.executable, os.path.abspath(__file__), "--worker",
+                "--games", str(args.games), "--envs", str(args.envs),
+                "--iterations", str(args.iterations), "--batch-cache", args.batch_cache,
+                "--workers", str(args.workers), "--microbatch", str(args.microbatch),
+                "--minibatch", str(args.minibatch), "--seed", str(args.seed),
+                "--epochs", str(args.epochs), "--timeout", str(args.timeout),
+                "--data", args.data, "--teams", args.teams, "--port", str(port),
+                "--report", args.report, "--checkpoint", args.checkpoint,
+                "--executor", args.executor,
+            ]
+            if not args.recompute_gate:
+                command.append("--no-recompute-gate")
+            if args.compact_candidates:
+                command.append("--compact-candidates")
+            if args.columnar_store:
+                command.append("--columnar-store")
+            if args.rolling_slots:
+                command.append("--rolling-slots")
+            if numactl:
+                command = [numactl, f"--cpunodebind={entry['numa']}", f"--membind={entry['numa']}", "--"] + command
+            env = dict(os.environ)
+            env.update({
+                "RANK": str(entry["rank"]), "LOCAL_RANK": str(entry["rank"]),
+                "WORLD_SIZE": str(len(RANKS)),
+                "PYTHONPATH": os.path.join(ROOT, "engine", "python") + os.pathsep + ROOT,
+                "NCCL_P2P_DISABLE": "1", "NCCL_SHM_DISABLE": "0",
+                # Localhost-only 2-process NCCL; without an explicit interface the
+                # transport selection can stall on this host.
+                "NCCL_SOCKET_IFNAME": "lo",
+                "OMP_NUM_THREADS": "1", "MKL_NUM_THREADS": "1",
+            })
+            if args.debug:
+                env["TORCH_DISTRIBUTED_DEBUG"] = "DETAIL"
+                env["TORCH_NCCL_DESYNC_DEBUG"] = "1"
+                env["TORCH_NCCL_TRACE_BUFFER_SIZE"] = "2048"
+            log_path = f"{os.path.abspath(args.report)}.rank{entry['rank']}.log"
+            log = open(log_path, "wb")
+            logs.append(log)
+            procs.append((entry, subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT, env=env, cwd=ROOT)))
+
+        deadline = time.time() + args.timeout * args.iterations + 300.0
         while any(proc.poll() is None for _, proc in procs):
             # A failed correctness gate must not leave its peer blocked in a
             # collective until the full process-group timeout expires.
@@ -530,16 +566,16 @@ def parent(args) -> None:
                 failures.append("launcher watchdog timeout")
                 break
             time.sleep(1.0)
+        stop_workers([proc for _, proc in procs])
         for entry, proc in procs:
-            if proc.poll() is None:
-                proc.terminate()
-            try:
-                code = proc.wait(timeout=60)
-            except subprocess.TimeoutExpired:
-                proc.kill()
-                code = proc.wait(timeout=60)
+            code = proc.returncode
             if code != 0:
                 failures.append(f"rank {entry['rank']} exited with {code}")
+    except BaseException:
+        # Includes partial spawn failure and user interruption. No process
+        # group or broad process-name matching is used: only our Popen handles.
+        stop_workers([proc for _, proc in procs])
+        raise
     finally:
         for log in logs:
             log.close()

@@ -94,3 +94,107 @@ def test_persistent_cli_preserves_one_iteration_default(launcher):
 def test_cli_rejects_zero_iterations(launcher):
     with pytest.raises(SystemExit):
         launcher.parse_args(["--iterations", "0"])
+
+
+def test_rejected_checkpoint_preserves_last_verified_file(launcher, tmp_path):
+    target = tmp_path / "checkpoint.pt"
+    target.write_bytes(b"previous verified checkpoint")
+
+    class Learner:
+        def state_dict(self):
+            pytest.fail("a rejected checkpoint must not serialize learner state")
+
+    with pytest.raises(RuntimeError, match="divergent rank digests"):
+        launcher.publish_verified_checkpoint(Learner(), target, {}, digests_equal=False)
+    assert target.read_bytes() == b"previous verified checkpoint"
+    assert list(tmp_path.glob("*.tmp-*")) == []
+
+
+def test_verified_checkpoint_preserves_absolute_clock(launcher, tmp_path):
+    target = tmp_path / "checkpoint.pt"
+
+    class Learner:
+        def state_dict(self):
+            return {"scheduler": {"matches": 4096}, "optimizer_steps": 112}
+
+    launcher.publish_verified_checkpoint(
+        Learner(), target,
+        {"global_committed_matches": 4096, "iteration": 2}, digests_equal=True,
+    )
+    checkpoint = launcher.torch.load(target, weights_only=True)
+    assert checkpoint["global_committed_matches"] == checkpoint["scheduler"]["matches"] == 4096
+    assert checkpoint["optimizer_steps"] == 112
+    assert checkpoint["iteration"] == 2
+    assert list(tmp_path.glob("*.tmp-*")) == []
+
+
+class FakeProcess:
+    def __init__(self, *, returncode=None, stubborn=False):
+        self.returncode = returncode
+        self.stubborn = stubborn
+        self.terminated = False
+        self.killed = False
+        self.reaped = False
+
+    def poll(self):
+        return self.returncode
+
+    def terminate(self):
+        self.terminated = True
+        if not self.stubborn:
+            self.returncode = -15
+
+    def kill(self):
+        self.killed = True
+        self.returncode = -9
+
+    def wait(self, timeout):
+        if self.returncode is None:
+            import subprocess
+            raise subprocess.TimeoutExpired("fake worker", timeout)
+        self.reaped = True
+        return self.returncode
+
+
+def test_cleanup_reaps_exited_children_and_kills_only_stubborn_owned_child(launcher):
+    exited = FakeProcess(returncode=0)
+    stubborn = FakeProcess(stubborn=True)
+    unrelated = FakeProcess()
+    launcher.stop_workers([exited, stubborn], timeout=0.01)
+    assert exited.reaped and not exited.terminated and not exited.killed
+    assert stubborn.terminated and stubborn.killed and stubborn.reaped
+    assert not unrelated.terminated and not unrelated.killed and not unrelated.reaped
+
+
+def test_partial_spawn_failure_cleans_up_already_started_worker(launcher, monkeypatch, tmp_path):
+    worker = FakeProcess()
+    attempts = []
+
+    def spawn(*args, **kwargs):
+        attempts.append(args)
+        if len(attempts) == 1:
+            return worker
+        raise OSError("second worker could not start")
+
+    monkeypatch.setattr(launcher, "source_provenance", lambda: {})
+    monkeypatch.setattr(launcher.subprocess, "Popen", spawn)
+    args = launcher.parse_args(["--report", str(tmp_path / "report.json")])
+    with pytest.raises(OSError, match="second worker"):
+        launcher.parent(args)
+    assert worker.terminated and worker.reaped
+
+
+def test_user_interrupt_cleans_up_both_started_workers(launcher, monkeypatch, tmp_path):
+    workers = [FakeProcess(), FakeProcess()]
+    remaining = iter(workers)
+
+    def interrupted_sleep(seconds):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(launcher, "source_provenance", lambda: {})
+    monkeypatch.setattr(launcher.subprocess, "Popen", lambda *a, **kw: next(remaining))
+    monkeypatch.setattr(launcher.time, "sleep", interrupted_sleep)
+    args = launcher.parse_args(["--report", str(tmp_path / "report.json")])
+    with pytest.raises(KeyboardInterrupt):
+        launcher.parent(args)
+    assert all(worker.terminated and worker.reaped for worker in workers)

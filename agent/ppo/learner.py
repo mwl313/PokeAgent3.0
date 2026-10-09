@@ -714,18 +714,20 @@ class PPOLearner:
 
                 optimizer_start = time.perf_counter()
                 self.scaler.unscale_(self.optimizer)
-                finite = torch.ones((), dtype=torch.float32, device=self.device)
-                for parameter in self.model.parameters():
-                    if parameter.grad is not None:
-                        finite = finite * torch.isfinite(parameter.grad).all().float()
+                # The L2 norm already visits every gradient for clipping.
+                # A finite norm certifies finite elements; checking it avoids
+                # a second per-parameter scan and hundreds of tiny kernels.
+                # Non-representable norms also skip safely instead of applying
+                # a zero/nan-clipped update to Adam's moments.
+                grad_norm = torch.nn.utils.clip_grad_norm_(
+                    self.model.parameters(), self.config.max_grad_norm
+                )
+                finite = torch.isfinite(grad_norm).float()
                 all_reduce_flag(finite)
                 has_rows = actor_total > 0.0 or value_total > 0.0
                 globally_finite = bool(finite.item())
                 do_step = globally_finite and has_rows
                 if do_step:
-                    grad_norm = torch.nn.utils.clip_grad_norm_(
-                        self.model.parameters(), self.config.max_grad_norm
-                    )
                     self.scaler.step(self.optimizer)
                 else:
                     grad_norm = torch.zeros((), device=self.device)
@@ -917,18 +919,20 @@ class PPOLearner:
                     )
                     profile["manual_flat_bytes"] = float(flat.numel() * flat.element_size())
                 assign_flat_gradients(self.model, flat)
-                finite = torch.ones((), dtype=torch.float32, device=self.device)
-                for parameter in self.model.parameters():
-                    if parameter.grad is not None:
-                        finite = finite * torch.isfinite(parameter.grad).all().float()
+                # The L2 norm already visits every gradient for clipping.
+                # A finite norm certifies finite elements; checking it avoids
+                # a second per-parameter scan and hundreds of tiny kernels.
+                # Non-representable norms also skip safely instead of applying
+                # a zero/nan-clipped update to Adam's moments.
+                grad_norm = torch.nn.utils.clip_grad_norm_(
+                    self.model.parameters(), self.config.max_grad_norm
+                )
+                finite = torch.isfinite(grad_norm).float()
                 all_reduce_flag(finite)
                 has_rows = actor_total > 0.0 or value_total > 0.0
                 globally_finite = bool(finite.item())
                 do_step = globally_finite and has_rows
                 if do_step:
-                    grad_norm = torch.nn.utils.clip_grad_norm_(
-                        self.model.parameters(), self.config.max_grad_norm
-                    )
                     self.scaler.step(self.optimizer)
                 else:
                     grad_norm = torch.zeros((), device=self.device)
