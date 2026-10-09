@@ -1448,6 +1448,9 @@ pub struct NativeEffects {
     /// every active Pokémon, raises accuracy by 6840/4096 and refuses
     /// `flags.gravity` moves.
     pub gravity: Id,
+    /// `conditions:magicroom`: the pseudo-weather that makes every held item
+    /// inert while it lasts (`Pokemon#ignoringItem`).
+    pub magic_room: Id,
     /// The two aerial charge moves whose markers Gravity removes on start.
     pub fly_move: Id,
     pub bounce_move: Id,

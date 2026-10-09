@@ -89,8 +89,8 @@ pub(super) fn collect_hooks(
         effectiveness,
         ..
     } = context;
-    let attacking_item = dex.effects.items[state.mon(actor).item as usize];
-    let defending_item = dex.effects.items[state.mon(target).item as usize];
+    let attacking_item = state.held_item(dex, actor);
+    let defending_item = state.held_item(dex, target);
     match event {
         ModifierEvent::BasePower => {
             if type_item_type(dex, attacking_item) == Some(m.move_type) {
@@ -173,7 +173,7 @@ fn is_nfe(state: &BattleState, dex: &Dex, e: Entity) -> bool {
 /// `onModifyCritRatio` items: Scope Lens adds one stage; Leek adds two for
 /// Farfetch'd and Sirfetch'd.
 pub(super) fn crit_ratio_bonus(state: &BattleState, dex: &Dex, holder: Entity) -> u8 {
-    let item = dex.effects.items[state.mon(holder).item as usize];
+    let item = state.held_item(dex, holder);
     let base = dex.species[state.mon(holder).species as usize].base_species as usize;
     match item {
         Item::ScopeLens => 1,
@@ -196,7 +196,7 @@ pub(super) fn update(state: &mut BattleState, dex: &Dex, e: Entity) -> Result<()
     if p.hp == 0 {
         return Ok(());
     }
-    match dex.effects.items[p.item as usize] {
+    match state.held_item(dex, e) {
         Item::CheriBerry if p.status == dex.effects.paralysis => {
             if !state.unnerve_blocks_eat(dex, e) {
                 state.consume_item(dex, e)?;
@@ -288,7 +288,7 @@ pub(super) fn start(state: &mut BattleState, dex: &Dex, e: Entity) -> Result<()>
     if state.mon(e).hp == 0 {
         return Ok(());
     }
-    let item = dex.effects.items[state.mon(e).item as usize];
+    let item = state.held_item(dex, e);
     if matches!(item, Item::ChoiceBand | Item::ChoiceSpecs)
         && state
             .mon(e)
@@ -325,7 +325,7 @@ pub(super) fn terrain_change(state: &mut BattleState, dex: &Dex, e: Entity) -> R
     if state.mon(e).hp == 0 {
         return Ok(());
     }
-    let item = dex.effects.items[state.mon(e).item as usize];
+    let item = state.held_item(dex, e);
     apply_seed(state, dex, e, item)
 }
 
@@ -340,7 +340,7 @@ pub(super) fn terrain_change_event(state: &mut BattleState, dex: &Dex) -> Result
         .into_iter()
         .filter(|e| {
             matches!(
-                dex.effects.items[state.mon(*e).item as usize],
+                state.held_item(dex, *e),
                 Item::ElectricSeed | Item::GrassySeed | Item::MistySeed | Item::PsychicSeed
             )
         })
@@ -415,7 +415,7 @@ fn apply_seed(state: &mut BattleState, dex: &Dex, e: Entity, item: Item) -> Resu
 /// Runs on switch-in, after Mega, after any move, and each residual.
 pub(super) fn white_herb(state: &mut BattleState, dex: &Dex, e: Entity) -> Result<()> {
     if state.mon(e).hp == 0
-        || dex.effects.items[state.mon(e).item as usize] != Item::WhiteHerb
+        || state.held_item(dex, e) != Item::WhiteHerb
         || !state.mon(e).boosts.iter().any(|b| *b < 0)
     {
         return Ok(());

@@ -118,7 +118,7 @@ impl BattleState {
         } else {
             Item::IcyRock
         };
-        let duration = if dex.effects.items[self.mon(source).item as usize] == rock {
+        let duration = if self.held_item(dex, source) == rock {
             8
         } else {
             5

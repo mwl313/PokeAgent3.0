@@ -451,7 +451,7 @@ impl BattleState {
             || id == dex.effects.light_screen
             || id == dex.effects.aurora_veil
         {
-            if dex.effects.items[self.mon(actor).item as usize] == Item::LightClay {
+            if self.held_item(dex, actor) == Item::LightClay {
                 8
             } else {
                 5
@@ -562,7 +562,7 @@ impl BattleState {
             }
             return Ok(0);
         }
-        let amount = if dex.effects.items[self.mon(actor).item as usize] == Item::BigRoot {
+        let amount = if self.held_item(dex, actor) == Item::BigRoot {
             stats::modify(amount, 5324)
         } else {
             amount
@@ -951,7 +951,7 @@ impl BattleState {
         if p.hp == 0 {
             return Ok(());
         }
-        match dex.effects.items[p.item as usize] {
+        match self.held_item(dex, e) {
             Item::SitrusBerry if u32::from(p.hp) * 2 <= u32::from(p.stats[0]) => {
                 if !self.unnerve_blocks_eat(dex, e) {
                     // `abilities:ripen.onTryHeal` doubles the berry's heal.
@@ -998,6 +998,24 @@ impl BattleState {
     pub(super) fn powder_immune(&self, dex: &Dex, e: Entity) -> bool {
         self.mon(e).types.contains(&dex.effects.grass)
             || dex.effects.abilities[self.mon(e).ability as usize] == Ability::Overcoat
+    }
+
+    /// Reference `Pokemon#ignoringItem()`: Klutz and Magic Room (plus Embargo,
+    /// which the pinned regulation cannot reach) make the holder's held item
+    /// inert for handler purposes. The item stays held, so theft, Unburden,
+    /// Acrobatics' no-item check and consumption rules still see it.
+    pub(super) fn ignoring_item(&self, dex: &Dex, e: Entity) -> bool {
+        dex.effects.abilities[self.mon(e).ability as usize] == Ability::Klutz
+            || self.field.contains_key(&dex.effects.magic_room)
+    }
+
+    /// The holder's item for effect resolution (`Item::None` while suppressed).
+    pub(super) fn held_item(&self, dex: &Dex, e: Entity) -> Item {
+        if self.ignoring_item(dex, e) {
+            Item::None
+        } else {
+            dex.effects.items[self.mon(e).item as usize]
+        }
     }
 
     /// Ported `onSetStatus` refusals. The caller decides whether the public
@@ -1100,7 +1118,7 @@ impl BattleState {
 
     pub(super) fn damage_item(&mut self, dex: &Dex, target: Entity, damage: u16) -> Result<u16> {
         let p = self.mon(target);
-        if dex.effects.items[p.item as usize] == Item::FocusSash
+        if self.held_item(dex, target) == Item::FocusSash
             && p.hp > 0
             && p.hp == p.stats[0]
             && damage >= p.hp
@@ -1549,7 +1567,7 @@ impl BattleState {
                     index,
                 ));
             }
-            if dex.effects.items[self.mon(target).item as usize] == Item::RockyHelmet {
+            if self.held_item(dex, target) == Item::RockyHelmet {
                 handlers.push((
                     target,
                     1,
@@ -3188,7 +3206,7 @@ impl BattleState {
             }
         }
         if matches!(event, ModifierEvent::Damage) {
-            let item = dex.effects.items[self.mon(actor).item as usize];
+            let item = self.held_item(dex, actor);
             if matches!(item, Item::LifeOrb | Item::ExpertBelt) {
                 hooks.push((
                     Priority {
@@ -3309,7 +3327,6 @@ impl Ability {
             | Ability::Hungerswitch
             | Ability::Iceface
             | Ability::Imposter
-            | Ability::Klutz
             | Ability::Opportunist
             | Ability::Pickup
             | Ability::Quickdraw

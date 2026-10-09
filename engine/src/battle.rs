@@ -491,12 +491,12 @@ impl BattleState {
         if ability == Ability::Quickfeet && self.mon(e).status != 0 {
             modifier = damage::chain_modifiers(modifier, 6144);
         }
-        if dex.effects.items[self.mon(e).item as usize] == Item::ChoiceScarf {
+        if self.held_item(dex, e) == Item::ChoiceScarf {
             modifier = damage::chain_modifiers(modifier, 6144);
         }
         // Iron Ball is the other `onModifySpe` item; both are item handlers and
         // consequently chain after any ability handler on the same holder.
-        if dex.effects.items[self.mon(e).item as usize] == Item::IronBall {
+        if self.held_item(dex, e) == Item::IronBall {
             modifier = damage::chain_modifiers(modifier, 2048);
         }
         if self.sides[e.side as usize]
@@ -2354,7 +2354,7 @@ impl BattleState {
             self.cure_status(actor)?;
         }
         if matches!(
-            dex.effects.items[self.mon(actor).item as usize],
+            self.held_item(dex, actor),
             Item::ChoiceScarf | Item::ChoiceBand | Item::ChoiceSpecs
         )
             && behavior != MoveBehavior::Struggle
@@ -2803,7 +2803,7 @@ impl BattleState {
             .volatiles
             .contains_key(&dex.effects.metronome)
         {
-            if dex.effects.items[self.mon(actor).item as usize] != Item::Metronome {
+            if self.held_item(dex, actor) != Item::Metronome {
                 self.mon_mut(actor).volatiles.remove(&dex.effects.metronome);
             } else {
                 let charged = self
@@ -3013,7 +3013,7 @@ impl BattleState {
             )?;
             // AfterSetStatus: a Lum Berry cures the fresh sleep before the
             // heal half of the move runs.
-            if dex.effects.items[self.mon(actor).item as usize] == Item::LumBerry {
+            if self.held_item(dex, actor) == Item::LumBerry {
                 self.item_update(dex, actor)?;
             }
             // `this.heal(target.maxhp)`: top the user up. The reference heal
@@ -6150,7 +6150,7 @@ impl BattleState {
             }
         }
         if m.category != Category::Status
-            && dex.effects.items[self.mon(actor).item as usize] == Item::LifeOrb
+            && self.held_item(dex, actor) == Item::LifeOrb
         {
             let hp_before = self.mon(actor).hp;
             self.item_damage(dex, actor, actor, self.mon(actor).stats[0] / 10)?;
@@ -6628,7 +6628,7 @@ impl BattleState {
                 }
             }
         }
-        if dex.effects.items[self.mon(actor).item as usize] == Item::LifeOrb {
+        if self.held_item(dex, actor) == Item::LifeOrb {
             let hp_before = self.mon(actor).hp;
             self.item_damage(dex, actor, actor, self.mon(actor).stats[0] / 10)?;
             self.emergency_exit_check(dex, actor, hp_before)?;
@@ -8359,7 +8359,7 @@ impl BattleState {
                 };
                 self.hit_effect(dex, source, target, &reflected, false)?;
             }
-            if dex.effects.items[self.mon(target).item as usize] == Item::LumBerry {
+            if self.held_item(dex, target) == Item::LumBerry {
                 self.item_update(dex, target)?;
             }
             changed = true;
@@ -8516,7 +8516,7 @@ impl BattleState {
                     || dex.effects.abilities[self.mon(target).ability as usize]
                         == Ability::Levitate;
                 let already_grounded =
-                    dex.effects.items[self.mon(target).item as usize] == Item::IronBall;
+                    self.held_item(dex, target) == Item::IronBall;
                 if airborne && !already_grounded {
                     if !self.mon(target).volatiles.contains_key(&volatile) {
                         let order = self.allocate_effect_order()?;
@@ -9303,7 +9303,7 @@ impl BattleState {
                     },
                 ));
             }
-            if dex.effects.items[self.mon(e).item as usize] == Item::Leftovers {
+            if self.held_item(dex, e) == Item::Leftovers {
                 handlers.push((
                     e,
                     self.mon(e).item,
@@ -9317,7 +9317,7 @@ impl BattleState {
                 ));
             }
             // Reference residual order/suborder for the remaining ported items.
-            let item = dex.effects.items[self.mon(e).item as usize];
+            let item = self.held_item(dex, e);
             let item_order = match item {
                 Item::BlackSludge => Some((5, 4, 3u8)),
                 Item::StickyBarb => Some((28, 3, 11u8)),

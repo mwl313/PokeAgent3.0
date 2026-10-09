@@ -56,7 +56,7 @@ impl BattleState {
         {
             return Err(EngineError::Unsupported(format!("terrain {id}")));
         }
-        let duration = if dex.effects.items[self.mon(source).item as usize] == Item::TerrainExtender
+        let duration = if self.held_item(dex, source) == Item::TerrainExtender
         {
             8
         } else {

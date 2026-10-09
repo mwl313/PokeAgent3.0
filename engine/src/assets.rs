@@ -2328,6 +2328,7 @@ impl Dex {
             stockpile: lookup("conditions", "stockpile")?,
             commanded: lookup("conditions", "commanded")?,
             gravity: lookup("conditions", "gravity")?,
+            magic_room: lookup("conditions", "magicroom")?,
             curse: lookup("conditions", "curse")?,
             fly_move: lookup("moves", "fly")?,
             bounce_move: lookup("moves", "bounce")?,
