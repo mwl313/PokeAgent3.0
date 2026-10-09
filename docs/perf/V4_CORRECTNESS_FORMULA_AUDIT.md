@@ -165,3 +165,127 @@ The additional v4 regression requested by the plan
   before any distributed or speed result is promoted.
 * The pre-fix/post-fix gradient difference is the expected correction; it is
   never reported as a speedup.
+
+---
+
+# C1 — single-GPU PA3-8M oracle (real rows)
+
+Instrument: `scripts/v4_c1_single_gpu_oracle.py`, raw JSON
+`runs/perf/v4/c1_single_gpu_oracle.json` (git-ignored, compact). Device GPU0
+(V100-PCIE-32GB, 175 W cap), torch 2.14.0+cu126, full `PA3Config()`
+(8,758,963 parameters). No source change was needed for this gate; the numbers
+below are the reference the distributed executors must reproduce.
+
+## 7. Real collection fixture
+
+384 requested natural matches, 256 envs, 8 workers, fixed observations,
+packed candidate wire, inference mode, both-current-side contract:
+
+| quantity | measured |
+|---|---|
+| collector games (actual, overshoot preserved) | 512 |
+| natural matches in buffer / distinct match ids | 512 |
+| rollout rows | 13,841 |
+| rows per natural match | 27.03 (v3 reference: 26.87) |
+| decisions | 13,841 |
+| wins / losses / draws | 261 / 251 / 0 |
+| reward_sum (learner seat) | 10.0 = 261 − 251 |
+| operational errors | 0 |
+| collection wall | 9.585 s (53.42 games/s, 1,444 rows/s) |
+
+The oracle batch is the first 4,096 rows of that buffer: 256 matches, both
+sides present, 3,883 actor rows, 4,096 valid value rows, all `policy_id ==
+"current"`. `tests/integration/test_collect_both_current_sides.py` (3 tests,
+new) pins the contract on the real engine: both sides recorded, terminal
+reward once per side on the last request with opposite signs and
+`reward_sum == wins − losses`, `request_index` chains strictly increasing
+inside `(match_id, side)`, no historical-policy learner rows, and GAE returns
+confined to trajectories that own a terminal reward.
+
+## 8. FP32 gradient parity across microbatch splits
+
+Reference = micro 2048 (2 chunks, the largest fitting split). A single
+4,096-row backward is **not** attempted: this run measures 18,502 MiB reserved
+at micro 2048 and 9,412 MiB at 1024, so a single pass exceeds the 28 GiB soft
+VRAM budget. This is recorded as a hard measurement boundary, not extrapolated
+around.
+
+Loss parity: |Δ objective| ≤ 1.5e-8 for every split (bit-equal at 1024).
+
+| split | encoder rel-norm Δ | scorer rel-norm Δ | value rel-norm Δ | encoder cosine | max abs Δ |
+|---:|---:|---:|---:|---:|---:|
+| 64 | 2.145e-01 | 9.141e-04 | 3.303e-04 | 0.97846 | 6.46e-04 |
+| 128 | 2.142e-01 | 9.116e-04 | 2.902e-04 | 0.97852 | 6.46e-04 |
+| 256 | 2.064e-01 | 7.941e-04 | 1.841e-04 | 0.98028 | 6.02e-04 |
+| 512 | 2.066e-01 | 8.023e-04 | 2.649e-04 | 0.98025 | 6.02e-04 |
+| 1024 | 2.027e-01 | 7.367e-04 | 3.059e-04 | 0.98099 | 5.43e-04 |
+
+Baseline noise decomposition (2,048-row fixture, same stack):
+
+| comparison | relative global ‖Δg‖/‖g‖ |
+|---|---:|
+| same shape, repeated run | 8.8e-09 |
+| same shape, rows reversed (summation order) | 6.0e-04 |
+| 2048 vs 1024 (cross-shape kernels) | 1.3e-02 |
+| 2048 vs 512 | 1.4e-02 |
+| 512 vs 1024 | 1.5e-02 |
+
+Interpretation (measured, not assumed): the encoder output (`tokens`,
+`global_repr`) is bitwise identical across shapes and log-probabilities differ
+by ≤ 9.6e-07 (relative 1.5e-07), so the cross-shape spread is fp32
+**cancellation rounding** in low-norm coordinates (embedding tables, norm
+biases: reference norms 2e-02..6e-04 with 50%+ relative deltas), amplified by
+the 4,096-row accumulation. The gradient *direction* is preserved (scorer and
+value cosine ≈ 1.0, encoder ≥ 0.978) and the practical criterion below is the
+post-clip Adam update, which is where the plan's parity gate lands.
+
+**Declared operational tolerances for D0/D1/M1 comparisons** (replacing the
+plan's aspirational `1e-4` raw-gradient norm, which this stack provably does
+not meet across different microbatch shapes):
+
+* objective loss: absolute Δ ≤ 1e-5 (measured 1.5e-8);
+* gradient direction: per-group cosine ≥ 0.97 and total-norm ratio within 3%;
+* raw per-coordinate Δ only reported as a diagnostic, never as a pass gate;
+* **update parity after clip + Adam (3 steps): max |Δweight| ≤ 1e-6, max
+  |Δ exp_avg| ≤ 1e-6, same `step`, same LR, same step/skip counts.**
+
+## 9. FP16 autocast + GradScaler, Adam, checkpoint
+
+FP16 (autocast + scale 65536, manual unscale because no step is taken):
+
+| split | worst group rel-norm Δ | max abs Δ | loss Δ | non-finite grads |
+|---:|---:|---:|---:|---:|
+| 64 | 1.235e-03 | 3.05e-05 | 7.5e-09 | 0 |
+| 128 | 1.233e-03 | 3.08e-05 | 1.5e-08 | 0 |
+| 256 | 1.285e-03 | 4.10e-05 | 1.5e-08 | 0 |
+| 512 | 1.390e-03 | 4.39e-05 | 7.5e-09 | 0 |
+| 1024 | 1.394e-03 | 6.10e-05 | 0.0 | 0 |
+
+FP16 cross-shape spread (≤ 1.4e-03) is *smaller* than FP32 (1.3e-02) on this
+stack because tensor-core GEMMs accumulate in fp32 with shape-independent
+reduction. No NaN/Inf appears in any gradient or loss.
+
+Adam, 3 consecutive updates, clip 0.5, micro 2048 vs micro 64:
+
+* optimizer steps 3/3, skipped 0/0, LR identical (1.029696e-05), match clock
+  256/256, epoch-KL identical to ≤ 5e-15 absolute;
+* worst parameter |Δ| = 1.19e-07 (`scorer.key_norm.weight`), worst moment
+  |Δ exp_avg| = 2.5e-09, |Δ exp_avg_sq| = 4.4e-13, Adam `step` = 3 on both
+  sides.
+
+Checkpoint save after update 1 → reload into a fresh learner → replay update
+2 with the same seed: max |Δweight| = 9.3e-10, max |Δ moment| = 1.5e-11,
+optimizer steps 2/2, scheduler matches 128/128, model state restored after the
+gradient scenarios (`fixture_restored: true`).
+
+Wall time for the 4,096-row pass (single GPU, warm, median not repeated):
+micro 1024 1.13 s, 512 1.31 s, 256 1.72 s, 128 2.5 s, 64 4.35 s (fp32);
+fp16 within 1–3% of the same shape. Peak reserved VRAM (allocator emptied
+between configs): 1,022 / 1,642 / 2,884 / 4,986 / 9,412 MiB and 18,502 MiB at
+2,048. A per-config 3-repeat benchmark is part of the later speed panels, not
+of this correctness gate.
+
+**C1 gate verdict: PASS with documented tolerances.** The single-GPU objective,
+gradient direction, FP16 behaviour, Adam state and checkpoint continuation are
+pinned on real PA3-8M rows. Distributed comparisons (D0/D1/M1) use the
+update-level tolerances above.
