@@ -15,6 +15,7 @@ parser.add_argument("--root", required=True)
 parser.add_argument("--fixture", required=True)
 parser.add_argument("--out", required=True)
 parser.add_argument("--make-fixture", action="store_true")
+parser.add_argument("--compact-candidates", action="store_true")
 args = parser.parse_args()
 sys.path[:0] = [args.root, os.path.join(args.root, "engine", "python")]
 
@@ -47,7 +48,12 @@ if args.make_fixture:
     model.cuda(0)
 fixture = torch.load(args.fixture, map_location="cpu", weights_only=False)
 model.load_state_dict(fixture["model"])
-batch = fixture["batch"].to("cuda:0")
+batch = fixture["batch"]
+if args.compact_candidates:
+    occupied = batch.candidates.mask.any(dim=0).any(dim=0).nonzero().flatten()
+    width = max(1, int(occupied.max()) + 1)
+    batch.candidates = batch.candidates.trim_padding(width)
+batch = batch.to("cuda:0")
 terms = learner._forward_terms(batch)
 loss = terms["loss_unscaled"] + learner.config.value_coefficient * terms["value_mean"]
 learner.scaler.scale(loss).backward()

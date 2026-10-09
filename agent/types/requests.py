@@ -191,6 +191,49 @@ class BranchCandidatesBatch:
             selected=self.selected.narrow(0, begin, count),
         )
 
+    def trim_padding(self, candidate_padding: int) -> "BranchCandidatesBatch":
+        """View the leading candidate slots after validating host-side padding.
+
+        The requested width must cover the largest *stored* branch, including
+        any illegal entries, rather than just its legal-candidate count. Call
+        this on CPU before transferring a rollout cache to the learner device;
+        validation never inserts device synchronizations into model forwards.
+        Branch dimensions, selected-prefix indices and branch-valid metadata
+        are preserved. Only entirely empty trailing candidate slots may go.
+        """
+        current = self.action_ids.shape[2]
+        if (
+            not isinstance(candidate_padding, int)
+            or isinstance(candidate_padding, bool)
+            or not 1 <= candidate_padding <= current
+        ):
+            raise ValueError(f"candidate padding must be an integer in [1, {current}]")
+        tensors = (
+            self.action_ids, self.mask, self.entity_token, self.move_token,
+            self.branch_valid, self.selected,
+        )
+        if any(tensor.device.type != "cpu" for tensor in tensors):
+            raise ValueError("trim candidate padding on CPU before device transfer")
+        if candidate_padding == current:
+            return self
+        trailing = slice(candidate_padding, current)
+        if (
+            bool(self.mask[:, :, trailing].any())
+            or bool(self.action_ids[:, :, trailing].ne(0).any())
+            or bool(self.entity_token[:, :, trailing].ne(0).any())
+            or bool(self.move_token[:, :, trailing].ne(NO_TOKEN).any())
+            or bool(self.selected.ge(candidate_padding).any())
+        ):
+            raise ValueError("candidate padding would discard a legal, stored or selected candidate")
+        return BranchCandidatesBatch(
+            action_ids=self.action_ids[:, :, :candidate_padding],
+            mask=self.mask[:, :, :candidate_padding],
+            entity_token=self.entity_token[:, :, :candidate_padding],
+            move_token=self.move_token[:, :, :candidate_padding],
+            branch_valid=self.branch_valid,
+            selected=self.selected,
+        )
+
     def cat(self, others: Sequence["BranchCandidatesBatch"]) -> "BranchCandidatesBatch":
         parts = [self, *others]
         return BranchCandidatesBatch(

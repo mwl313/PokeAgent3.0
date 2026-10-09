@@ -81,6 +81,7 @@ class StreamingPlan:
     advantages: torch.Tensor
     actor_rows: int
     cached_batch: Optional[RolloutBatch] = None
+    compact_candidates: bool = False
 
 
 class PPOLearner:
@@ -166,6 +167,7 @@ class PPOLearner:
     def prepare_streaming(
         self, buffer: RolloutBuffer, rows: Optional[list] = None, *,
         cache_device: Optional[str] = None, cache_max_bytes: int = 8 << 30,
+        compact_candidates: bool = False,
     ) -> StreamingPlan:
         """GAE + advantage normalization without materializing the iteration."""
         profile = {"gae": 0.0, "normalize": 0.0, "total": 0.0}
@@ -187,7 +189,7 @@ class PPOLearner:
         self.prepare_profile = profile
         plan = StreamingPlan(
             buffer=buffer, rows=rows, advantages=normalized,
-            actor_rows=int(actor.sum().item()),
+            actor_rows=int(actor.sum().item()), compact_candidates=compact_candidates,
         )
         return self._cache_plan(plan, cache_device, cache_max_bytes)
 
@@ -199,6 +201,7 @@ class PPOLearner:
         *,
         cache_device: Optional[str] = None,
         cache_max_bytes: int = 8 << 30,
+        compact_candidates: bool = False,
     ) -> StreamingPlan:
         """Streaming plan whose advantages are normalised over **all ranks**.
 
@@ -235,7 +238,7 @@ class PPOLearner:
         self.prepare_profile = profile
         plan = StreamingPlan(
             buffer=buffer, rows=rows, advantages=normalized.float(),
-            actor_rows=int(actor.sum().item()),
+            actor_rows=int(actor.sum().item()), compact_candidates=compact_candidates,
         )
         return self._cache_plan(plan, cache_device, cache_max_bytes)
 
@@ -273,6 +276,9 @@ class PPOLearner:
         self.prepare_profile["cache_enabled"] = 0.0
         if estimate <= budget:
             batch = plan.buffer.to_batch(plan.rows, device="cpu").with_advantages(plan.advantages)
+            if plan.compact_candidates:
+                batch = self._compact_candidate_batch(batch, plan.rows)
+            self.prepare_profile["candidate_padding"] = batch.candidates.shape[2]
             plan.cached_batch = batch.to(self.device if cache_device == "cuda" else "cpu")
             self.prepare_profile["cache_enabled"] = 1.0
         self.prepare_profile["cache_build"] = time.perf_counter() - started
@@ -283,11 +289,20 @@ class PPOLearner:
         if plan.cached_batch is not None:
             return plan.cached_batch.select(indices, row_valid=valid)
         rows = [plan.rows[int(index)] for index in indices.tolist()]
-        return replace(
+        batch = replace(
             plan.buffer.to_batch(rows, device="cpu"),
             row_valid=valid,
             advantages=plan.advantages[indices],
         )
+        return self._compact_candidate_batch(batch, rows) if plan.compact_candidates else batch
+
+    @staticmethod
+    def _compact_candidate_batch(batch, rows):
+        # Round up for tensor-core-friendly widths, retaining every stored
+        # candidate (legal or illegal), its order and its selected prefix.
+        required = max((len(branch) for row in rows for branch in row.action_ids), default=1)
+        width = min(batch.candidates.shape[2], max(8, ((required + 7) // 8) * 8))
+        return replace(batch, candidates=batch.candidates.trim_padding(width))
 
     def _update_distributed_scaler(self, globally_finite: bool) -> None:
         # Manual SUM happens after unscale_ has recorded *local* overflow.

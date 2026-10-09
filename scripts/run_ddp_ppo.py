@@ -76,6 +76,8 @@ def parse_args(argv=None):
         "--batch-cache", choices=["none", "cpu", "cuda"], default="none",
         help="materialize the iteration's learner rows once on the selected device",
     )
+    parser.add_argument("--compact-candidates", action="store_true",
+                        help="remove verified empty candidate padding, never legal candidates")
     parser.add_argument("--data", default=os.path.join(ROOT, "engine", "data"))
     parser.add_argument("--teams", default=os.path.join(ROOT, "engine", "data", "training-teams.json"))
     parser.add_argument("--report", default=os.path.join(ROOT, "runs", "perf", "v4_ddp.json"))
@@ -352,6 +354,7 @@ def worker(args) -> None:
         stage_started = time.perf_counter()
         plan = learner.prepare_streaming_ddp(
             buffer, cache_device=None if args.batch_cache == "none" else args.batch_cache,
+            compact_candidates=args.compact_candidates,
         )
         finish_stage("prepare_wall_s", stage_started)
         stage_started = time.perf_counter()
@@ -487,6 +490,8 @@ def parent(args) -> None:
         ]
         if not args.recompute_gate:
             command.append("--no-recompute-gate")
+        if args.compact_candidates:
+            command.append("--compact-candidates")
         if args.columnar_store:
             command.append("--columnar-store")
         if args.rolling_slots:
