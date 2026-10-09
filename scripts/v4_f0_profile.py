@@ -37,10 +37,30 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--microbatch", type=int, default=1024)
     parser.add_argument("--device", default="cuda:0")
+    parser.add_argument("--batch-cache", choices=["none", "cpu", "cuda"], default="none")
+    parser.add_argument("--compact-candidates", action="store_true")
     parser.add_argument("--out", type=pathlib.Path,
                         default=pathlib.Path("runs/perf/v4/f0_learner_kernels.json"))
     parser.add_argument("--trace", default="")
     return parser.parse_args()
+
+
+def kernel_window(events) -> tuple[float, float]:
+    """Union of actual kernel intervals and their enclosing span, in us."""
+    intervals = sorted((float(e["ts"]), float(e["ts"]) + float(e["dur"]))
+                       for e in events if float(e.get("dur", 0)) > 0)
+    if not intervals:
+        return 0.0, 0.0
+    begin, end = intervals[0]
+    first = begin
+    busy = 0.0
+    for left, right in intervals[1:]:
+        if left > end:
+            busy += end - begin
+            begin, end = left, right
+        else:
+            end = max(end, right)
+    return busy + end - begin, end - first
 
 
 def main() -> int:
@@ -75,7 +95,10 @@ def main() -> int:
         device=device,
         amp=True,
     )
-    plan = learner.prepare_streaming(buffer)
+    plan = learner.prepare_streaming(
+        buffer, cache_device=None if args.batch_cache == "none" else args.batch_cache,
+        compact_candidates=args.compact_candidates,
+    )
     # Warmup: one full minibatch minus the final partial chunk.
     learner.update_streaming(plan, committed_matches=args.games,
                              generator=torch.Generator().manual_seed(1))
@@ -99,6 +122,7 @@ def main() -> int:
         with open(trace_path) as handle:
             trace = json.load(handle)
     kernel_events = [event for event in trace["traceEvents"] if event.get("cat") == "kernel"]
+    kernel_union_us, kernel_span_us = kernel_window(kernel_events)
     kernel_totals: dict[str, dict[str, float]] = collections.OrderedDict()
     kernel_busy_us = 0.0
     for event in kernel_events:
@@ -120,8 +144,6 @@ def main() -> int:
     cuda_rows = []
     cpu_rows = []
     cuda_total_us = 0.0
-    kernel_busy_us = 0.0
-    aggregators = ("aten::", "autograd::", "cuda", "torch::", "nccl")
     for entry in prof.key_averages():
         if entry.device_time_total > 0:
             cuda_rows.append({
@@ -130,11 +152,6 @@ def main() -> int:
                 "device_time_ms": float(entry.device_time_total) / 1000.0,
             })
             cuda_total_us += float(entry.device_time_total)
-            # `device_time_total` double counts when both an aggregated op
-            # (`aten::mm`) and its leaf kernel appear; GPU-busy is estimated
-            # from leaf kernels only.
-            if not entry.key.startswith(aggregators) and "evaluate_function" not in entry.key:
-                kernel_busy_us += float(entry.device_time_total)
         if entry.cpu_time_total > 0:
             cpu_rows.append({
                 "key": entry.key,
@@ -146,17 +163,23 @@ def main() -> int:
     payload = {
         "rows": len(buffer.rows),
         "microbatch": args.microbatch,
+        "batch_cache": args.batch_cache,
+        "compact_candidates": args.compact_candidates,
         "profiled_wall_s": wall,
         "gpu_busy_s": cuda_total_us / 1e6,
-        "gpu_busy_leaf_kernel_s": kernel_busy_us / 1e6,
+        "gpu_busy_leaf_kernel_s": kernel_union_us / 1e6,
+        "gpu_kernel_span_s": kernel_span_us / 1e6,
         "leaf_kernels": leaf_kernel_rows,
         "gpu_busy_note": (
             "gpu_busy_s sums aggregated ops and leaf kernels (double counts); "
-            "gpu_busy_leaf_kernel_s and leaf_kernels come from the trace's "
-            "cat=kernel events and do not double count"
+            "gpu_busy_leaf_kernel_s is the interval union of trace cat=kernel "
+            "events. gpu_busy_fraction uses the first-to-last kernel span; "
+            "profile wall additionally includes profiler setup/teardown. "
+            "Busy is execution presence, not SM/TensorCore utilization."
         ),
-        "gpu_idle_s": max(wall - kernel_busy_us / 1e6, 0.0),
-        "gpu_busy_fraction": (kernel_busy_us / 1e6) / max(wall, 1e-9),
+        "gpu_idle_s": max(kernel_span_us - kernel_union_us, 0.0) / 1e6,
+        "gpu_busy_fraction": kernel_union_us / max(kernel_span_us, 1e-9),
+        "gpu_busy_fraction_of_profile_wall": (kernel_union_us / 1e6) / max(wall, 1e-9),
         "peak_vram_mib": torch.cuda.max_memory_reserved(device) / (1024 * 1024),
         "top_cuda_kernels": cuda_rows[:20],
         "top_cpu_ops": cpu_rows[:20],
