@@ -198,3 +198,18 @@ def test_manual_executor_peer_overflow_resets_every_rank_scaler(model_factory, m
     _assert_same(before, model.state_dict())
     assert learner.scaler.get_scale() == 4.0
     assert learner.scaler.state_dict()["_growth_tracker"] == 0
+
+
+def test_padding_nonfinite_targets_do_not_poison_critic_gradient(model_factory):
+    model, buffer = _fixture(model_factory)
+    learner = PPOLearner(model, _config(), device="cpu", amp=False)
+    batch = learner.prepare_batch(buffer)
+    valid = torch.ones_like(batch.row_valid)
+    valid[::2] = False
+    returns = batch.returns.clone()
+    returns[~valid] = float("nan")
+    terms = learner._forward_terms(replace(batch, returns=returns, row_valid=valid))
+    terms["value_mean"].backward()
+    assert torch.isfinite(terms["value_mean"])
+    assert all(torch.isfinite(parameter.grad).all() for parameter in model.parameters()
+               if parameter.grad is not None)

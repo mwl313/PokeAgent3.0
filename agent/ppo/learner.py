@@ -389,8 +389,8 @@ class PPOLearner:
         # Boolean indexing invokes CUDA nonzero (a host synchronization) twice
         # per micro. A fixed-shape masked reduction has the same objective and
         # keeps padding-only micros connected to the critic graph.
-        squared_error = (values - batch.returns.float()).square()
-        value = 0.5 * torch.where(valid, squared_error, 0.0).sum() / valid.sum().clamp_min(1)
+        residual = torch.where(valid, values - batch.returns.float(), 0.0)
+        value = 0.5 * residual.square().sum() / valid.sum().clamp_min(1)
         actor_f = actor_mask.to(ratio.dtype)
         actor_count = actor_mask.sum()
         value_count = valid.sum()
