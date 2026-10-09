@@ -302,7 +302,7 @@ fn main() {
             ),
         },
         Row {
-            criterion: "6. all 1136 frozen teams complete natural battles",
+            criterion: "6. all 1137 frozen teams complete natural battles",
             state: if pool_complete == total_teams { State::Pass } else { State::Fail },
             evidence: format!(
                 "{pool_complete}/{total_teams} statically complete; {} distinct blockers remaining",

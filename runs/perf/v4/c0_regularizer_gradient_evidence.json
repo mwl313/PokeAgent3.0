@@ -1,0 +1,79 @@
+{
+  "detached_prefix_loss": -0.009999163448810577,
+  "fixed_prefix_loss": -0.009999163448810577,
+  "fixture_rows": 24,
+  "gate": "C0",
+  "git_head": "816707ecf8036ae493140774dc2d3b43e6e1a72e",
+  "gradient_norms": {
+    "delta_norm": {
+      "encoder": 3.064375778194517e-05,
+      "scorer": 0.0016269574407488108,
+      "value_head": 0.0
+    },
+    "delta_relative": {
+      "encoder": 8.892683640956975e-05,
+      "scorer": 0.00011236037847330757,
+      "value_head": null
+    },
+    "fixed": {
+      "encoder": 0.3445906937122345,
+      "scorer": 14.479487419128418,
+      "value_head": 0.0
+    },
+    "prefix_detached": {
+      "encoder": 0.34459516406059265,
+      "scorer": 14.479814529418945,
+      "value_head": 0.0
+    }
+  },
+  "loss_abs_diff": 0.0,
+  "minibatch_rows": 24,
+  "model_parameter_count": 143923,
+  "model_state_restored": true,
+  "precondition": {
+    "detached_scorer_grad_from_regularizers": 0.0,
+    "note": "pre-fix regularizer gradient is exactly zero because both factors were detached"
+  },
+  "regularizer_only_scorer_grad_norm": {
+    "entropy_term": 2.957115411758423,
+    "uniform_kl_term": 2.965435028076172
+  },
+  "scalar_parity": {
+    "approx_kl_mean": {
+      "abs_diff": 0.0,
+      "detached": 1.178150910163822e-10,
+      "fixed": 1.178150910163822e-10
+    },
+    "clip_fraction": {
+      "abs_diff": 0.0,
+      "detached": 0.0,
+      "fixed": 0.0
+    },
+    "entropy_mean": {
+      "abs_diff": 0.0,
+      "detached": 0.9994961023330688,
+      "fixed": 0.9994961023330688
+    },
+    "policy_mean": {
+      "abs_diff": 0.0,
+      "detached": -4.708766937255859e-06,
+      "fixed": -4.708766937255859e-06
+    },
+    "ratio_mean": {
+      "abs_diff": 0.0,
+      "detached": 1.0000030994415283,
+      "fixed": 1.0000030994415283
+    },
+    "uniform_kl_mean": {
+      "abs_diff": 0.0,
+      "detached": 0.0005054869106970727,
+      "fixed": 0.0005054869106970727
+    },
+    "value_mean_detached": {
+      "abs_diff": 0.0,
+      "detached": 0.45106539130210876,
+      "fixed": 0.45106539130210876
+    }
+  },
+  "seed": 20261009
+}

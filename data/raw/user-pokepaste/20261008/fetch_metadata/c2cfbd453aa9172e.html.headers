@@ -1,0 +1,6 @@
+HTTP/2 200 
+content-security-policy: default-src 'none'; font-src 'self'; img-src 'self'; script-src 'self'; style-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+strict-transport-security: max-age=31536000
+content-type: text/html; charset=utf-8
+date: Thu, 08 Oct 2026 11:01:19 GMT
+

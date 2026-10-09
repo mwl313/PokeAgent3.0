@@ -186,11 +186,13 @@ class ActorRunner:
         self.metrics = {
             "envs": envs,
             "workers": workers,
+            "cohorts": 0,
             "rounds": 0,
             "transitions": 0,
             "decisions": 0,
             "games": 0,
             "operational_errors": 0,
+            "reset_seconds": 0.0,
             "observe_seconds": 0.0,
             "decode_seconds": 0.0,
             "candidates_seconds": 0.0,
@@ -204,6 +206,7 @@ class ActorRunner:
         self._reset()
 
     def _reset(self):
+        started = time.perf_counter()
         teams = self.engine.team_count()
         team_a, team_b, seeds, roles = [], [], [], []
         for index in range(self.envs):
@@ -214,6 +217,8 @@ class ActorRunner:
         self.handles = self.engine.reset_batch(team_a, team_b, seeds, roles)
         self.finished = [False] * self.envs
         self.pending = self.envs
+        self.metrics["reset_seconds"] += time.perf_counter() - started
+        self.metrics["cohorts"] += 1
 
     def _collect_round(self, policy):
         pending = []
@@ -307,16 +312,28 @@ class ActorRunner:
                 self.pending -= 1
         return True
 
-    def run(self, target_games, policy):
-        """Collect until `target_games` natural completions (op errors excluded)."""
+    def run(self, target_games, policy, recycle=True):
+        """Collect until `target_games` natural completions (op errors excluded).
+
+        A cohort drains naturally: every environment plays its match to a
+        natural end and only then is the whole group reset. This matches the
+        documented collection contract (freeze the policy, drain, then update)
+        and keeps the reset cost visible in its own timer instead of hiding it
+        inside the stepping cost.
+        """
         started = time.perf_counter()
         while self.metrics["games"] < target_games and self.pending > 0:
             if self._collect_round(policy) is None:
                 break
+            if self.pending == 0 and recycle and self.metrics["games"] < target_games:
+                self._reset()
         self.metrics["wall_seconds"] = time.perf_counter() - started
         # Peak resident set of this actor process after its first full cohort.
         self.metrics["max_rss_kb"] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
         self.metrics["max_rss_mb"] = self.metrics["max_rss_kb"] / 1024.0
+        usage = resource.getrusage(resource.RUSAGE_SELF)
+        self.metrics["cpu_seconds"] = usage.ru_utime + usage.ru_stime
+        self.metrics["cpu_fraction_of_one_core"] = self.metrics["cpu_seconds"] / max(self.metrics["wall_seconds"], 1e-9)
         return self.metrics
 
 
@@ -361,7 +378,7 @@ def main():
         observations=args.observations,
     )
     target = args.envs if args.no_reset else args.games
-    metrics = runner.run(target, Policy(args.policy, args.seed))
+    metrics = runner.run(target, Policy(args.policy, args.seed), recycle=not args.no_reset)
     wall = max(metrics["wall_seconds"], 1e-9)
     metrics["games_per_second"] = metrics["games"] / wall
     metrics["transitions_per_second"] = metrics["transitions"] / wall
@@ -371,7 +388,12 @@ def main():
     metrics["decode_ms_per_round"] = 1000 * metrics["decode_seconds"] / rounds
     metrics["candidate_ms_per_round"] = 1000 * metrics["candidates_seconds"] / rounds
     metrics["step_ms_per_round"] = 1000 * metrics["step_seconds"] / rounds
+    metrics["reset_ms_per_cohort"] = 1000 * metrics["reset_seconds"] / max(metrics["cohorts"], 1)
     metrics["policy_ms_per_round"] = 1000 * metrics["policy_seconds"] / rounds
+    accounted = (metrics["observe_seconds"] + metrics["decode_seconds"] + metrics["candidates_seconds"]
+                 + metrics["step_seconds"] + metrics["policy_seconds"] + metrics["reset_seconds"])
+    metrics["accounted_seconds"] = accounted
+    metrics["unaccounted_ms_per_round"] = 1000 * max(metrics["wall_seconds"] - accounted, 0.0) / rounds
     top_gaps = sorted(metrics["operational_gaps"].items(), key=lambda kv: -kv[1])[:12]
     metrics["operational_gaps"] = dict(top_gaps)
     print(json.dumps(metrics, indent=2, sort_keys=True))

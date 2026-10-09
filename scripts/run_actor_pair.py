@@ -272,9 +272,19 @@ def main():
             f"{metrics['games_per_second']:.1f} games/s, "
             f"{metrics['transitions_per_second']:.0f} transitions/s, "
             f"op_errors={metrics['operational_errors']}, "
+            f"cohorts={metrics.get('cohorts', 0)}, "
+            f"cpu={metrics.get('cpu_fraction_of_one_core', float('nan')):.1f} cores, "
             f"obs={metrics['observe_ms_per_round']:.3f} ms/round, "
             f"step={metrics['step_ms_per_round']:.3f} ms/round, "
             f"max_rss={metrics.get('max_rss_mb', float('nan')):.1f} MB"
+        )
+        print(
+            f"    decisions/s={metrics.get('decisions_per_second', float('nan')):.0f}, "
+            f"decode={metrics.get('decode_ms_per_round', float('nan')):.3f} ms/round, "
+            f"candidates/legal-mask={metrics.get('candidate_ms_per_round', float('nan')):.3f} ms/round, "
+            f"policy={metrics.get('policy_ms_per_round', float('nan')):.3f} ms/round, "
+            f"reset={metrics.get('reset_ms_per_cohort', float('nan')):.3f} ms/cohort, "
+            f"unaccounted={metrics.get('unaccounted_ms_per_round', float('nan')):.3f} ms/round"
         )
     elapsed = time.perf_counter() - started
     report["total_games"] = total_games

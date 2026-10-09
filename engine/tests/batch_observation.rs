@@ -16,7 +16,7 @@ fn assets() -> (Arc<Dex>, Arc<Vec<Team>>) {
 #[test]
 fn encoded_batches_cover_all_teams_and_match_serial_views_with_reused_buffers() {
     let (dex, teams) = assets();
-    assert_eq!(teams.len(), 1136);
+    assert_eq!(teams.len(), 1137);
     let encoder = Encoder::new(&dex).unwrap();
     let mut batch = BattleBatch::new(dex.clone(), teams.clone(), 16).unwrap();
     let handles = batch

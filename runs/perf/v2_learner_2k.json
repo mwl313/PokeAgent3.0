@@ -1,0 +1,251 @@
+{
+  "arch_list": [
+    "sm_50",
+    "sm_60",
+    "sm_70",
+    "sm_75",
+    "sm_80",
+    "sm_86",
+    "sm_90"
+  ],
+  "command": "python scripts/bench_pa3_end_to_end.py --games 2048 --envs 1024 --workers 16 --repeats 1 --mode full --observations fixed --precision fp16 --inference-mode --candidate-wire packed --device cuda:0 --report runs/perf/v2_learner_2k.json --checkpoint runs/perf/v2_ckpt.pt --tag v2-learner-breakdown",
+  "config": {
+    "candidate_wire": "packed",
+    "device": "cuda:0",
+    "envs": 1024,
+    "games": 2048,
+    "inference_mode": true,
+    "mode": "full",
+    "observations": "fixed",
+    "precision": "fp16",
+    "repeats": 1,
+    "seed": 20261006,
+    "workers": 16
+  },
+  "cuda_runtime": "12.6",
+  "dataset_id": "mb-mc-v3-userteam-all-train",
+  "dataset_manifest_sha256": "f0509c08544c89a0b0c043218e33795c91af7af2f78e2d6fb83bae69f3babaef",
+  "git_branch": "optimization/pa3-realpolicy-throughput",
+  "git_diff_hash": "c75bfebfb1c66a54398919322b1a3000beae1b58d347605970ee2b80c6f72401",
+  "git_dirty": true,
+  "git_sha": "b72f5f4c73dc8cbdf06584a5e0ed9c0ea7f6b8d8",
+  "gpus": [
+    {
+      "driver_version": "580.178.04",
+      "index": 0,
+      "memory_total_mib": 32768,
+      "memory_used_mib": 4,
+      "name": "Tesla V100-PCIE-32GB",
+      "pci_bus_id": "00000000:05:00.0",
+      "power_limit_w": 175.0,
+      "temperature_c": 32,
+      "utilization_pct": 0
+    },
+    {
+      "driver_version": "580.178.04",
+      "index": 1,
+      "memory_total_mib": 32768,
+      "memory_used_mib": 4,
+      "name": "Tesla V100-PCIE-32GB",
+      "pci_bus_id": "00000000:84:00.0",
+      "power_limit_w": 150.0,
+      "temperature_c": 38,
+      "utilization_pct": 0
+    }
+  ],
+  "python": "3.12.3",
+  "readiness_note": "readiness_check is 10/16 PASS; this benchmark does not change it",
+  "repeats": [
+    {
+      "actor_collect_wall_s": 21.503510386002745,
+      "actor_games_per_s": 95.24026371680701,
+      "all_in_committed_games_per_s": 25.500666866655322,
+      "all_in_wall_s": 80.31162521000442,
+      "bounded_ppo_games_per_s": 25.65735701454961,
+      "candidate_calls": 333,
+      "candidates_returned": 851399,
+      "checkpoint_path": "/home/minidc/Desktop/PokeAgent3.0/runs/perf/v2_ckpt.pt",
+      "checkpoint_write_wall_s": 0.49046518800241756,
+      "cohort_overshoot": 0,
+      "cohorts": 2,
+      "cpu_seconds": 31.703977000000002,
+      "decisions": 55039,
+      "decisions_per_s": 2559.5355833541707,
+      "draws": 0,
+      "games_natural_complete": 2048,
+      "games_target": 2048,
+      "gpu_event_ms": 80633.5,
+      "gpu_peak_allocated_gib": 2.7904157638549805,
+      "gpu_peak_reserved_gib": 2.935546875,
+      "inference_mode": true,
+      "learner_profile": {
+        "prepare_profile": {
+          "build": 2.270157149003353,
+          "build_candidates": 0.5759289039997384,
+          "build_columns": 0.0642937400007213,
+          "build_move": 6.217099871719256e-05,
+          "build_observations": 1.629764277000504,
+          "gae": 1.2577175600017654,
+          "normalize": 0.0010307019983883947,
+          "total": 3.5292378259982797
+        },
+        "update_profile": {
+          "backward": 18.174236821032537,
+          "epoch_sync": 0.0009265139997296501,
+          "forward": 15.422580804955942,
+          "h2d": 2.533803981008532,
+          "metrics": 0.09753926898702048,
+          "minibatch_select": 5.404413559001114,
+          "optimizer": 0.9955078979910468,
+          "prepare_build": 0.0,
+          "prepare_normalize": 0.0,
+          "prepare_total": 0.0,
+          "total": 54.78654172900133
+        }
+      },
+      "learner_rows": 27490,
+      "logprob_recompute_max_abs_diff": 0.0,
+      "logprob_recompute_tolerance": 0.001,
+      "logprob_recompute_within_gate": true,
+      "losses": 996,
+      "max_open_games": 1024,
+      "mode": "full",
+      "model_sha256": "4b217e55edc4557ede55e4412b38b17d309de01ca7eb45e32b3ad4178f2d1c4b",
+      "observation_mode": "fixed",
+      "operational_errors": 0,
+      "ppo_update": {
+        "actor_rows": 25819,
+        "approx_kl": 0.004451199871411769,
+        "clip_fraction": 0.04565436306595918,
+        "committed_matches": 2048,
+        "entropy": 0.9986574204074519,
+        "epoch_approx_kl": [
+          0.005681412923372505,
+          0.0038042710075731536,
+          0.0036197187935725628,
+          0.004699395874642796
+        ],
+        "epochs_run": 4,
+        "grad_norm": 1.4273240566253662,
+        "grad_norm_max": 10.020760536193848,
+        "learning_rate": 1.237568e-05,
+        "optimizer_steps": 28,
+        "optimizer_steps_skipped": 0,
+        "policy_loss": -0.0017403031887759347,
+        "ratio_mean": 1.0004255133089972,
+        "rows": 27490,
+        "stopped_early": false,
+        "uniform_kl": 0.0013432697219461535,
+        "value_loss": 0.27591522982789196
+      },
+      "ppo_update_wall_s": 58.31764963599926,
+      "precision": "fp16",
+      "repeat": 0,
+      "report_includes": [
+        "collect",
+        "gae",
+        "prepare",
+        "4_epoch_update",
+        "scheduler",
+        "grad_scaler",
+        "checkpoint_write"
+      ],
+      "rounds": 137,
+      "rss_peak_gib": 5.150585174560547,
+      "stage_seconds": {
+        "assemble_submissions": 0.008227712001826148,
+        "buffer_record": 4.535334393149242,
+        "candidate_table": 0.23938333200567286,
+        "candidates": 0.24156779601980816,
+        "h2d": 2.662393338028778,
+        "model": 5.620100059055403,
+        "native_observation": 3.8576431370020146,
+        "parse_convert": 1.177160202027153,
+        "prefix_specs": 0.0002140379510819912,
+        "readback": 0.0858538469474297,
+        "request_info": 0.02825697698062868,
+        "reset": 0.042006773001048714,
+        "rust_step": 0.42136030900655896,
+        "unaccounted": 2.5834651428231155
+      },
+      "wins": 1052
+    }
+  ],
+  "run_id": "bench-1791472820-v2-learner-breakdown",
+  "stage_medians": {
+    "assemble_submissions": {
+      "median_s": 0.008227712001826148,
+      "median_share_of_collect": 0.00038262180705071313
+    },
+    "buffer_record": {
+      "median_s": 4.535334393149242,
+      "median_share_of_collect": 0.21091134943722592
+    },
+    "candidate_table": {
+      "median_s": 0.23938333200567286,
+      "median_share_of_collect": 0.01113229085431067
+    },
+    "candidates": {
+      "median_s": 0.24156779601980816,
+      "median_share_of_collect": 0.011233877245319518
+    },
+    "h2d": {
+      "median_s": 2.662393338028778,
+      "median_share_of_collect": 0.12381203302330612
+    },
+    "model": {
+      "median_s": 5.620100059055403,
+      "median_share_of_collect": 0.26135732995081995
+    },
+    "native_observation": {
+      "median_s": 3.8576431370020146,
+      "median_share_of_collect": 0.1793959715299817
+    },
+    "parse_convert": {
+      "median_s": 1.177160202027153,
+      "median_share_of_collect": 0.05474269925683392
+    },
+    "prefix_specs": {
+      "median_s": 0.0002140379510819912,
+      "median_share_of_collect": 9.953628372291933e-06
+    },
+    "readback": {
+      "median_s": 0.0858538469474297,
+      "median_share_of_collect": 0.003992550304870894
+    },
+    "request_info": {
+      "median_s": 0.02825697698062868,
+      "median_share_of_collect": 0.0013140634470091897
+    },
+    "reset": {
+      "median_s": 0.042006773001048714,
+      "median_share_of_collect": 0.0019534844426327773
+    },
+    "rust_step": {
+      "median_s": 0.42136030900655896,
+      "median_share_of_collect": 0.019594954565224594
+    },
+    "unaccounted": {
+      "median_s": 2.5834651428231155,
+      "median_share_of_collect": 0.12014155346955664
+    }
+  },
+  "summary": {
+    "actor_games_per_s": {
+      "max": 95.24026371680701,
+      "median": 95.24026371680701,
+      "min": 95.24026371680701
+    },
+    "all_in_committed_games_per_s": {
+      "max": 25.500666866655322,
+      "median": 25.500666866655322,
+      "min": 25.500666866655322
+    },
+    "decisions_per_s": {
+      "max": 2559.5355833541707,
+      "median": 2559.5355833541707,
+      "min": 2559.5355833541707
+    }
+  },
+  "torch": "2.14.0+cu126"
+}

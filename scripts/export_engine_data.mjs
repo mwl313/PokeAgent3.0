@@ -110,7 +110,22 @@ const rules = {
 };
 assert.equal(rules.picked_size, 4);
 assert.equal(rules.level_clause_mod, false);
-const teams = fs.readFileSync(path.join(root, 'data/teams/mb-mc-v2-all-train/train.jsonl'), 'utf8').trim().split('\n').map(JSON.parse);
+// The active training pool comes from configs/train.yaml unless an explicit
+// --dataset=<id> override is passed. The frozen dataset directory, its manifest
+// and the training split are all resolved from that one id.
+const datasetFlag = process.argv.find(arg => arg.startsWith('--dataset='));
+const configText = fs.readFileSync(path.join(root, 'configs/train.yaml'), 'utf8');
+const configuredDataset = (configText.match(/^\s*dataset_id:\s*(\S+)\s*$/m) || [])[1];
+const datasetId = datasetFlag ? datasetFlag.slice('--dataset='.length) : configuredDataset;
+assert(datasetId, 'No dataset_id found in configs/train.yaml');
+const datasetDir = path.join(root, 'data/teams', datasetId);
+const datasetManifestPath = path.join(datasetDir, 'manifest.json');
+assert(fs.existsSync(datasetManifestPath), `Missing dataset manifest for ${datasetId}`);
+const teams = fs.readFileSync(path.join(datasetDir, 'train.jsonl'), 'utf8').trim().split('\n').map(JSON.parse);
+const datasetManifest = JSON.parse(fs.readFileSync(datasetManifestPath, 'utf8'));
+assert.equal(datasetManifest.dataset_id, datasetId);
+assert.equal(datasetManifest.counts.train.teams, teams.length, 'training split count');
+assert.equal(datasetManifest.unique_eligible_teams, teams.length, 'all teams are training teams');
 const trainingTeams = teams.map(t => ({id: t.team_id, members: t.members.map(m => ({
   species: ids.species.get(m.species_id), ability: ids.abilities.get(toID(m.ability)), item: ids.items.get(toID(m.item)) || 0,
   nature: ids.natures.get(toID(m.nature)), moves: m.moves.map(x => ids.moves.get(toID(x))),
@@ -133,7 +148,7 @@ for (const t of teams) for (const m of t.members) statFixtures.push({species: id
   points: statNames.map(x => m.allocation.engine_values[x]), nature: ids.natures.get(toID(m.nature)),
   stats: statNames.map(x => m.stats_at_battle_start[x])});
 const rng = [];
-for (const seed of [[1, 2, 3, 4], [0, 0, 0, 0], [65535, 65535, 65535, 65535], [2026, 10, 6, 1136]]) {
+for (const seed of [[1, 2, 3, 4], [0, 0, 0, 0], [65535, 65535, 65535, 65535], [2026, 10, 6, teams.length]]) {
   const prng = new PRNG(seed); const draws = Array.from({length: 1024}, () => prng.rng.next());
   rng.push({seed, draws, final_seed: prng.getSeed()});
 }
@@ -246,7 +261,10 @@ const files = {
   'callbacks.json': callbacks, 'training-teams.json': trainingTeams,
   'reference-fixtures.json': {oracle_commit: pin, rng, stats: statFixtures, pp, targeting, modifiers, recoil_rounding: recoilRounding, action_speed: actionSpeed, ordering, left_to_right_ordering: leftToRightOrdering, health, damage_kernel: damageKernel, initialization},
 };
-const manifest = {schema: 'pa3-engine-assets-v1', oracle_commit: pin, format, files: {}};
+const manifest = {schema: 'pa3-engine-assets-v1', oracle_commit: pin, format, files: {},
+  dataset: {id: datasetId, schema: datasetManifest.dataset_schema || 'pa3-team-record-v1',
+    manifest_sha256: hash(fs.readFileSync(datasetManifestPath)), train_teams: teams.length,
+    source_input_sha256: datasetManifest.source_input_sha256}};
 for (const [name, value] of Object.entries(files)) {
   const bytes = JSON.stringify(value) + '\n'; fs.writeFileSync(path.join(output, name), bytes);
   manifest.files[name] = {sha256: hash(bytes), bytes: Buffer.byteLength(bytes)};

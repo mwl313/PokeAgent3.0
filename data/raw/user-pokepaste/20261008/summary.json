@@ -1,0 +1,173 @@
+{
+  "submission": {
+    "submission_id": "UT20261008",
+    "pokepaste_url": "https://pokepast.es/c2cfbd453aa9172e",
+    "raw_text_url": "https://pokepast.es/c2cfbd453aa9172e/raw",
+    "paste_title": "리자몽",
+    "approved_by": "user",
+    "approved_at": "2026-10-08",
+    "approval": "User submitted this team, judged it strong in play, and explicitly approved adding it to the PokeAgent 3.0 training pool as one manual source.",
+    "scope_exception": "This single Pokepaste is the entire new collection scope. No further crawling, discovery or automatic addition of teams is authorized.",
+    "local_dir": "data/raw/user-pokepaste/20261008"
+  },
+  "artifacts": {
+    "html/c2cfbd453aa9172e.html": {
+      "sha256": "f659dfdba19f992555f08c6fa2365f6340002aac8fb5a691f053e4a10e6b9d28"
+    },
+    "teams/UT20261008.txt": {
+      "sha256": "b2efe483869c3ea5896b0f3212282b7e86cea77ca2e9a03612ab42b58849ca3c"
+    },
+    "teams.jsonl": {
+      "sha256": "b178252d591ccf14e9e1d18a5c6c4c96e6a649849fc40e391d312ddc01147165"
+    }
+  },
+  "reference_validation": {
+    "oracle_commit": "14546894d86f9589ac11130c510bbe73b6968665",
+    "format": "gen9championsvgc2026regmc",
+    "verdict": "accepted_by_pinned_reference",
+    "problems": [],
+    "normalizations": [
+      {
+        "member_index": 0,
+        "field": "species",
+        "source_value": "Charizard-Mega-Y",
+        "reference_value": "Charizard"
+      },
+      {
+        "member_index": 0,
+        "field": "ability",
+        "source_value": "Drought",
+        "reference_value": "Blaze"
+      },
+      {
+        "member_index": 0,
+        "field": "level",
+        "source_value": 100,
+        "reference_value": 50
+      },
+      {
+        "member_index": 1,
+        "field": "level",
+        "source_value": 100,
+        "reference_value": 50
+      },
+      {
+        "member_index": 2,
+        "field": "level",
+        "source_value": 100,
+        "reference_value": 50
+      },
+      {
+        "member_index": 3,
+        "field": "level",
+        "source_value": 100,
+        "reference_value": 50
+      },
+      {
+        "member_index": 5,
+        "field": "level",
+        "source_value": 100,
+        "reference_value": 50
+      }
+    ],
+    "base_ability_ambiguity": [
+      {
+        "member_index": 0,
+        "field": "ability",
+        "source_value": "Drought",
+        "reference_value": "Blaze",
+        "base_species": "Charizard",
+        "base_ability_choices": [
+          "Blaze",
+          "Solar Power"
+        ],
+        "resolution": "reference_defaulted_first_base_ability"
+      }
+    ],
+    "normalized_team": [
+      {
+        "species": "Charizard",
+        "ability": "Blaze",
+        "item": "Charizardite Y",
+        "moves": [
+          "Heat Wave",
+          "Solar Beam",
+          "Weather Ball",
+          "Protect"
+        ]
+      },
+      {
+        "species": "Whimsicott",
+        "ability": "Prankster",
+        "item": "Rocky Helmet",
+        "moves": [
+          "Tailwind",
+          "Moonblast",
+          "Encore",
+          "Sunny Day"
+        ]
+      },
+      {
+        "species": "Gengar",
+        "ability": "Cursed Body",
+        "item": "Focus Sash",
+        "moves": [
+          "Icy Wind",
+          "Shadow Ball",
+          "Sludge Bomb",
+          "Taunt"
+        ]
+      },
+      {
+        "species": "Sneasler",
+        "ability": "Unburden",
+        "item": "White Herb",
+        "moves": [
+          "Fake Out",
+          "Close Combat",
+          "Rock Tomb",
+          "Dire Claw"
+        ]
+      },
+      {
+        "species": "Indeedee",
+        "ability": "Psychic Surge",
+        "item": "Choice Scarf",
+        "moves": [
+          "Expanding Force",
+          "Trick Room",
+          "Imprison",
+          "Hyper Voice"
+        ]
+      },
+      {
+        "species": "Garchomp",
+        "ability": "Rough Skin",
+        "item": "Life Orb",
+        "moves": [
+          "Rock Slide",
+          "Stomping Tantrum",
+          "Dragon Claw",
+          "Protect"
+        ]
+      }
+    ]
+  },
+  "user_confirmations": [
+    {
+      "member_index": 0,
+      "species": "Charizard",
+      "field": "ability",
+      "resolved_value": "Blaze",
+      "confirmed_by": "user",
+      "confirmed_at": "2026-10-08",
+      "statement": "charizard is blaze so you are correct"
+    }
+  ],
+  "notes": [
+    "The source text is preserved verbatim; nothing in teams/UT20261008.txt was edited.",
+    "The pinned reference accepts the team as written and resolves the declared Mega-form ability line to the base forme before battle.",
+    "Values the pinned reference had to resolve are confirmed by the user in confirmations.json; the source text itself is never edited.",
+    "No move, item, nature or allocation value was changed or imputed."
+  ]
+}

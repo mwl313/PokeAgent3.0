@@ -1,0 +1,53 @@
+{
+  "columnar": {
+    "model_sha256": "4b217e55edc4557ede55e4412b38b17d309de01ca7eb45e32b3ad4178f2d1c4b",
+    "row_sha256": "78a5cf24d70bd9cedd8cd0b881c4135f6bd1f59be37a3ea59baa3c412c70e45d",
+    "rows": 13679,
+    "stats": {
+      "decisions": 13679,
+      "draws": 0,
+      "games": 512,
+      "learner_rows": 13679,
+      "losses": 252,
+      "operational_errors": 0,
+      "reward_sum": 8.0,
+      "wins": 260
+    },
+    "store_roundtrip": {
+      "gather_rows": 3,
+      "per_row_match": true,
+      "rows_checked": 3,
+      "stacked_rows": 13679
+    },
+    "store_type": "ColumnarObservationStore"
+  },
+  "config": {
+    "envs": 256,
+    "games": 512,
+    "seed": 20261009,
+    "workers": 8
+  },
+  "gates": {
+    "all_pass": true,
+    "model_sha_equal": true,
+    "row_count_equal": true,
+    "row_sha_equal": true,
+    "stats_equal": true,
+    "store_roundtrip_ok": true
+  },
+  "old": {
+    "model_sha256": "4b217e55edc4557ede55e4412b38b17d309de01ca7eb45e32b3ad4178f2d1c4b",
+    "row_sha256": "78a5cf24d70bd9cedd8cd0b881c4135f6bd1f59be37a3ea59baa3c412c70e45d",
+    "rows": 13679,
+    "stats": {
+      "decisions": 13679,
+      "draws": 0,
+      "games": 512,
+      "learner_rows": 13679,
+      "losses": 252,
+      "operational_errors": 0,
+      "reward_sum": 8.0,
+      "wins": 260
+    }
+  }
+}

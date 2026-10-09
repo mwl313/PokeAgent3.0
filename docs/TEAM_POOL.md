@@ -1,35 +1,57 @@
 # Fixed M-B and M-C team pool
 
-The project now uses **mb-mc-v2-all-train**, prepared from the two collected batches selected by the user on 2026-10-06. This selection replaces the original specification's broader M-A/M-B/M-C collection scope. No M-A teams, new sources, additional crawls, or automatic inventory refreshes are part of the active pool.
+The project now uses **mb-mc-v3-userteam-all-train**. It contains every team of the previous frozen pool plus exactly one manual source: the user's own Poképaste, explicitly approved for training on 2026-10-08. The user selected the two 2026-10-06 M-B/M-C batches as the lifetime collection scope; no M-A teams, crawls, discovery or automatic inventory refreshes are part of the active pool, and no other manual team has been approved.
+
+The predecessor **mb-mc-v2-all-train** (1,136 teams) is preserved unchanged. Rebuilding v3 verifies every predecessor record byte-for-byte before writing, so the 1,136 original teams are carried over without alteration. The earlier **mb-mc-v1** grouped-holdout snapshot is also preserved for provenance.
+
+| Dataset | Teams | Groups | Sources | Status |
+|---|---:|---:|---:|---|
+| `mb-mc-v1` | 1,136 | 903 | 1,207 source rows | preserved provenance only |
+| `mb-mc-v2-all-train` | 1,136 | 903 | 1,207 source rows | frozen predecessor, immutable |
+| `mb-mc-v3-userteam-all-train` | 1,137 | 904 | 1,208 source rows | **active** |
+
+## The 2026-10-08 manual source
+
+The single approved submission is `https://pokepast.es/c2cfbd453aa9172e` (paste title `리자몽`). The raw HTML and raw `/raw` text were fetched on 2026-10-08 and stored under `data/raw/user-pokepaste/20261008/` with their hashes and fetch headers. `scripts/import_user_pokepaste.mjs` re-derives the extraction record from those saved artifacts, cross-checks the HTML against the raw text, and records the pinned reference's verdict; `scripts/prepare_teams.mjs` refuses a stale or hand-edited record. Source id: `UT20261008`.
+
+The team is Charizard-Mega-Y / Whimsicott / Gengar / Sneasler / Indeedee / Garchomp with 66 Champions Stat Points on every member (each stat ≤ 32), four explicit moves each, explicit items and natures. The pinned `gen9championsvgc2026regmc` validator accepts it as written. Its canonical fingerprint and roster group match no team in the predecessor pool, so it is a genuinely new training team and the pool grows from 1,136 to **1,137 unique teams (904 roster groups)**.
+
+**Documented ability normalization (user-confirmed).** The source declares `Charizard-Mega-Y` with `Ability: Drought` (the Mega forme's own ability). The pinned reference rewrites the set to `Charizard` and fills the base-form ability with the first legal one, `Blaze`; Charizard's base abilities are `Blaze` and `Solar Power`, so the source alone does not determine the pre-Mega ability. The user confirmed on 2026-10-08 that Blaze is the intended ability; the confirmation is stored in `confirmations.json` next to the raw artifacts and never edits the verbatim source text. Nothing else about the set changes: species, item, nature, four moves, all 66 Stat Points, level adjustment and IVs are preserved exactly, and the Mega forme itself is preserved through the Charizardite Y mapping. The dataset records both values (`policy: reference_validator_base_form_default`, `source_value: Drought`, `reference_value: Blaze`) plus the confirmation in the team's `eligibility.mega_ability_resolutions`, in its `source.records[].ability_resolutions`, in the member's `format_defaults.ability` and in the manifest's `documented_normalizations` / `user_confirmations`. Mega-form ability defaults stay quarantined for every crawled batch; only this one approved submission may use the resolution.
+
+## Split policy
+
+All 1,137 unique teams are training teams. Dev and final files stay empty. The user's instruction from 2026-10-06 assigns every eligible team to training and supersedes the specification's 90/5/5 split, and the 2026-10-08 submission is added as a normal uniformly-sampled team: it receives no extra weight, no special schedule and no evaluation-only status.
 
 The 1,207 original source records remain intact. Applying Full Spec 1.1's completeness requirements and the pinned M-C validator yields 1,151 accepted source records, which collapse to **1,136 unique teams**. The other **56 source records are quarantined**, with their original sets and exact reasons preserved. No missing set details were invented.
 
 | Split | Unique teams | Roster groups |
 |---|---:|---:|
-| Train | 1,136 | 903 |
+| Train | 1,137 | 904 |
 | Dev | 0 | 0 |
 | Final | 0 | 0 |
-| Total | 1,136 | 903 |
+| Total | 1,137 | 904 |
 
-The user's subsequent instruction assigns every eligible team to training and supersedes the specification's 90/5/5 split. All 1,136 teams are sampled uniformly from the first training reset. Dev and final dataset files are empty. The earlier `mb-mc-v1` grouped-holdout snapshot is preserved for provenance and is no longer active.
+The v3 manifest's `predecessor_verification` block records that all 1,136 predecessor records were verified unchanged and that exactly one team was added. The 1,208 raw source rows are accounted for as 1,152 accepted and 56 quarantined; the manual submission is the only accepted record that is not from the two frozen batches.
 
 ## Dataset artifacts
 
-The active configuration is [configs/train.yaml](../configs/train.yaml). It pins the manifest's SHA-256, the three split paths, the actual counts, and the M-B/M-C-only source scope. The original specification ZIP and extracted YAML are unchanged.
+The active configuration is [configs/train.yaml](../configs/train.yaml). It pins the v3 manifest's SHA-256, the three split paths, the actual counts, the predecessor manifest hash, and the single manual-source exception. The original specification ZIP and extracted YAML are unchanged.
 
 | Artifact | Purpose |
 |---|---|
-| [Manifest](../data/teams/mb-mc-v2-all-train/manifest.json) | Frozen source hashes, counts, split rules, output hashes and dataset identity |
-| [All accepted teams](../data/teams/mb-mc-v2-all-train/all.jsonl) | Normalized records conforming to the original `pa3-team-v1` schema |
-| [Train](../data/teams/mb-mc-v2-all-train/train.jsonl), [dev](../data/teams/mb-mc-v2-all-train/dev.jsonl), [final](../data/teams/mb-mc-v2-all-train/final.jsonl) | All accepted records in train; empty dev/final files retained for an explicit, verifiable zero-holdout contract |
-| [Train simulator sets](../data/teams/mb-mc-v2-all-train/train.showdown.jsonl) | Canonical full team sets for simulator reset; analogous dev/final files are alongside it |
-| [Team text](../data/teams/mb-mc-v2-all-train/all_teams.txt) | Readable normalized exports |
-| [Source index](../data/teams/mb-mc-v2-all-train/source-index.jsonl) | Disposition of every one of the 1,207 source records |
-| [Duplicates](../data/teams/mb-mc-v2-all-train/duplicates.json) | Fifteen redundant source records merged into their matching canonical teams |
-| [Quarantine](../data/teams/mb-mc-v2-all-train/quarantine.jsonl) | Full original records and reasons for exclusion from the active pool |
+| [Manifest](../data/teams/mb-mc-v3-userteam-all-train/manifest.json) | Frozen source hashes, counts, split rules, output hashes, dataset identity, predecessor verification and documented normalizations |
+| [All accepted teams](../data/teams/mb-mc-v3-userteam-all-train/all.jsonl) | Normalized records conforming to `pa3-team-v1` (VGCPastes) or `pa3-team-v2` (manual submission); see [the v2 schema](../data/schemas/team-record-v2.schema.json) |
+| [Train](../data/teams/mb-mc-v3-userteam-all-train/train.jsonl), [dev](../data/teams/mb-mc-v3-userteam-all-train/dev.jsonl), [final](../data/teams/mb-mc-v3-userteam-all-train/final.jsonl) | All accepted records in train; empty dev/final files retained for an explicit, verifiable zero-holdout contract |
+| [Train simulator sets](../data/teams/mb-mc-v3-userteam-all-train/train.showdown.jsonl) | Canonical full team sets for simulator reset; analogous dev/final files are alongside it |
+| [Team text](../data/teams/mb-mc-v3-userteam-all-train/all_teams.txt) | Readable normalized exports |
+| [Source index](../data/teams/mb-mc-v3-userteam-all-train/source-index.jsonl) | Disposition of all 1,208 source records including `UT20261008` |
+| [Duplicates](../data/teams/mb-mc-v3-userteam-all-train/duplicates.json) | Fifteen redundant source records merged into their matching canonical teams |
+| [Quarantine](../data/teams/mb-mc-v3-userteam-all-train/quarantine.jsonl) | Full original records and reasons for exclusion from the active pool |
 | [Quarantine review](team-pool-review.json) | Compact source IDs, URLs and specific issues |
-| [Groups](../data/teams/mb-mc-v2-all-train/groups.json) | Roster group membership; every group assigned to train |
-| [Inventory](../data/teams/mb-mc-v2-all-train/inventory.json) | Direct species, resource-form, move, item, ability and nature IDs for the whole training pool |
+| [Groups](../data/teams/mb-mc-v3-userteam-all-train/groups.json) | Roster group membership; every group assigned to train |
+| [Inventory](../data/teams/mb-mc-v3-userteam-all-train/inventory.json) | Direct species, resource-form, move, item, ability and nature IDs for the whole training pool |
+| [Manual source](../data/raw/user-pokepaste/20261008/summary.json) | The approved Poképaste's saved artifacts, hashes and pinned-reference verdict |
+| [v2 schema](../data/schemas/team-record-v2.schema.json) | Derived `pa3-team-v2` contract: v1 plus the one manual provider; the supplied v1 schema is untouched |
 
 The approved raw batches and both prepared snapshots are tracked in the local initial Git commit, along with the [manifest copy](team-pool-manifest.json), preparation code, configuration and documentation. The reference checkout, dependencies and temporary files remain ignored. No remote publication is part of this save. Public accessibility is retained as provenance, not treated as permission to redistribute the pastes.
 
@@ -74,16 +96,18 @@ From the repository root, using the existing Node.js installation:
 
 ```bash
 bash scripts/setup_reference.sh
-npm run prepare:teams
+npm run prepare:teams        # rebuilds the frozen v2 snapshot and verifies it byte-for-byte
+node scripts/import_user_pokepaste.mjs
+node scripts/prepare_teams.mjs --dataset=mb-mc-v3-userteam-all-train
 npm test
 ```
 
-The setup script installs only local reference dependencies from its pinned lockfile and builds the reference. It does not install Python/torch or change the host stack. The preparation step reads only the two saved batches, verifies their source hashes, and refuses to replace an existing frozen pool with different bytes. Any future approved corrections require an explicit new dataset version and manifest update.
+The setup script installs only local reference dependencies from its pinned lockfile and builds the reference. It does not install Python/torch or change the host stack. The preparation step reads only the two saved batches plus the one saved manual submission, verifies their source hashes, and refuses to replace an existing frozen pool with different bytes. Any future approved corrections require an explicit new dataset version and manifest update.
 
-Verification passed: all 1,136 accepted records satisfy the supplied JSON Schema; all remain reference-legal after normalization and pack/unpack roundtrips; every source record is accounted for; all eligible records and groups are assigned to train with zero dev/final records; starting-stat and information-mode checks pass; and rebuilding reproduces the same files byte-for-byte. Eight automated preparation tests passed.
+Verification passed: all v3 accepted records satisfy their declared contract (`pa3-team-v1` for VGCPastes, `pa3-team-v2` for the manual source); all remain reference-legal after normalization and pack/unpack roundtrips; every source record is accounted for; all eligible records and groups are assigned to train with zero dev/final records; the 1,136 predecessor records are byte-identical; starting-stat and information-mode checks pass; and rebuilding v2 reproduces the same files byte-for-byte. Eleven automated preparation tests pass.
 
 ## Engine handoff
 
-The direct inventory covers 194 base species/forms, 72 resource forms, 344 moves, 134 items, 139 base abilities, 52 resource-form abilities and 18 natures. Every eligible team contributes to both engine support requirements and the training pool. Evaluation episodes still remain separate from training match counters.
+The v3 direct inventory is unchanged from v2: the manual team introduces no new species, resource form, move, item or ability. It covers 194 base species/forms, 72 resource forms, 344 moves, 134 items, 139 base abilities, 52 resource-form abilities and 18 natures. Every eligible team contributes to both engine support requirements and the training pool. Evaluation episodes still remain separate from training match counters.
 
 The next engine work must resolve and implement the complete dependencies and interactions of these effects, including called moves such as Sleep Talk. The inventory is a frozen input to that work, not a claim that the Rust engine or full effect closure has been implemented. Engine difficulty must not be used to remove accepted teams.

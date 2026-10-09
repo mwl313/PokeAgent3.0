@@ -1,0 +1,349 @@
+{
+  "arch_list": [
+    "sm_50",
+    "sm_60",
+    "sm_70",
+    "sm_75",
+    "sm_80",
+    "sm_86",
+    "sm_90"
+  ],
+  "command": "python scripts/bench_pa3_end_to_end.py --games 1024 --envs 1024 --workers 16 --repeats 1 --mode full --observations fixed --precision fp16 --inference-mode --candidate-wire packed --device cuda:0 --report runs/perf/v2_p0_1k.json --checkpoint runs/perf/v2_ckpt.pt --tag v2-p0-1k --profile-trace runs/perf/traces/v2_p0_1k.json",
+  "config": {
+    "candidate_wire": "packed",
+    "device": "cuda:0",
+    "envs": 1024,
+    "games": 1024,
+    "inference_mode": true,
+    "mode": "full",
+    "observations": "fixed",
+    "precision": "fp16",
+    "repeats": 1,
+    "seed": 20261006,
+    "workers": 16
+  },
+  "cuda_runtime": "12.6",
+  "dataset_id": "mb-mc-v3-userteam-all-train",
+  "dataset_manifest_sha256": "f0509c08544c89a0b0c043218e33795c91af7af2f78e2d6fb83bae69f3babaef",
+  "git_branch": "optimization/pa3-realpolicy-throughput",
+  "git_diff_hash": "e45637228bfcbfd22cfd87ef74ec17f7b8ec2a808c1ec68a837d816ef10237d2",
+  "git_dirty": true,
+  "git_sha": "b72f5f4c73dc8cbdf06584a5e0ed9c0ea7f6b8d8",
+  "gpus": [
+    {
+      "driver_version": "580.178.04",
+      "index": 0,
+      "memory_total_mib": 32768,
+      "memory_used_mib": 4,
+      "name": "Tesla V100-PCIE-32GB",
+      "pci_bus_id": "00000000:05:00.0",
+      "power_limit_w": 175.0,
+      "temperature_c": 39,
+      "utilization_pct": 0
+    },
+    {
+      "driver_version": "580.178.04",
+      "index": 1,
+      "memory_total_mib": 32768,
+      "memory_used_mib": 4,
+      "name": "Tesla V100-PCIE-32GB",
+      "pci_bus_id": "00000000:84:00.0",
+      "power_limit_w": 150.0,
+      "temperature_c": 38,
+      "utilization_pct": 0
+    }
+  ],
+  "python": "3.12.3",
+  "readiness_note": "readiness_check is 10/16 PASS; this benchmark does not change it",
+  "repeats": [
+    {
+      "actor_collect_wall_s": 11.229739472000801,
+      "actor_games_per_s": 91.18644315419314,
+      "all_in_committed_games_per_s": 2.7190850637089126,
+      "all_in_wall_s": 376.59726562700234,
+      "bounded_ppo_games_per_s": 2.7233660505060686,
+      "candidate_calls": 162,
+      "candidates_returned": 425930,
+      "checkpoint_path": "/home/minidc/Desktop/PokeAgent3.0/runs/perf/v2_ckpt.pt",
+      "checkpoint_write_wall_s": 0.5919909010008269,
+      "cohort_overshoot": 0,
+      "cohorts": 1,
+      "cpu_seconds": 17.905813,
+      "decisions": 27609,
+      "decisions_per_s": 2458.561043988397,
+      "draws": 0,
+      "games_natural_complete": 1024,
+      "games_target": 1024,
+      "gpu_event_ms": 376760.96875,
+      "gpu_peak_allocated_gib": 2.511906147003174,
+      "gpu_peak_reserved_gib": 2.85546875,
+      "inference_mode": true,
+      "learner_profile": {
+        "prepare_profile": {
+          "build": 1.2112430070010305,
+          "build_candidates": 0.3251763230000506,
+          "build_columns": 0.034689814998273505,
+          "build_move": 8.293900100397877e-05,
+          "build_observations": 0.8512339769986283,
+          "gae": 0.6155873339994287,
+          "normalize": 0.0007396649998554494,
+          "total": 1.8276627980012563
+        },
+        "top_cuda_kernels": [
+          [
+            "void at::native::(anonymous namespace)::sum_and_scatter<float, long>(long const*, float*, long, long const*, long const*, at::AccumulateType<float, true>::type const*, long const*, long const*, long, long)",
+            1453613.998999999
+          ],
+          [
+            "fmha_cutlassB_f16_aligned_64x64_k64_sm70(PyTorchMemEffAttention::AttentionBackwardKernel<cutlass::arch::Sm70, cutlass::half_t, true, false, false, 64, 64, 64, false>::Params)",
+            1252804.555000093
+          ],
+          [
+            "Memcpy HtoD (Pageable -> Device)",
+            996798.8279999793
+          ],
+          [
+            "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>)",
+            914109.0919996363
+          ],
+          [
+            "void cutlass::Kernel2<cutlass_70_tensorop_f16_s884gemm_relu_f16_128x128_nt_align8>(cutlass_70_tensorop_f16_s884gemm_relu_f16_128x128_nt_align8::Params)",
+            857261.1310001529
+          ],
+          [
+            "volta_fp16_s884gemm_fp16_128x128_ldg8_relu_f2f_stages_32x1_tn",
+            847430.1990000489
+          ],
+          [
+            "void at::native::(anonymous namespace)::GammaBetaBackwardCUDAKernelTemplate<float, float, 32u, 32u, 256u, false, true, false>(long, long, float const*, float const*, float const*, float const*, float*, float*)",
+            828459.549000044
+          ],
+          [
+            "void at::native::reduce_kernel<128, 4, at::native::ReduceOp<c10::Half, at::native::func_wrapper_t<c10::Half, at::native::sum_functor<c10::Half, float, c10::Half>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::Half, 4, 8> >(at::native::ReduceOp<c10::Half, at::native::func_wrapper_t<c10::Half, at::native::sum_functor<c10::Half, float, c10::Half>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::Half, 4, 8>)",
+            748556.6050001913
+          ],
+          [
+            "volta_fp16_s884gemm_fp16_128x128_ldg8_f2f_nn",
+            732122.6089999177
+          ],
+          [
+            "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c10::Half>, std::array<char*, 3ul>, false>(int, at::native::CUDAFunctor_add<c10::Half>, std::array<char*, 3ul>)",
+            671900.7420002642
+          ],
+          [
+            "volta_fp16_s884gemm_fp16_64x64_ldg8_f2f_nn",
+            631040.1300000517
+          ],
+          [
+            "void at::native::vectorized_elementwise_kernel<4, at::native::float16_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda(float)#1}, std::array<char*, 2ul>, false>(int, at::native::float16_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda(float)#1}, std::array<char*, 2ul>)",
+            616067.9579995648
+          ],
+          [
+            "void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_impl_nocast<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#10}::operator()() const::{lambda(c10::Half)#1}>(at::TensorIteratorBase&, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#10}::operator()() const::{lambda(c10::Half)#1} const&)::{lambda(int)#1}>(int, at::native::gpu_kernel_impl_nocast<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#10}::operator()() const::{lambda(c10::Half)#1}>(at::TensorIteratorBase&, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#10}::operator()() const::{lambda(c10::Half)#1} const&)::{lambda(int)#1})",
+            589241.0259997952
+          ],
+          [
+            "void at::native::(anonymous namespace)::layer_norm_grad_input_kernel_vectorized<float, float, false>(float const*, float const*, float const*, float const*, float const*, float*, int)",
+            564318.1310001033
+          ],
+          [
+            "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>, 4, TrivialOffsetCalculator<1, unsigned int>, TrivialOffsetCalculator<1, unsigned int>, at::native::memory::LoadWithCast<1>, at::native::memory::StoreWithCast<1> >(int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>, TrivialOffsetCalculator<1, unsigned int>, TrivialOffsetCalculator<1, unsigned int>, at::native::memory::LoadWithCast<1>, at::native::memory::StoreWithCast<1>)",
+            560450.3440005756
+          ]
+        ],
+        "trace_path": "/home/minidc/Desktop/PokeAgent3.0/runs/perf/traces/v2_p0_1k.json",
+        "update_profile": {
+          "backward": 15.72759197103369,
+          "epoch_sync": 0.0015945859959174413,
+          "forward": 17.33634949599218,
+          "h2d": 1.2223056279981392,
+          "metrics": 0.10875727803068003,
+          "minibatch_select": 3.0739307180010655,
+          "optimizer": 0.5298477429969353,
+          "prepare_build": 0.0,
+          "prepare_normalize": 0.0,
+          "prepare_total": 0.0,
+          "total": 38.02566651599773
+        }
+      },
+      "learner_rows": 13775,
+      "logprob_recompute": {
+        "max_abs_diff": 6.604194641113281e-05,
+        "mean_abs_diff": 1.266325853066519e-07,
+        "rows": 546,
+        "sampled_fraction": 0.03963702359346642,
+        "strata": {
+          "kind0_branches4_actor1": {
+            "max_abs_diff": 0.0,
+            "rows": 96
+          },
+          "kind1_branches2_actor0": {
+            "max_abs_diff": 0.0,
+            "rows": 66
+          },
+          "kind1_branches2_actor1": {
+            "max_abs_diff": 6.604194641113281e-05,
+            "rows": 96
+          },
+          "kind2_branches1_actor0": {
+            "max_abs_diff": 0.0,
+            "rows": 96
+          },
+          "kind2_branches1_actor1": {
+            "max_abs_diff": 3.0994415283203125e-06,
+            "rows": 96
+          },
+          "kind2_branches2_actor1": {
+            "max_abs_diff": 0.0,
+            "rows": 96
+          }
+        },
+        "tolerance": 0.001,
+        "total_rollout_rows": 13775,
+        "within_gate": true
+      },
+      "logprob_recompute_max_abs_diff": 6.604194641113281e-05,
+      "logprob_recompute_tolerance": 0.001,
+      "logprob_recompute_within_gate": true,
+      "losses": 488,
+      "max_open_games": 1024,
+      "mode": "full",
+      "model_sha256": "4b217e55edc4557ede55e4412b38b17d309de01ca7eb45e32b3ad4178f2d1c4b",
+      "observation_mode": "fixed",
+      "operational_errors": 0,
+      "ppo_update": {
+        "actor_rows": 12964,
+        "approx_kl": 0.004852945221239165,
+        "clip_fraction": 0.05806464054304227,
+        "committed_matches": 1024,
+        "entropy": 0.998563479876967,
+        "epoch_approx_kl": [
+          0.003582799041098336,
+          0.005451550199749366,
+          0.005236847832481717,
+          0.005140582928867923
+        ],
+        "epochs_run": 4,
+        "grad_norm": 0.795350193977356,
+        "grad_norm_max": 6.604948997497559,
+        "learning_rate": 1.1187840000000001e-05,
+        "optimizer_steps": 16,
+        "optimizer_steps_skipped": 0,
+        "policy_loss": -0.0024380909002551837,
+        "ratio_mean": 1.000830575295048,
+        "rows": 13775,
+        "stopped_early": false,
+        "uniform_kl": 0.0014473851247173665,
+        "value_loss": 0.2754674739110708
+      },
+      "ppo_update_wall_s": 364.7755352540007,
+      "precision": "fp16",
+      "repeat": 0,
+      "report_includes": [
+        "collect",
+        "gae",
+        "prepare",
+        "4_epoch_update",
+        "scheduler",
+        "grad_scaler",
+        "checkpoint_write"
+      ],
+      "rounds": 64,
+      "rss_peak_gib": 22.016265869140625,
+      "stage_seconds": {
+        "assemble_submissions": 0.0040988349937833846,
+        "buffer_record": 2.2637344981339993,
+        "candidate_table": 0.11965630900522228,
+        "candidates": 0.12333143999421736,
+        "h2d": 1.3772451689983427,
+        "model": 2.989026432045648,
+        "native_observation": 2.1831577950142673,
+        "parse_convert": 0.6018186809887993,
+        "prefix_specs": 0.00011290999464108609,
+        "readback": 0.04210846002752078,
+        "request_info": 0.013860558006854262,
+        "reset": 0.011086799000622705,
+        "rust_step": 0.25624830098240636,
+        "unaccounted": 1.2435344638142851
+      },
+      "wins": 536
+    }
+  ],
+  "run_id": "bench-1791473234-v2-p0-1k",
+  "stage_medians": {
+    "assemble_submissions": {
+      "median_s": 0.0040988349937833846,
+      "median_share_of_collect": 0.00036499822671781857
+    },
+    "buffer_record": {
+      "median_s": 2.2637344981339993,
+      "median_share_of_collect": 0.2015838839162909
+    },
+    "candidate_table": {
+      "median_s": 0.11965630900522228,
+      "median_share_of_collect": 0.010655305878071553
+    },
+    "candidates": {
+      "median_s": 0.12333143999421736,
+      "median_share_of_collect": 0.010982573576325668
+    },
+    "h2d": {
+      "median_s": 1.3772451689983427,
+      "median_share_of_collect": 0.12264266436743604
+    },
+    "model": {
+      "median_s": 2.989026432045648,
+      "median_share_of_collect": 0.2661705945626086
+    },
+    "native_observation": {
+      "median_s": 2.1831577950142673,
+      "median_share_of_collect": 0.19440858805830286
+    },
+    "parse_convert": {
+      "median_s": 0.6018186809887993,
+      "median_share_of_collect": 0.05359150873351235
+    },
+    "prefix_specs": {
+      "median_s": 0.00011290999464108609,
+      "median_share_of_collect": 1.005455157019497e-05
+    },
+    "readback": {
+      "median_s": 0.04210846002752078,
+      "median_share_of_collect": 0.0037497272427833377
+    },
+    "request_info": {
+      "median_s": 0.013860558006854262,
+      "median_share_of_collect": 0.0012342724460716922
+    },
+    "reset": {
+      "median_s": 0.011086799000622705,
+      "median_share_of_collect": 0.0009872712566721168
+    },
+    "rust_step": {
+      "median_s": 0.25624830098240636,
+      "median_share_of_collect": 0.02281872180751052
+    },
+    "unaccounted": {
+      "median_s": 1.2435344638142851,
+      "median_share_of_collect": 0.11073582489734508
+    }
+  },
+  "summary": {
+    "actor_games_per_s": {
+      "max": 91.18644315419314,
+      "median": 91.18644315419314,
+      "min": 91.18644315419314
+    },
+    "all_in_committed_games_per_s": {
+      "max": 2.7190850637089126,
+      "median": 2.7190850637089126,
+      "min": 2.7190850637089126
+    },
+    "decisions_per_s": {
+      "max": 2458.561043988397,
+      "median": 2458.561043988397,
+      "min": 2458.561043988397
+    }
+  },
+  "torch": "2.14.0+cu126"
+}

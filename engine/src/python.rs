@@ -341,6 +341,41 @@ impl NativeEngine {
             .map_err(to_py)
     }
 
+    /// Reset a subset of existing slots in place; the other slots' handles stay
+    /// valid. Used by the rolling-slot collector (v5d A6).
+    fn reset_slots_batch(
+        &mut self,
+        slots: Vec<u32>,
+        team_a: Vec<usize>,
+        team_b: Vec<usize>,
+        seeds: Vec<(u16, u16, u16, u16)>,
+        role_map: Vec<(u8, u8)>,
+    ) -> PyResult<Vec<(u32, u32)>> {
+        if team_a.len() != team_b.len()
+            || team_a.len() != seeds.len()
+            || team_a.len() != role_map.len()
+            || team_a.len() != slots.len()
+        {
+            return Err(to_py(EngineError::InvalidInput("reset slots length".into())));
+        }
+        let specs: Vec<ResetSpec> = team_a
+            .into_iter()
+            .zip(team_b)
+            .zip(seeds)
+            .zip(role_map)
+            .map(|(((team_a, team_b), seed), role_map)| ResetSpec {
+                team_a,
+                team_b,
+                seed: [seed.0, seed.1, seed.2, seed.3],
+                role_map: [role_map.0, role_map.1],
+            })
+            .collect();
+        self.batch
+            .reset_slots(&slots, &specs)
+            .map(|handles| handles.into_iter().map(|h| (h.slot, h.generation)).collect())
+            .map_err(to_py)
+    }
+
     /// One entry per environment: `(slot, generation, [(side, [action, ...]), ...])`.
     /// The whole submission is validated before any environment mutates.
     fn step_batch(
@@ -551,6 +586,154 @@ impl NativeEngine {
             out.push(candidates.iter().map(action_tuple).collect());
         }
         Ok(out)
+    }
+
+    /// Packed legal-completion batch: `(counts, actions, max_count)`.
+    ///
+    /// * `counts` is `u16` little-endian, one entry per request.
+    /// * `actions` holds `sum(counts) * 6` little-endian `u8` records in request
+    ///   order: `(kind, own_slot, move_slot, target_as_i8, destination, resource)`.
+    /// * `max_count` is the largest legal candidate count in the batch, so the
+    ///   caller can size `[B, max_count, 6]` without truncating anything.
+    ///
+    /// Entity/move token references are pure layout arithmetic and stay in
+    /// Python (`ObservationLayout`), so the wire does not duplicate them. The
+    /// per-request prefixes are resolved by the native engine exactly like
+    /// `candidates_batch`, which stays the oracle API for parity tests.
+    fn candidates_packed_batch(
+        &self,
+        py: Python<'_>,
+        specs: Vec<(u32, u32, u8, Vec<ActionTuple>)>,
+    ) -> PyResult<(Py<PyBytes>, Py<PyBytes>, u32)> {
+        let mut counts: Vec<u16> = Vec::with_capacity(specs.len());
+        let mut actions: Vec<u8> = Vec::new();
+        let mut max_count: u32 = 0;
+        for (slot, generation, side, prefix) in specs {
+            let side = parse_side(side).map_err(to_py)?;
+            let request = self
+                .batch
+                .request(Handle { slot, generation }, side)
+                .map_err(to_py)?;
+            let mut parsed = Vec::with_capacity(prefix.len());
+            for (kind, own_slot, move_slot, target, destination, resource) in prefix {
+                parsed.push(
+                    parse_action(kind, own_slot, move_slot, target, destination, resource)
+                        .map_err(to_py)?,
+                );
+            }
+            let candidates = request.candidates(&parsed).map_err(to_py)?;
+            let count = u16::try_from(candidates.len()).map_err(|_| {
+                to_py(EngineError::InvalidInput(
+                    "candidate count exceeds the packed u16 wire".into(),
+                ))
+            })?;
+            counts.push(count);
+            max_count = max_count.max(candidates.len() as u32);
+            for action in &candidates {
+                let (kind, own_slot, move_slot, target, destination, resource) = action_tuple(action);
+                actions.extend_from_slice(&[
+                    kind,
+                    own_slot,
+                    move_slot,
+                    target as u8,
+                    destination,
+                    resource,
+                ]);
+            }
+        }
+        // Little-endian u16 counts, matching the other packed wires.
+        let mut count_bytes: Vec<u8> = Vec::with_capacity(counts.len() * 2);
+        for count in &counts {
+            count_bytes.extend_from_slice(&count.to_le_bytes());
+        }
+        Ok((
+            PyBytes::new(py, &count_bytes).unbind(),
+            PyBytes::new(py, &actions).unbind(),
+            max_count,
+        ))
+    }
+
+    /// Packed legal-completion walk with host-side prefix buffers.
+    ///
+    /// `prefix` holds `handles.len() * level * 6` little-endian `u8` records:
+    /// request `i`'s chosen actions for levels `0..level`, in order. This keeps
+    /// the prefix-dependent mask semantics of `candidates_batch` while removing
+    /// every per-request Python prefix list from the hot loop. Returns the same
+    /// `(counts, actions, max_count)` wire as `candidates_packed_batch`.
+    fn candidates_packed_walk(
+        &self,
+        py: Python<'_>,
+        handles: Vec<(u32, u32)>,
+        sides: Vec<u8>,
+        level: u8,
+        prefix: &[u8],
+    ) -> PyResult<(Py<PyBytes>, Py<PyBytes>, u32)> {
+        if sides.len() != handles.len() {
+            return Err(to_py(EngineError::InvalidInput(
+                "packed walk sides/handles length".into(),
+            )));
+        }
+        let level = usize::from(level);
+        let stride = level * 6;
+        if prefix.len() != handles.len() * stride {
+            return Err(to_py(EngineError::InvalidInput(
+                "packed walk prefix length".into(),
+            )));
+        }
+        let mut counts: Vec<u16> = Vec::with_capacity(handles.len());
+        let mut actions: Vec<u8> = Vec::new();
+        let mut max_count: u32 = 0;
+        for (index, ((slot, generation), side)) in handles.into_iter().zip(sides).enumerate() {
+            let side = parse_side(side).map_err(to_py)?;
+            let request = self
+                .batch
+                .request(Handle { slot, generation }, side)
+                .map_err(to_py)?;
+            let mut parsed = Vec::with_capacity(level);
+            for step in 0..level {
+                let base = index * stride + step * 6;
+                let record = &prefix[base..base + 6];
+                parsed.push(
+                    parse_action(
+                        record[0],
+                        record[1],
+                        record[2],
+                        record[3] as i8,
+                        record[4],
+                        record[5],
+                    )
+                    .map_err(to_py)?,
+                );
+            }
+            let candidates = request.candidates(&parsed).map_err(to_py)?;
+            let count = u16::try_from(candidates.len()).map_err(|_| {
+                to_py(EngineError::InvalidInput(
+                    "candidate count exceeds the packed u16 wire".into(),
+                ))
+            })?;
+            counts.push(count);
+            max_count = max_count.max(candidates.len() as u32);
+            for action in &candidates {
+                let (kind, own_slot, move_slot, target, destination, resource) = action_tuple(action);
+                actions.extend_from_slice(&[
+                    kind,
+                    own_slot,
+                    move_slot,
+                    target as u8,
+                    destination,
+                    resource,
+                ]);
+            }
+        }
+        let mut count_bytes: Vec<u8> = Vec::with_capacity(counts.len() * 2);
+        for count in &counts {
+            count_bytes.extend_from_slice(&count.to_le_bytes());
+        }
+        Ok((
+            PyBytes::new(py, &count_bytes).unbind(),
+            PyBytes::new(py, &actions).unbind(),
+            max_count,
+        ))
     }
 
     fn request_kind(&self, slot: u32, generation: u32, side: u8) -> PyResult<u8> {

@@ -1,0 +1,450 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PokeAgent3.0 accepted full-spread team record (v2 provenance extension)",
+  "description": "v1 plus exactly one provenance extension: the single user-approved manual Pokepaste source. Every VGCPastes constraint is unchanged. Raw rejects are stored separately; this schema does not itself establish legality or licensing.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema_version",
+    "team_id",
+    "team_fingerprint",
+    "group_id",
+    "source",
+    "regulation",
+    "members",
+    "eligibility",
+    "split"
+  ],
+  "properties": {
+    "schema_version": {
+      "enum": [
+        "pa3-team-v1",
+        "pa3-team-v2"
+      ]
+    },
+    "team_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "team_fingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "group_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "provider",
+        "repository_team_ids",
+        "urls",
+        "raw_sha256",
+        "fetched_at",
+        "source_tabs"
+      ],
+      "properties": {
+        "provider": {
+          "enum": [
+            "VGCPastes",
+            "user_submitted_pokepaste"
+          ]
+        },
+        "repository_team_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "urls": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "raw_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "fetched_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source_tabs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "enum": [
+              "Champions M-A",
+              "Champions M-B",
+              "Champions M-C",
+              "User Submission"
+            ]
+          }
+        },
+        "mirror_provenance": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "submission": {
+          "type": "object",
+          "required": [
+            "approved_by",
+            "approved_at",
+            "approval",
+            "scope_exception"
+          ],
+          "properties": {
+            "approved_by": {
+              "type": "string",
+              "minLength": 1
+            },
+            "approved_at": {
+              "type": "string",
+              "minLength": 1
+            },
+            "approval": {
+              "type": "string",
+              "minLength": 1
+            },
+            "scope_exception": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "ability_resolutions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "member_index",
+              "source_value",
+              "reference_value",
+              "policy"
+            ],
+            "properties": {
+              "member_index": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 5
+              },
+              "source_value": {
+                "type": "string"
+              },
+              "reference_value": {
+                "type": "string"
+              },
+              "policy": {
+                "enum": [
+                  "reference_validator_base_form_default",
+                  "reference_determined_single_base_ability"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "regulation": {
+      "type": "object",
+      "required": [
+        "battle_format",
+        "oracle_commit"
+      ],
+      "properties": {
+        "battle_format": {
+          "const": "gen9championsvgc2026regmc"
+        },
+        "oracle_commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        }
+      }
+    },
+    "members": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {
+        "$ref": "#/$defs/member"
+      }
+    },
+    "eligibility": {
+      "type": "object",
+      "required": [
+        "all_six_explicit_allocations",
+        "reference_format_legal",
+        "original_set_not_imputed"
+      ],
+      "properties": {
+        "all_six_explicit_allocations": {
+          "const": true
+        },
+        "reference_format_legal": {
+          "const": true
+        },
+        "original_set_not_imputed": {
+          "const": true
+        }
+      }
+    },
+    "split": {
+      "enum": [
+        "train",
+        "dev",
+        "final"
+      ]
+    }
+  },
+  "$defs": {
+    "stats": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hp",
+        "atk",
+        "def",
+        "spa",
+        "spd",
+        "spe"
+      ],
+      "properties": {
+        "hp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "atk": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "def": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "spa": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "spd": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "spe": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "member": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "species",
+        "ability",
+        "item",
+        "nature",
+        "moves",
+        "allocation",
+        "stats_at_battle_start",
+        "format_defaults"
+      ],
+      "properties": {
+        "species": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ability": {
+          "type": "string",
+          "minLength": 1
+        },
+        "item": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "nature": {
+          "type": "string",
+          "minLength": 1
+        },
+        "moves": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "allocation": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "raw_line",
+            "source_unit",
+            "unit_evidence",
+            "parsed_values",
+            "engine_values",
+            "conversion"
+          ],
+          "properties": {
+            "raw_line": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_unit": {
+              "enum": [
+                "champions_stat_points",
+                "legacy_evs"
+              ]
+            },
+            "unit_evidence": {
+              "type": "string",
+              "minLength": 1
+            },
+            "parsed_values": {
+              "$ref": "#/$defs/stats"
+            },
+            "engine_values": {
+              "$ref": "#/$defs/stats"
+            },
+            "conversion": {
+              "type": "object",
+              "required": [
+                "kind"
+              ],
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "none",
+                    "documented_exact_source_mapping"
+                  ]
+                },
+                "mapping_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "stats_at_battle_start": {
+          "$ref": "#/$defs/stats"
+        },
+        "format_defaults": {
+          "type": "object"
+        },
+        "raw_export_block": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "x-semantic-validation": [
+    "Infer no hidden/missing allocation.",
+    "Allocation bounds are determined by the pinned format, not generic EV limits.",
+    "Absent item key differs from a deliberate no-item entry.",
+    "Species/Item clauses and move legality require the reference validator.",
+    "Groups do not cross splits.",
+    "Actual original source links and permission conditions must be preserved.",
+    "user_submitted_pokepaste records are one explicitly approved manual source; they are never presented as VGCPastes collection records.",
+    "A reference_validator_base_form_default ability resolution records both the declared Mega-form ability and the resolved base-form ability, and is flagged for user confirmation."
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "source": {
+            "properties": {
+              "provider": {
+                "const": "user_submitted_pokepaste"
+              }
+            },
+            "required": [
+              "provider"
+            ]
+          }
+        },
+        "required": [
+          "source"
+        ]
+      },
+      "then": {
+        "properties": {
+          "schema_version": {
+            "const": "pa3-team-v2"
+          },
+          "source": {
+            "required": [
+              "submission"
+            ],
+            "properties": {
+              "source_tabs": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "const": "User Submission"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "source": {
+            "properties": {
+              "provider": {
+                "const": "VGCPastes"
+              }
+            },
+            "required": [
+              "provider"
+            ]
+          }
+        },
+        "required": [
+          "source"
+        ]
+      },
+      "then": {
+        "properties": {
+          "schema_version": {
+            "const": "pa3-team-v1"
+          },
+          "source": {
+            "properties": {
+              "source_tabs": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "enum": [
+                    "Champions M-A",
+                    "Champions M-B",
+                    "Champions M-C"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "x-derivation": {
+    "source": "docs/spec/fullspec-1.1-minidc-20261006/PA3_TEAM_RECORD_SCHEMA.json",
+    "generator": "scripts/make_team_schema_v2.mjs"
+  }
+}
