@@ -65,6 +65,11 @@ class NativeCollectorConfig:
     # learner rows per natural match (and the per-match PPO work) for the same
     # game, matching the documented collection contract.
     collect_both_sides_when_current_self_play: bool = True
+    # Read-only drain-tail telemetry (v5 W2). When False the collector takes
+    # exactly the same code path and produces the same rows/statistics as
+    # before; when True it additionally records per-round active/open env
+    # counts, idle slot-seconds, game lengths and cohort 50%->100% tail walls.
+    telemetry: bool = False
 
 
 @dataclass
@@ -134,6 +139,9 @@ class NativeCollector:
         self.stats = NativeCollectorStats()
         self._match_counter = 0
         self._team_count = int(self.engine.team_count())
+        # Flag-gated, read-only drain-tail telemetry (v5 W2). Empty when off.
+        self.telemetry: dict = {}
+        self._round_active_envs = 0
 
     # -- helpers ----------------------------------------------------------
     def _reset_cohort(self) -> tuple[list, list, list]:
@@ -651,6 +659,10 @@ class NativeCollector:
             else:
                 request_index[env] += 1
                 turn[env] += 1
+        if self.config.telemetry:
+            # Number of environments that produced at least one decision this
+            # round (read-only; the training path is untouched when disabled).
+            self._round_active_envs = len(submissions)
         return True
 
     # -- collection -------------------------------------------------------
@@ -661,8 +673,21 @@ class NativeCollector:
         self._row_cursor: dict[tuple[int, int], int] = {}
         self.model.eval()
         started = time.perf_counter()
+        telemetry = self.config.telemetry
+        if telemetry:
+            self.telemetry = {
+                "rounds": 0,
+                "round_seconds": [],
+                "active_envs": [],
+                "open_envs": [],
+                "idle_slot_seconds": 0.0,
+                "slot_seconds": 0.0,
+                "game_rounds": [],
+                "cohorts": [],
+            }
         while self.stats.games < target_games:
             handles, teams, roles = self._reset_cohort()
+            cohort_started = time.perf_counter()
             finished = [False] * len(handles)
             match_ids = [self._match_counter + index for index in range(len(handles))]
             self._match_counter += len(handles)
@@ -670,10 +695,14 @@ class NativeCollector:
             turn = [0] * len(handles)
             self._row_cursor = {}
             rounds = 0
+            env_rounds = [0] * len(handles)
+            cohort_t50 = None
             while not all(finished):
+                round_started = time.perf_counter()
                 rounds += 1
                 if rounds > self.config.max_rounds_per_cohort:
                     raise RuntimeError("cohort did not drain within the round budget")
+                finished_before = list(finished)
                 progressed = self._collect_round(
                     handles, roles, teams, match_ids, request_index, turn, finished
                 )
@@ -681,6 +710,41 @@ class NativeCollector:
                     raise RuntimeError("no actionable request while a cohort is open")
                 open_games = sum(1 for value in finished if not value)
                 self.stats.max_open_games = max(self.stats.max_open_games, open_games)
+                if telemetry:
+                    round_seconds = time.perf_counter() - round_started
+                    finished_count_before = sum(1 for value in finished_before if value)
+                    newly_finished = [
+                        index
+                        for index, value in enumerate(finished)
+                        if value and not finished_before[index]
+                    ]
+                    for index in newly_finished:
+                        self.telemetry["game_rounds"].append(env_rounds[index] + 1)
+                    for index, value in enumerate(finished):
+                        if not value:
+                            env_rounds[index] += 1
+                    self.telemetry["rounds"] += 1
+                    self.telemetry["round_seconds"].append(round_seconds)
+                    self.telemetry["active_envs"].append(int(self._round_active_envs))
+                    self.telemetry["open_envs"].append(len(handles) - finished_count_before)
+                    self.telemetry["idle_slot_seconds"] += finished_count_before * round_seconds
+                    self.telemetry["slot_seconds"] += len(handles) * round_seconds
+                    finished_now = len(handles) - open_games
+                    if cohort_t50 is None and finished_now * 2 >= len(handles):
+                        cohort_t50 = time.perf_counter() - cohort_started
+            if telemetry:
+                cohort_wall = time.perf_counter() - cohort_started
+                self.telemetry["cohorts"].append(
+                    {
+                        "size": len(handles),
+                        "rounds": rounds,
+                        "wall_seconds": cohort_wall,
+                        "games_finished": sum(1 for value in finished if value),
+                        "tail_seconds_50_to_100": (
+                            cohort_wall - cohort_t50 if cohort_t50 is not None else None
+                        ),
+                    }
+                )
         self.stats.wall_seconds = time.perf_counter() - started
         accounted = (self.stats.reset_seconds + self.stats.observation_seconds + self.stats.parse_seconds
                      + self.stats.h2d_seconds + self.stats.request_info_seconds

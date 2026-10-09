@@ -51,7 +51,9 @@ def parse_args():
     parser.add_argument("--games", type=int, default=2048, help="natural matches per rank")
     parser.add_argument("--envs", type=int, default=1024)
     parser.add_argument("--workers", type=int, default=16)
-    parser.add_argument("--microbatch", type=int, default=256)
+    # v5 A/B promotion (2026-10-09): dual default is now micro 1024
+    # (median 26.25 -> 32.50 games/s, all gates PASS; docs/perf/V5_MICROBATCH_AB.md).
+    parser.add_argument("--microbatch", type=int, default=1024)
     parser.add_argument("--minibatch", type=int, default=4096, help="global minibatch (both ranks)")
     parser.add_argument("--seed", type=int, default=20261009)
     parser.add_argument("--epochs", type=int, default=0, help="override ppo_epochs (0 = config default)")
@@ -62,6 +64,12 @@ def parse_args():
     parser.add_argument("--checkpoint", default="")
     parser.add_argument("--timeout", type=float, default=900.0, help="process-group/task timeout seconds")
     parser.add_argument("--debug", action="store_true", help="enable TORCH_DISTRIBUTED_DEBUG=DETAIL")
+    parser.add_argument(
+        "--recompute-gate",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="stratified sampled-vs-recomputed logprob parity gate before the update (v4 gate)",
+    )
     parser.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--port", type=int, default=0, help=argparse.SUPPRESS)
     return parser.parse_args()
@@ -168,6 +176,23 @@ def worker(args) -> None:
         raise SystemExit(f"rank {rank} collected zero rows; refusing to run the DDP update")
     note(f"collected {collector.stats.games} games / {len(buffer.rows)} rows in {collect_wall:.1f}s")
 
+    recompute = None
+    recompute_wall = 0.0
+    if args.recompute_gate:
+        scripts_dir = os.path.join(ROOT, "scripts")
+        if scripts_dir not in sys.path:
+            sys.path.insert(0, scripts_dir)
+        from bench_pa3_end_to_end import recompute_check
+
+        gate_started = time.perf_counter()
+        recompute = recompute_check(learner, buffer, device, amp=True)
+        recompute_wall = time.perf_counter() - gate_started
+        note(
+            f"recompute gate: {recompute['rows']} rows max|diff|="
+            f"{recompute['max_abs_diff']:.3e} (tol {recompute['tolerance']:.1e}) "
+            f"within={recompute['within_gate']}"
+        )
+
     # One absolute LR clock: the sum of every rank's completed natural matches.
     games_tensor = torch.tensor([float(collector.stats.games)], device=device)
     dist.all_reduce(games_tensor, op=dist.ReduceOp.SUM)
@@ -230,6 +255,8 @@ def worker(args) -> None:
         "rows": len(buffer.rows),
         "global_committed_matches": global_games,
         "collect_wall_s": collect_wall,
+        "recompute_wall_s": recompute_wall,
+        "recompute": recompute,
         "update_wall_s": update_wall,
         "checkpoint_wall_s": checkpoint_wall,
         "operational_errors": stats["operational_errors"],
@@ -273,6 +300,8 @@ def parent(args) -> None:
             "--report", args.report, "--checkpoint", args.checkpoint,
             "--executor", args.executor,
         ]
+        if not args.recompute_gate:
+            command.append("--no-recompute-gate")
         if numactl:
             command = [numactl, f"--cpunodebind={entry['numa']}", f"--membind={entry['numa']}", "--"] + command
         env = dict(os.environ)
@@ -363,3 +392,10 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# v5 promotion note (2026-10-09): the dual default microbatch is 1024
+# (A/B: median 26.25 -> 32.50 games/s at equal 2,048 total games, all gates
+# PASS; see docs/perf/V5_MICROBATCH_AB.md). PA3_TRAINING_CONFIG.yaml's
+# `microbatch_per_rank: 256` (docs/spec/fullspec-1.1-minidc-20261006/, mirrored
+# by configs/train.yaml) should be updated to 1024 at the next spec revision.

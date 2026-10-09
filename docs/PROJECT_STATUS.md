@@ -61,7 +61,7 @@
 
 | # | 작업 | 근거(실측) | 예상 효과(추정) | 검증 |
 |---|---|---|---|---|
-| 1 | **듀얼 micro 1024 A/B** (런처 플래그) | 단일 스윕에서 256→1024 = -28%(60.0→42.9s); 듀얼 rank의 backward가 18.9s로 비대 | 듀얼 update 61→약 43-45s/랭크, all-in 약 31-34 | D1 프로토콜 테스트 재실행 + 3회 반복 + digest parity |
+| 1 | ~~듀얼 micro 1024 A/B~~ **완료·승격 (v5 W1)** | 실측: 듀얼 256 median 26.25 → 1024 median 32.50 games/s(+23.8%, 3회 반복, 게이트 전부 PASS), update 57.5→42.2s/랭크 | 런처 기본값 1024로 승격 + 확인 런 32.50 | `docs/perf/V5_MICROBATCH_AB.md` |
 | 2 | 수집 record columnar화 | record 7.9s/22.1s(36%) | record 약 2-3s, 수집 -25-30% | recompute gate + 후보 wire oracle 유지 |
 | 3 | 학습자 물질화 columnar + 후보 u8 | 물질화+선택 12.5s/77.1s(16%) | update -8-11% | streaming equivalence 테스트 재사용 |
 | 4 | pinned + async H2D (수집/학습) | H2D 합 약 4.5s | -2-3s 전체 | profiler 타임라인 overlap 증거 |
@@ -72,6 +72,7 @@
 
 - 계약 변경(별도 승인): 4 epochs→2, 관측 f16 wire, 모델 축소 — 천장을 움직이지만 학습 수학 변경이라 별도 A/B 필요.
 - 미착수 트랙: 샘플효율 E0-E4 (`PokeAgent3_RL_Sample_Efficiency_Research_2026-10-08.md`).
+- 로드맵 및 옵션 분석: `docs/PokeAgent3_Optimization_Roadmap_2026-10-09.md`
 
 ## 6. 기록 인덱스 (잃지 않도록)
 
