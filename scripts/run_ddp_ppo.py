@@ -79,7 +79,7 @@ def parse_args(argv=None):
     )
     parser.add_argument("--trim-observation-padding", action=argparse.BooleanOptionalAction,
                         default=False, help="skip CPU-proven empty trailing transformer tokens")
-    parser.add_argument("--compact-candidates", action="store_true",
+    parser.add_argument("--compact-candidates", action=argparse.BooleanOptionalAction, default=False,
                         help="remove verified empty candidate padding, never legal candidates")
     parser.add_argument("--data", default=os.path.join(ROOT, "engine", "data"))
     parser.add_argument("--teams", default=os.path.join(ROOT, "engine", "data", "training-teams.json"))
@@ -462,6 +462,12 @@ def worker(args) -> None:
             "optimizer_digest": optimizer_digest,
             "digests_equal": bool(digests_equal),
             "executor": args.executor,
+            "execution_options": {
+                "batch_cache": args.batch_cache,
+                "compact_candidates": args.compact_candidates,
+                "trim_observation_padding": args.trim_observation_padding,
+                "microbatch": args.microbatch,
+            },
             "sync_calls": communication.sync_calls if communication is not None else None,
             "no_sync_calls": communication.no_sync_calls if communication is not None else None,
             "report": report.as_dict(),
@@ -532,8 +538,10 @@ def parent(args) -> None:
             ]
             if not args.recompute_gate:
                 command.append("--no-recompute-gate")
-            if args.compact_candidates:
-                command.append("--compact-candidates")
+            command.append("--trim-observation-padding" if args.trim_observation_padding
+                           else "--no-trim-observation-padding")
+            command.append("--compact-candidates" if args.compact_candidates
+                           else "--no-compact-candidates")
             if args.columnar_store:
                 command.append("--columnar-store")
             if args.rolling_slots:
@@ -599,6 +607,14 @@ def parent(args) -> None:
             raise SystemExit(f"rank {entry['rank']} produced no metrics JSON at {path}")
         with open(path) as handle:
             results.append(json.load(handle))
+    expected_execution = {
+        "batch_cache": args.batch_cache,
+        "compact_candidates": args.compact_candidates,
+        "trim_observation_padding": args.trim_observation_padding,
+        "microbatch": args.microbatch,
+    }
+    if any(result["execution_options"] != expected_execution for result in results):
+        raise RuntimeError("worker execution options differ from the requested benchmark")
     wall = time.perf_counter() - started
     total_games = sum(item["games"] for item in results)
     global_games = results[0]["global_committed_matches"]

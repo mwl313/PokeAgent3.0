@@ -198,3 +198,29 @@ def test_user_interrupt_cleans_up_both_started_workers(launcher, monkeypatch, tm
     with pytest.raises(KeyboardInterrupt):
         launcher.parent(args)
     assert all(worker.terminated and worker.reaped for worker in workers)
+
+
+@pytest.mark.parametrize("enabled", [False, True])
+def test_execution_flags_reach_workers_including_explicit_fallbacks(
+    launcher, monkeypatch, tmp_path, enabled,
+):
+    commands = []
+
+    def spawn(command, **kwargs):
+        commands.append(command)
+        raise OSError("stop after inspecting command")
+
+    monkeypatch.setattr(launcher, "source_provenance", lambda: {})
+    monkeypatch.setattr(launcher.subprocess, "Popen", spawn)
+    prefix = "--" if enabled else "--no-"
+    args = launcher.parse_args([
+        "--report", str(tmp_path / "report.json"),
+        prefix + "trim-observation-padding", prefix + "compact-candidates",
+        "--batch-cache", "cuda" if enabled else "none",
+    ])
+    with pytest.raises(OSError, match="inspecting command"):
+        launcher.parent(args)
+    assert prefix + "trim-observation-padding" in commands[0]
+    assert prefix + "compact-candidates" in commands[0]
+    value_index = commands[0].index("--batch-cache") + 1
+    assert commands[0][value_index] == args.batch_cache
