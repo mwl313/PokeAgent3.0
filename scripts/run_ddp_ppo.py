@@ -74,12 +74,12 @@ def parse_args(argv=None):
     parser.add_argument("--epochs", type=int, default=0, help="override ppo_epochs (0 = config default)")
     parser.add_argument("--executor", choices=["ddp", "manual"], default="ddp")
     parser.add_argument(
-        "--batch-cache", choices=["none", "cpu", "cuda"], default="none",
+        "--batch-cache", choices=["none", "cpu", "cuda"], default="cuda",
         help="materialize the iteration's learner rows once on the selected device",
     )
     parser.add_argument("--trim-observation-padding", action=argparse.BooleanOptionalAction,
                         default=False, help="skip CPU-proven empty trailing transformer tokens")
-    parser.add_argument("--compact-candidates", action=argparse.BooleanOptionalAction, default=False,
+    parser.add_argument("--compact-candidates", action=argparse.BooleanOptionalAction, default=True,
                         help="remove verified empty candidate padding, never legal candidates")
     parser.add_argument("--data", default=os.path.join(ROOT, "engine", "data"))
     parser.add_argument("--teams", default=os.path.join(ROOT, "engine", "data", "training-teams.json"))

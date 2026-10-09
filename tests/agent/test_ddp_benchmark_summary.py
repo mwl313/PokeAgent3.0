@@ -30,6 +30,16 @@ def iteration(games, wall, clock, *, collect=0.0, update=0.0):
     }
 
 
+def test_promoted_defaults_keep_padding_trim_optional(launcher):
+    args = launcher.parse_args([])
+    assert args.batch_cache == "cuda"
+    assert args.compact_candidates is True
+    assert args.trim_observation_padding is False
+    fallback = launcher.parse_args(["--batch-cache", "none", "--no-compact-candidates"])
+    assert fallback.batch_cache == "none"
+    assert fallback.compact_candidates is False
+
+
 def test_uses_measured_makespan_not_rank_sum_or_sum_of_stage_maxima(launcher):
     # Different ranks are slow in different stages. Stage maxima (9 + 9)
     # would overstate the measured critical rank wall of 10 seconds.
@@ -85,7 +95,7 @@ def test_summary_rejects_divergent_lr_clock(launcher):
 def test_persistent_cli_preserves_one_iteration_default(launcher):
     defaults = launcher.parse_args([])
     assert defaults.iterations == 1
-    assert defaults.batch_cache == "none"
+    assert defaults.batch_cache == "cuda"
     options = launcher.parse_args(["--iterations", "3", "--batch-cache", "cuda"])
     assert options.iterations == 3
     assert options.batch_cache == "cuda"
