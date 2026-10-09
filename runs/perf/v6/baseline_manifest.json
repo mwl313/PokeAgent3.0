@@ -1,0 +1,11 @@
+{
+  "reference_commit": "50c597ba56944ed62949b4e936f452cf57243e42",
+  "reference_tree": "/tmp/pa3-v6-baseline",
+  "engine_binary_sha256": "11bb01d187bf84b89177d2f4d6609710e04b2f0b287e027639f9d441baa2aaf8",
+  "baseline_harness": "Original snapshot for baseline1/2/3. Persistent harness copied from 36d79dc with only unsupported cache_device keyword omitted. No learner/model edits.",
+  "persistent_harness_sha256": "4d784686657f4f8ee2cda4e1a5a5b07c5e32b7c6a3665ed7f31b8b5f80b4fb8f",
+  "gpu_power_limits_w": [
+    175,
+    150
+  ]
+}

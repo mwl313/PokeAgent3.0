@@ -15,7 +15,8 @@
 
 | 항목 | 값 |
 |---|---|
-| **정본 라인** | `main` = `optimization/pa3-realpolicy-throughput` @ `deb3af0` (10-09 19:25, s5a 종결) |
+| **원격 정본 라인** | `origin/main` = `origin/optimization/pa3-realpolicy-throughput` @ `50c597b` (이번 작업 시작 시 원격 확인) |
+| **미니DC v6 작업** | 로컬 `optimization/ppo-v6-throughput`, 코드 `3fbc749` — PPO 최적화·정확성 수정 완료, main 미병합/미푸시 |
 | 포함 관계 | 엔진 줄 전체 흡수(engine-only 커밋 0) + 최적화 전체(P0부터 s5a W2까지) + 현황판/리포트/측정원본 |
 | 엔진 라인(의도적 파킹) | `mac/long-horizon-engine-tail` @ `91c0a21` (10-09 19:26 싱크 머지) — GitHub에 있으며 재개는 이 브랜치에서 |
 | 미통합 아카이브(보존, 삭제 금지) | `mac/*` 포크(hazards, hazard-setters, revival-blessing-v2 등) + `family/*`, `agent/*`, `integrate/*`, `training-pool/*`, `wip/*` |
@@ -25,7 +26,7 @@
 1. `docs/PROJECT_STATUS.md` — 이 문서 (살아있는 현황판)
 2. `docs/research/TRAINING_APPROACH_v1_FINAL_20261009.md` — 훈련 방식 리서치 정본 (+ `research_ecosystem.md`, `research_sample_efficiency.md`, `draft_TRAINING_APPROACH_v0.md`)
 3. `docs/spec/fullspec-1.1-minidc-20261006/` — 설계 스펙 (Full Spec 1.1)
-4. `docs/perf/` — 처리량 최적화 리포트 전체 (최신: `V5_ROLLING_SLOT_ENGINE_FIX.md`, `V5_F16_WIRE_POC.md`)
+4. `docs/perf/` — 최신: `V6_PPO_THROUGHPUT_REPORT.md` (동일 세션 3회 비교 및 검증), 이전: `V5_ROLLING_SLOT_ENGINE_FIX.md`, `V5_F16_WIRE_POC.md`
 5. `docs/PokeAgent3_Optimization_Roadmap_2026-10-09.md` — 로드맵 (옵션 A-D, STEP 1-6)
 
 ## 2. 여정 요약 (여태 무엇을 했나)
@@ -46,6 +47,7 @@
 - **v4** (10-09 오전): C0 엔트로피/KL 정규화기 그래디언트 복원(학습 수학 교정), C1 단일 GPU oracle 확정, D0/D1/M1 DDP 고정-step 집합 프로토콜 + 수동 all-reduce(파리티 통과), D2 실행기 A/B(DDP 기본 유지, 통계 동급), F0 전스택 병목 아틀라스(업데이트 구간 GPU-busy 95.4% 등), F1 최종 패널 — **단일 20.53 / 듀얼 24.67(DDP), 25.60(manual) games/s**.
 - **v5** (10-09 저녁): P0 듀얼 micro 1024 승격 — all-in **32.50 games/s**(+23.8%, update 42.2s/랭크). P0b columnar record+물질화=게이트 PASS 후 미승격(±2% 노이즈 내, 플래그 보존). P0c rolling slots(collector측)+H2D 트림=판정 기록. **s5a**: rolling-slot 엔진 수정(per-slot generation, opt-in 유지, A/B 동률) + f16 관측 wire no-go(실효 1.0-1.4%, 노이즈 이하) → **최종 32.50 games/s, s5a 종결**.
 - 모든 수치는 `docs/perf/` 보고서와 `runs/perf/` 원본 JSON에 기록 (아래 §6).
+- **v6 (미니DC 로컬)**: bounded CUDA rollout cache, 빈 후보 패딩 제거, 중복 모델 연산/동기화 감소, manual 초기화·공유 overflow·체크포인트 게이트 교정. 동일 세션 재시작 3회 중앙값 **28.84 → 37.23 games/s (+29.09%)**, PPO update **46.07 → 29.99초**. 4 epochs/PA3-8M/global minibatch4096 유지. 수정 중 코어의 지속 실행 보조 측정은 35.21 → 41.74 games/s이며 최종 HEAD 지속 실행 확인과 구분한다. 상세: `docs/perf/V6_PPO_THROUGHPUT_REPORT.md`.
 
 ## 3. 엔진 준비도 (readiness)
 
@@ -56,7 +58,7 @@
 
 ## 4. 처리량 정본 (v4 F1 패널, 2,048경기, 양좌석 계약)
 
-> ★ 최신(v5, s5a 종결): 듀얼 **32.50 games/s** (micro 1024, update 42.2s/랭크). 아래 v4 패널은 그 이전 스냅샷.
+> ★ 최신 로컬 v6: 듀얼 **37.23 games/s** (clean `3fbc749`, 재시작 3회 중앙값, update 29.99s/느린 rank). 동일 세션 원본 50c597b는 28.84 games/s. 과거 v5 32.50과 아래 v4는 당시 스냅샷이며 이번 동일 세션 개선율의 분모가 아니다.
 
 | 항목 | 단일 GPU | 듀얼 GPU |
 |---|---:|---:|
@@ -66,8 +68,8 @@
 | 미세배치 | 1024 | 256 (기본값 잔존 — P0 교정 대상) |
 
 - 측정 SHA: `fbf878e` (이후 커밋은 문서/프로비넌스만). 상세: `docs/perf/V4_OPERATIONAL_FRONTIER_REPORT.md`.
-- 물리 상한(계약 유지 시, 추정): 두 V100 합산 이론 천장 약 110-115 games/s, 실용 목표 40-55.
-- 100M 소요 예상(추정): 현 속도 약 46일 → P0 반영 시 약 34-37일.
+- 물리 상한은 미확정. 기존 110–115 games/s 추정과 GPU-busy만으로는 천장을 입증할 수 없다. kernel busy는 SM/Tensor Core 활용률과 다르다.
+- 100M 일정은 단기 패널을 그대로 외삽하지 않는다. readiness 10/16과 장기 안정성·resume 검증이 남아 있다.
 
 ## 5. 다음 최적화 작업 (권장 순서)
 
@@ -77,8 +79,8 @@
 | 2 | 수집 record columnar화 — **측정 완료·미승격 (v5b T1)** | row-SHA 동일 게이트 PASS, 실측 collect +2.0%(역행)·all-in +1.6%(노이즈 내) | 기본 경로 유지, `--columnar-store` 플래그로 보존 | `docs/perf/V5_COLUMNAR_RECORD.md` |
 | 3 | 학습자 물질화 columnar + 후보 u8 — **부분 적용·미승격 (v5b T2)** | 물질화 −8.2%·update −2.0%, all-in +1.6%(노이즈 내); u8은 미착수(별도 결정) | 기본 경로 유지 | `docs/perf/V5_COLUMNAR_MATERIALIZATION.md` |
 | 4 | pinned + async H2D (수집/학습) — **미실행 (v5c T1)** | H2D 약 1.7s/랭크(63s 중 2.7%) → 기대 이득이 ±2% 노이즈 내 | 다음 작업으로 이월 | profiler 타임라인 overlap 증거 |
-| 5 | optimizer 블록 정리(flat isfinite 등) — **미실행 (v5c T1)** | 실측 per-step 연산 ~19ms(타이머는 큐 드레인) | 이월 | global finite/skip parity |
-| 6 | digest/체크포인트/로그 정리 — **미실행 (v5c T1)** | 런처 오버헤드 서브초~수 초 | 이월 | 증거 요건 유지 |
+| 5 | optimizer 블록 정리 — **v6 적용** | clip norm 유한성 재사용, rank 공유 overflow/scaler 교정 | update·all-in 개선에 포함 | global finite/skip 및 Adam 상태 parity PASS |
+| 6 | digest/체크포인트/로그 정리 — **v6 적용** | 실패 게이트 실제 중단, 검증 후 원자적 체크포인트, persistent 실행·단계별 계측 | 안전성 및 startup 분리 | rank digest·worker 옵션·실패 정리 테스트 PASS |
 | 7 | rolling slots — **엔진 수정·게이트 PASS·A/B 동률 (v5d s5a)** | per-slot generation + `reset_slots_batch` 구현, 등가성 테스트 2종 PASS, idle slot 21.1%→10.4%; 듀얼 A/B all-in −0.00%(collect +0.67%, update −0.31%) | 옵트인 `--rolling-slots` 유지, 기본값 불변 | `docs/perf/V5_ROLLING_SLOT_ENGINE_FIX.md` |
 | 제외 | torch.compile/Triton | Triton이 CC 8.0+만 지원, V100 fp16 tl.dot open bug | 해당 없음 | — |
 
@@ -108,3 +110,4 @@
 
 - 2026-10-09: 최초 작성 + main 승격 (아리아 작성, 미니DC 코덱스 세션 실행).
 - 2026-10-09 (밤): v5 체인 반영(s5a 종결, 최종 32.50 games/s), 진행 지도(브랜치/문서) 갱신, 훈련 리서치 v1 정본 `docs/research/` 커밋.
+- 2026-10-09 (미니DC v6): 로컬 최적화 코드 3fbc749, clean 3회 패널 37.23 games/s, 현황/상한 추정 교정. main 변경 없음.

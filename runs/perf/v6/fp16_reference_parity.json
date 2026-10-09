@@ -1,0 +1,27 @@
+{
+  "gradient_max_abs_diff": 3.814697265625e-05,
+  "gradient_max_ref_abs": 0.156005859375,
+  "gradient_relative_l2": 6.60397489703891e-05,
+  "output_max_abs_diffs": {
+    "loss_unscaled": 0.0,
+    "value_mean": 0.0,
+    "policy_mean": 0.0,
+    "value_mean_detached": 0.0,
+    "entropy_mean": 0.0,
+    "uniform_kl_mean": 0.0,
+    "approx_kl_mean": 0.0,
+    "ratio_mean": 0.0,
+    "clip_fraction": 0.0,
+    "actor_count": 0.0,
+    "value_count": 0.0,
+    "policy_sum": 0.0,
+    "value_sum": 0.0,
+    "entropy_sum": 0.0,
+    "uniform_kl_sum": 0.0,
+    "kl_sum": 0.0,
+    "ratio_sum": 0.0,
+    "clip_sum": 0.0
+  },
+  "gate_relative_l2": 0.002,
+  "passed": true
+}
