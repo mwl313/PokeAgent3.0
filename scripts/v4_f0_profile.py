@@ -39,6 +39,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--batch-cache", choices=["none", "cpu", "cuda"], default="none")
     parser.add_argument("--compact-candidates", action="store_true")
+    parser.add_argument("--trim-observation-padding", action="store_true")
     parser.add_argument("--out", type=pathlib.Path,
                         default=pathlib.Path("runs/perf/v4/f0_learner_kernels.json"))
     parser.add_argument("--trace", default="")
@@ -74,6 +75,7 @@ def main() -> int:
         workers=args.workers,
     )
     model = build_model(PA3Config(), device=device)
+    model.encoder.trim_padding = args.trim_observation_padding
     collector = NativeCollector(
         engine,
         model,
@@ -165,6 +167,7 @@ def main() -> int:
         "microbatch": args.microbatch,
         "batch_cache": args.batch_cache,
         "compact_candidates": args.compact_candidates,
+        "trim_observation_padding": args.trim_observation_padding,
         "profiled_wall_s": wall,
         "gpu_busy_s": cuda_total_us / 1e6,
         "gpu_busy_leaf_kernel_s": kernel_union_us / 1e6,

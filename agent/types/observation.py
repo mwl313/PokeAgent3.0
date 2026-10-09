@@ -168,6 +168,46 @@ class ObservationBatch:
     layout: ObservationLayout = field(default_factory=ObservationLayout)
     schema_version: int = 1
 
+    @property
+    def validated_token_limit(self) -> int | None:
+        """CPU-proven bound on participating tokens, or ``None`` if unknown.
+
+        This is an optional execution hint, not part of the observation wire
+        schema. Both tensor identity and its shared mutation counter must match
+        the validation stamp; replacing the mask or changing any view of it
+        invalidates the hint without reading a CUDA scalar. CPU masks are also
+        checked afresh because writable NumPy aliases bypass that counter.
+        Inference tensors have no version counter and retain the full path.
+        """
+        stamp = getattr(self, "_token_limit_stamp", None)
+        if stamp is None or self.token_mask is not stamp[0]:
+            return None
+        try:
+            version = self.token_mask._version
+        except RuntimeError:  # inference tensors cannot prove immutability
+            return None
+        if version != stamp[1]:
+            return None
+        return self._cpu_token_limit() if self.device.type == "cpu" else stamp[2]
+
+    def _remember_token_limit(self, limit: int | None) -> "ObservationBatch":
+        self._token_limit_stamp = None
+        if limit is not None:
+            try:
+                version = self.token_mask._version
+            except RuntimeError:
+                return self
+            self._token_limit_stamp = (self.token_mask, version, int(limit))
+        return self
+
+    def _cpu_token_limit(self) -> int:
+        """Validate only the layout's fixed trailing padding on the host."""
+        if self.token_mask.device.type != "cpu":
+            raise ValueError("validate token padding on CPU before device transfer")
+        tokens = self.token_mask.shape[1]
+        active = min(tokens, max(1, self.layout.ACTIVE_TOKENS))
+        return tokens if bool(self.token_mask[:, active:].any()) else active
+
     # -- construction ---------------------------------------------------
     @classmethod
     def from_native_payload(
@@ -211,6 +251,10 @@ class ObservationBatch:
                 tensor = tensor.to(torch.long)
             else:
                 tensor = tensor.to(dtype)
+            if name == "token_mask":
+                # A NumPy write does not increment Tensor._version. Own this
+                # tiny mask so later payload edits cannot stale the bound.
+                tensor = tensor.clone()
             return tensor.to(device) if device is not None else tensor
 
         token_mask = _tensor("token_mask", 1, "bool")
@@ -232,7 +276,7 @@ class ObservationBatch:
         else:
             side_ids = layout.default_sides().expand(batch, -1).contiguous().clone()
 
-        return cls(
+        result = cls(
             token_mask=token_mask,
             categories=categories,
             category_known=category_known,
@@ -245,6 +289,11 @@ class ObservationBatch:
             layout=layout,
             schema_version=int(_as_numpy(payload.get("schema_version", 1)).reshape(-1)[0]),
         )
+        # The native payload is a host array even when its tensors are adapted
+        # directly to CUDA. Validate before transfer semantics can hide it.
+        active = min(tokens, max(1, layout.ACTIVE_TOKENS))
+        has_tail = bool(_as_numpy(payload["token_mask"])[..., active:].any())
+        return result._remember_token_limit(tokens if has_tail else active)
 
     @classmethod
     def dummy(
@@ -280,6 +329,7 @@ class ObservationBatch:
             side_ids=layout.default_sides().expand(batch_size, -1).clone(),
             layout=layout,
         )
+        batch._remember_token_limit(batch._cpu_token_limit())
         if device is not None:
             batch = batch.to(device)
         return batch
@@ -293,8 +343,12 @@ class ObservationBatch:
         return self.token_mask.device
 
     def to(self, device: torch.device | str) -> "ObservationBatch":
+        # Always inspect the actual host mask at the transfer boundary. A
+        # NumPy alias can change storage without changing its tensor version.
+        limit = self._cpu_token_limit() if self.device.type == "cpu" else self.validated_token_limit
+        token_mask = self.token_mask.to(device)
         return ObservationBatch(
-            token_mask=self.token_mask.to(device),
+            token_mask=token_mask,
             categories=self.categories.to(device),
             category_known=self.category_known.to(device),
             floats=self.floats.to(device),
@@ -305,7 +359,7 @@ class ObservationBatch:
             side_ids=self.side_ids.to(device),
             layout=self.layout,
             schema_version=self.schema_version,
-        )
+        )._remember_token_limit(limit)
 
     def select(self, index: torch.Tensor | Sequence[int]) -> "ObservationBatch":
         """Gather rows; ``index`` is a 1-D long tensor or a sequence."""
@@ -323,7 +377,7 @@ class ObservationBatch:
             side_ids=self.side_ids.index_select(0, idx),
             layout=self.layout,
             schema_version=self.schema_version,
-        )
+        )._remember_token_limit(self.validated_token_limit)
 
     def narrow(self, begin: int, end: int) -> "ObservationBatch":
         """Zero-copy contiguous slice of the leading (row) dimension."""
@@ -340,10 +394,12 @@ class ObservationBatch:
             side_ids=self.side_ids.narrow(0, begin, count),
             layout=self.layout,
             schema_version=self.schema_version,
-        )
+        )._remember_token_limit(self.validated_token_limit)
 
     def cat(self, others: Sequence["ObservationBatch"]) -> "ObservationBatch":
         parts = [self, *others]
+        limits = [part.validated_token_limit for part in parts]
+        limit = max(limits) if all(value is not None for value in limits) else None
         return ObservationBatch(
             token_mask=torch.cat([p.token_mask for p in parts], dim=0),
             categories=torch.cat([p.categories for p in parts], dim=0),
@@ -356,7 +412,7 @@ class ObservationBatch:
             side_ids=torch.cat([p.side_ids for p in parts], dim=0),
             layout=self.layout,
             schema_version=self.schema_version,
-        )
+        )._remember_token_limit(limit)
 
     def clone(self) -> "ObservationBatch":
         return self.select(torch.arange(len(self), dtype=torch.long, device=self.device))
@@ -384,6 +440,10 @@ class ObservationBatch:
         }
         for name, tensor in cpu.items():
             value = tensor.detach().cpu().numpy()
+            if name == "token_mask":
+                # Exporting a mutable NumPy alias would bypass the mask's
+                # version counter and invalidate its CPU proof invisibly.
+                value = value.copy()
             if value.dtype == np.int64:
                 value = value.astype(np.uint16)
             elif value.dtype == np.float32:
@@ -427,7 +487,7 @@ class ObservationBatch:
                 )
             return torch.as_tensor(value.copy())
 
-        return cls(
+        result = cls(
             token_mask=_tensor("token_mask").to(torch.bool),
             categories=_tensor("categories").to(torch.long),
             category_known=_tensor("category_known").to(torch.bool),
@@ -439,6 +499,7 @@ class ObservationBatch:
             side_ids=_tensor("side_ids").to(torch.long),
             layout=layout,
         )
+        return result._remember_token_limit(result._cpu_token_limit())
 
 
 def observation_shape(layout: ObservationLayout | None = None) -> dict[str, tuple[int, ...]]:

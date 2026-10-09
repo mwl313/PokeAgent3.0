@@ -16,6 +16,7 @@ parser.add_argument("--fixture", required=True)
 parser.add_argument("--out", required=True)
 parser.add_argument("--make-fixture", action="store_true")
 parser.add_argument("--compact-candidates", action="store_true")
+parser.add_argument("--trim-observation-padding", action="store_true")
 args = parser.parse_args()
 sys.path[:0] = [args.root, os.path.join(args.root, "engine", "python")]
 
@@ -27,6 +28,7 @@ torch.set_num_threads(1)
 torch.cuda.set_device(0)
 torch.manual_seed(20261009)
 model = build_model(PA3Config())
+model.encoder.trim_padding = args.trim_observation_padding
 learner = PPOLearner(model, PPOConfig(), device="cuda:0", amp=True)
 if args.make_fixture:
     import pa3_engine

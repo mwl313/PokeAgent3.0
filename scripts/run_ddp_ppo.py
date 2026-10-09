@@ -77,6 +77,8 @@ def parse_args(argv=None):
         "--batch-cache", choices=["none", "cpu", "cuda"], default="none",
         help="materialize the iteration's learner rows once on the selected device",
     )
+    parser.add_argument("--trim-observation-padding", action=argparse.BooleanOptionalAction,
+                        default=False, help="skip CPU-proven empty trailing transformer tokens")
     parser.add_argument("--compact-candidates", action="store_true",
                         help="remove verified empty candidate padding, never legal candidates")
     parser.add_argument("--data", default=os.path.join(ROOT, "engine", "data"))
@@ -287,6 +289,7 @@ def worker(args) -> None:
     torch.manual_seed(args.seed + rank)
     engine = pa3_engine.NativeEngine(args.data, args.teams, workers=args.workers)
     model = build_model(PA3Config())
+    model.encoder.trim_padding = args.trim_observation_padding
     overrides = dict(
         global_minibatch_size=args.minibatch,
         microbatch_size=args.microbatch,

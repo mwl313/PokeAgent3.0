@@ -117,6 +117,9 @@ class TokenEncoder(nn.Module):
         self.blocks = nn.ModuleList([EncoderBlock(config) for _ in range(config.encoder_layers)])
         self.final_norm = nn.LayerNorm(config.d_model)
         self._forward_calls = 0
+        # Experimental execution-only option; architecture/checkpoints and the
+        # full padded-token public API stay unchanged. Enable only after an A/B.
+        self.trim_padding = False
 
     @property
     def forward_calls(self) -> int:
@@ -130,6 +133,13 @@ class TokenEncoder(nn.Module):
         self._forward_calls += 1
         hidden = self.embedding(observation)
         valid = observation.token_mask
+        tokens = hidden.shape[1]
+        limit = observation.validated_token_limit if self.trim_padding else None
+        trim = limit is not None and 0 < limit < tokens
+        if trim:
+            hidden = hidden[:, :limit]
+            valid = valid[:, :limit]
+        output_mask = valid
         # Guarantee at least one participating key per row so the softmax is
         # finite; padded query rows are re-zeroed after every block.
         if valid.shape[1] > 0:
@@ -138,5 +148,7 @@ class TokenEncoder(nn.Module):
         for block in self.blocks:
             hidden = block(hidden, valid)
         hidden = self.final_norm(hidden)
-        hidden = hidden * observation.token_mask.unsqueeze(-1).to(hidden.dtype)
+        hidden = hidden * output_mask.unsqueeze(-1).to(hidden.dtype)
+        if trim:
+            hidden = F.pad(hidden, (0, 0, 0, tokens - limit))
         return hidden
