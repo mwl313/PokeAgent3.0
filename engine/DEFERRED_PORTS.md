@@ -189,6 +189,34 @@ with the native's without touching `BattleState::residual`.
 
 ## Preserved scratch work (2026-10-08) - do not merge
 
+## Gastro Acid / Worry Seed ability suppression (2026-10-09) - parked mid-family
+
+`Klutz` and the `ignoringItem` primitive landed (`6cc3a32`): `ignoring_item` /
+`held_item` in `engine/src/battle/hooks.rs` now gate every item-handler site, so
+Klutz and (later) Magic Room make a held item inert while theft, Unburden and
+Acrobatics still see it.
+
+Gastro Acid and Worry Seed were prototyped on top of that and then parked,
+because a faithful port cannot simply swap `PokemonState.ability` to none: the
+differential corpus asserts the **real** ability id in every boundary (`move
+gastroacid_7117` fails at decision 3, native `0` vs reference `235`) and the
+reference keeps `pokemon.ability` intact behind `abilityState.suppressed`.
+
+The prototype is preserved as the git stash `WIP Gastro Acid/Worry Seed: needs
+ability-read refactor (mon_ability accessor)`. It contains: `suppressed_ability:
+Option<Id>` on `PokemonState` (schema 21), `real_ability` used by the ability
+transfer moves, the `gastroacid` volatile branch, the Worry Seed `onHit`, the
+`onTryHit`/`onTryImmunity` gates, the ported callback keys and the two scenes in
+`generate_more_suppression.mjs`.
+
+Next step to land it: introduce a single accessor
+`BattleState::mon_ability(dex, e) -> Ability` that returns "no ability" while
+the holder is suppressed, and convert the ~150
+`dex.effects.abilities[self.mon(X).ability as usize]` read sites to it (the
+mechanical conversion is verified by the existing corpus, exactly like the
+`held_item` conversion was). The `mon.ability` field must stay the real id so
+the corpus state comparison keeps matching the reference.
+
 A parallel workstream left an alternative queue-tie prototype behind when the
 sampling fix landed. It is not needed for anything currently green; keep it
 only as research:
