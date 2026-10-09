@@ -367,10 +367,7 @@ class PPOLearner:
         used = 0
         for begin, end in micro_ranges:
             forward_start = time.perf_counter()
-            micro = minibatch.select(
-                torch.arange(begin, end, dtype=torch.long,
-                             device=minibatch.old_logprob.device)
-            )
+            micro = minibatch.narrow(begin, end)
             terms = self._forward_terms(micro)
             profile["forward"] += time.perf_counter() - forward_start
             forward_start = time.perf_counter()
@@ -596,10 +593,7 @@ class PPOLearner:
                 for micro_index in range(micro_steps):
                     micro_begin = micro_index * microbatch
                     micro_end = min(micro_begin + microbatch, batch_size)
-                    micro = minibatch.select(
-                        torch.arange(micro_begin, micro_end, dtype=torch.long,
-                                     device=minibatch.old_logprob.device)
-                    )
+                    micro = minibatch.narrow(micro_begin, micro_end)
                     is_last = micro_index == micro_steps - 1
                     context = (
                         communication.context(synchronize=is_last)
@@ -610,6 +604,7 @@ class PPOLearner:
                         forward_start = time.perf_counter()
                         terms = self._forward_terms(micro)
                         profile["forward"] += time.perf_counter() - forward_start
+                        backward_start = time.perf_counter()
                         loss = ddp_rank_loss(
                             terms["loss_unscaled"] * terms["actor_count"],
                             terms["value_mean"] * terms["value_count"],
@@ -624,8 +619,11 @@ class PPOLearner:
                                 "must stay graph-connected for the reducer"
                             )
                         self.scaler.scale(loss).backward()
+                        profile["backward"] += time.perf_counter() - backward_start
+                    metrics_start = time.perf_counter()
                     for key in sum_keys:
                         epoch_sums[key] = epoch_sums[key] + terms[key].float()
+                    profile["metrics"] += time.perf_counter() - metrics_start
                 if communication is not None:
                     profile["ddp_sync_steps"] = float(communication.sync_calls)
 
@@ -807,11 +805,11 @@ class PPOLearner:
                 for micro_index in range(micro_steps):
                     micro_begin = micro_index * microbatch
                     micro_end = min(micro_begin + microbatch, batch_size)
-                    micro = minibatch.select(
-                        torch.arange(micro_begin, micro_end, dtype=torch.long,
-                                     device=minibatch.old_logprob.device)
-                    )
+                    micro = minibatch.narrow(micro_begin, micro_end)
+                    forward_start = time.perf_counter()
                     terms = self._forward_terms(micro)
+                    profile["forward"] += time.perf_counter() - forward_start
+                    backward_start = time.perf_counter()
                     loss = (
                         terms["loss_unscaled"] * terms["actor_count"] / max(actor_total, 1.0)
                         + self.config.value_coefficient
@@ -820,8 +818,11 @@ class PPOLearner:
                         / max(value_total, 1.0)
                     )
                     self.scaler.scale(loss).backward()
+                    profile["backward"] += time.perf_counter() - backward_start
+                    metrics_start = time.perf_counter()
                     for key in sum_keys:
                         epoch_sums[key] = epoch_sums[key] + terms[key].float()
+                    profile["metrics"] += time.perf_counter() - metrics_start
 
                 optimizer_start = time.perf_counter()
                 self.scaler.unscale_(self.optimizer)
@@ -991,6 +992,10 @@ class PPOLearner:
                     advantages=plan.advantages[indices],
                 )
                 profile["minibatch_select"] += time.perf_counter() - start
+                for key, value in getattr(plan.buffer, "profile", {}).items():
+                    profile[f"materialize_{key}"] = (
+                        profile.get(f"materialize_{key}", 0.0) + float(value)
+                    )
                 start = time.perf_counter()
                 used = self._process_minibatch(
                     minibatch, sum_keys, epoch_sums, exact, profile, report

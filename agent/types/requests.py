@@ -179,6 +179,18 @@ class BranchCandidatesBatch:
             selected=self.selected.index_select(0, idx),
         )
 
+    def narrow(self, begin: int, end: int) -> "BranchCandidatesBatch":
+        """Zero-copy contiguous slice of the leading (row) dimension."""
+        count = end - begin
+        return BranchCandidatesBatch(
+            action_ids=self.action_ids.narrow(0, begin, count),
+            mask=self.mask.narrow(0, begin, count),
+            entity_token=self.entity_token.narrow(0, begin, count),
+            move_token=self.move_token.narrow(0, begin, count),
+            branch_valid=self.branch_valid.narrow(0, begin, count),
+            selected=self.selected.narrow(0, begin, count),
+        )
+
     def cat(self, others: Sequence["BranchCandidatesBatch"]) -> "BranchCandidatesBatch":
         parts = [self, *others]
         return BranchCandidatesBatch(

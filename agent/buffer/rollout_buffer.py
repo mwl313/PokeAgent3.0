@@ -613,11 +613,43 @@ class RolloutBatch:
     def with_advantages(self, advantages: torch.Tensor) -> "RolloutBatch":
         return replace(self, advantages=advantages)
 
+    def narrow(self, begin: int, end: int) -> "RolloutBatch":
+        """Zero-copy contiguous row slice (the ordered minibatch case).
+
+        `select(arange(begin, end))` materialises a gather copy of every row
+        tensor; the micro loops process contiguous chunks, so `narrow` gives the
+        same rows with views instead of copies (P5.4).
+        """
+        count = end - begin
+        return RolloutBatch(
+            observation=self.observation.narrow(begin, end),
+            candidates=self.candidates.narrow(begin, end),
+            old_logprob=self.old_logprob.narrow(0, begin, count),
+            values=self.values.narrow(0, begin, count),
+            raw_advantages=self.raw_advantages.narrow(0, begin, count),
+            returns=self.returns.narrow(0, begin, count),
+            rewards=self.rewards.narrow(0, begin, count),
+            dones=self.dones.narrow(0, begin, count),
+            actor_mask=self.actor_mask.narrow(0, begin, count),
+            row_valid=self.row_valid.narrow(0, begin, count),
+            match_ids=self.match_ids.narrow(0, begin, count),
+            sides=self.sides.narrow(0, begin, count),
+            request_index=self.request_index.narrow(0, begin, count),
+            turns=self.turns.narrow(0, begin, count),
+            request_kind=self.request_kind.narrow(0, begin, count),
+            policy_ids=self.policy_ids[begin:end] if self.policy_ids else self.policy_ids,
+            advantages=(
+                self.advantages.narrow(0, begin, count)
+                if self.advantages is not None
+                else None
+            ),
+        )
+
     def iter_microbatches(self, microbatch_size: int) -> Iterator["RolloutBatch"]:
         for start in range(0, len(self), microbatch_size):
             stop = min(start + microbatch_size, len(self))
             index = torch.arange(start, stop, dtype=torch.long, device=self.old_logprob.device)
-            yield self.select(index)
+            yield self.narrow(start, stop)
 
     def iter_minibatches(
         self,
@@ -658,9 +690,9 @@ class RolloutBatch:
                 permutation = torch.randperm(batch_size, generator=generator)
                 padded = padded[permutation]
                 valid = valid[permutation]
+                yield self.select(padded, row_valid=valid)
             else:
-                padded, valid = index, torch.ones(index.numel(), dtype=torch.bool)
-            yield self.select(padded, row_valid=valid)
+                yield self.select(index)
 
     @property
     def sample_weight(self) -> float:

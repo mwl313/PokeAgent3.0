@@ -325,6 +325,23 @@ class ObservationBatch:
             schema_version=self.schema_version,
         )
 
+    def narrow(self, begin: int, end: int) -> "ObservationBatch":
+        """Zero-copy contiguous slice of the leading (row) dimension."""
+        count = end - begin
+        return ObservationBatch(
+            token_mask=self.token_mask.narrow(0, begin, count),
+            categories=self.categories.narrow(0, begin, count),
+            category_known=self.category_known.narrow(0, begin, count),
+            floats=self.floats.narrow(0, begin, count),
+            float_known=self.float_known.narrow(0, begin, count),
+            flags=self.flags.narrow(0, begin, count),
+            flag_known=self.flag_known.narrow(0, begin, count),
+            role_ids=self.role_ids.narrow(0, begin, count),
+            side_ids=self.side_ids.narrow(0, begin, count),
+            layout=self.layout,
+            schema_version=self.schema_version,
+        )
+
     def cat(self, others: Sequence["ObservationBatch"]) -> "ObservationBatch":
         parts = [self, *others]
         return ObservationBatch(
