@@ -1,0 +1,64 @@
+{
+  "arch_list": [
+    "sm_50",
+    "sm_60",
+    "sm_70",
+    "sm_75",
+    "sm_80",
+    "sm_86",
+    "sm_90"
+  ],
+  "command": "python scripts/bench_pa3_end_to_end.py --games 2048 --envs 1024 --workers 16 --repeats 3 --mode full --observations fixed --candidate-wire packed --precision fp16 --inference-mode --device cuda:0 --microbatch 1024 --streaming-minibatch --report runs/perf/v4/final_single_2k.json --checkpoint runs/perf/v4/final_single_checkpoint.pt --tag final-clean-single",
+  "config": {
+    "candidate_wire": "packed",
+    "collect_both_sides_when_current_self_play": true,
+    "device": "cuda:0",
+    "envs": 1024,
+    "games": 2048,
+    "global_minibatch": 4096,
+    "inference_mode": true,
+    "microbatch": 1024,
+    "mode": "full",
+    "observations": "fixed",
+    "precision": "fp16",
+    "repeats": 3,
+    "seed": 20261006,
+    "streaming_minibatch": true,
+    "workers": 16
+  },
+  "cuda_runtime": "12.6",
+  "dataset_id": "mb-mc-v3-userteam-all-train",
+  "dataset_manifest_sha256": "f0509c08544c89a0b0c043218e33795c91af7af2f78e2d6fb83bae69f3babaef",
+  "git_branch": "optimization/pa3-realpolicy-throughput",
+  "git_diff_hash": null,
+  "git_dirty": false,
+  "git_sha": "fbf878e124f35e9168aa0bf60b2662fa6f6b992e",
+  "gpus": [
+    {
+      "driver_version": "580.178.04",
+      "index": 0,
+      "memory_total_mib": 32768,
+      "memory_used_mib": 4,
+      "name": "Tesla V100-PCIE-32GB",
+      "pci_bus_id": "00000000:05:00.0",
+      "power_limit_w": 175.0,
+      "temperature_c": 35,
+      "utilization_pct": 0
+    },
+    {
+      "driver_version": "580.178.04",
+      "index": 1,
+      "memory_total_mib": 32768,
+      "memory_used_mib": 4,
+      "name": "Tesla V100-PCIE-32GB",
+      "pci_bus_id": "00000000:84:00.0",
+      "power_limit_w": 150.0,
+      "temperature_c": 38,
+      "utilization_pct": 0
+    }
+  ],
+  "python": "3.12.3",
+  "readiness_note": "readiness_check is 10/16 PASS; this benchmark does not change it",
+  "run_id": "bench-1791514803-final-clean-single",
+  "torch": "2.14.0+cu126"
+}

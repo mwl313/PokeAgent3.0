@@ -1,0 +1,40 @@
+{
+  "epoch_kl": [
+    8.127464880831937e-09,
+    0.012907996986648825,
+    0.00835590159375812
+  ],
+  "epoch_kl_delta": 9.910878836366654e-10,
+  "grad_norm": 5.5933427810668945,
+  "grad_norm_max": 10.894201278686523,
+  "grad_norm_relative_delta": 0.0,
+  "lr": 1.475136e-05,
+  "lr_match": true,
+  "moment_delta": 8.149072527885437e-10,
+  "no_sync_calls": 21,
+  "policy_loss": -0.000739453891309152,
+  "rank": 0,
+  "reference": {
+    "epoch_kl": [
+      8.127464880831937e-09,
+      0.012907996986648825,
+      0.008355902584846003
+    ],
+    "grad_norm": 5.5933427810668945,
+    "grad_norm_max": 10.894201278686523,
+    "lr": 1.475136e-05,
+    "policy_loss": -0.000739454139081123,
+    "rows": 4093,
+    "skipped": 0,
+    "steps": 3,
+    "value_loss": 0.2838196501649157
+  },
+  "rows": 2046,
+  "skipped": 0,
+  "steps": 3,
+  "steps_match": true,
+  "sync_calls": 3,
+  "update_wall_s": 6.199684348000119,
+  "value_loss": 0.2838196501649157,
+  "weight_delta": 1.1920928955078125e-07
+}

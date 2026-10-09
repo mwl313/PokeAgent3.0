@@ -1,0 +1,159 @@
+{
+  "all_in_committed_games_per_s": 7.107334652534545,
+  "config": {
+    "checkpoint": "",
+    "data": "/home/minidc/Desktop/PokeAgent3.0/engine/data",
+    "debug": false,
+    "envs": 32,
+    "epochs": 1,
+    "games": 24,
+    "microbatch": 64,
+    "minibatch": 256,
+    "port": 0,
+    "report": "runs/perf/v4/d1_smoke.json",
+    "seed": 20261009,
+    "teams": "/home/minidc/Desktop/PokeAgent3.0/engine/data/training-teams.json",
+    "timeout": 300.0,
+    "workers": 4
+  },
+  "digests_equal": true,
+  "global_committed_matches": 64,
+  "launcher_wall_s": 9.004782120000073,
+  "mode": "real_policy_ddp_ppo_fixed_step",
+  "model_digests": [
+    "5b31f975377f195da2bc2920a9d6a53a36b87348c760ef0475088b35f70bc6fb",
+    "5b31f975377f195da2bc2920a9d6a53a36b87348c760ef0475088b35f70bc6fb"
+  ],
+  "optimizer_digests": [
+    "e6fc2815aa7a081b08b6cd28c1fe07ad7506696c0580c32effcf636c91ff213f",
+    "e6fc2815aa7a081b08b6cd28c1fe07ad7506696c0580c32effcf636c91ff213f"
+  ],
+  "ranks": [
+    {
+      "checkpoint_wall_s": 0.0,
+      "collect_wall_s": 1.295215952000035,
+      "decisions": 847,
+      "digests_equal": true,
+      "games": 32,
+      "global_committed_matches": 64,
+      "gpu": 0,
+      "gpu_peak_reserved_gib": 0.8203125,
+      "model_digest": "5b31f975377f195da2bc2920a9d6a53a36b87348c760ef0475088b35f70bc6fb",
+      "no_sync_calls": 7,
+      "numa": 0,
+      "operational_errors": 0,
+      "optimizer_digest": "e6fc2815aa7a081b08b6cd28c1fe07ad7506696c0580c32effcf636c91ff213f",
+      "prepare_profile": {
+        "gae": 0.03657513699999981,
+        "normalize": 0.0014993899999353744,
+        "total": 0.03809518699995351
+      },
+      "profile": {
+        "backward": 0.0,
+        "ddp_sync_steps": 7.0,
+        "epoch_sync": 0.0,
+        "forward": 0.4864925569991101,
+        "h2d": 0.021495410999477826,
+        "metrics": 0.0,
+        "minibatch_select": 0.08535583399975621,
+        "optimizer": 0.26794080700028644,
+        "prepare_build": 0.0,
+        "prepare_normalize": 0.0,
+        "prepare_total": 0.0,
+        "total": 1.5685977240000284
+      },
+      "rank": 0,
+      "report": {
+        "actor_rows": 796,
+        "approx_kl": 0.005815615975054125,
+        "clip_fraction": 0.0773067331670823,
+        "committed_matches": 64,
+        "entropy": 0.9976226730536939,
+        "epoch_approx_kl": [
+          0.005815615975054125
+        ],
+        "epochs_run": 1,
+        "grad_norm": 14.017448425292969,
+        "grad_norm_max": 14.017448425292969,
+        "learning_rate": 1.007424e-05,
+        "optimizer_steps": 7,
+        "optimizer_steps_skipped": 0,
+        "policy_loss": 0.0034569811048055826,
+        "ratio_mean": 0.997766813435162,
+        "rows": 847,
+        "scaler_scale": 65536.0,
+        "stopped_early": false,
+        "uniform_kl": 0.0024308269457924097,
+        "value_loss": 0.2813406007440038
+      },
+      "rows": 847,
+      "rss_peak_gib": 1.9344863891601562,
+      "sync_calls": 7,
+      "update_wall_s": 1.5692712009999923
+    },
+    {
+      "checkpoint_wall_s": 0.0,
+      "collect_wall_s": 1.2055651969999417,
+      "decisions": 852,
+      "digests_equal": true,
+      "games": 32,
+      "global_committed_matches": 64,
+      "gpu": 1,
+      "gpu_peak_reserved_gib": 0.8203125,
+      "model_digest": "5b31f975377f195da2bc2920a9d6a53a36b87348c760ef0475088b35f70bc6fb",
+      "no_sync_calls": 7,
+      "numa": 1,
+      "operational_errors": 0,
+      "optimizer_digest": "e6fc2815aa7a081b08b6cd28c1fe07ad7506696c0580c32effcf636c91ff213f",
+      "prepare_profile": {
+        "gae": 0.037079360000007,
+        "normalize": 0.001178290000098059,
+        "total": 0.03827737500000694
+      },
+      "profile": {
+        "backward": 0.0,
+        "ddp_sync_steps": 7.0,
+        "epoch_sync": 0.0,
+        "forward": 0.4496113980001155,
+        "h2d": 0.05117415799986702,
+        "metrics": 0.0,
+        "minibatch_select": 0.0683260160003556,
+        "optimizer": 0.33635171500009164,
+        "prepare_build": 0.0,
+        "prepare_normalize": 0.0,
+        "prepare_total": 0.0,
+        "total": 1.5681533969998327
+      },
+      "rank": 1,
+      "report": {
+        "actor_rows": 808,
+        "approx_kl": 0.005815615975054125,
+        "clip_fraction": 0.0773067331670823,
+        "committed_matches": 64,
+        "entropy": 0.9976226730536939,
+        "epoch_approx_kl": [
+          0.005815615975054125
+        ],
+        "epochs_run": 1,
+        "grad_norm": 14.017448425292969,
+        "grad_norm_max": 14.017448425292969,
+        "learning_rate": 1.007424e-05,
+        "optimizer_steps": 7,
+        "optimizer_steps_skipped": 0,
+        "policy_loss": 0.0034569811048055826,
+        "ratio_mean": 0.997766813435162,
+        "rows": 852,
+        "scaler_scale": 65536.0,
+        "stopped_early": false,
+        "uniform_kl": 0.0024308269457924097,
+        "value_loss": 0.2813406007440038
+      },
+      "rows": 852,
+      "rss_peak_gib": 1.9531745910644531,
+      "sync_calls": 7,
+      "update_wall_s": 1.5684892499998568
+    }
+  ],
+  "sum_rank_update_wall_s": 3.137760450999849,
+  "total_games": 64
+}

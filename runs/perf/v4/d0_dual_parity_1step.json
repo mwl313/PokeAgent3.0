@@ -1,0 +1,36 @@
+{
+  "epoch_kl": [
+    2.780342316470927e-10
+  ],
+  "epoch_kl_delta": 0.0,
+  "grad_norm": 1.8670275211334229,
+  "grad_norm_max": 1.8670275211334229,
+  "grad_norm_relative_delta": 1.7239409878398948e-06,
+  "lr": 1.475136e-05,
+  "lr_match": true,
+  "moment_delta": 9.440118446946144e-07,
+  "no_sync_calls": 7,
+  "policy_loss": 9.663106869276111e-08,
+  "rank": 0,
+  "reference": {
+    "epoch_kl": [
+      2.780342316470927e-10
+    ],
+    "grad_norm": 1.8670307397842407,
+    "grad_norm_max": 1.8670307397842407,
+    "lr": 1.475136e-05,
+    "policy_loss": 9.613552475074694e-08,
+    "rows": 4093,
+    "skipped": 0,
+    "steps": 1,
+    "value_loss": 0.2838736020816791
+  },
+  "rows": 2046,
+  "skipped": 0,
+  "steps": 1,
+  "steps_match": true,
+  "sync_calls": 1,
+  "update_wall_s": 1.7029613319996315,
+  "value_loss": 0.2838735722575128,
+  "weight_delta": 3.84802115149796e-06
+}
