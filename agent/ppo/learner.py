@@ -4,7 +4,7 @@ Implements exactly the numeric contract of Full Spec 1.1 §8:
 
 * Adam with peak LR 3e-4, betas (0.9, 0.999), eps 1e-5, weight decay 0,
 * four epochs over the iteration's rows, global minibatch 4096 built from
-  256-row microbatches with gradient accumulation,
+  1024-row microbatches with gradient accumulation,
 * clip epsilon 0.2, gamma 1.0, GAE lambda 0.95, value coefficient 0.5 with
   ``0.5 * MSE`` and no value clipping, max grad norm 0.5,
 * advantages normalized once over the iteration's actor rows (std floor 1e-8),

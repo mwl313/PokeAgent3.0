@@ -17,9 +17,9 @@ class PPOConfig:
     # Epochs / batching
     ppo_epochs: int = 4
     global_minibatch_size: int = 4096
-    microbatch_size: int = 256
+    microbatch_size: int = 1024
     per_rank_minibatch_size: int = 2048
-    grad_accumulation_per_rank: int = 8
+    grad_accumulation_per_rank: int = 2
     drop_last_minibatch: bool = False
     pad_and_mask_final_minibatch: bool = True
     sample_weighted_ddp_reduction: bool = True

@@ -21,8 +21,8 @@ processes only.
 
 Usage (parent):
     PYTHONPATH=engine/python:. .venv/bin/python scripts/run_ddp_ppo.py \
-        --games 2048 --envs 1024 --workers 16 --microbatch 256 \
-        --report runs/perf/v4_ddp_2k.json
+        --games 2048 --envs 1024 --workers 16 --microbatch 1024 \
+        --report runs/perf/v6_ddp_2k.json
 
 Persistent measurement (same model/optimizer, new rollout each iteration):
     PYTHONPATH=engine/python:. .venv/bin/python scripts/run_ddp_ppo.py \
@@ -67,6 +67,7 @@ def parse_args(argv=None):
     parser.add_argument("--workers", type=int, default=16)
     # v5 A/B promotion (2026-10-09): dual default is now micro 1024
     # (median 26.25 -> 32.50 games/s, all gates PASS; docs/perf/V5_MICROBATCH_AB.md).
+    # PPOConfig and both YAML mirrors now agree with that measured promotion.
     parser.add_argument("--microbatch", type=int, default=1024)
     parser.add_argument("--minibatch", type=int, default=4096, help="global minibatch (both ranks)")
     parser.add_argument("--seed", type=int, default=20261009)
@@ -651,10 +652,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-# v5 promotion note (2026-10-09): the dual default microbatch is 1024
-# (A/B: median 26.25 -> 32.50 games/s at equal 2,048 total games, all gates
-# PASS; see docs/perf/V5_MICROBATCH_AB.md). PA3_TRAINING_CONFIG.yaml's
-# `microbatch_per_rank: 256` (docs/spec/fullspec-1.1-minidc-20261006/, mirrored
-# by configs/train.yaml) should be updated to 1024 at the next spec revision.

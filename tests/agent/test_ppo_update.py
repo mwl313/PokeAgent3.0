@@ -132,8 +132,8 @@ def test_optimizer_matches_the_frozen_spec(model_factory):
     assert group["weight_decay"] == 0.0
     assert learner.config.ppo_epochs == 4
     assert learner.config.global_minibatch_size == 4096
-    assert learner.config.microbatch_size == 256
-    assert learner.config.effective_accumulation == 16
+    assert learner.config.microbatch_size == 1024
+    assert learner.config.effective_accumulation == 4
     assert learner.config.clip_epsilon == 0.2
     assert learner.config.gamma == 1.0
     assert learner.config.gae_lambda == 0.95

@@ -247,7 +247,7 @@ hardware:
   ddp_startup_probe: one_real_collective_as_part_of_startup_not_separate_study
   ddp_health_failure_scope: recover_same_global_batch_without_driver_or_service_changes
   single_learner_device: 0
-  single_learner_microbatch: 256
+  single_learner_microbatch: 1024
   single_learner_accumulation: 16
   single_learner_secondary_gpu_role: same_version_rollout_and_frozen_evaluation
   thermal_asymmetry: gpu1_may_throttle_preserve_175_150W_do_not_raise_limits
@@ -365,8 +365,8 @@ training:
   ppo_epochs: 4
   global_minibatch_size: 4096
   per_rank_minibatch_size: 2048
-  microbatch_per_rank: 256
-  grad_accumulation_per_rank: 8
+  microbatch_per_rank: 1024
+  grad_accumulation_per_rank: 2
   drop_last_minibatch: false
   pad_and_mask_final_minibatch: true
   sample_weighted_ddp_reduction: true
