@@ -55,6 +55,7 @@ def parse_args():
     parser.add_argument("--minibatch", type=int, default=4096, help="global minibatch (both ranks)")
     parser.add_argument("--seed", type=int, default=20261009)
     parser.add_argument("--epochs", type=int, default=0, help="override ppo_epochs (0 = config default)")
+    parser.add_argument("--executor", choices=["ddp", "manual"], default="ddp")
     parser.add_argument("--data", default=os.path.join(ROOT, "engine", "data"))
     parser.add_argument("--teams", default=os.path.join(ROOT, "engine", "data", "training-teams.json"))
     parser.add_argument("--report", default=os.path.join(ROOT, "runs", "perf", "v4_ddp.json"))
@@ -139,12 +140,17 @@ def worker(args) -> None:
         overrides["ppo_epochs"] = args.epochs
     ppo_config = PPOConfig(**overrides)
     learner = PPOLearner(model, ppo_config, device=device)
-    ddp_model = torch.nn.parallel.DistributedDataParallel(
-        model, device_ids=[local_rank], output_device=local_rank,
-        broadcast_buffers=False, find_unused_parameters=True,
-    )
-    learner.attach_ddp(ddp_model, world_size)
-    communication = DDPCommunication(ddp_model)
+    if args.executor == "manual":
+        # No DDP wrapper: local FP32 gradients are summed explicitly.
+        learner.attach_ddp(None, world_size)
+        communication = None
+    else:
+        ddp_model = torch.nn.parallel.DistributedDataParallel(
+            model, device_ids=[local_rank], output_device=local_rank,
+            broadcast_buffers=False, find_unused_parameters=True,
+        )
+        learner.attach_ddp(ddp_model, world_size)
+        communication = DDPCommunication(ddp_model)
     collector = NativeCollector(
         engine, model,
         NativeCollectorConfig(
@@ -171,12 +177,14 @@ def worker(args) -> None:
     plan = learner.prepare_streaming_ddp(buffer)
     note("streaming plan ready (global advantage normalization)")
     update_started = time.perf_counter()
-    report = learner.update_ddp(
-        plan,
+    update_kwargs = dict(
         committed_matches=global_games,
         generator=torch.Generator(device="cpu").manual_seed(args.seed + rank),
-        communication=communication,
     )
+    if args.executor == "manual":
+        report = learner.update_manual_allreduce(plan, **update_kwargs)
+    else:
+        report = learner.update_ddp(plan, communication=communication, **update_kwargs)
     update_wall = time.perf_counter() - update_started
     note(
         f"ddp update done in {update_wall:.1f}s "
@@ -230,8 +238,9 @@ def worker(args) -> None:
         "model_digest": model_digest,
         "optimizer_digest": optimizer_digest,
         "digests_equal": bool(digests_equal),
-        "sync_calls": communication.sync_calls,
-        "no_sync_calls": communication.no_sync_calls,
+        "executor": args.executor,
+        "sync_calls": communication.sync_calls if communication is not None else None,
+        "no_sync_calls": communication.no_sync_calls if communication is not None else None,
         "report": report.as_dict(),
         "profile": learner.profile,
         "prepare_profile": learner.prepare_profile,
@@ -262,6 +271,7 @@ def parent(args) -> None:
             "--epochs", str(args.epochs), "--timeout", str(args.timeout),
             "--data", args.data, "--teams", args.teams, "--port", str(port),
             "--report", args.report, "--checkpoint", args.checkpoint,
+            "--executor", args.executor,
         ]
         if numactl:
             command = [numactl, f"--cpunodebind={entry['numa']}", f"--membind={entry['numa']}", "--"] + command
