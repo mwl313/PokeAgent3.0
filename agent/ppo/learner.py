@@ -254,7 +254,7 @@ class PPOLearner:
         """Expand immutable rollout tensors once, within a bounded budget.
 
         Large production rollouts retain streaming admission. CUDA caching
-        reserves 12 GiB for activations/minibatches and respects the 28 GiB
+        reserves activation space scaled to the microbatch and respects the 28 GiB
         per-card soft budget; it never relies on an OOM to select a path.
         """
         if cache_device not in (None, "none", "cpu", "cuda"):
@@ -269,8 +269,14 @@ class PPOLearner:
         budget = max(0, int(cache_max_bytes))
         if cache_device == "cuda":
             free, total = torch.cuda.mem_get_info(self.device)
-            used = total - free
-            budget = min(budget, max(0, min(free, (28 << 30) - used) - (12 << 30)))
+            # Freed tensors in PyTorch's allocator are reusable by this cache.
+            # Counting reserved memory as live would disable admission after a
+            # warm update even though the previous cache has been released.
+            reusable = torch.cuda.memory_reserved(self.device) - torch.cuda.memory_allocated(self.device)
+            available = free + reusable
+            live = total - available
+            reserve = (2 << 30) + int((10 << 30) * self.config.microbatch_size / 1024)
+            budget = min(budget, max(0, min(available, (28 << 30) - live) - reserve))
         self.prepare_profile["cache_estimated_bytes"] = estimate
         self.prepare_profile["cache_budget_bytes"] = budget
         self.prepare_profile["cache_enabled"] = 0.0
