@@ -220,13 +220,19 @@ class PA3Model(nn.Module):
         logits = logits.float()
         log_prob = masked_log_softmax(logits, mask)
         probs = probabilities(log_prob, mask)
-        entropy = -(probs.detach() * log_prob.detach()).sum(dim=-1)
+        # The PPO learner adds ``-entropy_coefficient * entropy`` and
+        # ``uniform_kl_coefficient * uniform_kl`` to the loss, so both terms
+        # must stay attached to the scorer graph. Detaching either factor (or
+        # both) silently removed the regularizer gradient while still
+        # reporting the correct scalar values; see
+        # tests/agent/test_policy_regularizer_gradients.py.
+        entropy = -(probs * log_prob).sum(dim=-1)
         k = mask.sum(dim=-1)
         safe_k = k.clamp_min(1).to(log_prob.dtype)
         log_k = torch.log(safe_k)
         normalizer = torch.where(k >= 2, log_k, torch.ones_like(log_k))
         entropy_normalized = torch.where(k >= 2, entropy / normalizer, torch.zeros_like(entropy))
-        mean_log_prob = (log_prob.detach() * mask).sum(dim=-1) / safe_k
+        mean_log_prob = (log_prob * mask).sum(dim=-1) / safe_k
         # KL(U || pi) = sum_u (1/K)(log(1/K) - log pi(u)) = -log K - mean log pi.
         # The direction (uniform -> policy) and the log K normalization are
         # pinned by the config; the term is 0 for a uniform policy and grows as
