@@ -70,6 +70,11 @@ def parse_args():
         default=True,
         help="stratified sampled-vs-recomputed logprob parity gate before the update (v4 gate)",
     )
+    parser.add_argument(
+        "--columnar-store",
+        action="store_true",
+        help="v5b T1: SoA observation store (must pass the row-SHA neutrality gate)",
+    )
     parser.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--port", type=int, default=0, help=argparse.SUPPRESS)
     return parser.parse_args()
@@ -165,6 +170,7 @@ def worker(args) -> None:
             envs=args.envs, workers=args.workers, seed=args.seed + rank, device=str(device),
             observation_mode="fixed", candidate_wire="packed",
             amp=True, inference_mode=True,
+            columnar_observation_store=args.columnar_store,
         ),
         device=device,
     )
@@ -302,6 +308,8 @@ def parent(args) -> None:
         ]
         if not args.recompute_gate:
             command.append("--no-recompute-gate")
+        if args.columnar_store:
+            command.append("--columnar-store")
         if numactl:
             command = [numactl, f"--cpunodebind={entry['numa']}", f"--membind={entry['numa']}", "--"] + command
         env = dict(os.environ)

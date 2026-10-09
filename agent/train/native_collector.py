@@ -70,6 +70,10 @@ class NativeCollectorConfig:
     # before; when True it additionally records per-round active/open env
     # counts, idle slot-seconds, game lengths and cohort 50%->100% tail walls.
     telemetry: bool = False
+    # v5b T1: SoA observation store (one growing array per field) instead of
+    # the per-row dict store. Row values/order/digests must stay identical;
+    # the row-SHA gate proves it before any promotion.
+    columnar_observation_store: bool = False
 
 
 @dataclass
@@ -134,7 +138,14 @@ class NativeCollector:
             )
         self.device = torch.device(device)
         self.model = model.to(self.device)
-        self.buffer = RolloutBuffer(layout=self.layout)
+        if self.config.columnar_observation_store:
+            from agent.buffer.rollout_buffer import ColumnarObservationStore
+
+            self.buffer = RolloutBuffer(
+                layout=self.layout, observation_store=ColumnarObservationStore()
+            )
+        else:
+            self.buffer = RolloutBuffer(layout=self.layout)
         self.generator = torch.Generator(device=self.device.type).manual_seed(self.config.seed)
         self.stats = NativeCollectorStats()
         self._match_counter = 0
@@ -543,8 +554,8 @@ class NativeCollector:
                         # with another request's observation.
                         decision_offset = indices[offset]
                         self.buffer.record_packed(
-                            {key: value[decision_offset:decision_offset + 1].copy()
-                             for key, value in compact_batch.items()},
+                            compact_batch,
+                            observation_index=decision_offset,
                             branch_records=records,
                             entity_token=entities,
                             move_token=moves,

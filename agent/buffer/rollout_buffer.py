@@ -19,6 +19,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 from typing import Any, Iterable, Iterator, Optional, Sequence
 
+import numpy as np
 import torch
 
 from agent.types.actions import BRANCH_CAPACITY, RequestKind
@@ -96,6 +97,80 @@ class InlineObservationStore(ObservationStore):
             for key in chosen[0]
         }
         return ObservationBatch.from_compact_numpy(combined)
+
+
+class ColumnarObservationStore(ObservationStore):
+    """SoA (columnar) observation store: one growing array per field.
+
+    `add_compact_at` appends row `index` of a compact decision-batch block
+    directly into the per-field slabs, so the collector never builds a per-row
+    dict (v5b T1). `stacked_indices` is one numpy fancy-index gather per field
+    instead of `np.concatenate` over thousands of one-row arrays (v5b T2
+    observations). Values, order and dtype are identical to
+    `InlineObservationStore`; the row-SHA gate proves it.
+    """
+
+    _INITIAL_CAPACITY = 2048
+
+    def __init__(self) -> None:
+        self._arrays: dict[str, Any] = {}
+        self._count = 0
+
+    def _ensure(self, key: str, trailing: tuple, dtype) -> None:
+        array = self._arrays.get(key)
+        if array is None:
+            self._arrays[key] = np.zeros(
+                (self._INITIAL_CAPACITY,) + tuple(trailing), dtype=dtype
+            )
+            return
+        if array.dtype != np.dtype(dtype) or array.shape[1:] != tuple(trailing):
+            raise ValueError(f"columnar field {key!r} changed dtype/shape mid-collection")
+        if self._count >= array.shape[0]:
+            grown = np.zeros((array.shape[0] * 2,) + array.shape[1:], dtype=array.dtype)
+            grown[: array.shape[0]] = array
+            self._arrays[key] = grown
+
+    def _append(self, row: dict) -> int:
+        index = self._count
+        for key, value in row.items():
+            self._ensure(key, value.shape[1:], value.dtype)
+            self._arrays[key][index] = value[0]
+        self._count += 1
+        return index
+
+    def add(self, observation: ObservationBatch) -> int:
+        return self.add_compact(observation.to_compact_numpy())
+
+    def add_compact(self, row: dict) -> int:
+        return self._append(row)
+
+    def add_compact_at(self, block: dict, index: int) -> int:
+        """Append row `index` of a compact batch block without per-row copies."""
+        row = {key: value[index:index + 1] for key, value in block.items()}
+        return self._append(row)
+
+    def get(self, index: int) -> ObservationBatch:
+        return ObservationBatch.from_compact_numpy(
+            {key: value[index:index + 1] for key, value in self._arrays.items()}
+        )
+
+    def __len__(self) -> int:
+        return self._count
+
+    def stacked(self) -> ObservationBatch:
+        if self._count == 0:
+            raise ValueError("observation store is empty")
+        return ObservationBatch.from_compact_numpy(
+            {key: value[: self._count] for key, value in self._arrays.items()}
+        )
+
+    def stacked_indices(self, indices) -> ObservationBatch:
+        selection = np.asarray(list(indices), dtype=np.int64)
+        if selection.size == 0:
+            raise ValueError("observation selection is empty")
+        return ObservationBatch.from_compact_numpy(
+            {key: value[selection] for key, value in self._arrays.items()}
+        )
 
 
 @dataclass
@@ -292,6 +367,7 @@ class RolloutBuffer:
         turn: int,
         request_kind: RequestKind,
         branch_slots: Sequence[int],
+        observation_index: Optional[int] = None,
         reward: float = 0.0,
         done: bool = False,
         actor_active: bool = True,
@@ -321,7 +397,22 @@ class RolloutBuffer:
         for index, mask in zip(selected, masks):
             if not 0 <= index < len(mask):
                 raise ValueError("selected prefix index out of range")
-        observation_ref = self.observation_store.add_compact(observation_compact)
+        if observation_index is not None:
+            if hasattr(self.observation_store, "add_compact_at"):
+                # SoA fast path: append row `observation_index` straight into
+                # the per-field slabs without a per-row dict (v5b T1).
+                observation_ref = self.observation_store.add_compact_at(
+                    observation_compact, int(observation_index)
+                )
+            else:
+                observation_ref = self.observation_store.add_compact(
+                    {
+                        key: value[observation_index:observation_index + 1].copy()
+                        for key, value in observation_compact.items()
+                    }
+                )
+        else:
+            observation_ref = self.observation_store.add_compact(observation_compact)
         row = RolloutRow(
             match_id=int(match_id),
             side=int(side),

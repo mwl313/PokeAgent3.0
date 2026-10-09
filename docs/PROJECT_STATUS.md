@@ -62,8 +62,8 @@
 | # | 작업 | 근거(실측) | 예상 효과(추정) | 검증 |
 |---|---|---|---|---|
 | 1 | ~~듀얼 micro 1024 A/B~~ **완료·승격 (v5 W1)** | 실측: 듀얼 256 median 26.25 → 1024 median 32.50 games/s(+23.8%, 3회 반복, 게이트 전부 PASS), update 57.5→42.2s/랭크 | 런처 기본값 1024로 승격 + 확인 런 32.50 | `docs/perf/V5_MICROBATCH_AB.md` |
-| 2 | 수집 record columnar화 | record 7.9s/22.1s(36%) | record 약 2-3s, 수집 -25-30% | recompute gate + 후보 wire oracle 유지 |
-| 3 | 학습자 물질화 columnar + 후보 u8 | 물질화+선택 12.5s/77.1s(16%) | update -8-11% | streaming equivalence 테스트 재사용 |
+| 2 | 수집 record columnar화 — **측정 완료·미승격 (v5b T1)** | row-SHA 동일 게이트 PASS, 실측 collect +2.0%(역행)·all-in +1.6%(노이즈 내) | 기본 경로 유지, `--columnar-store` 플래그로 보존 | `docs/perf/V5_COLUMNAR_RECORD.md` |
+| 3 | 학습자 물질화 columnar + 후보 u8 — **부분 적용·미승격 (v5b T2)** | 물질화 −8.2%·update −2.0%, all-in +1.6%(노이즈 내); u8은 미착수(별도 결정) | 기본 경로 유지 | `docs/perf/V5_COLUMNAR_MATERIALIZATION.md` |
 | 4 | pinned + async H2D (수집/학습) | H2D 합 약 4.5s | -2-3s 전체 | profiler 타임라인 overlap 증거 |
 | 5 | optimizer 블록 정리(flat isfinite 등) | optimizer 8.5s/77.1s(11.0%) | -3-5s | global finite/skip parity |
 | 6 | digest/체크포인트/로그 정리 | 런처 오버헤드 약 9s/런 | 런당 수 초 | 증거 요건 유지 |
