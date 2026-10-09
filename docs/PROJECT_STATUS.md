@@ -9,15 +9,24 @@
 - **미니DC = 최적화/측정 라인**: 그 이후의 처리량 최적화, 정확성 게이트, PPO 스모크, 벤치마크 기록 전부.
 - 두 라인은 같은 리포(mwl313/PokeAgent3.0)의 브랜치로 존재하며, 현재는 아래 §1의 통합 정본 하나로 수렴돼 있다.
 
-## 1. 브랜치 정본
+## 1. 진행 지도 — 브랜치와 문서 (2026-10-09 밤 갱신, 새 에이전트 필독)
+
+### 1.1 브랜치 지도
 
 | 항목 | 값 |
 |---|---|
-| **통합 정본** | `optimization/pa3-realpolicy-throughput` @ `2540b82` (10-09 12:15) + 본 문서 커밋 |
-| 포함 관계 | 엔진 줄 전체 포함(engine-only 커밋 0), 최적화 27커밋 추가 |
-| 엔진 줄 | `mac/long-horizon-engine-tail` @ `54d0ff1` (10-08 18:44) — 정본에 흡수 완료, 이후 신규 커밋 0(휴면) |
-| GitHub main | `fa723ed` (10-07)에서 **2026-10-09 fast-forward 승격 (본 문서 포함)** |
-| 잔존 ref(미통합) 11개(로컬+원격 중복 포함): move-batch-2 계열 2 + delayed-status 2 + mac 포크 3(hazards, hazard-setters, revival-blessing-v2) + 스캐폴딩 4(agent/*) — 소검증 후 흡수/아카이브 (삭제 금지) |
+| **정본 라인** | `main` = `optimization/pa3-realpolicy-throughput` @ `deb3af0` (10-09 19:25, s5a 종결) |
+| 포함 관계 | 엔진 줄 전체 흡수(engine-only 커밋 0) + 최적화 전체(P0부터 s5a W2까지) + 현황판/리포트/측정원본 |
+| 엔진 라인(의도적 파킹) | `mac/long-horizon-engine-tail` @ `91c0a21` (10-09 19:26 싱크 머지) — GitHub에 있으며 재개는 이 브랜치에서 |
+| 미통합 아카이브(보존, 삭제 금지) | `mac/*` 포크(hazards, hazard-setters, revival-blessing-v2 등) + `family/*`, `agent/*`, `integrate/*`, `training-pool/*`, `wip/*` |
+
+### 1.2 문서 지도 (읽는 순서)
+
+1. `docs/PROJECT_STATUS.md` — 이 문서 (살아있는 현황판)
+2. `docs/research/TRAINING_APPROACH_v1_FINAL_20261009.md` — 훈련 방식 리서치 정본 (+ `research_ecosystem.md`, `research_sample_efficiency.md`, `draft_TRAINING_APPROACH_v0.md`)
+3. `docs/spec/fullspec-1.1-minidc-20261006/` — 설계 스펙 (Full Spec 1.1)
+4. `docs/perf/` — 처리량 최적화 리포트 전체 (최신: `V5_ROLLING_SLOT_ENGINE_FIX.md`, `V5_F16_WIRE_POC.md`)
+5. `docs/PokeAgent3_Optimization_Roadmap_2026-10-09.md` — 로드맵 (옵션 A-D, STEP 1-6)
 
 ## 2. 여정 요약 (여태 무엇을 했나)
 
@@ -27,7 +36,7 @@
 - `fa723ed`(10-07 머신 핸드오버): 374 moves / 141 abilities / 166 items / 703 fixtures.
 - `54d0ff1`(10-08 롱호라이즌 테일): 486/515 moves(29 blocked), 200/223 abilities(23 blocked), 아이템 166/166, 동적 클로저 33 callers 중 11 blocked, 코퍼스 1,148 fixtures / 25,134 decision boundaries.
 - 훈련 풀 1,137팀 전량 자연완결(100%), 운영 오류 0, `readiness_check` 10/16.
-- 이후 휴면(신규 커밋 0). 재개 시 잔여: blocked 이동 29, 특성 23, 동적 클로저 11, 코퍼스 전수화, readiness 6기준.
+- 이후 휴면 후 10-09 저녁 파킹 커밋(`91c0a21`: Klutz/억제 패밀리 + 기록 + 싱크 머지)으로 의도적 정지 (§1.1 참조). 재개 시 잔여: blocked 이동 29, 특성 23, 동적 클로저 11, 코퍼스 전수화, readiness 6기준.
 
 ### 2.2 최적화 라인 (미니DC) — 그 이후
 
@@ -35,6 +44,7 @@
 - **v2.0** (10-09 새벽): P0 정확성 교정(지표 집계, exact row-weighted accumulation), M0 학습자 단계 분해, P1.3 스트리밍 물질화(peak RSS 18.0 → 7.34 GiB), P2.3 micro배치 스윕(256 → 1024: all-in 24.66 → 31.57, 3회 확인 32.80).
 - **v3** (10-09 02:15): 양좌석(현재 정책 2석) 수집 계약으로 전환 — 19.37 games/s, 26.87 rows/경기, learner rows/s 460 → 520. PA3-8M 실그래디언트 파리티 게이트, DDP 전역 목표 수학·런처(DDP 집합연산 불일치로 end-to-end 블록 확인).
 - **v4** (10-09 오전): C0 엔트로피/KL 정규화기 그래디언트 복원(학습 수학 교정), C1 단일 GPU oracle 확정, D0/D1/M1 DDP 고정-step 집합 프로토콜 + 수동 all-reduce(파리티 통과), D2 실행기 A/B(DDP 기본 유지, 통계 동급), F0 전스택 병목 아틀라스(업데이트 구간 GPU-busy 95.4% 등), F1 최종 패널 — **단일 20.53 / 듀얼 24.67(DDP), 25.60(manual) games/s**.
+- **v5** (10-09 저녁): P0 듀얼 micro 1024 승격 — all-in **32.50 games/s**(+23.8%, update 42.2s/랭크). P0b columnar record+물질화=게이트 PASS 후 미승격(±2% 노이즈 내, 플래그 보존). P0c rolling slots(collector측)+H2D 트림=판정 기록. **s5a**: rolling-slot 엔진 수정(per-slot generation, opt-in 유지, A/B 동률) + f16 관측 wire no-go(실효 1.0-1.4%, 노이즈 이하) → **최종 32.50 games/s, s5a 종결**.
 - 모든 수치는 `docs/perf/` 보고서와 `runs/perf/` 원본 JSON에 기록 (아래 §6).
 
 ## 3. 엔진 준비도 (readiness)
@@ -45,6 +55,8 @@
 - 100M 본학습: 미승인 상태가 정상 (조건 = readiness 16/16 + 사용자 승인).
 
 ## 4. 처리량 정본 (v4 F1 패널, 2,048경기, 양좌석 계약)
+
+> ★ 최신(v5, s5a 종결): 듀얼 **32.50 games/s** (micro 1024, update 42.2s/랭크). 아래 v4 패널은 그 이전 스냅샷.
 
 | 항목 | 단일 GPU | 듀얼 GPU |
 |---|---:|---:|
@@ -95,3 +107,4 @@
 ## 8. 변경 이력
 
 - 2026-10-09: 최초 작성 + main 승격 (아리아 작성, 미니DC 코덱스 세션 실행).
+- 2026-10-09 (밤): v5 체인 반영(s5a 종결, 최종 32.50 games/s), 진행 지도(브랜치/문서) 갱신, 훈련 리서치 v1 정본 `docs/research/` 커밋.
