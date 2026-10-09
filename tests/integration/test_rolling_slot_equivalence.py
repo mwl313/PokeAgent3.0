@@ -15,17 +15,6 @@ import pytest
 
 pytest.importorskip("pa3_engine")
 
-# v5c T2 blocker (2026-10-09): the engine's batch generation is bumped by every
-# `reset_batch`, so a subset reset (refilling finished slots) invalidates the
-# handles of the games still in flight ("stale environment handle",
-# engine/src/batch.rs). Rolling refill therefore needs either a per-slot reset
-# API or per-slot generations in the engine — out of scope for a collector-only
-# change. These tests encode the acceptance contract for when that lands.
-pytestmark = pytest.mark.xfail(
-    reason="engine reset_batch bumps the batch generation: no subset refill API",
-    strict=False,
-)
-
 import pa3_engine  # noqa: E402
 from agent.model import PA3Config, build_model  # noqa: E402
 from agent.train.native_collector import (  # noqa: E402

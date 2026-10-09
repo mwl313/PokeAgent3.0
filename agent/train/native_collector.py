@@ -180,12 +180,13 @@ class NativeCollector:
         self.stats.team_ids_seen += len(set(team_a) | set(team_b))
         return handles, list(zip(team_a, team_b)), roles
 
-    def _reset_slots(self, count: int, rng) -> tuple[list, list, list]:
+    def _reset_slots(self, count: int, rng, slots=None) -> tuple[list, list, list]:
         """Reset `count` slots from a persistent team RNG (rolling refill).
 
         Same team/seed/role distributions as `_reset_cohort`; role alternation
         continues across refills via a running slot counter so the learner seat
-        stays balanced over the iteration.
+        stays balanced over the iteration. When `slots` is given the engine's
+        per-slot reset is used, so in-flight handles stay valid (v5d A6).
         """
         team_a, team_b, seeds, roles = [], [], [], []
         for index in range(count):
@@ -195,7 +196,12 @@ class NativeCollector:
             slot_index = self._slot_counter + index
             roles.append((0, 1) if slot_index % 2 == 0 else (1, 0))
         start = time.perf_counter()
-        handles = self.engine.reset_batch(team_a, team_b, seeds, roles)
+        if slots is None:
+            handles = self.engine.reset_batch(team_a, team_b, seeds, roles)
+        else:
+            handles = self.engine.reset_slots_batch(
+                [int(slot) for slot in slots], team_a, team_b, seeds, roles
+            )
         self.stats.reset_seconds += time.perf_counter() - start
         self.stats.cohorts += 1
         self.stats.team_ids_seen += len(set(team_a) | set(team_b))
@@ -837,13 +843,18 @@ class NativeCollector:
                 break
             if rounds >= round_budget:
                 raise RuntimeError("rolling slots did not drain within the round budget")
-            if not quota_done:
+            # Stop refilling as soon as the still-open games can cover the
+            # remaining quota: the drain then lands just above the target
+            # (overshoot preserved but bounded, matching the static path).
+            if (self.stats.games - initial_games) + open_games < target_games:
                 refill = [index for index, value in enumerate(finished) if value]
                 if refill:
                     for index in refill:
                         self._row_cursor.pop((index, 0), None)
                         self._row_cursor.pop((index, 1), None)
-                    new_handles, new_teams, new_roles = self._reset_slots(len(refill), rng)
+                    new_handles, new_teams, new_roles = self._reset_slots(
+                        len(refill), rng, slots=refill
+                    )
                     for slot, handle, team, role in zip(refill, new_handles, new_teams, new_roles):
                         handles[slot] = handle
                         teams[slot] = team

@@ -341,6 +341,41 @@ impl NativeEngine {
             .map_err(to_py)
     }
 
+    /// Reset a subset of existing slots in place; the other slots' handles stay
+    /// valid. Used by the rolling-slot collector (v5d A6).
+    fn reset_slots_batch(
+        &mut self,
+        slots: Vec<u32>,
+        team_a: Vec<usize>,
+        team_b: Vec<usize>,
+        seeds: Vec<(u16, u16, u16, u16)>,
+        role_map: Vec<(u8, u8)>,
+    ) -> PyResult<Vec<(u32, u32)>> {
+        if team_a.len() != team_b.len()
+            || team_a.len() != seeds.len()
+            || team_a.len() != role_map.len()
+            || team_a.len() != slots.len()
+        {
+            return Err(to_py(EngineError::InvalidInput("reset slots length".into())));
+        }
+        let specs: Vec<ResetSpec> = team_a
+            .into_iter()
+            .zip(team_b)
+            .zip(seeds)
+            .zip(role_map)
+            .map(|(((team_a, team_b), seed), role_map)| ResetSpec {
+                team_a,
+                team_b,
+                seed: [seed.0, seed.1, seed.2, seed.3],
+                role_map: [role_map.0, role_map.1],
+            })
+            .collect();
+        self.batch
+            .reset_slots(&slots, &specs)
+            .map(|handles| handles.into_iter().map(|h| (h.slot, h.generation)).collect())
+            .map_err(to_py)
+    }
+
     /// One entry per environment: `(slot, generation, [(side, [action, ...]), ...])`.
     /// The whole submission is validated before any environment mutates.
     fn step_batch(

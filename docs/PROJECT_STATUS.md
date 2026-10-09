@@ -67,10 +67,10 @@
 | 4 | pinned + async H2D (수집/학습) — **미실행 (v5c T1)** | H2D 약 1.7s/랭크(63s 중 2.7%) → 기대 이득이 ±2% 노이즈 내 | 다음 작업으로 이월 | profiler 타임라인 overlap 증거 |
 | 5 | optimizer 블록 정리(flat isfinite 등) — **미실행 (v5c T1)** | 실측 per-step 연산 ~19ms(타이머는 큐 드레인) | 이월 | global finite/skip parity |
 | 6 | digest/체크포인트/로그 정리 — **미실행 (v5c T1)** | 런처 오버헤드 서브초~수 초 | 이월 | 증거 요건 유지 |
-| 7 | P2: rolling slots — **구현·차단 (v5c T2)** | `reset_batch`가 배치 generation을 올려 부분 리필 시 잔여 핸들이 stale → 서브셋 리필 API/슬롯별 generation 필요(엔진 작업, 범위 밖) | `--rolling-slots` 플래그로 코드+계약 테스트(xfail) 보존 | `docs/perf/V5_ROLLING_SLOTS.md` |
+| 7 | rolling slots — **엔진 수정·게이트 PASS·A/B 동률 (v5d s5a)** | per-slot generation + `reset_slots_batch` 구현, 등가성 테스트 2종 PASS, idle slot 21.1%→10.4%; 듀얼 A/B all-in −0.00%(collect +0.67%, update −0.31%) | 옵트인 `--rolling-slots` 유지, 기본값 불변 | `docs/perf/V5_ROLLING_SLOT_ENGINE_FIX.md` |
 | 제외 | torch.compile/Triton | Triton이 CC 8.0+만 지원, V100 fp16 tl.dot open bug | 해당 없음 | — |
 
-- 계약 변경(별도 승인): 4 epochs→2, 관측 f16 wire, 모델 축소 — 천장을 움직이지만 학습 수학 변경이라 별도 A/B 필요.
+- 계약 변경(별도 승인): 4 epochs→2, 관측 f16 wire(B1 — s5a에서 **미실행**, 다음 작업), 모델 축소 — 천장을 움직이지만 학습 수학 변경이라 별도 A/B 필요.
 - 미착수 트랙: 샘플효율 E0-E4 (`PokeAgent3_RL_Sample_Efficiency_Research_2026-10-08.md`).
 - 로드맵 및 옵션 분석: `docs/PokeAgent3_Optimization_Roadmap_2026-10-09.md`
 

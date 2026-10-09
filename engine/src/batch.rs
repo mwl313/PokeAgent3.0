@@ -44,6 +44,9 @@ pub struct BattleBatch {
     pub teams: Arc<Vec<Team>>,
     workers: rayon::ThreadPool,
     states: Vec<BattleState>,
+    /// Per-slot generation. A subset reset bumps only the reset slots, so
+    /// handles of games still in flight stay valid (v5d rolling slots).
+    generations: Vec<u32>,
     generation: u32,
     work_slots: Vec<Option<usize>>,
     step_results: Vec<Option<StepResult>>,
@@ -65,6 +68,7 @@ impl BattleBatch {
             teams,
             workers,
             states: vec![],
+            generations: vec![],
             generation: 0,
             work_slots: vec![],
             step_results: vec![],
@@ -100,10 +104,68 @@ impl BattleBatch {
                 .collect()
         });
         self.states = states?;
+        self.generations = vec![generation; specs.len()];
         self.generation = generation;
         Ok((0..specs.len())
             .map(|i| Handle {
                 slot: i as u32,
+                generation,
+            })
+            .collect())
+    }
+
+    /// Reset only the listed slots, leaving every other in-flight game's handle
+    /// valid. The batch-wide counter still advances, but only the reset slots'
+    /// per-slot generations change, so `Handle {slot, generation}` semantics
+    /// are preserved and `reset_batch` keeps its whole-batch behavior.
+    pub fn reset_slots(&mut self, slots: &[u32], specs: &[ResetSpec]) -> Result<Vec<Handle>> {
+        if slots.is_empty() || specs.is_empty() || slots.len() != specs.len() {
+            return Err(EngineError::InvalidInput("reset slots length".into()));
+        }
+        if specs.len() > u32::MAX as usize {
+            return Err(EngineError::InvalidInput("batch length".into()));
+        }
+        if specs
+            .iter()
+            .any(|s| s.team_a >= self.teams.len() || s.team_b >= self.teams.len())
+        {
+            return Err(EngineError::InvalidInput("team index".into()));
+        }
+        if slots
+            .iter()
+            .any(|slot| *slot as usize >= self.states.len() || *slot as usize >= self.generations.len())
+        {
+            return Err(EngineError::InvalidInput("unknown reset slot".into()));
+        }
+        let generation = self
+            .generation
+            .checked_add(1)
+            .ok_or_else(|| EngineError::InvalidInput("handle generation exhausted".into()))?;
+        // All work must succeed before any slot is replaced.
+        let states: Result<Vec<_>> = self.workers.install(|| {
+            specs
+                .par_iter()
+                .map(|s| {
+                    BattleState::reset(
+                        &self.dex,
+                        [&self.teams[s.team_a], &self.teams[s.team_b]],
+                        s.seed,
+                        s.role_map,
+                    )
+                })
+                .collect()
+        });
+        let states = states?;
+        for (slot, state) in slots.iter().zip(states.into_iter()) {
+            let index = *slot as usize;
+            self.states[index] = state;
+            self.generations[index] = generation;
+        }
+        self.generation = generation;
+        Ok(slots
+            .iter()
+            .map(|slot| Handle {
+                slot: *slot,
                 generation,
             })
             .collect())
@@ -124,7 +186,11 @@ impl BattleBatch {
     }
 
     fn state(&self, handle: Handle) -> Result<&BattleState> {
-        if handle.generation != self.generation {
+        let slot_generation = self
+            .generations
+            .get(handle.slot as usize)
+            .ok_or_else(|| EngineError::InvalidInput("environment handle".into()))?;
+        if handle.generation != *slot_generation {
             return Err(EngineError::InvalidInput("stale environment handle".into()));
         }
         self.states
