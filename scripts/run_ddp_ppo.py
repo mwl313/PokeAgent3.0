@@ -23,6 +23,16 @@ Usage (parent):
     PYTHONPATH=engine/python:. .venv/bin/python scripts/run_ddp_ppo.py \
         --games 2048 --envs 1024 --workers 16 --microbatch 256 \
         --report runs/perf/v4_ddp_2k.json
+
+Persistent measurement (same model/optimizer, new rollout each iteration):
+    PYTHONPATH=engine/python:. .venv/bin/python scripts/run_ddp_ppo.py \
+        --games 1024 --envs 1024 --iterations 3 --batch-cache cuda \
+        --report runs/perf/persistent_ppo.json
+
+The launcher rate includes process startup/shutdown. Per-iteration rates
+include preparation, parity checks, optional checkpoints, state digests and
+cleanup. The steady-state rate excludes iteration 1 and uses total games /
+total measured wall for iterations 2..N; it is not a mean of per-rank rates.
 """
 
 from __future__ import annotations
@@ -131,7 +141,7 @@ def source_provenance() -> dict:
     def git(*command):
         return subprocess.check_output(
             ["git", "-C", ROOT, *command], text=True, stderr=subprocess.DEVNULL,
-        ).strip()
+        ).rstrip("\n")
 
     try:
         status = git("status", "--porcelain", "--untracked-files=normal")
@@ -507,6 +517,10 @@ def parent(args) -> None:
     deadline = time.time() + args.timeout * args.iterations + 300.0
     try:
         while any(proc.poll() is None for _, proc in procs):
+            # A failed correctness gate must not leave its peer blocked in a
+            # collective until the full process-group timeout expires.
+            if any(proc.poll() not in (None, 0) for _, proc in procs):
+                break
             if time.time() > deadline:
                 failures.append("launcher watchdog timeout")
                 break
@@ -514,7 +528,11 @@ def parent(args) -> None:
         for entry, proc in procs:
             if proc.poll() is None:
                 proc.terminate()
-            code = proc.wait(timeout=60)
+            try:
+                code = proc.wait(timeout=60)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                code = proc.wait(timeout=60)
             if code != 0:
                 failures.append(f"rank {entry['rank']} exited with {code}")
     finally:
