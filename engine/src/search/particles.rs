@@ -1766,6 +1766,9 @@ mod tests {
         let mut collapsed = 0usize;
         let mut diagnosed_rejections = 0usize;
         let mut attempted_boundaries = 0usize;
+        let mut proposal_diverse_boundaries = 0usize;
+        let mut chance_diverse_boundaries = 0usize;
+        let mut public_outcome_diverse_boundaries = 0usize;
         let mut by_condition = BTreeMap::<(bool, OpponentProposal), [usize; 7]>::new();
         for side in [SideId::P1, SideId::P2] {
             for out_of_prior in [false, true] {
@@ -1831,6 +1834,13 @@ mod tests {
                                     collapsed += 1;
                                 }
                                 attempted_boundaries += 1;
+                                proposal_diverse_boundaries +=
+                                    usize::from(result.diagnostics.distinct_opponent_proposals > 1);
+                                chance_diverse_boundaries += usize::from(
+                                    result.diagnostics.distinct_chance_trajectories > 1,
+                                );
+                                public_outcome_diverse_boundaries +=
+                                    usize::from(result.diagnostics.distinct_public_outcomes > 1);
                                 results.push(result);
                                 if results.last().unwrap().conditioned_observation.is_none() {
                                     break;
@@ -1901,10 +1911,17 @@ mod tests {
             diagnosed_rejections > 0,
             "collapse must have classified rejections"
         );
+        assert!(
+            proposal_diverse_boundaries > 0,
+            "sampled-policy matrix must produce multiple legal proposals"
+        );
         println!(
             "C3b-1.2 matrix rows={rows} attempted_boundaries={attempted_boundaries} preview_supported={preview_supported} \
              combat_one_supported={combat_one_supported} combat_two_supported={combat_two_supported} \
-             collapsed_boundaries={collapsed} diagnosed_rejections={diagnosed_rejections} elapsed_ms={}",
+             collapsed_boundaries={collapsed} diagnosed_rejections={diagnosed_rejections} \
+             proposal_diverse_boundaries={proposal_diverse_boundaries} \
+             chance_diverse_boundaries={chance_diverse_boundaries} \
+             public_outcome_diverse_boundaries={public_outcome_diverse_boundaries} elapsed_ms={}",
             started.elapsed().as_millis()
         );
         for ((out_of_prior, proposal), stats) in by_condition {
