@@ -76,6 +76,11 @@ def parse_args(argv=None):
                         help="opt-in multiplier for the absolute match-clock LR schedule")
     parser.add_argument("--experimental-allow-source-sha", action="store_true",
                         help="explicitly migrate a trusted A3 checkpoint from its recorded source SHA")
+    parser.add_argument("--experimental-allow-opponent-migration", action="store_true",
+                        help="explicitly migrate a current-only A4 envelope to the declared historical pool")
+    parser.add_argument("--historical-checkpoint", action="append", default=[],
+                        help="trusted frozen historical envelope rank0 path (repeatable)")
+    parser.add_argument("--historical-probability", type=float, default=0.0)
     parser.add_argument("--executor", choices=["ddp", "manual"], default="ddp")
     parser.add_argument(
         "--batch-cache", choices=["none", "cpu", "cuda"], default="cuda",
@@ -130,6 +135,10 @@ def parse_args(argv=None):
         parser.error("--experimental-lr-scale must be positive")
     if args.experimental_lr_scale != 1.0 and not (args.experimental_resume or args.experimental_checkpoint):
         parser.error("experimental LR scale requires an experimental checkpoint or resume")
+    if not 0.0 <= args.historical_probability <= 1.0:
+        parser.error("--historical-probability must be between 0 and 1")
+    if args.historical_probability and not args.historical_checkpoint:
+        parser.error("historical probability requires --historical-checkpoint")
     return args
 
 
@@ -322,6 +331,28 @@ def worker(args) -> None:
     engine = pa3_engine.NativeEngine(args.data, args.teams, workers=args.workers)
     model = build_model(PA3Config())
     model.encoder.trim_padding = args.trim_observation_padding
+    historical_models = {}
+    historical_manifest = []
+    for hist_index, hist_path in enumerate(args.historical_checkpoint):
+        hist_path = os.path.abspath(hist_path)
+        if not os.path.isfile(hist_path):
+            raise RuntimeError(f"historical checkpoint is missing: {hist_path}")
+        payload = torch.load(hist_path, map_location="cpu", weights_only=False)
+        if not isinstance(payload, dict) or "learner" not in payload:
+            raise RuntimeError(f"historical checkpoint is not an experimental envelope: {hist_path}")
+        historical = build_model(PA3Config(), device=device)
+        historical.load_state_dict(payload["learner"]["model"], strict=True)
+        historical.eval()
+        for parameter in historical.parameters():
+            parameter.requires_grad_(False)
+        identity = f"historical_{hist_index}"
+        historical_models[identity] = historical
+        model_hash = hashlib.sha256()
+        for name, value in historical.state_dict().items():
+            model_hash.update(name.encode())
+            model_hash.update(value.detach().cpu().contiguous().numpy().tobytes())
+        historical_manifest.append({"id": identity, "path": hist_path, "sha256": hash_file(hist_path),
+                                    "model_digest": model_hash.hexdigest()})
     overrides = dict(
         global_minibatch_size=args.minibatch,
         microbatch_size=args.microbatch,
@@ -353,7 +384,8 @@ def worker(args) -> None:
         "actions": "atomic-action-v1",
         "candidates": "branch-candidates-v1",
     })
-    opponent_manifest = {"current": "current", "historical": []}
+    opponent_manifest = {"current": "current", "historical": historical_manifest,
+                         "historical_probability": float(args.historical_probability)}
     model_config_hash = hash_json(model.config.to_dict())
     collector_contract = {
         "envs": args.envs, "workers": args.workers, "data": os.path.abspath(args.data),
@@ -382,14 +414,26 @@ def worker(args) -> None:
         recorded_source_sha = resume_envelope.get("source_sha")
         expected_source_sha = source_sha
         if recorded_source_sha != source_sha:
-            if not args.experimental_allow_source_sha or recorded_source_sha != "30b10e28d608f869811a4525afaa8101613c7adc":
+            trusted_migrations = {
+                "30b10e28d608f869811a4525afaa8101613c7adc",
+                "0059b34179790610d0f39e832297be8645790a80",
+                "575a706e2fed072e30d9f0dda0f8a3327fcb48aa",
+            }
+            if not args.experimental_allow_source_sha or recorded_source_sha not in trusted_migrations:
                 raise RuntimeError("source SHA mismatch; pass --experimental-allow-source-sha only for the recorded A3 source")
             expected_source_sha = recorded_source_sha
             note(f"explicit checkpoint migration: {recorded_source_sha} -> {source_sha}")
+        restore_opponents = opponent_manifest
+        if resume_envelope.get("opponent_manifest") != opponent_manifest:
+            old_manifest = resume_envelope.get("opponent_manifest", {})
+            if not args.experimental_allow_opponent_migration or old_manifest != {"current": "current", "historical": []}:
+                raise RuntimeError("opponent manifest mismatch; explicit migration is required")
+            note("explicit opponent-manifest migration from current-only A4 envelope")
+            restore_opponents = old_manifest
         restore_envelope(
             learner, resume_envelope, dataset_manifest_hash=dataset_manifest_hash,
             action_schema_hash=action_schema_hash, source_sha=expected_source_sha,
-            opponent_manifest=opponent_manifest, expected_rank=rank,
+            opponent_manifest=restore_opponents, expected_rank=rank,
             expected_world_size=world_size, expected_executor=args.executor,
             model_config_hash=model_config_hash, generators=None,
         )
@@ -439,7 +483,9 @@ def worker(args) -> None:
                 amp=True, inference_mode=True,
                 columnar_observation_store=args.columnar_store,
                 rolling_slots=args.rolling_slots,
+                historical_probability=args.historical_probability,
             ),
+            historical_models=historical_models,
             device=device,
         )
         if communication is not None:
@@ -602,6 +648,7 @@ def worker(args) -> None:
                 "trim_observation_padding": args.trim_observation_padding,
                 "microbatch": args.microbatch,
                 "experimental_lr_scale": lr_scale,
+                "historical_probability": args.historical_probability,
             },
             "sync_calls": communication.sync_calls if communication is not None else None,
             "no_sync_calls": communication.no_sync_calls if communication is not None else None,
@@ -671,6 +718,7 @@ def parent(args) -> None:
                 "--minibatch", str(args.minibatch), "--seed", str(args.seed),
                 "--epochs", str(args.epochs), "--timeout", str(args.timeout),
                 "--experimental-lr-scale", str(args.experimental_lr_scale),
+                "--historical-probability", str(args.historical_probability),
                 "--data", args.data, "--teams", args.teams, "--port", str(port),
                 "--report", args.report, "--checkpoint", args.checkpoint,
                 "--experimental-checkpoint", args.experimental_checkpoint,
@@ -680,6 +728,10 @@ def parent(args) -> None:
             ]
             if args.experimental_allow_source_sha:
                 command.append("--experimental-allow-source-sha")
+            if args.experimental_allow_opponent_migration:
+                command.append("--experimental-allow-opponent-migration")
+            for historical_path in args.historical_checkpoint:
+                command.extend(["--historical-checkpoint", historical_path])
             if not args.recompute_gate:
                 command.append("--no-recompute-gate")
             command.append("--trim-observation-padding" if args.trim_observation_padding
@@ -757,6 +809,7 @@ def parent(args) -> None:
         "trim_observation_padding": args.trim_observation_padding,
         "microbatch": args.microbatch,
         "experimental_lr_scale": args.experimental_lr_scale,
+        "historical_probability": args.historical_probability,
     }
     if any(result["execution_options"] != expected_execution for result in results):
         raise RuntimeError("worker execution options differ from the requested benchmark")

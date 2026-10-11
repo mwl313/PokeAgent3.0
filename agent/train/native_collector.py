@@ -23,6 +23,7 @@ Correctness notes:
 from __future__ import annotations
 
 import time
+import random
 from dataclasses import dataclass, field
 from typing import Optional, Sequence
 
@@ -37,6 +38,15 @@ from agent.types.actions import (
 )
 from agent.types.observation import ObservationBatch, ObservationLayout
 from agent.types.requests import ActionRef, BranchCandidatesBatch, RequestRow
+
+
+@dataclass(frozen=True)
+class MatchPolicyAssignment:
+    category: str
+    seat_policy_ids: tuple[str, str]
+    learner_seat: int | None
+    historical_policy_id: str | None = None
+    sample_index: int = 0
 
 @dataclass
 class NativeCollectorConfig:
@@ -79,6 +89,7 @@ class NativeCollectorConfig:
     # met; the remaining open games then drain (overshoot preserved). Contract
     # gates: match counted once, terminal accounting, both seats, row schema.
     rolling_slots: bool = False
+    historical_probability: float = 0.0
 
 
 @dataclass
@@ -116,6 +127,9 @@ class NativeCollectorStats:
     action_kinds: dict = field(default_factory=dict)
     team_ids_seen: int = 0
     max_open_games: int = 0
+    current_current_games: int = 0
+    current_historical_games: int = 0
+    historical_policy_games: dict = field(default_factory=dict)
 
     def as_dict(self) -> dict:
         return dict(self.__dict__)
@@ -131,12 +145,29 @@ class NativeCollector:
         config: Optional[NativeCollectorConfig] = None,
         layout: Optional[ObservationLayout] = None,
         policy_id: str = "current",
+        historical_models: Optional[dict[str, PA3Model]] = None,
+        historical_probability: Optional[float] = None,
         device: Optional[torch.device] = None,
     ) -> None:
         self.engine = engine
         self.config = config or NativeCollectorConfig()
         self.layout = layout or ObservationLayout()
         self.policy_id = str(policy_id)
+        self.historical_models = dict(historical_models or {})
+        self.historical_probability = float(
+            self.config.historical_probability if historical_probability is None else historical_probability
+        )
+        if not 0.0 <= self.historical_probability <= 1.0:
+            raise ValueError("historical probability must be between 0 and 1")
+        if self.historical_probability and not self.historical_models:
+            raise ValueError("historical opponents require at least one frozen model")
+        if self.historical_probability and self.config.rolling_slots:
+            raise ValueError("historical opponents currently require static collector slots")
+        self._historical_policy_ids = tuple(sorted(self.historical_models))
+        for historical in self.historical_models.values():
+            historical.eval()
+            for parameter in historical.parameters():
+                parameter.requires_grad_(False)
         if device is None:
             device = torch.device(
                 "cuda" if self.config.prefer_cuda and torch.cuda.is_available() else "cpu"
@@ -163,8 +194,35 @@ class NativeCollector:
         # runtime invariant, rather than a caller-supplied checkpoint flag.
         self.in_flight_battles = None
         self.drain_complete = False
+        self._assignments: list[MatchPolicyAssignment] = []
+        self._assignment_rng = random.Random(self.config.seed ^ 0xA5E1)
 
     # -- helpers ----------------------------------------------------------
+    def _make_assignments(self, count: int, roles) -> list[MatchPolicyAssignment]:
+        assignments = []
+        for index, role in enumerate(roles):
+            if self.historical_probability <= 0.0 or not self._historical_policy_ids:
+                assignments.append(MatchPolicyAssignment(
+                    "current_current", (self.policy_id, self.policy_id), None, None, index))
+                continue
+            if self._assignment_rng.random() < self.historical_probability:
+                learner = self._learner_side(role)
+                historical_id = self._historical_policy_ids[
+                    self._assignment_rng.randrange(len(self._historical_policy_ids))
+                ]
+                ids = [historical_id, historical_id]
+                ids[learner] = self.policy_id
+                assignments.append(MatchPolicyAssignment(
+                    "current_historical", tuple(ids), learner, historical_id, index))
+            else:
+                assignments.append(MatchPolicyAssignment(
+                    "current_current", (self.policy_id, self.policy_id), None, None, index))
+        return assignments
+
+    def _policy_for(self, env: int, side: int):
+        policy_id = self._assignments[env].seat_policy_ids[side]
+        return policy_id, self.model if policy_id == self.policy_id else self.historical_models[policy_id]
+
     def _reset_cohort(self) -> tuple[list, list, list]:
         import random
 
@@ -179,6 +237,7 @@ class NativeCollector:
             roles.append((0, 1) if index % 2 == 0 else (1, 0))
         start = time.perf_counter()
         handles = self.engine.reset_batch(team_a, team_b, seeds, roles)
+        self._assignments = self._make_assignments(len(roles), roles)
         self.stats.reset_seconds += time.perf_counter() - start
         self.stats.cohorts += 1
         self.stats.team_ids_seen += len(set(team_a) | set(team_b))
@@ -206,6 +265,7 @@ class NativeCollector:
             handles = self.engine.reset_slots_batch(
                 [int(slot) for slot in slots], team_a, team_b, seeds, roles
             )
+        self._assignments = self._make_assignments(len(roles), roles)
         self.stats.reset_seconds += time.perf_counter() - start
         self.stats.cohorts += 1
         self.stats.team_ids_seen += len(set(team_a) | set(team_b))
@@ -215,13 +275,16 @@ class NativeCollector:
     def _learner_side(self, roles: Sequence[int]) -> int:
         return 0 if int(roles[0]) == 0 else 1
 
-    def _records_side(self, side: int, roles: Sequence[int]) -> bool:
+    def _records_side(self, side: int, roles: Sequence[int], env: int) -> bool:
         """Whether this seat's requests become current-policy learner rows.
 
         Both seats run the same frozen current policy while the history pool is
         empty, so the documented contract records both. Historical-opponent rows
         stay excluded (`collect_historical_opponent_rows: false`).
         """
+        assignment = self._assignments[env]
+        if assignment.category == "current_historical":
+            return side == assignment.learner_seat
         if self.config.collect_both_sides_when_current_self_play:
             return True
         return side == self._learner_side(roles)
@@ -368,6 +431,7 @@ class NativeCollector:
         team_ids: tuple[int, int],
         request_index: int,
         turn: int,
+        opponent_policy_id: str,
     ) -> None:
         if not self.config.record_rows:
             return
@@ -380,7 +444,7 @@ class NativeCollector:
             match_id=match_id,
             side=side,
             policy_id=self.policy_id,
-            opponent_policy_id=self.policy_id,
+            opponent_policy_id=opponent_policy_id,
             team_ids=team_ids,
             request_index=request_index,
             turn=turn,
@@ -451,14 +515,16 @@ class NativeCollector:
             self.stats.parse_seconds += time.perf_counter() - start
         # Group requests by branch count so a batched sequential sample is
         # well-formed for every row in the group.
-        groups: dict[int, list[int]] = {}
+        groups: dict[tuple[str, int], list[int]] = {}
         for index, entry in enumerate(decision):
-            groups.setdefault(len(entry[4]), []).append(index)
+            policy_id, _ = self._policy_for(entry[0], entry[2])
+            groups.setdefault((policy_id, len(entry[4])), []).append(index)
         submissions: dict[int, list[tuple[int, list]]] = {}
         # Batch-level compact observation (one conversion for the whole round)
         # for the packed rollout fast path.
         compact_batch = batch_observations.to_compact_numpy() if batch_observations is not None else None
-        for branch_count, indices in sorted(groups.items()):
+        for (policy_id, branch_count), indices in sorted(groups.items()):
+            policy_model = self.model if policy_id == self.policy_id else self.historical_models[policy_id]
             start = time.perf_counter()
             if batch_observations is not None:
                 subset_obs = batch_observations.select(indices).to(self.device)
@@ -470,8 +536,8 @@ class NativeCollector:
             amp_context, grad_context = self._inference_context()
             start = time.perf_counter()
             with grad_context, amp_context:
-                encoded = self.model.encode(subset_obs)
-                hidden = self.model.scorer.initial_state(
+                encoded = policy_model.encode(subset_obs)
+                hidden = policy_model.scorer.initial_state(
                     encoded.tokens.shape[0], device=encoded.tokens.device, dtype=encoded.tokens.dtype
                 )
             self.stats.model_seconds += time.perf_counter() - start
@@ -535,7 +601,7 @@ class NativeCollector:
                     )
                     self.stats.table_seconds += time.perf_counter() - start_table
                     start_model = time.perf_counter()
-                    step = self.model.sample_level_step(
+                    step = policy_model.sample_level_step(
                         encoded,
                         hidden,
                         level_table,
@@ -564,7 +630,7 @@ class NativeCollector:
             sampled = assemble_level_result(steps)
             start_model = time.perf_counter()
             with grad_context, amp_context:
-                values = self.model.value(encoded)
+                values = policy_model.value(encoded)
             self.stats.model_seconds += time.perf_counter() - start_model
             start_readback = time.perf_counter()
             old_logprobs = [float(value) for value in
@@ -577,7 +643,7 @@ class NativeCollector:
                     self._prefix_actions(prefix_buf, offset, branch_count)
                     if prefix_buf is not None else [tuple(value) for value in prefixes[offset]]
                 )
-                if self._records_side(side, roles[env]):
+                if self._records_side(side, roles[env], env):
                     start_record = time.perf_counter()
                     selected_prefix = [picks_by_level[level][offset] for level in range(branch_count)]
                     if packed_by_level[0] is not None and compact_batch is not None:
@@ -603,7 +669,7 @@ class NativeCollector:
                             match_id=match_ids[env],
                             side=side,
                             policy_id=self.policy_id,
-                            opponent_policy_id=self.policy_id,
+                            opponent_policy_id=self._assignments[env].seat_policy_ids[1 - side],
                             team_ids=team_ids[env],
                             request_index=request_index[env],
                             turn=turn[env],
@@ -645,6 +711,7 @@ class NativeCollector:
                             team_ids=team_ids[env],
                             request_index=request_index[env],
                             turn=turn[env],
+                            opponent_policy_id=self._assignments[env].seat_policy_ids[1 - side],
                         )
                     self.stats.record_seconds += time.perf_counter() - start_record
                     self._row_cursor[(env, side)] = len(self.buffer.rows) - 1
@@ -684,10 +751,12 @@ class NativeCollector:
                     learner_reward = -1.0
                     self.stats.losses += 1
                 for side in (0, 1):
-                    if not self._records_side(side, roles[env]):
+                    if not self._records_side(side, roles[env], env):
                         continue
                     row_index = self._row_cursor.get((env, side))
                     if row_index is None:
+                        if self._assignments[env].category == "current_historical":
+                            raise RuntimeError("completed historical match has no current-policy trajectory")
                         continue
                     if winner is None:
                         reward = 0.0
@@ -700,6 +769,14 @@ class NativeCollector:
                     row.done = True
                 self.stats.reward_sum += learner_reward
                 self.stats.games += 1
+                assignment = self._assignments[env]
+                if assignment.category == "current_historical":
+                    self.stats.current_historical_games += 1
+                    self.stats.historical_policy_games[assignment.historical_policy_id] = (
+                        self.stats.historical_policy_games.get(assignment.historical_policy_id, 0) + 1
+                    )
+                else:
+                    self.stats.current_current_games += 1
                 finished[env] = True
                 match_ids[env] = self._match_counter
                 self._match_counter += 1
@@ -721,6 +798,8 @@ class NativeCollector:
         usage_before = resource.getrusage(resource.RUSAGE_SELF)
         self._row_cursor: dict[tuple[int, int], int] = {}
         self.model.eval()
+        for historical in self.historical_models.values():
+            historical.eval()
         started = time.perf_counter()
         telemetry = self.config.telemetry
         if telemetry:
