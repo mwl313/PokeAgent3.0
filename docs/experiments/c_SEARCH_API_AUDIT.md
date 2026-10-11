@@ -71,8 +71,9 @@ in C0/C1.
 4. Pending submissions and serialized traces are private engine state; a
    player-facing API must not reveal them across sides.
 
-**Status:** `TEST_ORACLE_ONLY / BLOCKED_FOR_C2`. C1 establishes engine branch
-correctness only; it is not a CTS-safe teacher.
+**Status after C1.5/C2a:** `INFORMATION_BOUNDARY_ONLY / NOT_A_TEACHER`.
+C1 establishes engine branch correctness and C2a now adds only a typed
+player-information boundary; neither is a CTS-safe teacher.
 
 ## Pause checkpoint — 2026-10-11 Asia/Seoul
 
@@ -124,4 +125,5 @@ PATH=/home/minidc/.rustup/toolchains/1.90.0-x86_64-unknown-linux-gnu/bin:$PATH \
 installation reports no `fmt` subcommand; no system component was installed.
 The staged diff passed `git diff --cached --check` and was committed as
 `0790dcf` (`test(engine): add known-world branch oracle`). Stop for review; do
-not begin C2 or modify shared interfaces.
+not begin C2b or modify shared interfaces. See
+`c_C1_5_C2A_INFORMATION_BOUNDARY.md` for the continuation report.

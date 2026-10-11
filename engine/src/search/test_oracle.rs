@@ -6,11 +6,11 @@
 //! labels or be wired into Python/training.
 
 use crate::{
-    EngineError, Result,
     actions::{AtomicAction, Request},
     batch::{BattleBatch, Handle, SideChoice, StepSpec},
     battle::StepResult,
     state::SideId,
+    EngineError, Result,
 };
 
 /// Result of one isolated, fully specified joint-action branch.
@@ -55,6 +55,21 @@ impl KnownWorldTestOracle {
         }
         self.batch.restore(self.handle, &self.baseline)?;
         Ok(out)
+    }
+
+    /// Return the currently legal next-prefix candidates from the saved
+    /// fixture. This is test-only access to the engine request tree; it does
+    /// not expose a hidden opponent state to a planner.
+    pub fn legal_actions_for_prefix(
+        &mut self,
+        side: SideId,
+        prefix: &[AtomicAction],
+    ) -> Result<Vec<AtomicAction>> {
+        self.batch.restore(self.handle, &self.baseline)?;
+        let request = self.batch.request(self.handle, side)?.clone();
+        let candidates = request.candidates(prefix)?;
+        self.batch.restore(self.handle, &self.baseline)?;
+        Ok(candidates)
     }
 
     /// Resolve both submitted complete choices as one simultaneous decision.
