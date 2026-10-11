@@ -632,7 +632,11 @@ impl<'a> Encoder<'a> {
                 EffectKind::None => (),
                 EffectKind::Move => self.id(event.effect, 1, false)?,
                 EffectKind::Ability => self.id(event.effect, 2, false)?,
-                EffectKind::Item => self.id(event.effect, 3, false)?,
+                // Poltergeist can redirect after its selected-target item gate.
+                // Its hit then publicly reveals that the actual target holds
+                // no item (known item ID 0), matching the reference activation.
+                // EndItem and item-caused damage still require a real item.
+                EffectKind::Item => self.id(event.effect, 3, event.kind == EventKind::Item)?,
                 EffectKind::Condition => self.id(event.effect, 4, false)?,
                 EffectKind::Species => self.id(event.effect, 0, false)?,
                 EffectKind::Stat if event.effect >= 7 => {

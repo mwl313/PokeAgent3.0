@@ -11,7 +11,7 @@
 
 ## 1. 진행 지도 — 브랜치와 문서 (2026-10-09 밤 갱신, 새 에이전트 필독)
 
-> **2026-10-11 미니DC 갱신:** 현재 하드웨어 정본은 `docs/HARDWARE_MINIDC.md` — 두 V100 모두 **175W**, 사용자 냉각 개선 확인. 코드 `6eb48c0` clean 반복 측정: 재시작 중앙값 **36.563 games/s**, 지속 실행 3세트 steady 가중 **43.477 games/s**. 상세는 `docs/perf/COOLED_DUAL_V100_BOTTLENECK_REPORT_2026-10-11.md`. 진단에서 Poltergeist 이후 Item(0) 이벤트가 관측 catalogue 검증에 걸리는 오류를 CPU-only snapshot으로 재현했으므로 장기 학습 안정성 완료로 해석하지 않는다.
+> **2026-10-11 미니DC 갱신:** 현재 하드웨어 정본은 `docs/HARDWARE_MINIDC.md` — 두 V100 모두 **175W**, 사용자 냉각 개선 확인. 코드 `6eb48c0` clean 반복 측정: 재시작 중앙값 **36.563 games/s**, 지속 실행 3세트 steady 가중 **43.477 games/s**. 상세는 `docs/perf/COOLED_DUAL_V100_BOTTLENECK_REPORT_2026-10-11.md`. 진단에서 발견한 Poltergeist Item(0) 관측 오류는 선택 대상과 실제 피격 대상이 달라질 때 발생하는 정상적인 빈 아이템 공개를 검증기가 거부한 결함이다. 해당 Item 이벤트에 한정하여 ID 0을 허용하도록 수정하고 양측 snapshot 회귀 검증을 추가했다. 장기 학습 안정성은 별도 검증이 필요하다.
 
 ### 1.1 브랜치 지도
 

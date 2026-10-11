@@ -134,3 +134,58 @@ fn poltergeist_gate_protection_and_immunity_never_reveal_the_item() {
 
 #[path = "../test_support/corpus.rs"]
 mod corpus;
+
+/// Real training failure: Rage Powder redirected Poltergeist onto a Pokémon
+/// whose Sitrus Berry was already consumed. The reference onTry checks the
+/// selected target, and onTryHit publishes the actual target's empty item.
+#[test]
+fn redirected_poltergeist_empty_item_snapshot_encodes_for_both_players() {
+    use pa3_engine::{
+        knowledge::EffectKind,
+        observation::{Encoder, ObservationBuffers},
+    };
+    let dex = dex();
+    let state = BattleState::restore(
+        &dex,
+        include_bytes!("../../runs/perf/cooling_20261011/catalogue_bad_slot942_side0.snapshot"),
+    )
+    .unwrap();
+    let encoder = Encoder::new(&dex).unwrap();
+    for side in [SideId::P1, SideId::P2] {
+        let view = state.observe(side);
+        let event = view
+            .knowledge
+            .events
+            .iter()
+            .find(|e| {
+                e.kind == EventKind::Item && e.effect_kind == EffectKind::Item && e.effect == 0
+            })
+            .expect("captured Poltergeist must reveal the empty item");
+        assert_eq!(
+            view.knowledge.pokemon[event.subject as usize].item,
+            Known::new(0)
+        );
+        encoder
+            .encode_into(&view, &mut ObservationBuffers::default())
+            .unwrap();
+
+        // The exception is limited to a public Item reveal; it does not make
+        // unknown catalogue IDs or an empty consumed-item event valid.
+        for (kind, effect) in [(EventKind::EndItem, 0), (EventKind::Item, u16::MAX)] {
+            let mut invalid = view.clone();
+            let event = invalid
+                .knowledge
+                .events
+                .iter_mut()
+                .find(|e| e.kind == EventKind::Item && e.effect == 0)
+                .unwrap();
+            event.kind = kind;
+            event.effect = effect;
+            assert!(
+                encoder
+                    .encode_into(&invalid, &mut ObservationBuffers::default())
+                    .is_err()
+            );
+        }
+    }
+}

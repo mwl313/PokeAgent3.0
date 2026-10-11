@@ -4344,6 +4344,8 @@ impl BattleState {
             // `moves:poltergeist.onTryHit`: the move-owned handler runs at the
             // start of the damage step, after protection, type immunity and
             // accuracy have passed, and publicly reveals the held item.
+            // Redirection may select an itemless target after onTry succeeds;
+            // Item(0) deliberately reveals known absence in that case.
             if hooks & crate::effects::hook::POLTERGEIST != 0 {
                 self.emit(
                     EventKind::Item,

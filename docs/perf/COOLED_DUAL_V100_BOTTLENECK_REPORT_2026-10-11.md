@@ -10,6 +10,8 @@
 
 PPO 약 **29초**, 수집의 느린 rank 약 **12.53초**, 준비 약 **4.47초**가 큰 비용이다. 특히 수집의 행 저장 **4.46초**가 native battle step **0.19초**보다 크다. GPU kernel은 PPO에서 바쁘지만 이는 Tensor Core/SM을 최대로 사용한다는 뜻이 아니다.
 
+**후속 엔진 수정 (2026-10-11):** 관측 검증기가 `EventKind::Item`의 item ID 0만 허용하도록 수정했다. 선택 대상의 아이템 gate가 통과한 뒤 아이템 없는 대상으로 redirect되면, pinned Showdown의 `onTryHit`도 빈 item name을 공개한다. 기존 emitter와 `Known::new(0)` 지식 처리는 이 의미에 맞으므로 유지했다. EndItem(0)과 범위 밖 ID는 계속 거부한다. `poltergeist`, `observation`, `batch_observation` 테스트 14개 및 재빌드 Python 확장의 두 snapshot × 양측 관측 4개 검증 통과. Showdown callback 직접 실행으로 gate/빈 activation도 확인했다. 전체 엔진 테스트는 corpus 검사 도중 중단했으며 전체 통과 또는 장기 학습 검증을 주장하지 않는다. 아래 오류 기록은 수정 전 측정 이력이다.
+
 **안정성 결함 발견:** 계획된 기본 성능 패널 12회는 모두 성공했으나, 별도 진단의 두 번째 수집에서 `observation catalogue ID`가 발생했다. 동일 checkpoint 수집과 GPU 없는 snapshot 복원에서 재현했다. Poltergeist 이후 ID 0인 Item 이벤트를 관측 검증이 거부한다. 따라서 아래 속도는 성공한 벤치마크 계약의 속도이며, 무중단 장기 학습 가능성을 입증하지 않는다. §10 참조.
 
 ## 2. 실험 설계와 측정 경계
