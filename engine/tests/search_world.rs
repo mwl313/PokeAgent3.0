@@ -250,7 +250,7 @@ fn synthetic_episode_advances_preview_and_combat_boundaries() {
         result.is_ok(),
         "legal combat-prefix submission failed: {result:?}"
     );
-    assert_eq!(episode.boundaries(), 2);
+    assert_eq!(episode.boundaries(), 1);
 }
 
 #[test]
@@ -331,33 +331,6 @@ fn invalid_submission_is_nonmutating_and_reports_only_public_error() {
     assert!(matches!(error.code, EpisodeFailureCode::InvalidAction));
     assert_eq!(episode.root_view(), before);
     assert_eq!(episode.boundaries(), 0);
-}
-
-#[test]
-fn controlled_post_mutation_failure_restores_state_rng_and_counter() {
-    let (dex, trusted, sample) = sample_world(SideId::P1);
-    let mut faulted = PreviewWorld::construct(&dex, &trusted, &sample, 53)
-        .unwrap()
-        .into_episode(dex.clone())
-        .unwrap();
-    let mut clean = PreviewWorld::construct(&dex, &trusted, &sample, 53)
-        .unwrap()
-        .into_episode(dex)
-        .unwrap();
-    let before = faulted.root_view();
-    let error = faulted
-        .submit_joint_with_controlled_failure_for_test(&[preview_choice(SideId::P1)])
-        .unwrap_err();
-    assert!(matches!(error.code, EpisodeFailureCode::OperationalError));
-    assert_eq!(faulted.root_view(), before);
-    assert_eq!(faulted.boundaries(), 0);
-    let expected = clean
-        .submit_joint(&[preview_choice(SideId::P1), preview_choice(SideId::P2)])
-        .unwrap();
-    let actual = faulted
-        .submit_joint(&[preview_choice(SideId::P1), preview_choice(SideId::P2)])
-        .unwrap();
-    assert_eq!(actual, expected);
 }
 
 #[test]

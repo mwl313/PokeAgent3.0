@@ -70,10 +70,8 @@ pub struct EpisodeDiagnostics {
     pub schema_version: u16,
     pub turn: u16,
     pub root_request_kind: RequestKind,
-    pub accepted: bool,
     pub boundary_count: usize,
     pub max_boundaries: usize,
-    pub search_computation_units_remaining: u64,
 }
 
 /// A boundary result contains only the requested root player's view and
@@ -114,7 +112,6 @@ pub struct SyntheticEpisode {
     state: BattleState,
     root_side: SideId,
     boundaries: usize,
-    search_computation_units: u64,
 }
 
 impl PreviewWorld {
@@ -254,7 +251,6 @@ impl PreviewWorld {
             dex,
             state: self.state,
             boundaries: 0,
-            search_computation_units: 0,
         })
     }
 }
@@ -281,8 +277,27 @@ impl SyntheticEpisode {
         self.boundaries
     }
 
-    pub fn search_computation_units_remaining(&self) -> u64 {
-        MAX_SEARCH_COMPUTATION_UNITS.saturating_sub(self.search_computation_units)
+    /// Internal coordinator hook: the baseline opponent acts only from its
+    /// own audience-filtered view. The resulting command never crosses the
+    /// root-facing API.
+    pub(crate) fn submit_root_with_baseline(
+        &mut self,
+        root_actions: Vec<crate::actions::AtomicAction>,
+    ) -> Result<EpisodeBoundary, EpisodeError> {
+        let opponent = self.root_side.other();
+        let opponent_view = self.state.observe(opponent);
+        let opponent_actions = complete_legal_actions(&opponent_view.request)
+            .ok_or_else(|| invalid_action("baseline opponent has no legal completion"))?;
+        self.submit_joint(&[
+            SideChoice {
+                side: self.root_side,
+                actions: root_actions,
+            },
+            SideChoice {
+                side: opponent,
+                actions: opponent_actions,
+            },
+        ])
     }
 
     /// Validate every side's complete action before mutating the synthetic
@@ -327,17 +342,21 @@ impl SyntheticEpisode {
         if let Some(error) = &result.outcome.operational_error {
             return self.rollback(before, error.clone());
         }
-        self.boundaries += 1;
-        self.search_computation_units = self.search_computation_units.saturating_add(1);
+        // A decision boundary is complete only after both submissions have
+        // been consumed by the engine. Request kinds alone can show `Wait`
+        // for a served-side protocol state, so use the private pending slots
+        // inside the coordinator rather than exposing that status.
+        let resolved = self.state.pending.iter().all(Option::is_none);
+        if resolved {
+            self.boundaries += 1;
+        }
         let root_view = self.state.observe(self.root_side);
         let diagnostics = EpisodeDiagnostics {
             schema_version: PREVIEW_WORLD_SCHEMA,
             turn: root_view.turn,
             root_request_kind: root_view.request.kind,
-            accepted: result.accepted,
             boundary_count: self.boundaries,
             max_boundaries: MAX_EPISODE_BOUNDARIES,
-            search_computation_units_remaining: self.search_computation_units_remaining(),
         };
         Ok(EpisodeBoundary {
             root_view,
@@ -348,6 +367,7 @@ impl SyntheticEpisode {
     /// Controlled fault hook for rollback tests only. It deliberately begins
     /// one valid mutation, then restores the exact pre-submit state. It is not
     /// a battle mechanic or a production execution path.
+    #[cfg(test)]
     #[doc(hidden)]
     pub fn submit_joint_with_controlled_failure_for_test(
         &mut self,
@@ -365,12 +385,19 @@ impl SyntheticEpisode {
             code: EpisodeFailureCode::RollbackError,
             message: error.to_string(),
         })?;
-        self.state
-            .step(&self.dex, choices[0].side, &choices[0].actions)
-            .map_err(|error| EpisodeError {
-                code: EpisodeFailureCode::OperationalError,
-                message: error.to_string(),
-            })?;
+        for choice in choices {
+            if let Err(error) = self.state.step(&self.dex, choice.side, &choice.actions) {
+                self.state =
+                    BattleState::restore(&self.dex, &before).map_err(|restore| EpisodeError {
+                        code: EpisodeFailureCode::RollbackError,
+                        message: restore.to_string(),
+                    })?;
+                return Err(EpisodeError {
+                    code: EpisodeFailureCode::OperationalError,
+                    message: error.to_string(),
+                });
+            }
+        }
         self.state = BattleState::restore(&self.dex, &before).map_err(|error| EpisodeError {
             code: EpisodeFailureCode::RollbackError,
             message: error.to_string(),
@@ -402,6 +429,32 @@ fn invalid_action(message: impl Into<String>) -> EpisodeError {
         code: EpisodeFailureCode::InvalidAction,
         message: message.into(),
     }
+}
+
+fn complete_legal_actions(
+    request: &crate::actions::Request,
+) -> Option<Vec<crate::actions::AtomicAction>> {
+    fn descend(
+        request: &crate::actions::Request,
+        prefix: &mut Vec<crate::actions::AtomicAction>,
+    ) -> Option<Vec<crate::actions::AtomicAction>> {
+        let candidates = request.candidates(prefix).ok()?;
+        if candidates.is_empty() {
+            return request
+                .validate_joint(prefix)
+                .is_ok()
+                .then(|| prefix.clone());
+        }
+        for action in candidates {
+            prefix.push(action);
+            if let Some(result) = descend(request, prefix) {
+                return Some(result);
+            }
+            prefix.pop();
+        }
+        None
+    }
+    descend(request, &mut Vec::new())
 }
 
 fn own_team(info: &crate::search::information_set::SearchInformationSet) -> Result<Team, String> {
@@ -489,5 +542,112 @@ fn failure(
         code,
         message,
         diagnostics,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        actions::{ActionKind, AtomicAction},
+        assets::Dex,
+        batch::SideChoice,
+        search::belief::BeliefTeam,
+        search::information_set::TrustedSearchInformationSet,
+        state::Team,
+    };
+    use std::{path::Path, sync::Arc};
+
+    fn fixture() -> (Arc<Dex>, TrustedSearchInformationSet, BeliefTeam) {
+        let dex =
+            Arc::new(Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap());
+        let teams: Vec<Team> =
+            serde_json::from_str(include_str!("../../data/training-teams.json")).unwrap();
+        let initial =
+            BattleState::reset(&dex, [&teams[0], &teams[1]], [101, 102, 103, 104], [0, 1]).unwrap();
+        let trusted =
+            TrustedSearchInformationSet::from_player_view(&initial.observe(SideId::P1)).unwrap();
+        let sample = BeliefTeam {
+            members: teams[1].members.clone(),
+        };
+        (dex, trusted, sample)
+    }
+
+    fn preview(side: SideId) -> SideChoice {
+        SideChoice {
+            side,
+            actions: [0, 1, 4, 5]
+                .into_iter()
+                .enumerate()
+                .map(|(slot, destination)| {
+                    AtomicAction::select(ActionKind::Pick, slot as u8, destination)
+                })
+                .collect(),
+        }
+    }
+
+    fn complete(request: &crate::actions::Request) -> Vec<AtomicAction> {
+        fn descend(
+            request: &crate::actions::Request,
+            prefix: &mut Vec<AtomicAction>,
+        ) -> Option<Vec<AtomicAction>> {
+            let candidates = request.candidates(prefix).unwrap();
+            if candidates.is_empty() {
+                return request
+                    .validate_joint(prefix)
+                    .is_ok()
+                    .then(|| prefix.clone());
+            }
+            for action in candidates {
+                prefix.push(action);
+                if let Some(result) = descend(request, prefix) {
+                    return Some(result);
+                }
+                prefix.pop();
+            }
+            None
+        }
+        descend(request, &mut Vec::new()).unwrap()
+    }
+
+    #[test]
+    fn controlled_fault_after_resolved_step_restores_rng_and_state() {
+        let (dex, trusted, sample) = fixture();
+        let mut faulted = PreviewWorld::construct(&dex, &trusted, &sample, 71)
+            .unwrap()
+            .into_episode(dex.clone())
+            .unwrap();
+        let mut clean = PreviewWorld::construct(&dex, &trusted, &sample, 71)
+            .unwrap()
+            .into_episode(dex)
+            .unwrap();
+        let preview = [preview(SideId::P1), preview(SideId::P2)];
+        faulted.submit_joint(&preview).unwrap();
+        clean.submit_joint(&preview).unwrap();
+        let before_snapshot = faulted.state.snapshot().unwrap();
+        let before_view = faulted.root_view();
+        let before_boundaries = faulted.boundaries;
+        let p1 = complete(&faulted.state.observe(SideId::P1).request);
+        let p2 = complete(&faulted.state.observe(SideId::P2).request);
+        let choices = [
+            SideChoice {
+                side: SideId::P1,
+                actions: p1.clone(),
+            },
+            SideChoice {
+                side: SideId::P2,
+                actions: p2.clone(),
+            },
+        ];
+        let error = faulted
+            .submit_joint_with_controlled_failure_for_test(&choices)
+            .unwrap_err();
+        assert!(matches!(error.code, EpisodeFailureCode::OperationalError));
+        assert_eq!(faulted.state.snapshot().unwrap(), before_snapshot);
+        assert_eq!(faulted.root_view(), before_view);
+        assert_eq!(faulted.boundaries, before_boundaries);
+        let expected = clean.submit_joint(&choices).unwrap();
+        let actual = faulted.submit_joint(&choices).unwrap();
+        assert_eq!(actual, expected);
     }
 }
