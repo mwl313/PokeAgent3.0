@@ -14,6 +14,7 @@ pub mod observation;
 pub mod python;
 pub mod queue;
 pub mod rng;
+pub mod search;
 pub mod state;
 pub mod stats;
 
