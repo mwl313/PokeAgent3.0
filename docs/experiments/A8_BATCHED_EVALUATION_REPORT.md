@@ -1,6 +1,6 @@
 # Track A8 — Batched Evaluation Report
 
-Commit: `pending final A8 commit` (starting from `1b7d649`). No PPO training,
+Commit: `c83fffef138d1f0843b523b2d75bc13f257547d4` (starting from `1b7d649`). No PPO training,
 model changes, battle-mechanics changes, or Track C files were touched.
 
 The evaluation league now has a v2 identity contract. It includes the actual
