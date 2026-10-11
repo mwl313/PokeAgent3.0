@@ -8,11 +8,13 @@ use crate::{
     FORMAT,
     actions::RequestKind,
     assets::Dex,
+    batch::SideChoice,
+    battle::StepResult,
     legality,
     search::{belief::BeliefTeam, information_set::TrustedSearchInformationSet},
     state::{BattleState, PlayerView, SideId, Team, TeamSet},
 };
-use std::{collections::BTreeMap, fmt};
+use std::{collections::BTreeMap, fmt, sync::Arc};
 
 pub const PREVIEW_WORLD_SCHEMA: u16 = 1;
 pub const MAX_SEED_ATTEMPTS: usize = 256;
@@ -54,6 +56,54 @@ pub struct PreviewWorld {
     state: BattleState,
     view: PlayerView,
     diagnostics: WorldConstructionDiagnostics,
+}
+
+/// Player-safe diagnostics returned at each synthetic decision boundary.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EpisodeDiagnostics {
+    pub schema_version: u16,
+    pub turn: u16,
+    pub request_kinds: [RequestKind; 2],
+}
+
+/// A boundary result contains only the requested root player's view and
+/// nonsecret operational metadata. It never carries a snapshot or opponent
+/// action/state.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EpisodeBoundary {
+    pub result: StepResult,
+    pub root_view: PlayerView,
+    pub diagnostics: EpisodeDiagnostics,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum EpisodeFailureCode {
+    InvalidAction,
+    OperationalError,
+    RollbackError,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EpisodeError {
+    pub code: EpisodeFailureCode,
+    pub message: String,
+}
+
+impl fmt::Display for EpisodeError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}: {}", self.code, self.message)
+    }
+}
+
+impl std::error::Error for EpisodeError {}
+
+/// Privately owned synthetic episode. This runner advances only states created
+/// by `PreviewWorld`; it is not a reconstruction API for live PPO battles.
+pub struct SyntheticEpisode {
+    dex: Arc<Dex>,
+    state: BattleState,
+    root_side: SideId,
+    boundaries: usize,
 }
 
 impl PreviewWorld {
@@ -178,6 +228,110 @@ impl PreviewWorld {
     /// this method proves the state is retained without exposing snapshots.
     pub fn is_clean_preview(&self) -> bool {
         self.state.observe(self.view.side).request.kind == RequestKind::Preview
+    }
+
+    pub fn into_episode(self, dex: Arc<Dex>) -> SyntheticEpisode {
+        SyntheticEpisode {
+            root_side: self.view.side,
+            dex,
+            state: self.state,
+            boundaries: 0,
+        }
+    }
+}
+
+impl SyntheticEpisode {
+    pub fn root_view(&self) -> PlayerView {
+        self.state.observe(self.root_side)
+    }
+
+    /// Prefix candidates are generated from the root request only. The
+    /// request tree preserves the engine's conditional target/switch rules.
+    pub fn root_candidates(
+        &self,
+        prefix: &[crate::actions::AtomicAction],
+    ) -> Result<Vec<crate::actions::AtomicAction>, EpisodeError> {
+        self.state
+            .observe(self.root_side)
+            .request
+            .candidates(prefix)
+            .map_err(|error| invalid_action(error.to_string()))
+    }
+
+    pub fn boundaries(&self) -> usize {
+        self.boundaries
+    }
+
+    /// Validate every side's complete action before mutating the synthetic
+    /// state. If resolution reports an operational error, restore the exact
+    /// pre-submit snapshot and return a failure.
+    pub fn submit_joint(
+        &mut self,
+        choices: &[SideChoice],
+    ) -> Result<EpisodeBoundary, EpisodeError> {
+        if choices.is_empty() || choices.len() > 2 {
+            return Err(invalid_action("one or two side choices required"));
+        }
+        let mut seen = 0u8;
+        for choice in choices {
+            let bit = 1 << choice.side.index();
+            if seen & bit != 0 {
+                return Err(invalid_action("duplicate side choice"));
+            }
+            seen |= bit;
+            self.state
+                .validate_choice(choice.side, &choice.actions)
+                .map_err(|error| invalid_action(error.to_string()))?;
+        }
+        let before = self.state.snapshot().map_err(|error| EpisodeError {
+            code: EpisodeFailureCode::RollbackError,
+            message: error.to_string(),
+        })?;
+        let mut last = None;
+        for choice in choices {
+            match self.state.step(&self.dex, choice.side, &choice.actions) {
+                Ok(result) => last = Some(result),
+                Err(error) => return self.rollback(before, error.to_string()),
+            }
+        }
+        let result = last.expect("nonempty choices prevalidated");
+        if let Some(error) = &result.outcome.operational_error {
+            return self.rollback(before, error.clone());
+        }
+        self.boundaries += 1;
+        let root_view = self.state.observe(self.root_side);
+        let diagnostics = EpisodeDiagnostics {
+            schema_version: PREVIEW_WORLD_SCHEMA,
+            turn: root_view.turn,
+            request_kinds: result.request_kinds,
+        };
+        Ok(EpisodeBoundary {
+            result,
+            root_view,
+            diagnostics,
+        })
+    }
+
+    fn rollback(
+        &mut self,
+        before: Vec<u8>,
+        message: String,
+    ) -> Result<EpisodeBoundary, EpisodeError> {
+        self.state = BattleState::restore(&self.dex, &before).map_err(|error| EpisodeError {
+            code: EpisodeFailureCode::RollbackError,
+            message: error.to_string(),
+        })?;
+        Err(EpisodeError {
+            code: EpisodeFailureCode::OperationalError,
+            message,
+        })
+    }
+}
+
+fn invalid_action(message: impl Into<String>) -> EpisodeError {
+    EpisodeError {
+        code: EpisodeFailureCode::InvalidAction,
+        message: message.into(),
     }
 }
 
