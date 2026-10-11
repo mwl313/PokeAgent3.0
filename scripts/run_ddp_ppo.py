@@ -114,6 +114,8 @@ def parse_args(argv=None):
         default=True,
         help="stratified sampled-vs-recomputed logprob parity gate before the update (v4 gate)",
     )
+    parser.add_argument("--precision-mode", choices=("A", "B", "C", "D"), default="A",
+                        help="experimental policy precision contract; A is the A9 FP32 reference")
     parser.add_argument(
         "--columnar-store",
         action="store_true",
@@ -330,6 +332,7 @@ def worker(args) -> None:
     torch.manual_seed(args.seed + rank)
     engine = pa3_engine.NativeEngine(args.data, args.teams, workers=args.workers)
     model = build_model(PA3Config())
+    model.configure_precision(args.precision_mode)
     model.encoder.trim_padding = args.trim_observation_padding
     historical_models = {}
     historical_manifest = []
@@ -392,8 +395,12 @@ def worker(args) -> None:
         "teams": os.path.abspath(args.teams), "observation_mode": "fixed",
         "candidate_wire": "packed", "columnar_store": bool(args.columnar_store),
         "rolling_slots": bool(args.rolling_slots), "both_current_sides": True,
+        "precision_mode": args.precision_mode,
     }
     collector_config_hash = hash_json(collector_contract)
+    legacy_collector_contract = dict(collector_contract)
+    legacy_collector_contract.pop("precision_mode", None)
+    legacy_collector_contract_hash = hash_json(legacy_collector_contract)
     if args.executor == "manual":
         # No DDP wrapper: local FP32 gradients are summed explicitly.
         # DDP performs this broadcast in its constructor. The manual executor
@@ -410,6 +417,11 @@ def worker(args) -> None:
         learner.attach_ddp(ddp_model, world_size)
         communication = DDPCommunication(ddp_model)
     if resume_envelope is not None:
+        saved_precision = resume_envelope.get("experiment", {}).get("precision_mode")
+        if saved_precision is not None and saved_precision != args.precision_mode:
+            raise RuntimeError(
+                f"precision contract mismatch: checkpoint={saved_precision} requested={args.precision_mode}"
+            )
         validate_epoch_override(resume_envelope, ppo_config, ppo_config.ppo_epochs)
         recorded_source_sha = resume_envelope.get("source_sha")
         expected_source_sha = source_sha
@@ -439,7 +451,10 @@ def worker(args) -> None:
         )
         restart = resume_envelope.get("collector_restart", {})
         if restart.get("config_hash") != collector_config_hash:
-            raise RuntimeError("experimental resume collector contract mismatch")
+            if restart.get("config_hash") == legacy_collector_contract_hash:
+                note("explicit precision-contract migration from legacy A9/A5 collector envelope")
+            else:
+                raise RuntimeError("experimental resume collector contract mismatch")
     recompute_check = None
     if args.recompute_gate:
         scripts_dir = os.path.join(ROOT, "scripts")
@@ -481,6 +496,7 @@ def worker(args) -> None:
                 envs=args.envs, workers=args.workers, seed=iteration_seed, device=str(device),
                 observation_mode="fixed", candidate_wire="packed",
                 amp=True, inference_mode=True,
+                precision_mode=args.precision_mode,
                 columnar_observation_store=args.columnar_store,
                 rolling_slots=args.rolling_slots,
                 historical_probability=args.historical_probability,
@@ -589,6 +605,7 @@ def worker(args) -> None:
                     "parent_resume": bool(resume_envelope),
                     "lr_scale": lr_scale,
                     "source_migration_allowed": bool(args.experimental_allow_source_sha),
+                    "precision_mode": args.precision_mode,
                 },
                 rank=rank, world_size=world_size, executor=args.executor,
                 iteration=absolute_iteration + 1,

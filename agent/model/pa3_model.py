@@ -29,6 +29,7 @@ from agent.model.encoder import TokenEncoder
 from agent.model.scorer import ConditionalPrefixScorer, masked_log_softmax, probabilities
 from agent.types.observation import ObservationBatch
 from agent.types.requests import BranchCandidatesBatch
+from agent.model.precision import PrecisionContract, get_precision_contract
 
 
 @dataclass
@@ -143,6 +144,7 @@ class PA3Model(nn.Module):
         self.config.validate()
         self.encoder = TokenEncoder(self.config)
         self.scorer = ConditionalPrefixScorer(self.config)
+        self.precision_contract: PrecisionContract = get_precision_contract("A")
         self.value_head = nn.Sequential(
             nn.Linear(self.config.d_model, self.config.critic_hidden),
             nn.GELU(),
@@ -199,7 +201,8 @@ class PA3Model(nn.Module):
         # narrower scorer path is FP32 as well; value/update math remains
         # unchanged.  This is an intentional A9 numerical contract, not a
         # tolerance relaxation.
-        with torch.autocast(device_type=observation.device.type, enabled=False):
+        with torch.autocast(device_type=observation.device.type, dtype=torch.float16,
+                            enabled=self.precision_contract.encoder_amp and observation.device.type == "cuda"):
             tokens = self.encoder(observation)
         global_index = observation.layout.GLOBAL
         token_mask = observation.token_mask
@@ -220,6 +223,10 @@ class PA3Model(nn.Module):
             token_mask=token_mask,
             layout=observation.layout,
         )
+
+    def configure_precision(self, mode: str) -> None:
+        self.precision_contract = get_precision_contract(mode)
+        self.scorer.precision_contract = self.precision_contract
 
     def value(self, encoded: EncodedState) -> torch.Tensor:
         return self.value_head(encoded.global_repr).squeeze(-1)

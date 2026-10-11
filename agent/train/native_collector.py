@@ -31,6 +31,7 @@ import torch
 
 from agent.buffer.rollout_buffer import RolloutBuffer
 from agent.model.pa3_model import PA3Model, assemble_level_result
+from agent.model.precision import get_precision_contract
 from agent.types.actions import (
     AtomicAction,
     CandidateSet,
@@ -68,6 +69,7 @@ class NativeCollectorConfig:
     candidate_wire: str = "tuples"
     # Actor-only inference flags (A/B measured; probabilities stay FP32).
     amp: bool = False
+    precision_mode: str = "A"
     inference_mode: bool = False
     # configs/train.yaml `collect_both_sides_when_current_self_play: true`: when
     # both seats run the frozen current policy, both sides' requests are
@@ -174,6 +176,8 @@ class NativeCollector:
             )
         self.device = torch.device(device)
         self.model = model.to(self.device)
+        self.precision_contract = get_precision_contract(self.config.precision_mode)
+        self.model.configure_precision(self.precision_contract.mode)
         if self.config.columnar_observation_store:
             from agent.buffer.rollout_buffer import ColumnarObservationStore
 
@@ -503,6 +507,7 @@ class NativeCollector:
             batch_observations = ObservationBatch.from_native_payload(
                 parse_batch(fixed_bytes, ragged_bytes, len(decision)), layout=self.layout
             )
+            batch_observations = self.precision_contract.prepare_observation(batch_observations)
             self.stats.parse_seconds += time.perf_counter() - start
         else:
             blobs = self.engine.observe_encoded_batch(handle_rows, side_rows)
@@ -512,6 +517,7 @@ class NativeCollector:
                 ObservationBatch.from_native_payload(parse_view(blob), layout=self.layout)
                 for blob in blobs
             ]
+            observations = [self.precision_contract.prepare_observation(item) for item in observations]
             self.stats.parse_seconds += time.perf_counter() - start
         # Group requests by branch count so a batched sequential sample is
         # well-formed for every row in the group.

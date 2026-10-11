@@ -21,6 +21,7 @@ from torch import nn
 
 from agent.model.config import PA3Config
 from agent.types.actions import TARGET_LOCATION_MAX, TARGET_LOCATION_MIN
+from agent.model.precision import PrecisionContract, get_precision_contract
 
 TARGET_MIN = TARGET_LOCATION_MIN
 TARGET_MAX = TARGET_LOCATION_MAX
@@ -53,6 +54,7 @@ class ConditionalPrefixScorer(nn.Module):
         super().__init__()
         config.validate()
         self.config = config
+        self.precision_contract: PrecisionContract = get_precision_contract("A")
         d = config.d_model
 
         self.field_embed_dims = {
@@ -191,7 +193,8 @@ class ConditionalPrefixScorer(nn.Module):
         # Candidate scoring is the behavior-policy contract.  Keeping this
         # small path in FP32 makes sampled and recomputed prefix scores
         # independent of the surrounding encoder autocast batch shape.
-        with torch.autocast(device_type=encoded_tokens.device.type, enabled=False):
+        with torch.autocast(device_type=encoded_tokens.device.type, dtype=torch.float16,
+                            enabled=self.precision_contract.scorer_amp and encoded_tokens.device.type == "cuda"):
             encoded_tokens = encoded_tokens.float()
             return self._build_keys_fp32(encoded_tokens, action_ids, entity_token, move_token)
 
@@ -229,7 +232,8 @@ class ConditionalPrefixScorer(nn.Module):
         the prefix. Reusing the selected key avoids repeating its embeddings,
         token gathers, projections and LayerNorm after scoring the branch.
         """
-        with torch.autocast(device_type=keys.device.type, enabled=False):
+        with torch.autocast(device_type=keys.device.type, dtype=torch.float16,
+                            enabled=self.precision_contract.scorer_amp and keys.device.type == "cuda"):
             keys = keys.float()
             prefix_hidden = prefix_hidden.float()
             return self._score_keys_fp32(keys, prefix_hidden, mask)
@@ -259,7 +263,8 @@ class ConditionalPrefixScorer(nn.Module):
         self, selected_keys: torch.Tensor, prefix_hidden: torch.Tensor
     ) -> torch.Tensor:
         """Advance the prefix using a selected key from ``build_keys``."""
-        with torch.autocast(device_type=selected_keys.device.type, enabled=False):
+        with torch.autocast(device_type=selected_keys.device.type, dtype=torch.float16,
+                            enabled=self.precision_contract.gru_amp and selected_keys.device.type == "cuda"):
             return self.gru(selected_keys.float(), prefix_hidden.float())
 
     def initial_state(self, batch_size: int, device: torch.device, dtype: torch.dtype) -> torch.Tensor:
