@@ -20,6 +20,43 @@ fn assets() -> (Arc<Dex>, Arc<Vec<Team>>) {
     )
 }
 
+fn complete_action(request: &pa3_engine::actions::Request) -> Vec<AtomicAction> {
+    fn descend(
+        request: &pa3_engine::actions::Request,
+        prefix: &mut Vec<AtomicAction>,
+    ) -> Option<Vec<AtomicAction>> {
+        let candidates = request.candidates(prefix).unwrap();
+        if candidates.is_empty() {
+            return request
+                .validate_joint(prefix)
+                .is_ok()
+                .then(|| prefix.clone());
+        }
+        for action in candidates {
+            prefix.push(action);
+            if let Some(result) = descend(request, prefix) {
+                return Some(result);
+            }
+            prefix.pop();
+        }
+        None
+    }
+    descend(request, &mut Vec::new()).expect("fixture must have a legal joint action")
+}
+
+fn preview_choice(side: SideId) -> SideChoice {
+    SideChoice {
+        side,
+        actions: [0, 1, 4, 5]
+            .into_iter()
+            .enumerate()
+            .map(|(slot, destination)| {
+                AtomicAction::select(ActionKind::Pick, slot as u8, destination)
+            })
+            .collect(),
+    }
+}
+
 fn sample_world(
     side: SideId,
 ) -> (
@@ -64,6 +101,31 @@ fn hidden_truth_changes_cannot_change_a_given_sampled_world() {
     let second = PreviewWorld::construct(&dex, &trusted, &sample, 7).unwrap();
     assert_eq!(first.player_view(), second.player_view());
     assert_eq!(first.diagnostics(), second.diagnostics());
+}
+
+#[test]
+fn root_projection_ignores_hidden_opponent_submission_status() {
+    let (dex, trusted, sample) = sample_world(SideId::P1);
+    let untouched = PreviewWorld::construct(&dex, &trusted, &sample, 31)
+        .unwrap()
+        .into_episode(dex.clone())
+        .unwrap();
+    let mut opponent_pending = PreviewWorld::construct(&dex, &trusted, &sample, 31)
+        .unwrap()
+        .into_episode(dex)
+        .unwrap();
+    let boundary = opponent_pending
+        .submit_joint(&[preview_choice(SideId::P2)])
+        .unwrap();
+    assert_eq!(untouched.root_view(), boundary.root_view);
+    assert_eq!(
+        untouched.root_candidates(&[]),
+        opponent_pending.root_candidates(&[])
+    );
+    assert_eq!(
+        boundary.diagnostics.root_request_kind,
+        untouched.root_view().request.kind
+    );
 }
 
 #[test]
@@ -192,6 +254,66 @@ fn synthetic_episode_advances_preview_and_combat_boundaries() {
 }
 
 #[test]
+fn complete_two_turn_replay_is_deterministic_for_both_root_perspectives() {
+    let (dex, teams) = assets();
+    for root_side in [SideId::P1, SideId::P2] {
+        let initial =
+            BattleState::reset(&dex, [&teams[0], &teams[1]], [91, 92, 93, 94], [0, 1]).unwrap();
+        let trusted =
+            TrustedSearchInformationSet::from_player_view(&initial.observe(root_side)).unwrap();
+        let sample = pa3_engine::search::belief::BeliefTeam {
+            members: teams[root_side.other().index()].members.clone(),
+        };
+        let mut first = PreviewWorld::construct(&dex, &trusted, &sample, 41)
+            .unwrap()
+            .into_episode(dex.clone())
+            .unwrap();
+        let mut second = PreviewWorld::construct(&dex, &trusted, &sample, 41)
+            .unwrap()
+            .into_episode(dex.clone())
+            .unwrap();
+        let preview = [preview_choice(SideId::P1), preview_choice(SideId::P2)];
+        first.submit_joint(&preview).unwrap();
+        second.submit_joint(&preview).unwrap();
+        let mut reference = initial;
+        reference
+            .step(&dex, SideId::P1, &preview[0].actions)
+            .unwrap();
+        reference
+            .step(&dex, SideId::P2, &preview[1].actions)
+            .unwrap();
+
+        for _ in 0..2 {
+            let p1 = complete_action(&reference.observe(SideId::P1).request);
+            let p2 = complete_action(&reference.observe(SideId::P2).request);
+            let choices = [
+                SideChoice {
+                    side: SideId::P1,
+                    actions: p1.clone(),
+                },
+                SideChoice {
+                    side: SideId::P2,
+                    actions: p2.clone(),
+                },
+            ];
+            let a = first.submit_joint(&choices).unwrap();
+            let b = second.submit_joint(&choices).unwrap();
+            reference.step(&dex, SideId::P1, &p1).unwrap();
+            reference.step(&dex, SideId::P2, &p2).unwrap();
+            assert_eq!(a.root_view, b.root_view);
+            assert_ne!(
+                a.root_view.request.kind,
+                pa3_engine::actions::RequestKind::Wait
+            );
+            assert!(a.root_view.turn >= 1);
+            assert_eq!(a.diagnostics, b.diagnostics);
+        }
+        assert_eq!(first.boundaries(), 3);
+        assert_eq!(second.boundaries(), 3);
+    }
+}
+
+#[test]
 fn invalid_submission_is_nonmutating_and_reports_only_public_error() {
     let (dex, trusted, sample) = sample_world(SideId::P1);
     let mut episode = PreviewWorld::construct(&dex, &trusted, &sample, 23)
@@ -209,4 +331,65 @@ fn invalid_submission_is_nonmutating_and_reports_only_public_error() {
     assert!(matches!(error.code, EpisodeFailureCode::InvalidAction));
     assert_eq!(episode.root_view(), before);
     assert_eq!(episode.boundaries(), 0);
+}
+
+#[test]
+fn controlled_post_mutation_failure_restores_state_rng_and_counter() {
+    let (dex, trusted, sample) = sample_world(SideId::P1);
+    let mut faulted = PreviewWorld::construct(&dex, &trusted, &sample, 53)
+        .unwrap()
+        .into_episode(dex.clone())
+        .unwrap();
+    let mut clean = PreviewWorld::construct(&dex, &trusted, &sample, 53)
+        .unwrap()
+        .into_episode(dex)
+        .unwrap();
+    let before = faulted.root_view();
+    let error = faulted
+        .submit_joint_with_controlled_failure_for_test(&[preview_choice(SideId::P1)])
+        .unwrap_err();
+    assert!(matches!(error.code, EpisodeFailureCode::OperationalError));
+    assert_eq!(faulted.root_view(), before);
+    assert_eq!(faulted.boundaries(), 0);
+    let expected = clean
+        .submit_joint(&[preview_choice(SideId::P1), preview_choice(SideId::P2)])
+        .unwrap();
+    let actual = faulted
+        .submit_joint(&[preview_choice(SideId::P1), preview_choice(SideId::P2)])
+        .unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn invalid_second_side_choice_cannot_partially_commit_first_side() {
+    let (dex, trusted, sample) = sample_world(SideId::P1);
+    let mut rejected = PreviewWorld::construct(&dex, &trusted, &sample, 59)
+        .unwrap()
+        .into_episode(dex.clone())
+        .unwrap();
+    let mut clean = PreviewWorld::construct(&dex, &trusted, &sample, 59)
+        .unwrap()
+        .into_episode(dex)
+        .unwrap();
+    let before = rejected.root_view();
+    assert!(
+        rejected
+            .submit_joint(&[
+                preview_choice(SideId::P1),
+                SideChoice {
+                    side: SideId::P2,
+                    actions: vec![AtomicAction::pass(0)]
+                },
+            ])
+            .is_err()
+    );
+    assert_eq!(rejected.root_view(), before);
+    assert_eq!(rejected.boundaries(), 0);
+    let expected = clean
+        .submit_joint(&[preview_choice(SideId::P1), preview_choice(SideId::P2)])
+        .unwrap();
+    let actual = rejected
+        .submit_joint(&[preview_choice(SideId::P1), preview_choice(SideId::P2)])
+        .unwrap();
+    assert_eq!(actual, expected);
 }

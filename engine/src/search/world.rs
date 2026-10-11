@@ -9,7 +9,6 @@ use crate::{
     actions::RequestKind,
     assets::Dex,
     batch::SideChoice,
-    battle::StepResult,
     legality,
     search::{belief::BeliefTeam, information_set::TrustedSearchInformationSet},
     state::{BattleState, PlayerView, SideId, Team, TeamSet},
@@ -18,6 +17,12 @@ use std::{collections::BTreeMap, fmt, sync::Arc};
 
 pub const PREVIEW_WORLD_SCHEMA: u16 = 1;
 pub const MAX_SEED_ATTEMPTS: usize = 256;
+/// Hard stop for a synthetic episode. A caller must create a new bounded
+/// world rather than silently truncating an episode.
+pub const MAX_EPISODE_BOUNDARIES: usize = 256;
+/// Reserved accounting budget for future C3 search work. C2d consumes no
+/// search units, but the limit is part of the stable execution contract.
+pub const MAX_SEARCH_COMPUTATION_UNITS: u64 = 100_000;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum WorldFailureCode {
@@ -64,7 +69,11 @@ pub struct PreviewWorld {
 pub struct EpisodeDiagnostics {
     pub schema_version: u16,
     pub turn: u16,
-    pub request_kinds: [RequestKind; 2],
+    pub root_request_kind: RequestKind,
+    pub accepted: bool,
+    pub boundary_count: usize,
+    pub max_boundaries: usize,
+    pub search_computation_units_remaining: u64,
 }
 
 /// A boundary result contains only the requested root player's view and
@@ -72,7 +81,6 @@ pub struct EpisodeDiagnostics {
 /// action/state.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EpisodeBoundary {
-    pub result: StepResult,
     pub root_view: PlayerView,
     pub diagnostics: EpisodeDiagnostics,
 }
@@ -82,6 +90,7 @@ pub enum EpisodeFailureCode {
     InvalidAction,
     OperationalError,
     RollbackError,
+    LimitExceeded,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -105,6 +114,7 @@ pub struct SyntheticEpisode {
     state: BattleState,
     root_side: SideId,
     boundaries: usize,
+    search_computation_units: u64,
 }
 
 impl PreviewWorld {
@@ -244,6 +254,7 @@ impl PreviewWorld {
             dex,
             state: self.state,
             boundaries: 0,
+            search_computation_units: 0,
         })
     }
 }
@@ -270,6 +281,10 @@ impl SyntheticEpisode {
         self.boundaries
     }
 
+    pub fn search_computation_units_remaining(&self) -> u64 {
+        MAX_SEARCH_COMPUTATION_UNITS.saturating_sub(self.search_computation_units)
+    }
+
     /// Validate every side's complete action before mutating the synthetic
     /// state. If resolution reports an operational error, restore the exact
     /// pre-submit snapshot and return a failure.
@@ -277,6 +292,12 @@ impl SyntheticEpisode {
         &mut self,
         choices: &[SideChoice],
     ) -> Result<EpisodeBoundary, EpisodeError> {
+        if self.boundaries >= MAX_EPISODE_BOUNDARIES {
+            return Err(EpisodeError {
+                code: EpisodeFailureCode::LimitExceeded,
+                message: "synthetic episode boundary limit exhausted".into(),
+            });
+        }
         if choices.is_empty() || choices.len() > 2 {
             return Err(invalid_action("one or two side choices required"));
         }
@@ -307,16 +328,56 @@ impl SyntheticEpisode {
             return self.rollback(before, error.clone());
         }
         self.boundaries += 1;
+        self.search_computation_units = self.search_computation_units.saturating_add(1);
         let root_view = self.state.observe(self.root_side);
         let diagnostics = EpisodeDiagnostics {
             schema_version: PREVIEW_WORLD_SCHEMA,
             turn: root_view.turn,
-            request_kinds: result.request_kinds,
+            root_request_kind: root_view.request.kind,
+            accepted: result.accepted,
+            boundary_count: self.boundaries,
+            max_boundaries: MAX_EPISODE_BOUNDARIES,
+            search_computation_units_remaining: self.search_computation_units_remaining(),
         };
         Ok(EpisodeBoundary {
-            result,
             root_view,
             diagnostics,
+        })
+    }
+
+    /// Controlled fault hook for rollback tests only. It deliberately begins
+    /// one valid mutation, then restores the exact pre-submit state. It is not
+    /// a battle mechanic or a production execution path.
+    #[doc(hidden)]
+    pub fn submit_joint_with_controlled_failure_for_test(
+        &mut self,
+        choices: &[SideChoice],
+    ) -> Result<EpisodeBoundary, EpisodeError> {
+        if choices.is_empty() {
+            return Err(invalid_action("one side choice required"));
+        }
+        for choice in choices {
+            self.state
+                .validate_choice(choice.side, &choice.actions)
+                .map_err(|error| invalid_action(error.to_string()))?;
+        }
+        let before = self.state.snapshot().map_err(|error| EpisodeError {
+            code: EpisodeFailureCode::RollbackError,
+            message: error.to_string(),
+        })?;
+        self.state
+            .step(&self.dex, choices[0].side, &choices[0].actions)
+            .map_err(|error| EpisodeError {
+                code: EpisodeFailureCode::OperationalError,
+                message: error.to_string(),
+            })?;
+        self.state = BattleState::restore(&self.dex, &before).map_err(|error| EpisodeError {
+            code: EpisodeFailureCode::RollbackError,
+            message: error.to_string(),
+        })?;
+        Err(EpisodeError {
+            code: EpisodeFailureCode::OperationalError,
+            message: "controlled test fault after mutation; state restored".into(),
         })
     }
 

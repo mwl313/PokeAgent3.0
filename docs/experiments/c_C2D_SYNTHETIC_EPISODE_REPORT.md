@@ -13,9 +13,9 @@
 C2d extends the C2c clean-preview world with a privately owned
 `SyntheticEpisode`. It holds the hypothetical `BattleState` and pinned `Dex`
 internally. The public boundary exposes only the root player's `PlayerView`,
-prefix-dependent `Request::candidates`, `StepResult`, and schema/turn/request
-diagnostics. No snapshot, raw state, opponent team, opponent action, RNG, or
-hidden event state is returned.
+prefix-dependent `Request::candidates`, and root-only schema/turn/request
+diagnostics. No `StepResult`, snapshot, raw state, opponent team, opponent
+action, RNG, or hidden event state is returned.
 
 `submit_joint` pre-validates every supplied side choice before mutation. It
 preserves simultaneous joint-action semantics, allows a legal partial commit to
@@ -23,6 +23,11 @@ leave the other side pending, and rolls back the exact serialized state if an
 engine operational error occurs after mutation. Invalid submissions are
 non-mutating. Root candidates use the observed request, so a root side that has
 already submitted receives no candidates while waiting for the other side.
+
+The root-facing `EpisodeBoundary` contains only the root `PlayerView` and a
+root-only projection (`accepted`, root request kind, turn, boundary count, and
+remaining bounded budget). Opponent request kinds and pending/submission status
+remain internal to the coordinator.
 
 The executor advances synthetic states only. It does not reconstruct an
 arbitrary ongoing PPO battle and does not make a sampled world equivalent to a
@@ -47,11 +52,18 @@ The targeted suite covers:
 - invalid action non-mutation;
 - malformed samples, unsupported midbattle inputs, and unknown opponent masks;
 - genuinely different hidden opponent builds with identical root contracts;
+- complete two-turn deterministic replay for both P1 and P2 root perspectives;
+- controlled post-mutation rollback, invalid second-side atomicity, and hidden
+  opponent pending-status invariance;
 - the existing combat-turn oracle for legal joint actions, conditional targets,
   switching/replacement, chance/resource branches, restoration, and isolation.
 
 Run CPU-only targeted Rust tests, Clippy (`-D warnings`), rustfmt, and diff
 checks. The full differential corpus and all training workloads remain gated.
+
+Execution is bounded at 256 decision boundaries and 100,000 reserved future
+search-computation units. Limit exhaustion is a structured failure; the runner
+never silently truncates or calls an incomplete episode a completed battle.
 
 ## FUTURE_PPO_INTEGRATION_CONTRACT
 
@@ -87,3 +99,8 @@ copied/transformed moves or abilities, item changes, pending commands, event
 ordering, or live RNG. The executor currently accepts joint choices supplied by
 its caller; it does not implement an opponent policy or belief search. C2c-2,
 C3 search, teacher labels, and PPO integration remain future review-gated work.
+
+The independent C3a search-core gate is now technically approachable for
+review, provided it consumes only this root projection and a separate bounded
+belief coordinator. It is not implemented here; no teacher labels or policy
+integration are authorized by this milestone.
