@@ -2,6 +2,12 @@
 
 **Status:** `C3A_BOUNDED_SEARCH_RESEARCH_ONLY / NO_VALIDATED_TEACHER / NO_LABELS / NO_DISTILLATION`
 
+**Implementation commit:** `e64dc43641a8eabad55538f8a18c46045da8455f`
+
+**Files changed:** `engine/src/search/core.rs`, `engine/src/search/mod.rs`,
+`engine/src/search/world.rs`, `engine/tests/search_core.rs`,
+`engine/tests/search_world.rs`, and this report.
+
 ## Scope and trust boundaries
 
 C3a adds `engine/src/search/core.rs`, a CPU-only coordinator that accepts a
@@ -87,4 +93,3 @@ resource accounting; root-only leakage tests; and a separately reviewed
 observation bytes, complete legal joint atoms, aggregate search targets,
 confidence/provenance diagnostics, and schema versions without changing PPO
 rollout storage or objectives. Track A remains entirely independent.
-
