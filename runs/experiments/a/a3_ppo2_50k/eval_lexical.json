@@ -1,0 +1,7451 @@
+{
+  "confidence_status": "descriptive_only",
+  "draws": 0,
+  "fixture_manifest_hash": "5f5cb842a3f90ffabbb551ef4ba77be5946bb9f5fb3119b617590d7005453e0c",
+  "fixtures": [
+    {
+      "fixture_id": 0,
+      "pair_id": 0,
+      "policy_side": 0,
+      "seed": [
+        64979,
+        44303,
+        36560,
+        7189
+      ],
+      "team_a": 1007,
+      "team_b": 709
+    },
+    {
+      "fixture_id": 1,
+      "pair_id": 0,
+      "policy_side": 1,
+      "seed": [
+        64979,
+        44303,
+        36560,
+        7189
+      ],
+      "team_a": 1007,
+      "team_b": 709
+    },
+    {
+      "fixture_id": 2,
+      "pair_id": 1,
+      "policy_side": 0,
+      "seed": [
+        62906,
+        4873,
+        1919,
+        45257
+      ],
+      "team_a": 81,
+      "team_b": 733
+    },
+    {
+      "fixture_id": 3,
+      "pair_id": 1,
+      "policy_side": 1,
+      "seed": [
+        62906,
+        4873,
+        1919,
+        45257
+      ],
+      "team_a": 81,
+      "team_b": 733
+    },
+    {
+      "fixture_id": 4,
+      "pair_id": 2,
+      "policy_side": 0,
+      "seed": [
+        16803,
+        61875,
+        3449,
+        476
+      ],
+      "team_a": 444,
+      "team_b": 1086
+    },
+    {
+      "fixture_id": 5,
+      "pair_id": 2,
+      "policy_side": 1,
+      "seed": [
+        16803,
+        61875,
+        3449,
+        476
+      ],
+      "team_a": 444,
+      "team_b": 1086
+    },
+    {
+      "fixture_id": 6,
+      "pair_id": 3,
+      "policy_side": 0,
+      "seed": [
+        19716,
+        25554,
+        48597,
+        59593
+      ],
+      "team_a": 471,
+      "team_b": 495
+    },
+    {
+      "fixture_id": 7,
+      "pair_id": 3,
+      "policy_side": 1,
+      "seed": [
+        19716,
+        25554,
+        48597,
+        59593
+      ],
+      "team_a": 471,
+      "team_b": 495
+    },
+    {
+      "fixture_id": 8,
+      "pair_id": 4,
+      "policy_side": 0,
+      "seed": [
+        18421,
+        33747,
+        54772,
+        45931
+      ],
+      "team_a": 599,
+      "team_b": 33
+    },
+    {
+      "fixture_id": 9,
+      "pair_id": 4,
+      "policy_side": 1,
+      "seed": [
+        18421,
+        33747,
+        54772,
+        45931
+      ],
+      "team_a": 599,
+      "team_b": 33
+    },
+    {
+      "fixture_id": 10,
+      "pair_id": 5,
+      "policy_side": 0,
+      "seed": [
+        29061,
+        46699,
+        14088,
+        21309
+      ],
+      "team_a": 413,
+      "team_b": 623
+    },
+    {
+      "fixture_id": 11,
+      "pair_id": 5,
+      "policy_side": 1,
+      "seed": [
+        29061,
+        46699,
+        14088,
+        21309
+      ],
+      "team_a": 413,
+      "team_b": 623
+    },
+    {
+      "fixture_id": 12,
+      "pair_id": 6,
+      "policy_side": 0,
+      "seed": [
+        62034,
+        44827,
+        44707,
+        47858
+      ],
+      "team_a": 923,
+      "team_b": 140
+    },
+    {
+      "fixture_id": 13,
+      "pair_id": 6,
+      "policy_side": 1,
+      "seed": [
+        62034,
+        44827,
+        44707,
+        47858
+      ],
+      "team_a": 923,
+      "team_b": 140
+    },
+    {
+      "fixture_id": 14,
+      "pair_id": 7,
+      "policy_side": 0,
+      "seed": [
+        60723,
+        28977,
+        28680,
+        6247
+      ],
+      "team_a": 590,
+      "team_b": 655
+    },
+    {
+      "fixture_id": 15,
+      "pair_id": 7,
+      "policy_side": 1,
+      "seed": [
+        60723,
+        28977,
+        28680,
+        6247
+      ],
+      "team_a": 590,
+      "team_b": 655
+    },
+    {
+      "fixture_id": 16,
+      "pair_id": 8,
+      "policy_side": 0,
+      "seed": [
+        30168,
+        4081,
+        32066,
+        52743
+      ],
+      "team_a": 240,
+      "team_b": 1106
+    },
+    {
+      "fixture_id": 17,
+      "pair_id": 8,
+      "policy_side": 1,
+      "seed": [
+        30168,
+        4081,
+        32066,
+        52743
+      ],
+      "team_a": 240,
+      "team_b": 1106
+    },
+    {
+      "fixture_id": 18,
+      "pair_id": 9,
+      "policy_side": 0,
+      "seed": [
+        39582,
+        37239,
+        34725,
+        42410
+      ],
+      "team_a": 367,
+      "team_b": 723
+    },
+    {
+      "fixture_id": 19,
+      "pair_id": 9,
+      "policy_side": 1,
+      "seed": [
+        39582,
+        37239,
+        34725,
+        42410
+      ],
+      "team_a": 367,
+      "team_b": 723
+    },
+    {
+      "fixture_id": 20,
+      "pair_id": 10,
+      "policy_side": 0,
+      "seed": [
+        48074,
+        55037,
+        34367,
+        13301
+      ],
+      "team_a": 443,
+      "team_b": 816
+    },
+    {
+      "fixture_id": 21,
+      "pair_id": 10,
+      "policy_side": 1,
+      "seed": [
+        48074,
+        55037,
+        34367,
+        13301
+      ],
+      "team_a": 443,
+      "team_b": 816
+    },
+    {
+      "fixture_id": 22,
+      "pair_id": 11,
+      "policy_side": 0,
+      "seed": [
+        62637,
+        9749,
+        27395,
+        41187
+      ],
+      "team_a": 150,
+      "team_b": 711
+    },
+    {
+      "fixture_id": 23,
+      "pair_id": 11,
+      "policy_side": 1,
+      "seed": [
+        62637,
+        9749,
+        27395,
+        41187
+      ],
+      "team_a": 150,
+      "team_b": 711
+    },
+    {
+      "fixture_id": 24,
+      "pair_id": 12,
+      "policy_side": 0,
+      "seed": [
+        35461,
+        23700,
+        59754,
+        12427
+      ],
+      "team_a": 1067,
+      "team_b": 1054
+    },
+    {
+      "fixture_id": 25,
+      "pair_id": 12,
+      "policy_side": 1,
+      "seed": [
+        35461,
+        23700,
+        59754,
+        12427
+      ],
+      "team_a": 1067,
+      "team_b": 1054
+    },
+    {
+      "fixture_id": 26,
+      "pair_id": 13,
+      "policy_side": 0,
+      "seed": [
+        25720,
+        1000,
+        50372,
+        64417
+      ],
+      "team_a": 834,
+      "team_b": 692
+    },
+    {
+      "fixture_id": 27,
+      "pair_id": 13,
+      "policy_side": 1,
+      "seed": [
+        25720,
+        1000,
+        50372,
+        64417
+      ],
+      "team_a": 834,
+      "team_b": 692
+    },
+    {
+      "fixture_id": 28,
+      "pair_id": 14,
+      "policy_side": 0,
+      "seed": [
+        20022,
+        43353,
+        59141,
+        48586
+      ],
+      "team_a": 244,
+      "team_b": 687
+    },
+    {
+      "fixture_id": 29,
+      "pair_id": 14,
+      "policy_side": 1,
+      "seed": [
+        20022,
+        43353,
+        59141,
+        48586
+      ],
+      "team_a": 244,
+      "team_b": 687
+    },
+    {
+      "fixture_id": 30,
+      "pair_id": 15,
+      "policy_side": 0,
+      "seed": [
+        25470,
+        58001,
+        39311,
+        40738
+      ],
+      "team_a": 22,
+      "team_b": 822
+    },
+    {
+      "fixture_id": 31,
+      "pair_id": 15,
+      "policy_side": 1,
+      "seed": [
+        25470,
+        58001,
+        39311,
+        40738
+      ],
+      "team_a": 22,
+      "team_b": 822
+    },
+    {
+      "fixture_id": 32,
+      "pair_id": 16,
+      "policy_side": 0,
+      "seed": [
+        4245,
+        59613,
+        62017,
+        58635
+      ],
+      "team_a": 1053,
+      "team_b": 31
+    },
+    {
+      "fixture_id": 33,
+      "pair_id": 16,
+      "policy_side": 1,
+      "seed": [
+        4245,
+        59613,
+        62017,
+        58635
+      ],
+      "team_a": 1053,
+      "team_b": 31
+    },
+    {
+      "fixture_id": 34,
+      "pair_id": 17,
+      "policy_side": 0,
+      "seed": [
+        47061,
+        27939,
+        13411,
+        57631
+      ],
+      "team_a": 1021,
+      "team_b": 1037
+    },
+    {
+      "fixture_id": 35,
+      "pair_id": 17,
+      "policy_side": 1,
+      "seed": [
+        47061,
+        27939,
+        13411,
+        57631
+      ],
+      "team_a": 1021,
+      "team_b": 1037
+    },
+    {
+      "fixture_id": 36,
+      "pair_id": 18,
+      "policy_side": 0,
+      "seed": [
+        6234,
+        27563,
+        40706,
+        39359
+      ],
+      "team_a": 655,
+      "team_b": 552
+    },
+    {
+      "fixture_id": 37,
+      "pair_id": 18,
+      "policy_side": 1,
+      "seed": [
+        6234,
+        27563,
+        40706,
+        39359
+      ],
+      "team_a": 655,
+      "team_b": 552
+    },
+    {
+      "fixture_id": 38,
+      "pair_id": 19,
+      "policy_side": 0,
+      "seed": [
+        26960,
+        1403,
+        64623,
+        48291
+      ],
+      "team_a": 523,
+      "team_b": 59
+    },
+    {
+      "fixture_id": 39,
+      "pair_id": 19,
+      "policy_side": 1,
+      "seed": [
+        26960,
+        1403,
+        64623,
+        48291
+      ],
+      "team_a": 523,
+      "team_b": 59
+    },
+    {
+      "fixture_id": 40,
+      "pair_id": 20,
+      "policy_side": 0,
+      "seed": [
+        42897,
+        44368,
+        7472,
+        46349
+      ],
+      "team_a": 61,
+      "team_b": 634
+    },
+    {
+      "fixture_id": 41,
+      "pair_id": 20,
+      "policy_side": 1,
+      "seed": [
+        42897,
+        44368,
+        7472,
+        46349
+      ],
+      "team_a": 61,
+      "team_b": 634
+    },
+    {
+      "fixture_id": 42,
+      "pair_id": 21,
+      "policy_side": 0,
+      "seed": [
+        17164,
+        50091,
+        47414,
+        19799
+      ],
+      "team_a": 976,
+      "team_b": 862
+    },
+    {
+      "fixture_id": 43,
+      "pair_id": 21,
+      "policy_side": 1,
+      "seed": [
+        17164,
+        50091,
+        47414,
+        19799
+      ],
+      "team_a": 976,
+      "team_b": 862
+    },
+    {
+      "fixture_id": 44,
+      "pair_id": 22,
+      "policy_side": 0,
+      "seed": [
+        32881,
+        9849,
+        63130,
+        52189
+      ],
+      "team_a": 919,
+      "team_b": 315
+    },
+    {
+      "fixture_id": 45,
+      "pair_id": 22,
+      "policy_side": 1,
+      "seed": [
+        32881,
+        9849,
+        63130,
+        52189
+      ],
+      "team_a": 919,
+      "team_b": 315
+    },
+    {
+      "fixture_id": 46,
+      "pair_id": 23,
+      "policy_side": 0,
+      "seed": [
+        65139,
+        59893,
+        43639,
+        41048
+      ],
+      "team_a": 751,
+      "team_b": 1031
+    },
+    {
+      "fixture_id": 47,
+      "pair_id": 23,
+      "policy_side": 1,
+      "seed": [
+        65139,
+        59893,
+        43639,
+        41048
+      ],
+      "team_a": 751,
+      "team_b": 1031
+    },
+    {
+      "fixture_id": 48,
+      "pair_id": 24,
+      "policy_side": 0,
+      "seed": [
+        59303,
+        53542,
+        17583,
+        31146
+      ],
+      "team_a": 329,
+      "team_b": 172
+    },
+    {
+      "fixture_id": 49,
+      "pair_id": 24,
+      "policy_side": 1,
+      "seed": [
+        59303,
+        53542,
+        17583,
+        31146
+      ],
+      "team_a": 329,
+      "team_b": 172
+    },
+    {
+      "fixture_id": 50,
+      "pair_id": 25,
+      "policy_side": 0,
+      "seed": [
+        1132,
+        22367,
+        12179,
+        22632
+      ],
+      "team_a": 1082,
+      "team_b": 990
+    },
+    {
+      "fixture_id": 51,
+      "pair_id": 25,
+      "policy_side": 1,
+      "seed": [
+        1132,
+        22367,
+        12179,
+        22632
+      ],
+      "team_a": 1082,
+      "team_b": 990
+    },
+    {
+      "fixture_id": 52,
+      "pair_id": 26,
+      "policy_side": 0,
+      "seed": [
+        10906,
+        39100,
+        22816,
+        35269
+      ],
+      "team_a": 530,
+      "team_b": 1108
+    },
+    {
+      "fixture_id": 53,
+      "pair_id": 26,
+      "policy_side": 1,
+      "seed": [
+        10906,
+        39100,
+        22816,
+        35269
+      ],
+      "team_a": 530,
+      "team_b": 1108
+    },
+    {
+      "fixture_id": 54,
+      "pair_id": 27,
+      "policy_side": 0,
+      "seed": [
+        13713,
+        43151,
+        28271,
+        10875
+      ],
+      "team_a": 368,
+      "team_b": 35
+    },
+    {
+      "fixture_id": 55,
+      "pair_id": 27,
+      "policy_side": 1,
+      "seed": [
+        13713,
+        43151,
+        28271,
+        10875
+      ],
+      "team_a": 368,
+      "team_b": 35
+    },
+    {
+      "fixture_id": 56,
+      "pair_id": 28,
+      "policy_side": 0,
+      "seed": [
+        27875,
+        24921,
+        43179,
+        63390
+      ],
+      "team_a": 75,
+      "team_b": 569
+    },
+    {
+      "fixture_id": 57,
+      "pair_id": 28,
+      "policy_side": 1,
+      "seed": [
+        27875,
+        24921,
+        43179,
+        63390
+      ],
+      "team_a": 75,
+      "team_b": 569
+    },
+    {
+      "fixture_id": 58,
+      "pair_id": 29,
+      "policy_side": 0,
+      "seed": [
+        38605,
+        43462,
+        58504,
+        61045
+      ],
+      "team_a": 472,
+      "team_b": 32
+    },
+    {
+      "fixture_id": 59,
+      "pair_id": 29,
+      "policy_side": 1,
+      "seed": [
+        38605,
+        43462,
+        58504,
+        61045
+      ],
+      "team_a": 472,
+      "team_b": 32
+    },
+    {
+      "fixture_id": 60,
+      "pair_id": 30,
+      "policy_side": 0,
+      "seed": [
+        52101,
+        11767,
+        46717,
+        31582
+      ],
+      "team_a": 671,
+      "team_b": 1095
+    },
+    {
+      "fixture_id": 61,
+      "pair_id": 30,
+      "policy_side": 1,
+      "seed": [
+        52101,
+        11767,
+        46717,
+        31582
+      ],
+      "team_a": 671,
+      "team_b": 1095
+    },
+    {
+      "fixture_id": 62,
+      "pair_id": 31,
+      "policy_side": 0,
+      "seed": [
+        36129,
+        56604,
+        41800,
+        61345
+      ],
+      "team_a": 861,
+      "team_b": 858
+    },
+    {
+      "fixture_id": 63,
+      "pair_id": 31,
+      "policy_side": 1,
+      "seed": [
+        36129,
+        56604,
+        41800,
+        61345
+      ],
+      "team_a": 861,
+      "team_b": 858
+    },
+    {
+      "fixture_id": 64,
+      "pair_id": 32,
+      "policy_side": 0,
+      "seed": [
+        53383,
+        5457,
+        25613,
+        61176
+      ],
+      "team_a": 439,
+      "team_b": 533
+    },
+    {
+      "fixture_id": 65,
+      "pair_id": 32,
+      "policy_side": 1,
+      "seed": [
+        53383,
+        5457,
+        25613,
+        61176
+      ],
+      "team_a": 439,
+      "team_b": 533
+    },
+    {
+      "fixture_id": 66,
+      "pair_id": 33,
+      "policy_side": 0,
+      "seed": [
+        23640,
+        6777,
+        40689,
+        34729
+      ],
+      "team_a": 807,
+      "team_b": 312
+    },
+    {
+      "fixture_id": 67,
+      "pair_id": 33,
+      "policy_side": 1,
+      "seed": [
+        23640,
+        6777,
+        40689,
+        34729
+      ],
+      "team_a": 807,
+      "team_b": 312
+    },
+    {
+      "fixture_id": 68,
+      "pair_id": 34,
+      "policy_side": 0,
+      "seed": [
+        38467,
+        37752,
+        55111,
+        59121
+      ],
+      "team_a": 869,
+      "team_b": 778
+    },
+    {
+      "fixture_id": 69,
+      "pair_id": 34,
+      "policy_side": 1,
+      "seed": [
+        38467,
+        37752,
+        55111,
+        59121
+      ],
+      "team_a": 869,
+      "team_b": 778
+    },
+    {
+      "fixture_id": 70,
+      "pair_id": 35,
+      "policy_side": 0,
+      "seed": [
+        45089,
+        29642,
+        2762,
+        63991
+      ],
+      "team_a": 70,
+      "team_b": 869
+    },
+    {
+      "fixture_id": 71,
+      "pair_id": 35,
+      "policy_side": 1,
+      "seed": [
+        45089,
+        29642,
+        2762,
+        63991
+      ],
+      "team_a": 70,
+      "team_b": 869
+    },
+    {
+      "fixture_id": 72,
+      "pair_id": 36,
+      "policy_side": 0,
+      "seed": [
+        20401,
+        40960,
+        4601,
+        24302
+      ],
+      "team_a": 905,
+      "team_b": 45
+    },
+    {
+      "fixture_id": 73,
+      "pair_id": 36,
+      "policy_side": 1,
+      "seed": [
+        20401,
+        40960,
+        4601,
+        24302
+      ],
+      "team_a": 905,
+      "team_b": 45
+    },
+    {
+      "fixture_id": 74,
+      "pair_id": 37,
+      "policy_side": 0,
+      "seed": [
+        32267,
+        59584,
+        63490,
+        1845
+      ],
+      "team_a": 987,
+      "team_b": 59
+    },
+    {
+      "fixture_id": 75,
+      "pair_id": 37,
+      "policy_side": 1,
+      "seed": [
+        32267,
+        59584,
+        63490,
+        1845
+      ],
+      "team_a": 987,
+      "team_b": 59
+    },
+    {
+      "fixture_id": 76,
+      "pair_id": 38,
+      "policy_side": 0,
+      "seed": [
+        11131,
+        26744,
+        6575,
+        29383
+      ],
+      "team_a": 1102,
+      "team_b": 712
+    },
+    {
+      "fixture_id": 77,
+      "pair_id": 38,
+      "policy_side": 1,
+      "seed": [
+        11131,
+        26744,
+        6575,
+        29383
+      ],
+      "team_a": 1102,
+      "team_b": 712
+    },
+    {
+      "fixture_id": 78,
+      "pair_id": 39,
+      "policy_side": 0,
+      "seed": [
+        50110,
+        6342,
+        24077,
+        47305
+      ],
+      "team_a": 99,
+      "team_b": 524
+    },
+    {
+      "fixture_id": 79,
+      "pair_id": 39,
+      "policy_side": 1,
+      "seed": [
+        50110,
+        6342,
+        24077,
+        47305
+      ],
+      "team_a": 99,
+      "team_b": 524
+    },
+    {
+      "fixture_id": 80,
+      "pair_id": 40,
+      "policy_side": 0,
+      "seed": [
+        18296,
+        49967,
+        38315,
+        40442
+      ],
+      "team_a": 62,
+      "team_b": 316
+    },
+    {
+      "fixture_id": 81,
+      "pair_id": 40,
+      "policy_side": 1,
+      "seed": [
+        18296,
+        49967,
+        38315,
+        40442
+      ],
+      "team_a": 62,
+      "team_b": 316
+    },
+    {
+      "fixture_id": 82,
+      "pair_id": 41,
+      "policy_side": 0,
+      "seed": [
+        55976,
+        48284,
+        64051,
+        4557
+      ],
+      "team_a": 265,
+      "team_b": 1018
+    },
+    {
+      "fixture_id": 83,
+      "pair_id": 41,
+      "policy_side": 1,
+      "seed": [
+        55976,
+        48284,
+        64051,
+        4557
+      ],
+      "team_a": 265,
+      "team_b": 1018
+    },
+    {
+      "fixture_id": 84,
+      "pair_id": 42,
+      "policy_side": 0,
+      "seed": [
+        581,
+        8216,
+        42663,
+        54944
+      ],
+      "team_a": 515,
+      "team_b": 713
+    },
+    {
+      "fixture_id": 85,
+      "pair_id": 42,
+      "policy_side": 1,
+      "seed": [
+        581,
+        8216,
+        42663,
+        54944
+      ],
+      "team_a": 515,
+      "team_b": 713
+    },
+    {
+      "fixture_id": 86,
+      "pair_id": 43,
+      "policy_side": 0,
+      "seed": [
+        41688,
+        24063,
+        21444,
+        39084
+      ],
+      "team_a": 162,
+      "team_b": 268
+    },
+    {
+      "fixture_id": 87,
+      "pair_id": 43,
+      "policy_side": 1,
+      "seed": [
+        41688,
+        24063,
+        21444,
+        39084
+      ],
+      "team_a": 162,
+      "team_b": 268
+    },
+    {
+      "fixture_id": 88,
+      "pair_id": 44,
+      "policy_side": 0,
+      "seed": [
+        16938,
+        2789,
+        12401,
+        24707
+      ],
+      "team_a": 465,
+      "team_b": 7
+    },
+    {
+      "fixture_id": 89,
+      "pair_id": 44,
+      "policy_side": 1,
+      "seed": [
+        16938,
+        2789,
+        12401,
+        24707
+      ],
+      "team_a": 465,
+      "team_b": 7
+    },
+    {
+      "fixture_id": 90,
+      "pair_id": 45,
+      "policy_side": 0,
+      "seed": [
+        51010,
+        51929,
+        46779,
+        18220
+      ],
+      "team_a": 149,
+      "team_b": 1089
+    },
+    {
+      "fixture_id": 91,
+      "pair_id": 45,
+      "policy_side": 1,
+      "seed": [
+        51010,
+        51929,
+        46779,
+        18220
+      ],
+      "team_a": 149,
+      "team_b": 1089
+    },
+    {
+      "fixture_id": 92,
+      "pair_id": 46,
+      "policy_side": 0,
+      "seed": [
+        17457,
+        10394,
+        58192,
+        12369
+      ],
+      "team_a": 817,
+      "team_b": 821
+    },
+    {
+      "fixture_id": 93,
+      "pair_id": 46,
+      "policy_side": 1,
+      "seed": [
+        17457,
+        10394,
+        58192,
+        12369
+      ],
+      "team_a": 817,
+      "team_b": 821
+    },
+    {
+      "fixture_id": 94,
+      "pair_id": 47,
+      "policy_side": 0,
+      "seed": [
+        4595,
+        11394,
+        35318,
+        43350
+      ],
+      "team_a": 734,
+      "team_b": 1024
+    },
+    {
+      "fixture_id": 95,
+      "pair_id": 47,
+      "policy_side": 1,
+      "seed": [
+        4595,
+        11394,
+        35318,
+        43350
+      ],
+      "team_a": 734,
+      "team_b": 1024
+    },
+    {
+      "fixture_id": 96,
+      "pair_id": 48,
+      "policy_side": 0,
+      "seed": [
+        58611,
+        41392,
+        14244,
+        16322
+      ],
+      "team_a": 711,
+      "team_b": 832
+    },
+    {
+      "fixture_id": 97,
+      "pair_id": 48,
+      "policy_side": 1,
+      "seed": [
+        58611,
+        41392,
+        14244,
+        16322
+      ],
+      "team_a": 711,
+      "team_b": 832
+    },
+    {
+      "fixture_id": 98,
+      "pair_id": 49,
+      "policy_side": 0,
+      "seed": [
+        23629,
+        26835,
+        36025,
+        37165
+      ],
+      "team_a": 148,
+      "team_b": 738
+    },
+    {
+      "fixture_id": 99,
+      "pair_id": 49,
+      "policy_side": 1,
+      "seed": [
+        23629,
+        26835,
+        36025,
+        37165
+      ],
+      "team_a": 148,
+      "team_b": 738
+    },
+    {
+      "fixture_id": 100,
+      "pair_id": 50,
+      "policy_side": 0,
+      "seed": [
+        27132,
+        12633,
+        27190,
+        58826
+      ],
+      "team_a": 797,
+      "team_b": 60
+    },
+    {
+      "fixture_id": 101,
+      "pair_id": 50,
+      "policy_side": 1,
+      "seed": [
+        27132,
+        12633,
+        27190,
+        58826
+      ],
+      "team_a": 797,
+      "team_b": 60
+    },
+    {
+      "fixture_id": 102,
+      "pair_id": 51,
+      "policy_side": 0,
+      "seed": [
+        34918,
+        62056,
+        51035,
+        33667
+      ],
+      "team_a": 299,
+      "team_b": 773
+    },
+    {
+      "fixture_id": 103,
+      "pair_id": 51,
+      "policy_side": 1,
+      "seed": [
+        34918,
+        62056,
+        51035,
+        33667
+      ],
+      "team_a": 299,
+      "team_b": 773
+    },
+    {
+      "fixture_id": 104,
+      "pair_id": 52,
+      "policy_side": 0,
+      "seed": [
+        34152,
+        52838,
+        15622,
+        1657
+      ],
+      "team_a": 464,
+      "team_b": 837
+    },
+    {
+      "fixture_id": 105,
+      "pair_id": 52,
+      "policy_side": 1,
+      "seed": [
+        34152,
+        52838,
+        15622,
+        1657
+      ],
+      "team_a": 464,
+      "team_b": 837
+    },
+    {
+      "fixture_id": 106,
+      "pair_id": 53,
+      "policy_side": 0,
+      "seed": [
+        52368,
+        27107,
+        9397,
+        28980
+      ],
+      "team_a": 954,
+      "team_b": 288
+    },
+    {
+      "fixture_id": 107,
+      "pair_id": 53,
+      "policy_side": 1,
+      "seed": [
+        52368,
+        27107,
+        9397,
+        28980
+      ],
+      "team_a": 954,
+      "team_b": 288
+    },
+    {
+      "fixture_id": 108,
+      "pair_id": 54,
+      "policy_side": 0,
+      "seed": [
+        29588,
+        31885,
+        46960,
+        58866
+      ],
+      "team_a": 1073,
+      "team_b": 977
+    },
+    {
+      "fixture_id": 109,
+      "pair_id": 54,
+      "policy_side": 1,
+      "seed": [
+        29588,
+        31885,
+        46960,
+        58866
+      ],
+      "team_a": 1073,
+      "team_b": 977
+    },
+    {
+      "fixture_id": 110,
+      "pair_id": 55,
+      "policy_side": 0,
+      "seed": [
+        65300,
+        33407,
+        55557,
+        28230
+      ],
+      "team_a": 975,
+      "team_b": 1075
+    },
+    {
+      "fixture_id": 111,
+      "pair_id": 55,
+      "policy_side": 1,
+      "seed": [
+        65300,
+        33407,
+        55557,
+        28230
+      ],
+      "team_a": 975,
+      "team_b": 1075
+    },
+    {
+      "fixture_id": 112,
+      "pair_id": 56,
+      "policy_side": 0,
+      "seed": [
+        35381,
+        46102,
+        44093,
+        19156
+      ],
+      "team_a": 80,
+      "team_b": 182
+    },
+    {
+      "fixture_id": 113,
+      "pair_id": 56,
+      "policy_side": 1,
+      "seed": [
+        35381,
+        46102,
+        44093,
+        19156
+      ],
+      "team_a": 80,
+      "team_b": 182
+    },
+    {
+      "fixture_id": 114,
+      "pair_id": 57,
+      "policy_side": 0,
+      "seed": [
+        50488,
+        64085,
+        2776,
+        15535
+      ],
+      "team_a": 1118,
+      "team_b": 187
+    },
+    {
+      "fixture_id": 115,
+      "pair_id": 57,
+      "policy_side": 1,
+      "seed": [
+        50488,
+        64085,
+        2776,
+        15535
+      ],
+      "team_a": 1118,
+      "team_b": 187
+    },
+    {
+      "fixture_id": 116,
+      "pair_id": 58,
+      "policy_side": 0,
+      "seed": [
+        36621,
+        1447,
+        36339,
+        37234
+      ],
+      "team_a": 1099,
+      "team_b": 1008
+    },
+    {
+      "fixture_id": 117,
+      "pair_id": 58,
+      "policy_side": 1,
+      "seed": [
+        36621,
+        1447,
+        36339,
+        37234
+      ],
+      "team_a": 1099,
+      "team_b": 1008
+    },
+    {
+      "fixture_id": 118,
+      "pair_id": 59,
+      "policy_side": 0,
+      "seed": [
+        22770,
+        64439,
+        2834,
+        13875
+      ],
+      "team_a": 724,
+      "team_b": 724
+    },
+    {
+      "fixture_id": 119,
+      "pair_id": 59,
+      "policy_side": 1,
+      "seed": [
+        22770,
+        64439,
+        2834,
+        13875
+      ],
+      "team_a": 724,
+      "team_b": 724
+    },
+    {
+      "fixture_id": 120,
+      "pair_id": 60,
+      "policy_side": 0,
+      "seed": [
+        5263,
+        29809,
+        7265,
+        37610
+      ],
+      "team_a": 686,
+      "team_b": 590
+    },
+    {
+      "fixture_id": 121,
+      "pair_id": 60,
+      "policy_side": 1,
+      "seed": [
+        5263,
+        29809,
+        7265,
+        37610
+      ],
+      "team_a": 686,
+      "team_b": 590
+    },
+    {
+      "fixture_id": 122,
+      "pair_id": 61,
+      "policy_side": 0,
+      "seed": [
+        19984,
+        27011,
+        43152,
+        37507
+      ],
+      "team_a": 151,
+      "team_b": 946
+    },
+    {
+      "fixture_id": 123,
+      "pair_id": 61,
+      "policy_side": 1,
+      "seed": [
+        19984,
+        27011,
+        43152,
+        37507
+      ],
+      "team_a": 151,
+      "team_b": 946
+    },
+    {
+      "fixture_id": 124,
+      "pair_id": 62,
+      "policy_side": 0,
+      "seed": [
+        59896,
+        168,
+        21111,
+        44465
+      ],
+      "team_a": 197,
+      "team_b": 1116
+    },
+    {
+      "fixture_id": 125,
+      "pair_id": 62,
+      "policy_side": 1,
+      "seed": [
+        59896,
+        168,
+        21111,
+        44465
+      ],
+      "team_a": 197,
+      "team_b": 1116
+    },
+    {
+      "fixture_id": 126,
+      "pair_id": 63,
+      "policy_side": 0,
+      "seed": [
+        36936,
+        45597,
+        1397,
+        39374
+      ],
+      "team_a": 440,
+      "team_b": 628
+    },
+    {
+      "fixture_id": 127,
+      "pair_id": 63,
+      "policy_side": 1,
+      "seed": [
+        36936,
+        45597,
+        1397,
+        39374
+      ],
+      "team_a": 440,
+      "team_b": 628
+    },
+    {
+      "fixture_id": 128,
+      "pair_id": 64,
+      "policy_side": 0,
+      "seed": [
+        11903,
+        12035,
+        52482,
+        10098
+      ],
+      "team_a": 785,
+      "team_b": 253
+    },
+    {
+      "fixture_id": 129,
+      "pair_id": 64,
+      "policy_side": 1,
+      "seed": [
+        11903,
+        12035,
+        52482,
+        10098
+      ],
+      "team_a": 785,
+      "team_b": 253
+    },
+    {
+      "fixture_id": 130,
+      "pair_id": 65,
+      "policy_side": 0,
+      "seed": [
+        5356,
+        55458,
+        22088,
+        22310
+      ],
+      "team_a": 159,
+      "team_b": 662
+    },
+    {
+      "fixture_id": 131,
+      "pair_id": 65,
+      "policy_side": 1,
+      "seed": [
+        5356,
+        55458,
+        22088,
+        22310
+      ],
+      "team_a": 159,
+      "team_b": 662
+    },
+    {
+      "fixture_id": 132,
+      "pair_id": 66,
+      "policy_side": 0,
+      "seed": [
+        42272,
+        38774,
+        600,
+        39747
+      ],
+      "team_a": 689,
+      "team_b": 1128
+    },
+    {
+      "fixture_id": 133,
+      "pair_id": 66,
+      "policy_side": 1,
+      "seed": [
+        42272,
+        38774,
+        600,
+        39747
+      ],
+      "team_a": 689,
+      "team_b": 1128
+    },
+    {
+      "fixture_id": 134,
+      "pair_id": 67,
+      "policy_side": 0,
+      "seed": [
+        11563,
+        5888,
+        46295,
+        20726
+      ],
+      "team_a": 961,
+      "team_b": 76
+    },
+    {
+      "fixture_id": 135,
+      "pair_id": 67,
+      "policy_side": 1,
+      "seed": [
+        11563,
+        5888,
+        46295,
+        20726
+      ],
+      "team_a": 961,
+      "team_b": 76
+    },
+    {
+      "fixture_id": 136,
+      "pair_id": 68,
+      "policy_side": 0,
+      "seed": [
+        58481,
+        27559,
+        19383,
+        54428
+      ],
+      "team_a": 45,
+      "team_b": 452
+    },
+    {
+      "fixture_id": 137,
+      "pair_id": 68,
+      "policy_side": 1,
+      "seed": [
+        58481,
+        27559,
+        19383,
+        54428
+      ],
+      "team_a": 45,
+      "team_b": 452
+    },
+    {
+      "fixture_id": 138,
+      "pair_id": 69,
+      "policy_side": 0,
+      "seed": [
+        40917,
+        54489,
+        22407,
+        55487
+      ],
+      "team_a": 129,
+      "team_b": 535
+    },
+    {
+      "fixture_id": 139,
+      "pair_id": 69,
+      "policy_side": 1,
+      "seed": [
+        40917,
+        54489,
+        22407,
+        55487
+      ],
+      "team_a": 129,
+      "team_b": 535
+    },
+    {
+      "fixture_id": 140,
+      "pair_id": 70,
+      "policy_side": 0,
+      "seed": [
+        60168,
+        24175,
+        15765,
+        22849
+      ],
+      "team_a": 245,
+      "team_b": 1118
+    },
+    {
+      "fixture_id": 141,
+      "pair_id": 70,
+      "policy_side": 1,
+      "seed": [
+        60168,
+        24175,
+        15765,
+        22849
+      ],
+      "team_a": 245,
+      "team_b": 1118
+    },
+    {
+      "fixture_id": 142,
+      "pair_id": 71,
+      "policy_side": 0,
+      "seed": [
+        9840,
+        12635,
+        54055,
+        49717
+      ],
+      "team_a": 738,
+      "team_b": 725
+    },
+    {
+      "fixture_id": 143,
+      "pair_id": 71,
+      "policy_side": 1,
+      "seed": [
+        9840,
+        12635,
+        54055,
+        49717
+      ],
+      "team_a": 738,
+      "team_b": 725
+    },
+    {
+      "fixture_id": 144,
+      "pair_id": 72,
+      "policy_side": 0,
+      "seed": [
+        28249,
+        6817,
+        5137,
+        12642
+      ],
+      "team_a": 303,
+      "team_b": 195
+    },
+    {
+      "fixture_id": 145,
+      "pair_id": 72,
+      "policy_side": 1,
+      "seed": [
+        28249,
+        6817,
+        5137,
+        12642
+      ],
+      "team_a": 303,
+      "team_b": 195
+    },
+    {
+      "fixture_id": 146,
+      "pair_id": 73,
+      "policy_side": 0,
+      "seed": [
+        42092,
+        46643,
+        19575,
+        34296
+      ],
+      "team_a": 260,
+      "team_b": 670
+    },
+    {
+      "fixture_id": 147,
+      "pair_id": 73,
+      "policy_side": 1,
+      "seed": [
+        42092,
+        46643,
+        19575,
+        34296
+      ],
+      "team_a": 260,
+      "team_b": 670
+    },
+    {
+      "fixture_id": 148,
+      "pair_id": 74,
+      "policy_side": 0,
+      "seed": [
+        56130,
+        6806,
+        56144,
+        14784
+      ],
+      "team_a": 1110,
+      "team_b": 2
+    },
+    {
+      "fixture_id": 149,
+      "pair_id": 74,
+      "policy_side": 1,
+      "seed": [
+        56130,
+        6806,
+        56144,
+        14784
+      ],
+      "team_a": 1110,
+      "team_b": 2
+    },
+    {
+      "fixture_id": 150,
+      "pair_id": 75,
+      "policy_side": 0,
+      "seed": [
+        30261,
+        2952,
+        8185,
+        35677
+      ],
+      "team_a": 911,
+      "team_b": 285
+    },
+    {
+      "fixture_id": 151,
+      "pair_id": 75,
+      "policy_side": 1,
+      "seed": [
+        30261,
+        2952,
+        8185,
+        35677
+      ],
+      "team_a": 911,
+      "team_b": 285
+    },
+    {
+      "fixture_id": 152,
+      "pair_id": 76,
+      "policy_side": 0,
+      "seed": [
+        49603,
+        37454,
+        43527,
+        63939
+      ],
+      "team_a": 28,
+      "team_b": 527
+    },
+    {
+      "fixture_id": 153,
+      "pair_id": 76,
+      "policy_side": 1,
+      "seed": [
+        49603,
+        37454,
+        43527,
+        63939
+      ],
+      "team_a": 28,
+      "team_b": 527
+    },
+    {
+      "fixture_id": 154,
+      "pair_id": 77,
+      "policy_side": 0,
+      "seed": [
+        1554,
+        54458,
+        15159,
+        62520
+      ],
+      "team_a": 896,
+      "team_b": 849
+    },
+    {
+      "fixture_id": 155,
+      "pair_id": 77,
+      "policy_side": 1,
+      "seed": [
+        1554,
+        54458,
+        15159,
+        62520
+      ],
+      "team_a": 896,
+      "team_b": 849
+    },
+    {
+      "fixture_id": 156,
+      "pair_id": 78,
+      "policy_side": 0,
+      "seed": [
+        57387,
+        11885,
+        54292,
+        5694
+      ],
+      "team_a": 916,
+      "team_b": 1101
+    },
+    {
+      "fixture_id": 157,
+      "pair_id": 78,
+      "policy_side": 1,
+      "seed": [
+        57387,
+        11885,
+        54292,
+        5694
+      ],
+      "team_a": 916,
+      "team_b": 1101
+    },
+    {
+      "fixture_id": 158,
+      "pair_id": 79,
+      "policy_side": 0,
+      "seed": [
+        55041,
+        57625,
+        61099,
+        55791
+      ],
+      "team_a": 703,
+      "team_b": 321
+    },
+    {
+      "fixture_id": 159,
+      "pair_id": 79,
+      "policy_side": 1,
+      "seed": [
+        55041,
+        57625,
+        61099,
+        55791
+      ],
+      "team_a": 703,
+      "team_b": 321
+    },
+    {
+      "fixture_id": 160,
+      "pair_id": 80,
+      "policy_side": 0,
+      "seed": [
+        38672,
+        60417,
+        18234,
+        37205
+      ],
+      "team_a": 531,
+      "team_b": 463
+    },
+    {
+      "fixture_id": 161,
+      "pair_id": 80,
+      "policy_side": 1,
+      "seed": [
+        38672,
+        60417,
+        18234,
+        37205
+      ],
+      "team_a": 531,
+      "team_b": 463
+    },
+    {
+      "fixture_id": 162,
+      "pair_id": 81,
+      "policy_side": 0,
+      "seed": [
+        14250,
+        17749,
+        36343,
+        7929
+      ],
+      "team_a": 1135,
+      "team_b": 221
+    },
+    {
+      "fixture_id": 163,
+      "pair_id": 81,
+      "policy_side": 1,
+      "seed": [
+        14250,
+        17749,
+        36343,
+        7929
+      ],
+      "team_a": 1135,
+      "team_b": 221
+    },
+    {
+      "fixture_id": 164,
+      "pair_id": 82,
+      "policy_side": 0,
+      "seed": [
+        31606,
+        42380,
+        30372,
+        33690
+      ],
+      "team_a": 68,
+      "team_b": 382
+    },
+    {
+      "fixture_id": 165,
+      "pair_id": 82,
+      "policy_side": 1,
+      "seed": [
+        31606,
+        42380,
+        30372,
+        33690
+      ],
+      "team_a": 68,
+      "team_b": 382
+    },
+    {
+      "fixture_id": 166,
+      "pair_id": 83,
+      "policy_side": 0,
+      "seed": [
+        10102,
+        7853,
+        40437,
+        16278
+      ],
+      "team_a": 464,
+      "team_b": 92
+    },
+    {
+      "fixture_id": 167,
+      "pair_id": 83,
+      "policy_side": 1,
+      "seed": [
+        10102,
+        7853,
+        40437,
+        16278
+      ],
+      "team_a": 464,
+      "team_b": 92
+    },
+    {
+      "fixture_id": 168,
+      "pair_id": 84,
+      "policy_side": 0,
+      "seed": [
+        64339,
+        5215,
+        20719,
+        13057
+      ],
+      "team_a": 846,
+      "team_b": 478
+    },
+    {
+      "fixture_id": 169,
+      "pair_id": 84,
+      "policy_side": 1,
+      "seed": [
+        64339,
+        5215,
+        20719,
+        13057
+      ],
+      "team_a": 846,
+      "team_b": 478
+    },
+    {
+      "fixture_id": 170,
+      "pair_id": 85,
+      "policy_side": 0,
+      "seed": [
+        32500,
+        22110,
+        65434,
+        63908
+      ],
+      "team_a": 213,
+      "team_b": 1058
+    },
+    {
+      "fixture_id": 171,
+      "pair_id": 85,
+      "policy_side": 1,
+      "seed": [
+        32500,
+        22110,
+        65434,
+        63908
+      ],
+      "team_a": 213,
+      "team_b": 1058
+    },
+    {
+      "fixture_id": 172,
+      "pair_id": 86,
+      "policy_side": 0,
+      "seed": [
+        57605,
+        19900,
+        20123,
+        9760
+      ],
+      "team_a": 874,
+      "team_b": 229
+    },
+    {
+      "fixture_id": 173,
+      "pair_id": 86,
+      "policy_side": 1,
+      "seed": [
+        57605,
+        19900,
+        20123,
+        9760
+      ],
+      "team_a": 874,
+      "team_b": 229
+    },
+    {
+      "fixture_id": 174,
+      "pair_id": 87,
+      "policy_side": 0,
+      "seed": [
+        23921,
+        32075,
+        14581,
+        23725
+      ],
+      "team_a": 886,
+      "team_b": 942
+    },
+    {
+      "fixture_id": 175,
+      "pair_id": 87,
+      "policy_side": 1,
+      "seed": [
+        23921,
+        32075,
+        14581,
+        23725
+      ],
+      "team_a": 886,
+      "team_b": 942
+    },
+    {
+      "fixture_id": 176,
+      "pair_id": 88,
+      "policy_side": 0,
+      "seed": [
+        55832,
+        1748,
+        10521,
+        24764
+      ],
+      "team_a": 138,
+      "team_b": 741
+    },
+    {
+      "fixture_id": 177,
+      "pair_id": 88,
+      "policy_side": 1,
+      "seed": [
+        55832,
+        1748,
+        10521,
+        24764
+      ],
+      "team_a": 138,
+      "team_b": 741
+    },
+    {
+      "fixture_id": 178,
+      "pair_id": 89,
+      "policy_side": 0,
+      "seed": [
+        39122,
+        43776,
+        30286,
+        364
+      ],
+      "team_a": 142,
+      "team_b": 396
+    },
+    {
+      "fixture_id": 179,
+      "pair_id": 89,
+      "policy_side": 1,
+      "seed": [
+        39122,
+        43776,
+        30286,
+        364
+      ],
+      "team_a": 142,
+      "team_b": 396
+    },
+    {
+      "fixture_id": 180,
+      "pair_id": 90,
+      "policy_side": 0,
+      "seed": [
+        55912,
+        14120,
+        38131,
+        27557
+      ],
+      "team_a": 177,
+      "team_b": 302
+    },
+    {
+      "fixture_id": 181,
+      "pair_id": 90,
+      "policy_side": 1,
+      "seed": [
+        55912,
+        14120,
+        38131,
+        27557
+      ],
+      "team_a": 177,
+      "team_b": 302
+    },
+    {
+      "fixture_id": 182,
+      "pair_id": 91,
+      "policy_side": 0,
+      "seed": [
+        8286,
+        38538,
+        35911,
+        11877
+      ],
+      "team_a": 282,
+      "team_b": 1117
+    },
+    {
+      "fixture_id": 183,
+      "pair_id": 91,
+      "policy_side": 1,
+      "seed": [
+        8286,
+        38538,
+        35911,
+        11877
+      ],
+      "team_a": 282,
+      "team_b": 1117
+    },
+    {
+      "fixture_id": 184,
+      "pair_id": 92,
+      "policy_side": 0,
+      "seed": [
+        38714,
+        9561,
+        23582,
+        34475
+      ],
+      "team_a": 855,
+      "team_b": 907
+    },
+    {
+      "fixture_id": 185,
+      "pair_id": 92,
+      "policy_side": 1,
+      "seed": [
+        38714,
+        9561,
+        23582,
+        34475
+      ],
+      "team_a": 855,
+      "team_b": 907
+    },
+    {
+      "fixture_id": 186,
+      "pair_id": 93,
+      "policy_side": 0,
+      "seed": [
+        50055,
+        15431,
+        4053,
+        64994
+      ],
+      "team_a": 968,
+      "team_b": 955
+    },
+    {
+      "fixture_id": 187,
+      "pair_id": 93,
+      "policy_side": 1,
+      "seed": [
+        50055,
+        15431,
+        4053,
+        64994
+      ],
+      "team_a": 968,
+      "team_b": 955
+    },
+    {
+      "fixture_id": 188,
+      "pair_id": 94,
+      "policy_side": 0,
+      "seed": [
+        32836,
+        16660,
+        21039,
+        33143
+      ],
+      "team_a": 873,
+      "team_b": 88
+    },
+    {
+      "fixture_id": 189,
+      "pair_id": 94,
+      "policy_side": 1,
+      "seed": [
+        32836,
+        16660,
+        21039,
+        33143
+      ],
+      "team_a": 873,
+      "team_b": 88
+    },
+    {
+      "fixture_id": 190,
+      "pair_id": 95,
+      "policy_side": 0,
+      "seed": [
+        19511,
+        33259,
+        48579,
+        59984
+      ],
+      "team_a": 770,
+      "team_b": 1029
+    },
+    {
+      "fixture_id": 191,
+      "pair_id": 95,
+      "policy_side": 1,
+      "seed": [
+        19511,
+        33259,
+        48579,
+        59984
+      ],
+      "team_a": 770,
+      "team_b": 1029
+    },
+    {
+      "fixture_id": 192,
+      "pair_id": 96,
+      "policy_side": 0,
+      "seed": [
+        52797,
+        46166,
+        27806,
+        33284
+      ],
+      "team_a": 452,
+      "team_b": 867
+    },
+    {
+      "fixture_id": 193,
+      "pair_id": 96,
+      "policy_side": 1,
+      "seed": [
+        52797,
+        46166,
+        27806,
+        33284
+      ],
+      "team_a": 452,
+      "team_b": 867
+    },
+    {
+      "fixture_id": 194,
+      "pair_id": 97,
+      "policy_side": 0,
+      "seed": [
+        4282,
+        34237,
+        44215,
+        43005
+      ],
+      "team_a": 813,
+      "team_b": 335
+    },
+    {
+      "fixture_id": 195,
+      "pair_id": 97,
+      "policy_side": 1,
+      "seed": [
+        4282,
+        34237,
+        44215,
+        43005
+      ],
+      "team_a": 813,
+      "team_b": 335
+    },
+    {
+      "fixture_id": 196,
+      "pair_id": 98,
+      "policy_side": 0,
+      "seed": [
+        8946,
+        9120,
+        47500,
+        26182
+      ],
+      "team_a": 528,
+      "team_b": 1022
+    },
+    {
+      "fixture_id": 197,
+      "pair_id": 98,
+      "policy_side": 1,
+      "seed": [
+        8946,
+        9120,
+        47500,
+        26182
+      ],
+      "team_a": 528,
+      "team_b": 1022
+    },
+    {
+      "fixture_id": 198,
+      "pair_id": 99,
+      "policy_side": 0,
+      "seed": [
+        46226,
+        50156,
+        59999,
+        40101
+      ],
+      "team_a": 517,
+      "team_b": 734
+    },
+    {
+      "fixture_id": 199,
+      "pair_id": 99,
+      "policy_side": 1,
+      "seed": [
+        46226,
+        50156,
+        59999,
+        40101
+      ],
+      "team_a": 517,
+      "team_b": 734
+    },
+    {
+      "fixture_id": 200,
+      "pair_id": 100,
+      "policy_side": 0,
+      "seed": [
+        45997,
+        7932,
+        52807,
+        58466
+      ],
+      "team_a": 3,
+      "team_b": 240
+    },
+    {
+      "fixture_id": 201,
+      "pair_id": 100,
+      "policy_side": 1,
+      "seed": [
+        45997,
+        7932,
+        52807,
+        58466
+      ],
+      "team_a": 3,
+      "team_b": 240
+    },
+    {
+      "fixture_id": 202,
+      "pair_id": 101,
+      "policy_side": 0,
+      "seed": [
+        37375,
+        51485,
+        24631,
+        53582
+      ],
+      "team_a": 821,
+      "team_b": 511
+    },
+    {
+      "fixture_id": 203,
+      "pair_id": 101,
+      "policy_side": 1,
+      "seed": [
+        37375,
+        51485,
+        24631,
+        53582
+      ],
+      "team_a": 821,
+      "team_b": 511
+    },
+    {
+      "fixture_id": 204,
+      "pair_id": 102,
+      "policy_side": 0,
+      "seed": [
+        58484,
+        10929,
+        15059,
+        55912
+      ],
+      "team_a": 545,
+      "team_b": 1015
+    },
+    {
+      "fixture_id": 205,
+      "pair_id": 102,
+      "policy_side": 1,
+      "seed": [
+        58484,
+        10929,
+        15059,
+        55912
+      ],
+      "team_a": 545,
+      "team_b": 1015
+    },
+    {
+      "fixture_id": 206,
+      "pair_id": 103,
+      "policy_side": 0,
+      "seed": [
+        9965,
+        14681,
+        47057,
+        59147
+      ],
+      "team_a": 1127,
+      "team_b": 209
+    },
+    {
+      "fixture_id": 207,
+      "pair_id": 103,
+      "policy_side": 1,
+      "seed": [
+        9965,
+        14681,
+        47057,
+        59147
+      ],
+      "team_a": 1127,
+      "team_b": 209
+    },
+    {
+      "fixture_id": 208,
+      "pair_id": 104,
+      "policy_side": 0,
+      "seed": [
+        52240,
+        31983,
+        38004,
+        26987
+      ],
+      "team_a": 217,
+      "team_b": 1127
+    },
+    {
+      "fixture_id": 209,
+      "pair_id": 104,
+      "policy_side": 1,
+      "seed": [
+        52240,
+        31983,
+        38004,
+        26987
+      ],
+      "team_a": 217,
+      "team_b": 1127
+    },
+    {
+      "fixture_id": 210,
+      "pair_id": 105,
+      "policy_side": 0,
+      "seed": [
+        26239,
+        25560,
+        1394,
+        22974
+      ],
+      "team_a": 131,
+      "team_b": 8
+    },
+    {
+      "fixture_id": 211,
+      "pair_id": 105,
+      "policy_side": 1,
+      "seed": [
+        26239,
+        25560,
+        1394,
+        22974
+      ],
+      "team_a": 131,
+      "team_b": 8
+    },
+    {
+      "fixture_id": 212,
+      "pair_id": 106,
+      "policy_side": 0,
+      "seed": [
+        24789,
+        5642,
+        64714,
+        23632
+      ],
+      "team_a": 1112,
+      "team_b": 368
+    },
+    {
+      "fixture_id": 213,
+      "pair_id": 106,
+      "policy_side": 1,
+      "seed": [
+        24789,
+        5642,
+        64714,
+        23632
+      ],
+      "team_a": 1112,
+      "team_b": 368
+    },
+    {
+      "fixture_id": 214,
+      "pair_id": 107,
+      "policy_side": 0,
+      "seed": [
+        29002,
+        53066,
+        64061,
+        28896
+      ],
+      "team_a": 224,
+      "team_b": 783
+    },
+    {
+      "fixture_id": 215,
+      "pair_id": 107,
+      "policy_side": 1,
+      "seed": [
+        29002,
+        53066,
+        64061,
+        28896
+      ],
+      "team_a": 224,
+      "team_b": 783
+    },
+    {
+      "fixture_id": 216,
+      "pair_id": 108,
+      "policy_side": 0,
+      "seed": [
+        13275,
+        44805,
+        15687,
+        32507
+      ],
+      "team_a": 824,
+      "team_b": 583
+    },
+    {
+      "fixture_id": 217,
+      "pair_id": 108,
+      "policy_side": 1,
+      "seed": [
+        13275,
+        44805,
+        15687,
+        32507
+      ],
+      "team_a": 824,
+      "team_b": 583
+    },
+    {
+      "fixture_id": 218,
+      "pair_id": 109,
+      "policy_side": 0,
+      "seed": [
+        3643,
+        40112,
+        61090,
+        16220
+      ],
+      "team_a": 501,
+      "team_b": 897
+    },
+    {
+      "fixture_id": 219,
+      "pair_id": 109,
+      "policy_side": 1,
+      "seed": [
+        3643,
+        40112,
+        61090,
+        16220
+      ],
+      "team_a": 501,
+      "team_b": 897
+    },
+    {
+      "fixture_id": 220,
+      "pair_id": 110,
+      "policy_side": 0,
+      "seed": [
+        44930,
+        18453,
+        6053,
+        33963
+      ],
+      "team_a": 32,
+      "team_b": 1117
+    },
+    {
+      "fixture_id": 221,
+      "pair_id": 110,
+      "policy_side": 1,
+      "seed": [
+        44930,
+        18453,
+        6053,
+        33963
+      ],
+      "team_a": 32,
+      "team_b": 1117
+    },
+    {
+      "fixture_id": 222,
+      "pair_id": 111,
+      "policy_side": 0,
+      "seed": [
+        32605,
+        16245,
+        10711,
+        30231
+      ],
+      "team_a": 75,
+      "team_b": 239
+    },
+    {
+      "fixture_id": 223,
+      "pair_id": 111,
+      "policy_side": 1,
+      "seed": [
+        32605,
+        16245,
+        10711,
+        30231
+      ],
+      "team_a": 75,
+      "team_b": 239
+    },
+    {
+      "fixture_id": 224,
+      "pair_id": 112,
+      "policy_side": 0,
+      "seed": [
+        45328,
+        50773,
+        44144,
+        11616
+      ],
+      "team_a": 404,
+      "team_b": 227
+    },
+    {
+      "fixture_id": 225,
+      "pair_id": 112,
+      "policy_side": 1,
+      "seed": [
+        45328,
+        50773,
+        44144,
+        11616
+      ],
+      "team_a": 404,
+      "team_b": 227
+    },
+    {
+      "fixture_id": 226,
+      "pair_id": 113,
+      "policy_side": 0,
+      "seed": [
+        14385,
+        34089,
+        1924,
+        5338
+      ],
+      "team_a": 694,
+      "team_b": 1023
+    },
+    {
+      "fixture_id": 227,
+      "pair_id": 113,
+      "policy_side": 1,
+      "seed": [
+        14385,
+        34089,
+        1924,
+        5338
+      ],
+      "team_a": 694,
+      "team_b": 1023
+    },
+    {
+      "fixture_id": 228,
+      "pair_id": 114,
+      "policy_side": 0,
+      "seed": [
+        21690,
+        10700,
+        52642,
+        13904
+      ],
+      "team_a": 891,
+      "team_b": 170
+    },
+    {
+      "fixture_id": 229,
+      "pair_id": 114,
+      "policy_side": 1,
+      "seed": [
+        21690,
+        10700,
+        52642,
+        13904
+      ],
+      "team_a": 891,
+      "team_b": 170
+    },
+    {
+      "fixture_id": 230,
+      "pair_id": 115,
+      "policy_side": 0,
+      "seed": [
+        39610,
+        4297,
+        34328,
+        13234
+      ],
+      "team_a": 14,
+      "team_b": 7
+    },
+    {
+      "fixture_id": 231,
+      "pair_id": 115,
+      "policy_side": 1,
+      "seed": [
+        39610,
+        4297,
+        34328,
+        13234
+      ],
+      "team_a": 14,
+      "team_b": 7
+    },
+    {
+      "fixture_id": 232,
+      "pair_id": 116,
+      "policy_side": 0,
+      "seed": [
+        43709,
+        10974,
+        2096,
+        49673
+      ],
+      "team_a": 756,
+      "team_b": 317
+    },
+    {
+      "fixture_id": 233,
+      "pair_id": 116,
+      "policy_side": 1,
+      "seed": [
+        43709,
+        10974,
+        2096,
+        49673
+      ],
+      "team_a": 756,
+      "team_b": 317
+    },
+    {
+      "fixture_id": 234,
+      "pair_id": 117,
+      "policy_side": 0,
+      "seed": [
+        11559,
+        24572,
+        63606,
+        33124
+      ],
+      "team_a": 1034,
+      "team_b": 868
+    },
+    {
+      "fixture_id": 235,
+      "pair_id": 117,
+      "policy_side": 1,
+      "seed": [
+        11559,
+        24572,
+        63606,
+        33124
+      ],
+      "team_a": 1034,
+      "team_b": 868
+    },
+    {
+      "fixture_id": 236,
+      "pair_id": 118,
+      "policy_side": 0,
+      "seed": [
+        24100,
+        60849,
+        29274,
+        18452
+      ],
+      "team_a": 775,
+      "team_b": 917
+    },
+    {
+      "fixture_id": 237,
+      "pair_id": 118,
+      "policy_side": 1,
+      "seed": [
+        24100,
+        60849,
+        29274,
+        18452
+      ],
+      "team_a": 775,
+      "team_b": 917
+    },
+    {
+      "fixture_id": 238,
+      "pair_id": 119,
+      "policy_side": 0,
+      "seed": [
+        12784,
+        54841,
+        62965,
+        10359
+      ],
+      "team_a": 1099,
+      "team_b": 545
+    },
+    {
+      "fixture_id": 239,
+      "pair_id": 119,
+      "policy_side": 1,
+      "seed": [
+        12784,
+        54841,
+        62965,
+        10359
+      ],
+      "team_a": 1099,
+      "team_b": 545
+    },
+    {
+      "fixture_id": 240,
+      "pair_id": 120,
+      "policy_side": 0,
+      "seed": [
+        18941,
+        17074,
+        19933,
+        49813
+      ],
+      "team_a": 300,
+      "team_b": 415
+    },
+    {
+      "fixture_id": 241,
+      "pair_id": 120,
+      "policy_side": 1,
+      "seed": [
+        18941,
+        17074,
+        19933,
+        49813
+      ],
+      "team_a": 300,
+      "team_b": 415
+    },
+    {
+      "fixture_id": 242,
+      "pair_id": 121,
+      "policy_side": 0,
+      "seed": [
+        35544,
+        6470,
+        5119,
+        29200
+      ],
+      "team_a": 490,
+      "team_b": 948
+    },
+    {
+      "fixture_id": 243,
+      "pair_id": 121,
+      "policy_side": 1,
+      "seed": [
+        35544,
+        6470,
+        5119,
+        29200
+      ],
+      "team_a": 490,
+      "team_b": 948
+    },
+    {
+      "fixture_id": 244,
+      "pair_id": 122,
+      "policy_side": 0,
+      "seed": [
+        48716,
+        43743,
+        37403,
+        34070
+      ],
+      "team_a": 121,
+      "team_b": 127
+    },
+    {
+      "fixture_id": 245,
+      "pair_id": 122,
+      "policy_side": 1,
+      "seed": [
+        48716,
+        43743,
+        37403,
+        34070
+      ],
+      "team_a": 121,
+      "team_b": 127
+    },
+    {
+      "fixture_id": 246,
+      "pair_id": 123,
+      "policy_side": 0,
+      "seed": [
+        53229,
+        23276,
+        10426,
+        16478
+      ],
+      "team_a": 94,
+      "team_b": 1001
+    },
+    {
+      "fixture_id": 247,
+      "pair_id": 123,
+      "policy_side": 1,
+      "seed": [
+        53229,
+        23276,
+        10426,
+        16478
+      ],
+      "team_a": 94,
+      "team_b": 1001
+    },
+    {
+      "fixture_id": 248,
+      "pair_id": 124,
+      "policy_side": 0,
+      "seed": [
+        50364,
+        37426,
+        20806,
+        43486
+      ],
+      "team_a": 1088,
+      "team_b": 159
+    },
+    {
+      "fixture_id": 249,
+      "pair_id": 124,
+      "policy_side": 1,
+      "seed": [
+        50364,
+        37426,
+        20806,
+        43486
+      ],
+      "team_a": 1088,
+      "team_b": 159
+    },
+    {
+      "fixture_id": 250,
+      "pair_id": 125,
+      "policy_side": 0,
+      "seed": [
+        21506,
+        10037,
+        36739,
+        64452
+      ],
+      "team_a": 60,
+      "team_b": 955
+    },
+    {
+      "fixture_id": 251,
+      "pair_id": 125,
+      "policy_side": 1,
+      "seed": [
+        21506,
+        10037,
+        36739,
+        64452
+      ],
+      "team_a": 60,
+      "team_b": 955
+    },
+    {
+      "fixture_id": 252,
+      "pair_id": 126,
+      "policy_side": 0,
+      "seed": [
+        16477,
+        37135,
+        56512,
+        19312
+      ],
+      "team_a": 744,
+      "team_b": 104
+    },
+    {
+      "fixture_id": 253,
+      "pair_id": 126,
+      "policy_side": 1,
+      "seed": [
+        16477,
+        37135,
+        56512,
+        19312
+      ],
+      "team_a": 744,
+      "team_b": 104
+    },
+    {
+      "fixture_id": 254,
+      "pair_id": 127,
+      "policy_side": 0,
+      "seed": [
+        14565,
+        22669,
+        34704,
+        44459
+      ],
+      "team_a": 576,
+      "team_b": 672
+    },
+    {
+      "fixture_id": 255,
+      "pair_id": 127,
+      "policy_side": 1,
+      "seed": [
+        14565,
+        22669,
+        34704,
+        44459
+      ],
+      "team_a": 576,
+      "team_b": 672
+    }
+  ],
+  "illegal_actions": 0,
+  "losses": 5,
+  "manifest_path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/experiments/a/a3/fixed_panel.json",
+  "matches": 256,
+  "operational_errors": 0,
+  "opponent": "lexicographic_legal",
+  "outcomes": [
+    {
+      "error": null,
+      "fixture_id": 0,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 0,
+      "policy_side": 0,
+      "team_a": 1007,
+      "team_b": 709,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 1,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 0,
+      "policy_side": 1,
+      "team_a": 1007,
+      "team_b": 709,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 2,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 1,
+      "policy_side": 0,
+      "team_a": 81,
+      "team_b": 733,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 3,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 1,
+      "policy_side": 1,
+      "team_a": 81,
+      "team_b": 733,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 4,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 2,
+      "policy_side": 0,
+      "team_a": 444,
+      "team_b": 1086,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 5,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 2,
+      "policy_side": 1,
+      "team_a": 444,
+      "team_b": 1086,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 6,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 3,
+      "policy_side": 0,
+      "team_a": 471,
+      "team_b": 495,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 7,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 3,
+      "policy_side": 1,
+      "team_a": 471,
+      "team_b": 495,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 8,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 4,
+      "policy_side": 0,
+      "team_a": 599,
+      "team_b": 33,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 9,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 4,
+      "policy_side": 1,
+      "team_a": 599,
+      "team_b": 33,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 10,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 5,
+      "policy_side": 0,
+      "team_a": 413,
+      "team_b": 623,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 11,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 5,
+      "policy_side": 1,
+      "team_a": 413,
+      "team_b": 623,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 12,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 6,
+      "policy_side": 0,
+      "team_a": 923,
+      "team_b": 140,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 13,
+      "illegal_action": false,
+      "outcome": "loss",
+      "pair_id": 6,
+      "policy_side": 1,
+      "team_a": 923,
+      "team_b": 140,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 14,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 7,
+      "policy_side": 0,
+      "team_a": 590,
+      "team_b": 655,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 15,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 7,
+      "policy_side": 1,
+      "team_a": 590,
+      "team_b": 655,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 16,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 8,
+      "policy_side": 0,
+      "team_a": 240,
+      "team_b": 1106,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 17,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 8,
+      "policy_side": 1,
+      "team_a": 240,
+      "team_b": 1106,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 18,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 9,
+      "policy_side": 0,
+      "team_a": 367,
+      "team_b": 723,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 19,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 9,
+      "policy_side": 1,
+      "team_a": 367,
+      "team_b": 723,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 20,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 10,
+      "policy_side": 0,
+      "team_a": 443,
+      "team_b": 816,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 21,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 10,
+      "policy_side": 1,
+      "team_a": 443,
+      "team_b": 816,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 22,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 11,
+      "policy_side": 0,
+      "team_a": 150,
+      "team_b": 711,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 23,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 11,
+      "policy_side": 1,
+      "team_a": 150,
+      "team_b": 711,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 24,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 12,
+      "policy_side": 0,
+      "team_a": 1067,
+      "team_b": 1054,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 25,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 12,
+      "policy_side": 1,
+      "team_a": 1067,
+      "team_b": 1054,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 26,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 13,
+      "policy_side": 0,
+      "team_a": 834,
+      "team_b": 692,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 27,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 13,
+      "policy_side": 1,
+      "team_a": 834,
+      "team_b": 692,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 28,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 14,
+      "policy_side": 0,
+      "team_a": 244,
+      "team_b": 687,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 29,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 14,
+      "policy_side": 1,
+      "team_a": 244,
+      "team_b": 687,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 30,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 15,
+      "policy_side": 0,
+      "team_a": 22,
+      "team_b": 822,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 31,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 15,
+      "policy_side": 1,
+      "team_a": 22,
+      "team_b": 822,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 32,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 16,
+      "policy_side": 0,
+      "team_a": 1053,
+      "team_b": 31,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 33,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 16,
+      "policy_side": 1,
+      "team_a": 1053,
+      "team_b": 31,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 34,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 17,
+      "policy_side": 0,
+      "team_a": 1021,
+      "team_b": 1037,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 35,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 17,
+      "policy_side": 1,
+      "team_a": 1021,
+      "team_b": 1037,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 36,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 18,
+      "policy_side": 0,
+      "team_a": 655,
+      "team_b": 552,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 37,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 18,
+      "policy_side": 1,
+      "team_a": 655,
+      "team_b": 552,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 38,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 19,
+      "policy_side": 0,
+      "team_a": 523,
+      "team_b": 59,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 39,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 19,
+      "policy_side": 1,
+      "team_a": 523,
+      "team_b": 59,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 40,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 20,
+      "policy_side": 0,
+      "team_a": 61,
+      "team_b": 634,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 41,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 20,
+      "policy_side": 1,
+      "team_a": 61,
+      "team_b": 634,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 42,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 21,
+      "policy_side": 0,
+      "team_a": 976,
+      "team_b": 862,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 43,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 21,
+      "policy_side": 1,
+      "team_a": 976,
+      "team_b": 862,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 44,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 22,
+      "policy_side": 0,
+      "team_a": 919,
+      "team_b": 315,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 45,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 22,
+      "policy_side": 1,
+      "team_a": 919,
+      "team_b": 315,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 46,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 23,
+      "policy_side": 0,
+      "team_a": 751,
+      "team_b": 1031,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 47,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 23,
+      "policy_side": 1,
+      "team_a": 751,
+      "team_b": 1031,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 48,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 24,
+      "policy_side": 0,
+      "team_a": 329,
+      "team_b": 172,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 49,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 24,
+      "policy_side": 1,
+      "team_a": 329,
+      "team_b": 172,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 50,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 25,
+      "policy_side": 0,
+      "team_a": 1082,
+      "team_b": 990,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 51,
+      "illegal_action": false,
+      "outcome": "loss",
+      "pair_id": 25,
+      "policy_side": 1,
+      "team_a": 1082,
+      "team_b": 990,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 52,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 26,
+      "policy_side": 0,
+      "team_a": 530,
+      "team_b": 1108,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 53,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 26,
+      "policy_side": 1,
+      "team_a": 530,
+      "team_b": 1108,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 54,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 27,
+      "policy_side": 0,
+      "team_a": 368,
+      "team_b": 35,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 55,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 27,
+      "policy_side": 1,
+      "team_a": 368,
+      "team_b": 35,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 56,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 28,
+      "policy_side": 0,
+      "team_a": 75,
+      "team_b": 569,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 57,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 28,
+      "policy_side": 1,
+      "team_a": 75,
+      "team_b": 569,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 58,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 29,
+      "policy_side": 0,
+      "team_a": 472,
+      "team_b": 32,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 59,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 29,
+      "policy_side": 1,
+      "team_a": 472,
+      "team_b": 32,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 60,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 30,
+      "policy_side": 0,
+      "team_a": 671,
+      "team_b": 1095,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 61,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 30,
+      "policy_side": 1,
+      "team_a": 671,
+      "team_b": 1095,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 62,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 31,
+      "policy_side": 0,
+      "team_a": 861,
+      "team_b": 858,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 63,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 31,
+      "policy_side": 1,
+      "team_a": 861,
+      "team_b": 858,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 64,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 32,
+      "policy_side": 0,
+      "team_a": 439,
+      "team_b": 533,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 65,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 32,
+      "policy_side": 1,
+      "team_a": 439,
+      "team_b": 533,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 66,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 33,
+      "policy_side": 0,
+      "team_a": 807,
+      "team_b": 312,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 67,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 33,
+      "policy_side": 1,
+      "team_a": 807,
+      "team_b": 312,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 68,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 34,
+      "policy_side": 0,
+      "team_a": 869,
+      "team_b": 778,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 69,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 34,
+      "policy_side": 1,
+      "team_a": 869,
+      "team_b": 778,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 70,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 35,
+      "policy_side": 0,
+      "team_a": 70,
+      "team_b": 869,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 71,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 35,
+      "policy_side": 1,
+      "team_a": 70,
+      "team_b": 869,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 72,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 36,
+      "policy_side": 0,
+      "team_a": 905,
+      "team_b": 45,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 73,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 36,
+      "policy_side": 1,
+      "team_a": 905,
+      "team_b": 45,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 74,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 37,
+      "policy_side": 0,
+      "team_a": 987,
+      "team_b": 59,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 75,
+      "illegal_action": false,
+      "outcome": "loss",
+      "pair_id": 37,
+      "policy_side": 1,
+      "team_a": 987,
+      "team_b": 59,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 76,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 38,
+      "policy_side": 0,
+      "team_a": 1102,
+      "team_b": 712,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 77,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 38,
+      "policy_side": 1,
+      "team_a": 1102,
+      "team_b": 712,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 78,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 39,
+      "policy_side": 0,
+      "team_a": 99,
+      "team_b": 524,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 79,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 39,
+      "policy_side": 1,
+      "team_a": 99,
+      "team_b": 524,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 80,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 40,
+      "policy_side": 0,
+      "team_a": 62,
+      "team_b": 316,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 81,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 40,
+      "policy_side": 1,
+      "team_a": 62,
+      "team_b": 316,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 82,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 41,
+      "policy_side": 0,
+      "team_a": 265,
+      "team_b": 1018,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 83,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 41,
+      "policy_side": 1,
+      "team_a": 265,
+      "team_b": 1018,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 84,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 42,
+      "policy_side": 0,
+      "team_a": 515,
+      "team_b": 713,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 85,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 42,
+      "policy_side": 1,
+      "team_a": 515,
+      "team_b": 713,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 86,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 43,
+      "policy_side": 0,
+      "team_a": 162,
+      "team_b": 268,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 87,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 43,
+      "policy_side": 1,
+      "team_a": 162,
+      "team_b": 268,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 88,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 44,
+      "policy_side": 0,
+      "team_a": 465,
+      "team_b": 7,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 89,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 44,
+      "policy_side": 1,
+      "team_a": 465,
+      "team_b": 7,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 90,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 45,
+      "policy_side": 0,
+      "team_a": 149,
+      "team_b": 1089,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 91,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 45,
+      "policy_side": 1,
+      "team_a": 149,
+      "team_b": 1089,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 92,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 46,
+      "policy_side": 0,
+      "team_a": 817,
+      "team_b": 821,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 93,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 46,
+      "policy_side": 1,
+      "team_a": 817,
+      "team_b": 821,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 94,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 47,
+      "policy_side": 0,
+      "team_a": 734,
+      "team_b": 1024,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 95,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 47,
+      "policy_side": 1,
+      "team_a": 734,
+      "team_b": 1024,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 96,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 48,
+      "policy_side": 0,
+      "team_a": 711,
+      "team_b": 832,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 97,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 48,
+      "policy_side": 1,
+      "team_a": 711,
+      "team_b": 832,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 98,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 49,
+      "policy_side": 0,
+      "team_a": 148,
+      "team_b": 738,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 99,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 49,
+      "policy_side": 1,
+      "team_a": 148,
+      "team_b": 738,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 100,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 50,
+      "policy_side": 0,
+      "team_a": 797,
+      "team_b": 60,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 101,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 50,
+      "policy_side": 1,
+      "team_a": 797,
+      "team_b": 60,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 102,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 51,
+      "policy_side": 0,
+      "team_a": 299,
+      "team_b": 773,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 103,
+      "illegal_action": false,
+      "outcome": "loss",
+      "pair_id": 51,
+      "policy_side": 1,
+      "team_a": 299,
+      "team_b": 773,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 104,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 52,
+      "policy_side": 0,
+      "team_a": 464,
+      "team_b": 837,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 105,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 52,
+      "policy_side": 1,
+      "team_a": 464,
+      "team_b": 837,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 106,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 53,
+      "policy_side": 0,
+      "team_a": 954,
+      "team_b": 288,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 107,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 53,
+      "policy_side": 1,
+      "team_a": 954,
+      "team_b": 288,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 108,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 54,
+      "policy_side": 0,
+      "team_a": 1073,
+      "team_b": 977,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 109,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 54,
+      "policy_side": 1,
+      "team_a": 1073,
+      "team_b": 977,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 110,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 55,
+      "policy_side": 0,
+      "team_a": 975,
+      "team_b": 1075,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 111,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 55,
+      "policy_side": 1,
+      "team_a": 975,
+      "team_b": 1075,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 112,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 56,
+      "policy_side": 0,
+      "team_a": 80,
+      "team_b": 182,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 113,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 56,
+      "policy_side": 1,
+      "team_a": 80,
+      "team_b": 182,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 114,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 57,
+      "policy_side": 0,
+      "team_a": 1118,
+      "team_b": 187,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 115,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 57,
+      "policy_side": 1,
+      "team_a": 1118,
+      "team_b": 187,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 116,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 58,
+      "policy_side": 0,
+      "team_a": 1099,
+      "team_b": 1008,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 117,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 58,
+      "policy_side": 1,
+      "team_a": 1099,
+      "team_b": 1008,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 118,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 59,
+      "policy_side": 0,
+      "team_a": 724,
+      "team_b": 724,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 119,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 59,
+      "policy_side": 1,
+      "team_a": 724,
+      "team_b": 724,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 120,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 60,
+      "policy_side": 0,
+      "team_a": 686,
+      "team_b": 590,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 121,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 60,
+      "policy_side": 1,
+      "team_a": 686,
+      "team_b": 590,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 122,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 61,
+      "policy_side": 0,
+      "team_a": 151,
+      "team_b": 946,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 123,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 61,
+      "policy_side": 1,
+      "team_a": 151,
+      "team_b": 946,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 124,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 62,
+      "policy_side": 0,
+      "team_a": 197,
+      "team_b": 1116,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 125,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 62,
+      "policy_side": 1,
+      "team_a": 197,
+      "team_b": 1116,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 126,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 63,
+      "policy_side": 0,
+      "team_a": 440,
+      "team_b": 628,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 127,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 63,
+      "policy_side": 1,
+      "team_a": 440,
+      "team_b": 628,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 128,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 64,
+      "policy_side": 0,
+      "team_a": 785,
+      "team_b": 253,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 129,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 64,
+      "policy_side": 1,
+      "team_a": 785,
+      "team_b": 253,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 130,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 65,
+      "policy_side": 0,
+      "team_a": 159,
+      "team_b": 662,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 131,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 65,
+      "policy_side": 1,
+      "team_a": 159,
+      "team_b": 662,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 132,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 66,
+      "policy_side": 0,
+      "team_a": 689,
+      "team_b": 1128,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 133,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 66,
+      "policy_side": 1,
+      "team_a": 689,
+      "team_b": 1128,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 134,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 67,
+      "policy_side": 0,
+      "team_a": 961,
+      "team_b": 76,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 135,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 67,
+      "policy_side": 1,
+      "team_a": 961,
+      "team_b": 76,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 136,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 68,
+      "policy_side": 0,
+      "team_a": 45,
+      "team_b": 452,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 137,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 68,
+      "policy_side": 1,
+      "team_a": 45,
+      "team_b": 452,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 138,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 69,
+      "policy_side": 0,
+      "team_a": 129,
+      "team_b": 535,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 139,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 69,
+      "policy_side": 1,
+      "team_a": 129,
+      "team_b": 535,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 140,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 70,
+      "policy_side": 0,
+      "team_a": 245,
+      "team_b": 1118,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 141,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 70,
+      "policy_side": 1,
+      "team_a": 245,
+      "team_b": 1118,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 142,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 71,
+      "policy_side": 0,
+      "team_a": 738,
+      "team_b": 725,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 143,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 71,
+      "policy_side": 1,
+      "team_a": 738,
+      "team_b": 725,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 144,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 72,
+      "policy_side": 0,
+      "team_a": 303,
+      "team_b": 195,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 145,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 72,
+      "policy_side": 1,
+      "team_a": 303,
+      "team_b": 195,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 146,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 73,
+      "policy_side": 0,
+      "team_a": 260,
+      "team_b": 670,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 147,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 73,
+      "policy_side": 1,
+      "team_a": 260,
+      "team_b": 670,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 148,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 74,
+      "policy_side": 0,
+      "team_a": 1110,
+      "team_b": 2,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 149,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 74,
+      "policy_side": 1,
+      "team_a": 1110,
+      "team_b": 2,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 150,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 75,
+      "policy_side": 0,
+      "team_a": 911,
+      "team_b": 285,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 151,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 75,
+      "policy_side": 1,
+      "team_a": 911,
+      "team_b": 285,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 152,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 76,
+      "policy_side": 0,
+      "team_a": 28,
+      "team_b": 527,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 153,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 76,
+      "policy_side": 1,
+      "team_a": 28,
+      "team_b": 527,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 154,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 77,
+      "policy_side": 0,
+      "team_a": 896,
+      "team_b": 849,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 155,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 77,
+      "policy_side": 1,
+      "team_a": 896,
+      "team_b": 849,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 156,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 78,
+      "policy_side": 0,
+      "team_a": 916,
+      "team_b": 1101,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 157,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 78,
+      "policy_side": 1,
+      "team_a": 916,
+      "team_b": 1101,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 158,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 79,
+      "policy_side": 0,
+      "team_a": 703,
+      "team_b": 321,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 159,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 79,
+      "policy_side": 1,
+      "team_a": 703,
+      "team_b": 321,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 160,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 80,
+      "policy_side": 0,
+      "team_a": 531,
+      "team_b": 463,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 161,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 80,
+      "policy_side": 1,
+      "team_a": 531,
+      "team_b": 463,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 162,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 81,
+      "policy_side": 0,
+      "team_a": 1135,
+      "team_b": 221,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 163,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 81,
+      "policy_side": 1,
+      "team_a": 1135,
+      "team_b": 221,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 164,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 82,
+      "policy_side": 0,
+      "team_a": 68,
+      "team_b": 382,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 165,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 82,
+      "policy_side": 1,
+      "team_a": 68,
+      "team_b": 382,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 166,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 83,
+      "policy_side": 0,
+      "team_a": 464,
+      "team_b": 92,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 167,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 83,
+      "policy_side": 1,
+      "team_a": 464,
+      "team_b": 92,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 168,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 84,
+      "policy_side": 0,
+      "team_a": 846,
+      "team_b": 478,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 169,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 84,
+      "policy_side": 1,
+      "team_a": 846,
+      "team_b": 478,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 170,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 85,
+      "policy_side": 0,
+      "team_a": 213,
+      "team_b": 1058,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 171,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 85,
+      "policy_side": 1,
+      "team_a": 213,
+      "team_b": 1058,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 172,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 86,
+      "policy_side": 0,
+      "team_a": 874,
+      "team_b": 229,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 173,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 86,
+      "policy_side": 1,
+      "team_a": 874,
+      "team_b": 229,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 174,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 87,
+      "policy_side": 0,
+      "team_a": 886,
+      "team_b": 942,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 175,
+      "illegal_action": false,
+      "outcome": "loss",
+      "pair_id": 87,
+      "policy_side": 1,
+      "team_a": 886,
+      "team_b": 942,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 176,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 88,
+      "policy_side": 0,
+      "team_a": 138,
+      "team_b": 741,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 177,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 88,
+      "policy_side": 1,
+      "team_a": 138,
+      "team_b": 741,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 178,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 89,
+      "policy_side": 0,
+      "team_a": 142,
+      "team_b": 396,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 179,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 89,
+      "policy_side": 1,
+      "team_a": 142,
+      "team_b": 396,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 180,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 90,
+      "policy_side": 0,
+      "team_a": 177,
+      "team_b": 302,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 181,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 90,
+      "policy_side": 1,
+      "team_a": 177,
+      "team_b": 302,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 182,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 91,
+      "policy_side": 0,
+      "team_a": 282,
+      "team_b": 1117,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 183,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 91,
+      "policy_side": 1,
+      "team_a": 282,
+      "team_b": 1117,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 184,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 92,
+      "policy_side": 0,
+      "team_a": 855,
+      "team_b": 907,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 185,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 92,
+      "policy_side": 1,
+      "team_a": 855,
+      "team_b": 907,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 186,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 93,
+      "policy_side": 0,
+      "team_a": 968,
+      "team_b": 955,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 187,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 93,
+      "policy_side": 1,
+      "team_a": 968,
+      "team_b": 955,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 188,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 94,
+      "policy_side": 0,
+      "team_a": 873,
+      "team_b": 88,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 189,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 94,
+      "policy_side": 1,
+      "team_a": 873,
+      "team_b": 88,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 190,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 95,
+      "policy_side": 0,
+      "team_a": 770,
+      "team_b": 1029,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 191,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 95,
+      "policy_side": 1,
+      "team_a": 770,
+      "team_b": 1029,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 192,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 96,
+      "policy_side": 0,
+      "team_a": 452,
+      "team_b": 867,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 193,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 96,
+      "policy_side": 1,
+      "team_a": 452,
+      "team_b": 867,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 194,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 97,
+      "policy_side": 0,
+      "team_a": 813,
+      "team_b": 335,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 195,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 97,
+      "policy_side": 1,
+      "team_a": 813,
+      "team_b": 335,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 196,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 98,
+      "policy_side": 0,
+      "team_a": 528,
+      "team_b": 1022,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 197,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 98,
+      "policy_side": 1,
+      "team_a": 528,
+      "team_b": 1022,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 198,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 99,
+      "policy_side": 0,
+      "team_a": 517,
+      "team_b": 734,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 199,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 99,
+      "policy_side": 1,
+      "team_a": 517,
+      "team_b": 734,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 200,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 100,
+      "policy_side": 0,
+      "team_a": 3,
+      "team_b": 240,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 201,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 100,
+      "policy_side": 1,
+      "team_a": 3,
+      "team_b": 240,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 202,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 101,
+      "policy_side": 0,
+      "team_a": 821,
+      "team_b": 511,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 203,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 101,
+      "policy_side": 1,
+      "team_a": 821,
+      "team_b": 511,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 204,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 102,
+      "policy_side": 0,
+      "team_a": 545,
+      "team_b": 1015,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 205,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 102,
+      "policy_side": 1,
+      "team_a": 545,
+      "team_b": 1015,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 206,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 103,
+      "policy_side": 0,
+      "team_a": 1127,
+      "team_b": 209,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 207,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 103,
+      "policy_side": 1,
+      "team_a": 1127,
+      "team_b": 209,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 208,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 104,
+      "policy_side": 0,
+      "team_a": 217,
+      "team_b": 1127,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 209,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 104,
+      "policy_side": 1,
+      "team_a": 217,
+      "team_b": 1127,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 210,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 105,
+      "policy_side": 0,
+      "team_a": 131,
+      "team_b": 8,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 211,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 105,
+      "policy_side": 1,
+      "team_a": 131,
+      "team_b": 8,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 212,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 106,
+      "policy_side": 0,
+      "team_a": 1112,
+      "team_b": 368,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 213,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 106,
+      "policy_side": 1,
+      "team_a": 1112,
+      "team_b": 368,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 214,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 107,
+      "policy_side": 0,
+      "team_a": 224,
+      "team_b": 783,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 215,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 107,
+      "policy_side": 1,
+      "team_a": 224,
+      "team_b": 783,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 216,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 108,
+      "policy_side": 0,
+      "team_a": 824,
+      "team_b": 583,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 217,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 108,
+      "policy_side": 1,
+      "team_a": 824,
+      "team_b": 583,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 218,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 109,
+      "policy_side": 0,
+      "team_a": 501,
+      "team_b": 897,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 219,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 109,
+      "policy_side": 1,
+      "team_a": 501,
+      "team_b": 897,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 220,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 110,
+      "policy_side": 0,
+      "team_a": 32,
+      "team_b": 1117,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 221,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 110,
+      "policy_side": 1,
+      "team_a": 32,
+      "team_b": 1117,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 222,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 111,
+      "policy_side": 0,
+      "team_a": 75,
+      "team_b": 239,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 223,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 111,
+      "policy_side": 1,
+      "team_a": 75,
+      "team_b": 239,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 224,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 112,
+      "policy_side": 0,
+      "team_a": 404,
+      "team_b": 227,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 225,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 112,
+      "policy_side": 1,
+      "team_a": 404,
+      "team_b": 227,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 226,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 113,
+      "policy_side": 0,
+      "team_a": 694,
+      "team_b": 1023,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 227,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 113,
+      "policy_side": 1,
+      "team_a": 694,
+      "team_b": 1023,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 228,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 114,
+      "policy_side": 0,
+      "team_a": 891,
+      "team_b": 170,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 229,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 114,
+      "policy_side": 1,
+      "team_a": 891,
+      "team_b": 170,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 230,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 115,
+      "policy_side": 0,
+      "team_a": 14,
+      "team_b": 7,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 231,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 115,
+      "policy_side": 1,
+      "team_a": 14,
+      "team_b": 7,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 232,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 116,
+      "policy_side": 0,
+      "team_a": 756,
+      "team_b": 317,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 233,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 116,
+      "policy_side": 1,
+      "team_a": 756,
+      "team_b": 317,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 234,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 117,
+      "policy_side": 0,
+      "team_a": 1034,
+      "team_b": 868,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 235,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 117,
+      "policy_side": 1,
+      "team_a": 1034,
+      "team_b": 868,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 236,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 118,
+      "policy_side": 0,
+      "team_a": 775,
+      "team_b": 917,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 237,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 118,
+      "policy_side": 1,
+      "team_a": 775,
+      "team_b": 917,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 238,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 119,
+      "policy_side": 0,
+      "team_a": 1099,
+      "team_b": 545,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 239,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 119,
+      "policy_side": 1,
+      "team_a": 1099,
+      "team_b": 545,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 240,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 120,
+      "policy_side": 0,
+      "team_a": 300,
+      "team_b": 415,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 241,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 120,
+      "policy_side": 1,
+      "team_a": 300,
+      "team_b": 415,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 242,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 121,
+      "policy_side": 0,
+      "team_a": 490,
+      "team_b": 948,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 243,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 121,
+      "policy_side": 1,
+      "team_a": 490,
+      "team_b": 948,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 244,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 122,
+      "policy_side": 0,
+      "team_a": 121,
+      "team_b": 127,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 245,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 122,
+      "policy_side": 1,
+      "team_a": 121,
+      "team_b": 127,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 246,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 123,
+      "policy_side": 0,
+      "team_a": 94,
+      "team_b": 1001,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 247,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 123,
+      "policy_side": 1,
+      "team_a": 94,
+      "team_b": 1001,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 248,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 124,
+      "policy_side": 0,
+      "team_a": 1088,
+      "team_b": 159,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 249,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 124,
+      "policy_side": 1,
+      "team_a": 1088,
+      "team_b": 159,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 250,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 125,
+      "policy_side": 0,
+      "team_a": 60,
+      "team_b": 955,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 251,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 125,
+      "policy_side": 1,
+      "team_a": 60,
+      "team_b": 955,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 252,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 126,
+      "policy_side": 0,
+      "team_a": 744,
+      "team_b": 104,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 253,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 126,
+      "policy_side": 1,
+      "team_a": 744,
+      "team_b": 104,
+      "winner": 1
+    },
+    {
+      "error": null,
+      "fixture_id": 254,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 127,
+      "policy_side": 0,
+      "team_a": 576,
+      "team_b": 672,
+      "winner": 0
+    },
+    {
+      "error": null,
+      "fixture_id": 255,
+      "illegal_action": false,
+      "outcome": "win",
+      "pair_id": 127,
+      "policy_side": 1,
+      "team_a": 576,
+      "team_b": 672,
+      "winner": 1
+    }
+  ],
+  "policy": "checkpoint",
+  "runtime_seconds": 25.87866549499995,
+  "score_ci95": [
+    0.9609375,
+    0.99609375
+  ],
+  "score_mean": 0.98046875,
+  "source_checkpoint": "/home/minidc/Desktop/PokeAgent3.0-A/runs/experiments/a/a3_ppo2_50k/boundary.rank0",
+  "team_group_results": {
+    "1007:709": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 1007,
+      "team_b": 709,
+      "wins": 2
+    },
+    "1021:1037": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 1021,
+      "team_b": 1037,
+      "wins": 2
+    },
+    "1034:868": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 1034,
+      "team_b": 868,
+      "wins": 2
+    },
+    "1053:31": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 1053,
+      "team_b": 31,
+      "wins": 2
+    },
+    "1067:1054": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 1067,
+      "team_b": 1054,
+      "wins": 2
+    },
+    "1073:977": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 1073,
+      "team_b": 977,
+      "wins": 2
+    },
+    "1082:990": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 1,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 1082,
+      "team_b": 990,
+      "wins": 1
+    },
+    "1088:159": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 1088,
+      "team_b": 159,
+      "wins": 2
+    },
+    "1099:1008": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 1099,
+      "team_b": 1008,
+      "wins": 2
+    },
+    "1099:545": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 1099,
+      "team_b": 545,
+      "wins": 2
+    },
+    "1102:712": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 1102,
+      "team_b": 712,
+      "wins": 2
+    },
+    "1110:2": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 1110,
+      "team_b": 2,
+      "wins": 2
+    },
+    "1112:368": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 1112,
+      "team_b": 368,
+      "wins": 2
+    },
+    "1118:187": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 1118,
+      "team_b": 187,
+      "wins": 2
+    },
+    "1127:209": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 1127,
+      "team_b": 209,
+      "wins": 2
+    },
+    "1135:221": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 1135,
+      "team_b": 221,
+      "wins": 2
+    },
+    "121:127": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 121,
+      "team_b": 127,
+      "wins": 2
+    },
+    "129:535": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 129,
+      "team_b": 535,
+      "wins": 2
+    },
+    "131:8": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 131,
+      "team_b": 8,
+      "wins": 2
+    },
+    "138:741": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 138,
+      "team_b": 741,
+      "wins": 2
+    },
+    "142:396": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 142,
+      "team_b": 396,
+      "wins": 2
+    },
+    "148:738": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 148,
+      "team_b": 738,
+      "wins": 2
+    },
+    "149:1089": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 149,
+      "team_b": 1089,
+      "wins": 2
+    },
+    "14:7": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 14,
+      "team_b": 7,
+      "wins": 2
+    },
+    "150:711": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 150,
+      "team_b": 711,
+      "wins": 2
+    },
+    "151:946": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 151,
+      "team_b": 946,
+      "wins": 2
+    },
+    "159:662": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 159,
+      "team_b": 662,
+      "wins": 2
+    },
+    "162:268": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 162,
+      "team_b": 268,
+      "wins": 2
+    },
+    "177:302": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 177,
+      "team_b": 302,
+      "wins": 2
+    },
+    "197:1116": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 197,
+      "team_b": 1116,
+      "wins": 2
+    },
+    "213:1058": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 213,
+      "team_b": 1058,
+      "wins": 2
+    },
+    "217:1127": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 217,
+      "team_b": 1127,
+      "wins": 2
+    },
+    "224:783": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 224,
+      "team_b": 783,
+      "wins": 2
+    },
+    "22:822": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 22,
+      "team_b": 822,
+      "wins": 2
+    },
+    "240:1106": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 240,
+      "team_b": 1106,
+      "wins": 2
+    },
+    "244:687": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 244,
+      "team_b": 687,
+      "wins": 2
+    },
+    "245:1118": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 245,
+      "team_b": 1118,
+      "wins": 2
+    },
+    "260:670": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 260,
+      "team_b": 670,
+      "wins": 2
+    },
+    "265:1018": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 265,
+      "team_b": 1018,
+      "wins": 2
+    },
+    "282:1117": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 282,
+      "team_b": 1117,
+      "wins": 2
+    },
+    "28:527": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 28,
+      "team_b": 527,
+      "wins": 2
+    },
+    "299:773": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 1,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 299,
+      "team_b": 773,
+      "wins": 1
+    },
+    "300:415": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 300,
+      "team_b": 415,
+      "wins": 2
+    },
+    "303:195": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 303,
+      "team_b": 195,
+      "wins": 2
+    },
+    "329:172": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 329,
+      "team_b": 172,
+      "wins": 2
+    },
+    "32:1117": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 32,
+      "team_b": 1117,
+      "wins": 2
+    },
+    "367:723": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 367,
+      "team_b": 723,
+      "wins": 2
+    },
+    "368:35": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 368,
+      "team_b": 35,
+      "wins": 2
+    },
+    "3:240": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 3,
+      "team_b": 240,
+      "wins": 2
+    },
+    "404:227": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 404,
+      "team_b": 227,
+      "wins": 2
+    },
+    "413:623": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 413,
+      "team_b": 623,
+      "wins": 2
+    },
+    "439:533": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 439,
+      "team_b": 533,
+      "wins": 2
+    },
+    "440:628": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 440,
+      "team_b": 628,
+      "wins": 2
+    },
+    "443:816": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 443,
+      "team_b": 816,
+      "wins": 2
+    },
+    "444:1086": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 444,
+      "team_b": 1086,
+      "wins": 2
+    },
+    "452:867": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 452,
+      "team_b": 867,
+      "wins": 2
+    },
+    "45:452": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 45,
+      "team_b": 452,
+      "wins": 2
+    },
+    "464:837": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 464,
+      "team_b": 837,
+      "wins": 2
+    },
+    "464:92": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 464,
+      "team_b": 92,
+      "wins": 2
+    },
+    "465:7": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 465,
+      "team_b": 7,
+      "wins": 2
+    },
+    "471:495": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 471,
+      "team_b": 495,
+      "wins": 2
+    },
+    "472:32": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 472,
+      "team_b": 32,
+      "wins": 2
+    },
+    "490:948": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 490,
+      "team_b": 948,
+      "wins": 2
+    },
+    "501:897": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 501,
+      "team_b": 897,
+      "wins": 2
+    },
+    "515:713": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 515,
+      "team_b": 713,
+      "wins": 2
+    },
+    "517:734": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 517,
+      "team_b": 734,
+      "wins": 2
+    },
+    "523:59": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 523,
+      "team_b": 59,
+      "wins": 2
+    },
+    "528:1022": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 528,
+      "team_b": 1022,
+      "wins": 2
+    },
+    "530:1108": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 530,
+      "team_b": 1108,
+      "wins": 2
+    },
+    "531:463": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 531,
+      "team_b": 463,
+      "wins": 2
+    },
+    "545:1015": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 545,
+      "team_b": 1015,
+      "wins": 2
+    },
+    "576:672": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 576,
+      "team_b": 672,
+      "wins": 2
+    },
+    "590:655": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 590,
+      "team_b": 655,
+      "wins": 2
+    },
+    "599:33": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 599,
+      "team_b": 33,
+      "wins": 2
+    },
+    "60:955": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 60,
+      "team_b": 955,
+      "wins": 2
+    },
+    "61:634": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 61,
+      "team_b": 634,
+      "wins": 2
+    },
+    "62:316": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 62,
+      "team_b": 316,
+      "wins": 2
+    },
+    "655:552": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 655,
+      "team_b": 552,
+      "wins": 2
+    },
+    "671:1095": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 671,
+      "team_b": 1095,
+      "wins": 2
+    },
+    "686:590": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 686,
+      "team_b": 590,
+      "wins": 2
+    },
+    "689:1128": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 689,
+      "team_b": 1128,
+      "wins": 2
+    },
+    "68:382": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 68,
+      "team_b": 382,
+      "wins": 2
+    },
+    "694:1023": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 694,
+      "team_b": 1023,
+      "wins": 2
+    },
+    "703:321": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 703,
+      "team_b": 321,
+      "wins": 2
+    },
+    "70:869": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 70,
+      "team_b": 869,
+      "wins": 2
+    },
+    "711:832": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 711,
+      "team_b": 832,
+      "wins": 2
+    },
+    "724:724": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 724,
+      "team_b": 724,
+      "wins": 2
+    },
+    "734:1024": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 734,
+      "team_b": 1024,
+      "wins": 2
+    },
+    "738:725": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 738,
+      "team_b": 725,
+      "wins": 2
+    },
+    "744:104": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 744,
+      "team_b": 104,
+      "wins": 2
+    },
+    "751:1031": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 751,
+      "team_b": 1031,
+      "wins": 2
+    },
+    "756:317": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 756,
+      "team_b": 317,
+      "wins": 2
+    },
+    "75:239": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 75,
+      "team_b": 239,
+      "wins": 2
+    },
+    "75:569": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 75,
+      "team_b": 569,
+      "wins": 2
+    },
+    "770:1029": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 770,
+      "team_b": 1029,
+      "wins": 2
+    },
+    "775:917": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 775,
+      "team_b": 917,
+      "wins": 2
+    },
+    "785:253": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 785,
+      "team_b": 253,
+      "wins": 2
+    },
+    "797:60": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 797,
+      "team_b": 60,
+      "wins": 2
+    },
+    "807:312": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 807,
+      "team_b": 312,
+      "wins": 2
+    },
+    "80:182": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 80,
+      "team_b": 182,
+      "wins": 2
+    },
+    "813:335": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 813,
+      "team_b": 335,
+      "wins": 2
+    },
+    "817:821": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 817,
+      "team_b": 821,
+      "wins": 2
+    },
+    "81:733": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 81,
+      "team_b": 733,
+      "wins": 2
+    },
+    "821:511": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 821,
+      "team_b": 511,
+      "wins": 2
+    },
+    "824:583": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 824,
+      "team_b": 583,
+      "wins": 2
+    },
+    "834:692": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 834,
+      "team_b": 692,
+      "wins": 2
+    },
+    "846:478": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 846,
+      "team_b": 478,
+      "wins": 2
+    },
+    "855:907": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 855,
+      "team_b": 907,
+      "wins": 2
+    },
+    "861:858": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 861,
+      "team_b": 858,
+      "wins": 2
+    },
+    "869:778": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 869,
+      "team_b": 778,
+      "wins": 2
+    },
+    "873:88": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 873,
+      "team_b": 88,
+      "wins": 2
+    },
+    "874:229": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 874,
+      "team_b": 229,
+      "wins": 2
+    },
+    "886:942": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 1,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 886,
+      "team_b": 942,
+      "wins": 1
+    },
+    "891:170": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 891,
+      "team_b": 170,
+      "wins": 2
+    },
+    "896:849": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 896,
+      "team_b": 849,
+      "wins": 2
+    },
+    "905:45": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 905,
+      "team_b": 45,
+      "wins": 2
+    },
+    "911:285": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 911,
+      "team_b": 285,
+      "wins": 2
+    },
+    "916:1101": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 916,
+      "team_b": 1101,
+      "wins": 2
+    },
+    "919:315": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 919,
+      "team_b": 315,
+      "wins": 2
+    },
+    "923:140": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 1,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 923,
+      "team_b": 140,
+      "wins": 1
+    },
+    "94:1001": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 94,
+      "team_b": 1001,
+      "wins": 2
+    },
+    "954:288": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 954,
+      "team_b": 288,
+      "wins": 2
+    },
+    "961:76": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 961,
+      "team_b": 76,
+      "wins": 2
+    },
+    "968:955": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 968,
+      "team_b": 955,
+      "wins": 2
+    },
+    "975:1075": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 975,
+      "team_b": 1075,
+      "wins": 2
+    },
+    "976:862": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 976,
+      "team_b": 862,
+      "wins": 2
+    },
+    "987:59": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 1,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 987,
+      "team_b": 59,
+      "wins": 1
+    },
+    "99:524": {
+      "draws": 0,
+      "illegal_actions": 0,
+      "losses": 0,
+      "matches": 2,
+      "operational_errors": 0,
+      "team_a": 99,
+      "team_b": 524,
+      "wins": 2
+    }
+  },
+  "team_pool_size": 1137,
+  "wins": 251
+}
