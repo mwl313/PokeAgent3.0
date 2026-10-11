@@ -6,6 +6,8 @@
 
 **Implementation commit:** `acedc33f050a07c8b061c08669bc2964480705da`
 
+**Follow-up verification commit:** `23cca6cc8a062a57bb6991298d73655042188d05`
+
 ## C3a.2 evaluator hardening
 
 The old selector was reproduced against the 360 legal preview joints. Its
