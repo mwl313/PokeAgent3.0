@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-11",
+  "branch": "research/a-ppo-efficiency",
+  "report_code_head": "a69258d",
+  "training_source_sha": "30b10e28d608f869811a4525afaa8101613c7adc",
+  "base_checkpoint": "runs/experiments/a/a3_ppo2_50k/boundary.rank0",
+  "base_committed_matches": 77824,
+  "target_committed_matches": 249856,
+  "additional_matches": 172032,
+  "ppo_epochs": 2,
+  "world_size": 2,
+  "fixture_manifest_hash": "5f5cb842a3f90ffabbb551ef4ba77be5946bb9f5fb3119b617590d7005453e0c",
+  "chunks": [
+    {"chunk": 1, "global_matches": 102400, "games_per_s": 77.51169516798906, "wall_s": 310.63769935200617, "optimizer_steps": 240, "early_stop_iterations": 0},
+    {"chunk": 2, "global_matches": 126976, "games_per_s": 86.8242721968606, "wall_s": 276.1359856640047, "optimizer_steps": 240, "early_stop_iterations": 3},
+    {"chunk": 3, "global_matches": 151552, "games_per_s": 85.3168708796508, "wall_s": 280.8052649049969, "optimizer_steps": 240, "early_stop_iterations": 1},
+    {"chunk": 4, "global_matches": 176128, "games_per_s": 84.43734629379648, "wall_s": 283.6656692680008, "optimizer_steps": 240, "early_stop_iterations": 0},
+    {"chunk": 5, "global_matches": 200704, "games_per_s": 91.68454843907503, "wall_s": 261.6299350120062, "optimizer_steps": 240, "early_stop_iterations": 2},
+    {"chunk": 6, "global_matches": 225280, "games_per_s": 90.3352747401989, "wall_s": 265.7097697670033, "optimizer_steps": 240, "early_stop_iterations": 1},
+    {"chunk": 7, "global_matches": 249856, "games_per_s": 89.026951857816, "wall_s": 269.85062619999735, "optimizer_steps": 240, "early_stop_iterations": 3}
+  ],
+  "total_wall_s": 1948.4349501680153, "digest_parity": true, "operational_errors": 0,
+  "final_metrics": {"learning_rate": 0.00029983296, "entropy": 0.5142544062564771, "approx_kl": 0.024768830136360775, "value_loss": 0.22834003157650418, "optimizer_steps": 2832},
+  "direct_head_to_head_ppo2_vs_ppo4_512": {"wins": 242, "losses": 270, "draws": 0, "score": 0.47265625, "ci95": [0.431640625, 0.515625]},
+  "selected_evaluations": {
+    "chunk04_vs_ppo4_256": {"wins": 161, "losses": 95, "draws": 0, "score": 0.62890625, "ci95": [0.5703125, 0.6875]},
+    "chunk07_vs_ppo4_256": {"wins": 150, "losses": 106, "draws": 0, "score": 0.5859375, "ci95": [0.52734375, 0.65234375]},
+    "chunk07_vs_ppo2_early_256": {"wins": 165, "losses": 91, "draws": 0, "score": 0.64453125, "ci95": [0.5859375, 0.703125]}
+  },
+  "recompute_gate": {"max_abs_diff": 0.001050710678100586, "tolerance": 0.001, "continuation_flag": "--no-recompute-gate", "status": "unresolved_fail_closed_limitation"}
+}
