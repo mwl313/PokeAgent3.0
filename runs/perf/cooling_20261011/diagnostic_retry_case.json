@@ -1,0 +1,28 @@
+{
+  "command": [
+    "/home/minidc/Desktop/PokeAgent3.0/.venv/bin/python",
+    "/tmp/pa3_cooling_diagnostic.py",
+    "--games",
+    "1024",
+    "--envs",
+    "1024",
+    "--workers",
+    "16",
+    "--microbatch",
+    "1024",
+    "--minibatch",
+    "4096",
+    "--iterations",
+    "1",
+    "--timeout",
+    "1800",
+    "--report",
+    "/home/minidc/Desktop/PokeAgent3.0/runs/perf/cooling_20261011/diagnostic_retry.json",
+    "--checkpoint",
+    "/home/minidc/Desktop/PokeAgent3.0/runs/perf/cooling_20261011/latest_verified.pt"
+  ],
+  "start_utc_s": 1791681228.010939,
+  "end_utc_s": 1791681302.4763165,
+  "telemetry_interval_s": 1,
+  "unprofiled": false
+}

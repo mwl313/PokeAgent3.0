@@ -1,0 +1,28 @@
+{
+  "command": [
+    "/home/minidc/Desktop/PokeAgent3.0/.venv/bin/python",
+    "/home/minidc/Desktop/PokeAgent3.0/scripts/run_ddp_ppo.py",
+    "--games",
+    "1024",
+    "--envs",
+    "1024",
+    "--workers",
+    "16",
+    "--microbatch",
+    "1024",
+    "--minibatch",
+    "4096",
+    "--iterations",
+    "1",
+    "--timeout",
+    "1800",
+    "--report",
+    "/home/minidc/Desktop/PokeAgent3.0/runs/perf/cooling_20261011/cold2.json",
+    "--checkpoint",
+    "/home/minidc/Desktop/PokeAgent3.0/runs/perf/cooling_20261011/latest_verified.pt"
+  ],
+  "start_utc_s": 1791680642.4485416,
+  "end_utc_s": 1791680701.861066,
+  "telemetry_interval_s": 1,
+  "unprofiled": true
+}

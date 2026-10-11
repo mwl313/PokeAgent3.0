@@ -14,7 +14,8 @@ The original ZIP remains at the project root. Its ten files are preserved byte-f
 - [Training configuration](configs/train.yaml): active config with the user-selected frozen M-B/M-C pool plus the approved manual source, actual counts, split paths and manifest hash.
 - [Accepted team record schema](data/schemas/team-record.schema.json): relative symlink to the supplied JSON Schema, unchanged.
 - [Runtime changes](docs/spec/fullspec-1.1-minidc-20261006/RUNTIME_CHANGES.md): version 1.1 changes and their limits.
-- [Hardware reference](docs/spec/fullspec-1.1-minidc-20261006/reference/73-v100-driver-cuda-constraints.md): supplied equipment report, not a fresh measurement.
+- [Current MiniDC hardware](docs/HARDWARE_MINIDC.md): 2026-10-11 verified 175W/175W limits, improved cooling, topology and load telemetry.
+- [Historical hardware reference](docs/spec/fullspec-1.1-minidc-20261006/reference/73-v100-driver-cuda-constraints.md): preserved 2026-10-06 equipment snapshot.
 - [Preparation receipt](docs/workspace-preparation.json): archive hash, file hashes, checks, and preserved pre-existing deletions.
 
 The package's internal paths retain their original meaning relative to the package directory. The active config is now a separate file; the original YAML remains unchanged. Schema and runtime convenience links remain, and runtime settings have not been sourced or executed.
@@ -51,7 +52,7 @@ Training rows represent complete player requests, with joint log-probabilities a
 
 The package pins Python 3.12.3, PyTorch `2.14.0+cu126` with CUDA runtime 12.6, NVIDIA driver 580.178.04, and system CUDA Toolkit 12.8.2. These are supplied requirements and reported values; this preparation did not inspect the live hardware or verify wheel availability.
 
-The intended hardware is two V100 PCIe 32GB GPUs at 175W and 150W, assigned to NUMA nodes 0 and 1. Host-staged NCCL DDP uses `256 × 8 × 2 = 4,096` effective rows. The documented GPU0 learner fallback preserves that batch with `256 × 16`. Execution uses eager PyTorch, FP16/FP32, and SDPA math.
+The current hardware is two V100 PCIe 32GB GPUs, **both limited to 175W**, assigned to NUMA nodes 0 and 1. The user confirmed improved stable cooling on 2026-10-11; the repeated load panel peaked at 57°C/53°C with no sampled thermal slowdown. Current PPO benchmarks use host-staged NCCL DDP with `1,024 × 2 × 2 = 4,096` effective rows. See [the current hardware record](docs/HARDWARE_MINIDC.md) and [the detailed speed and bottleneck report](docs/perf/COOLED_DUAL_V100_BOTTLENECK_REPORT_2026-10-11.md), including a reproducible engine observation failure found during diagnostics. Earlier 175W/150W references describe historical measurements. Execution uses eager PyTorch and FP16/FP32.
 
 [Runtime constraints](runtime/constraints-minidc.txt) pin torch only; they are not a complete dependency lock. [Process environment settings](runtime/minidc.env) do not enforce the future trainer's attention, precision, or NUMA behavior by themselves. Driver, Toolkit, power limits, protected services, and package holds remain unchanged.
 

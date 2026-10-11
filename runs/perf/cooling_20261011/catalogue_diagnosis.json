@@ -1,0 +1,36 @@
+{
+  "turn": 5,
+  "item_zero_events": [
+    {
+      "viewer": 0,
+      "event": {
+        "kind": "Item",
+        "subject": 7,
+        "target": 5,
+        "effect": 0,
+        "effect_kind": "Item",
+        "value": 0,
+        "health": null
+      }
+    },
+    {
+      "viewer": 1,
+      "event": {
+        "kind": "Item",
+        "subject": 1,
+        "target": 11,
+        "effect": 0,
+        "effect_kind": "Item",
+        "value": 0,
+        "health": null
+      }
+    }
+  ],
+  "move_id": 618,
+  "move": "poltergeist",
+  "previous_consumed_item_id": 409,
+  "previous_consumed_item": "sitrusberry",
+  "confirmed": "An Item event with effect 0 is emitted and rejected by observation validation. Unprofiled checkpoint reproduction confirmed.",
+  "emitter": "engine/src/battle.rs:4347",
+  "validator": "engine/src/observation.rs:635"
+}

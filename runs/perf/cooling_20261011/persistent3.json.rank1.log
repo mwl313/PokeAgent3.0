@@ -1,0 +1,19 @@
+[rank1] process group ready at 1791680917.2
+/home/minidc/Desktop/PokeAgent3.0/scripts/run_ddp_ppo.py:312: FutureWarning: `broadcast_buffers` is deprecated. Use `forward_sync_buffers` instead. IMPORTANT: unlike `broadcast_buffers=False`, `forward_sync_buffers=False` still syncs buffers at init. If you rely on buffers NOT being synced at init (e.g. rank-local buffers), keep using `broadcast_buffers=False` until `init_sync_buffers` is available.
+  ddp_model = torch.nn.parallel.DistributedDataParallel(
+/home/minidc/Desktop/PokeAgent3.0/agent/types/observation.py:247: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:213.)
+  tensor = torch.as_tensor(value)
+[rank1] iteration 1/3: collected 1024 games / 27279 rows in 12.3s
+[rank1] recompute gate: 576 rows max|diff|=1.550e-05 (tol 1.0e-03) within=True
+[rank1]:[W1011 10:08:57.585452786 reducer.cpp:1529] Warning: find_unused_parameters=True was specified in DDP constructor, but did not find any unused parameters in the forward pass. This flag results in an extra traversal of the autograd graph every iteration,  which can adversely affect performance. If your model indeed never has any unused parameters in the forward pass, consider turning this flag off. Note that this warning may be a false positive if your model has flow control causing later iterations to have unused parameters. (function operator())
+[rank1] update done in 29.2s (epochs 4, steps 56, cumulative steps 56, skipped 0, global matches 2048)
+[rank1] iteration 1 complete in 47.7s, digests equal
+[rank1] iteration 2/3: collected 1024 games / 26975 rows in 11.0s
+[rank1] recompute gate: 576 rows max|diff|=2.718e-05 (tol 1.0e-03) within=True
+[rank1] update done in 29.1s (epochs 4, steps 56, cumulative steps 112, skipped 0, global matches 4096)
+[rank1] iteration 2 complete in 47.0s, digests equal
+[rank1] iteration 3/3: collected 1024 games / 27406 rows in 11.8s
+[rank1] recompute gate: 576 rows max|diff|=4.840e-05 (tol 1.0e-03) within=True
+[rank1] update done in 29.0s (epochs 4, steps 56, cumulative steps 168, skipped 0, global matches 6144)
+[rank1] iteration 3 complete in 47.6s, digests equal
+[rank1] rank metrics written to /home/minidc/Desktop/PokeAgent3.0/runs/perf/cooling_20261011/persistent3.json.rank1.json

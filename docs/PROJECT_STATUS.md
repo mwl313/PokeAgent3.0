@@ -11,6 +11,8 @@
 
 ## 1. 진행 지도 — 브랜치와 문서 (2026-10-09 밤 갱신, 새 에이전트 필독)
 
+> **2026-10-11 미니DC 갱신:** 현재 하드웨어 정본은 `docs/HARDWARE_MINIDC.md` — 두 V100 모두 **175W**, 사용자 냉각 개선 확인. 코드 `6eb48c0` clean 반복 측정: 재시작 중앙값 **36.563 games/s**, 지속 실행 3세트 steady 가중 **43.477 games/s**. 상세는 `docs/perf/COOLED_DUAL_V100_BOTTLENECK_REPORT_2026-10-11.md`. 진단에서 Poltergeist 이후 Item(0) 이벤트가 관측 catalogue 검증에 걸리는 오류를 CPU-only snapshot으로 재현했으므로 장기 학습 안정성 완료로 해석하지 않는다.
+
 ### 1.1 브랜치 지도
 
 | 항목 | 값 |
@@ -26,7 +28,7 @@
 1. `docs/PROJECT_STATUS.md` — 이 문서 (살아있는 현황판)
 2. `docs/research/TRAINING_APPROACH_v1_FINAL_20261009.md` — 훈련 방식 리서치 정본 (+ `research_ecosystem.md`, `research_sample_efficiency.md`, `draft_TRAINING_APPROACH_v0.md`)
 3. `docs/spec/fullspec-1.1-minidc-20261006/` — 설계 스펙 (Full Spec 1.1)
-4. `docs/perf/` — 최신: `V6_PPO_THROUGHPUT_REPORT.md` (동일 세션 3회 비교 및 검증), 이전: `V5_ROLLING_SLOT_ENGINE_FIX.md`, `V5_F16_WIRE_POC.md`
+4. `docs/perf/` — 최신: `COOLED_DUAL_V100_BOTTLENECK_REPORT_2026-10-11.md` (175W/175W, 지속/재시작·dual GPU profiler·통신·오류 재현), 이전: `V6_PPO_THROUGHPUT_REPORT.md`, `V5_ROLLING_SLOT_ENGINE_FIX.md`, `V5_F16_WIRE_POC.md`
 5. `docs/PokeAgent3_Optimization_Roadmap_2026-10-09.md` — 로드맵 (옵션 A-D, STEP 1-6)
 
 ## 2. 여정 요약 (여태 무엇을 했나)
@@ -111,3 +113,4 @@
 - 2026-10-09: 최초 작성 + main 승격 (아리아 작성, 미니DC 코덱스 세션 실행).
 - 2026-10-09 (밤): v5 체인 반영(s5a 종결, 최종 32.50 games/s), 진행 지도(브랜치/문서) 갱신, 훈련 리서치 v1 정본 `docs/research/` 커밋.
 - 2026-10-09 (미니DC v6): 로컬 최적화 코드 3fbc749, clean 3회 패널 37.23 games/s, 현황/상한 추정 교정. main 변경 없음.
+- 2026-10-11: 하드웨어 정본 175W/175W·냉각 개선 반영, 코드6eb48c0 전 구간 재측정 36.563 cold / 43.477 steady games/s. Poltergeist Item(0) observation 오류를 별도 진단·CPU snapshot에서 재현. 학습/엔진 동작 수정 없음.

@@ -1,0 +1,55 @@
+{
+  "scopes": {
+    "minibatch_select": {
+      "calls": 2,
+      "cuda_event_ms": 5.137376070022583,
+      "cpu_wall_s": 0.0051362220001465175
+    },
+    "collective/all_reduce_tensor": {
+      "calls": 2,
+      "cuda_event_ms": 1.6782079935073853,
+      "cpu_wall_s": 0.0007021599999461614
+    },
+    "encoder": {
+      "calls": 4,
+      "cuda_event_ms": 246.30707550048828,
+      "cpu_wall_s": 0.05719292499998119
+    },
+    "scorer/build_keys": {
+      "calls": 16,
+      "cuda_event_ms": 27.524831891059875,
+      "cpu_wall_s": 0.04308286899959057
+    },
+    "scorer/score_keys": {
+      "calls": 16,
+      "cuda_event_ms": 4.359360009431839,
+      "cpu_wall_s": 0.012286164001125144
+    },
+    "scorer/advance_keys": {
+      "calls": 12,
+      "cuda_event_ms": 0.9497279897332191,
+      "cpu_wall_s": 0.005574546000389091
+    },
+    "forward": {
+      "calls": 4,
+      "cuda_event_ms": 287.6020812988281,
+      "cpu_wall_s": 0.20164522799950646
+    },
+    "backward": {
+      "calls": 4,
+      "cuda_event_ms": 747.6857604980469,
+      "cpu_wall_s": 0.5927464540000074
+    },
+    "collective/all_reduce_flag": {
+      "calls": 2,
+      "cuda_event_ms": 0.04153599962592125,
+      "cpu_wall_s": 0.0005479709998326143
+    },
+    "optimizer": {
+      "calls": 2,
+      "cuda_event_ms": 11.280384063720703,
+      "cpu_wall_s": 0.011247042999912082
+    }
+  },
+  "note": "Nested scopes overlap. Events cover current-stream elapsed time including dependencies; only active sample steps."
+}

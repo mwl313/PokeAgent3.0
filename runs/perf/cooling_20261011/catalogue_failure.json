@@ -1,0 +1,25 @@
+{
+  "error": "observation catalogue ID",
+  "failures": [
+    {
+      "handle": [
+        942,
+        2
+      ],
+      "side": 0,
+      "error": "observation catalogue ID",
+      "snapshot": "/home/minidc/Desktop/PokeAgent3.0/runs/perf/cooling_20261011/catalogue_bad_slot942_side0.snapshot",
+      "snapshot_sha256": "5ad0ca45fb0be8df5d1970d10e29d3e6110ca5ee9131123ef0477aa415c07f01"
+    },
+    {
+      "handle": [
+        942,
+        2
+      ],
+      "side": 1,
+      "error": "observation catalogue ID",
+      "snapshot": "/home/minidc/Desktop/PokeAgent3.0/runs/perf/cooling_20261011/catalogue_bad_slot942_side1.snapshot",
+      "snapshot_sha256": "5ad0ca45fb0be8df5d1970d10e29d3e6110ca5ee9131123ef0477aa415c07f01"
+    }
+  ]
+}

@@ -220,7 +220,7 @@ hardware:
   rollout_host_budget_gib: 24
   pinned_staging_budget_gib_total: 1
   terminate_unrelated_processes: false
-  host_profile_source: user_handoff_2026-10-06_not_independently_measured_here
+  host_profile_source: user_confirmed_2026-10-11_and_live_nvidia_smi_see_docs_HARDWARE_MINIDC
   compute_capability: '7.0'
   gpu_p2p_available: false
   gpu_topology: SYS
@@ -228,7 +228,7 @@ hardware:
   inter_gpu_bandwidth_gbps_reported: 4.0
   gpu_power_limits_watts:
   - 175
-  - 150
+  - 175
   power_limit_changes_authorized: false
   primary_learner_device: 0
   rank_numa_map:
@@ -250,7 +250,7 @@ hardware:
   single_learner_microbatch: 1024
   single_learner_accumulation: 16
   single_learner_secondary_gpu_role: same_version_rollout_and_frozen_evaluation
-  thermal_asymmetry: gpu1_may_throttle_preserve_175_150W_do_not_raise_limits
+  thermal_asymmetry: both_well_cooled_user_confirmed_2026-10-11_preserve_175_175W_monitor_throttle
   host_memory_allocation: numa_local_per_rank_including_staging
   startup_resource_check: nvidia_smi_occupancy_available_ram_and_free_disk_once
   reported_free_disk_gb_at_handoff: 89

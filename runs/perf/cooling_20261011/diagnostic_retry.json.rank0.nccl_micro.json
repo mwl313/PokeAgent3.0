@@ -1,0 +1,40 @@
+{
+  "results": [
+    {
+      "label": "one_float",
+      "payload_bytes": 4,
+      "repeats": 20,
+      "total_wall_s": 0.0038359209997906873,
+      "mean_cuda_ms": 0.18516959846019745,
+      "min_cuda_ms": 0.15775999426841736,
+      "max_cuda_ms": 0.3136639893054962,
+      "payload_GB_per_s": 2.1601818188636443e-05
+    },
+    {
+      "label": "two_floats",
+      "payload_bytes": 8,
+      "repeats": 20,
+      "total_wall_s": 0.0038126560002638143,
+      "mean_cuda_ms": 0.184926401078701,
+      "min_cuda_ms": 0.17068800330162048,
+      "max_cuda_ms": 0.2160000056028366,
+      "payload_GB_per_s": 4.326045363633806e-05
+    },
+    {
+      "label": "model_gradient",
+      "payload_bytes": 35035852,
+      "repeats": 20,
+      "total_wall_s": 0.33886507700026414,
+      "mean_cuda_ms": 16.93680500984192,
+      "min_cuda_ms": 15.99779224395752,
+      "max_cuda_ms": 18.618976593017578,
+      "payload_GB_per_s": 2.068622268464494
+    }
+  ],
+  "transport_env": {
+    "NCCL_P2P_DISABLE": "1",
+    "NCCL_SHM_DISABLE": "0",
+    "NCCL_SOCKET_IFNAME": "lo"
+  },
+  "note": "Isolated repeated SUM, not a deduction from production wall. CUDA events measure current-stream dependencies."
+}

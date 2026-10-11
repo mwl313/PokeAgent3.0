@@ -1,0 +1,11 @@
+{
+  "measured_code_sha": "6eb48c02f51404ded0ba7b89fa7edd5b17d1d4a6",
+  "recorded_scripts_sha256": {
+    "scripts/perf_cooling_measure.py": "f9df4847d50e52920102a635a5719792e7fb28cb01c0260de573ef69378a7c5f",
+    "scripts/perf_cooling_diagnostic.py": "31da010baef5bbad5ba94a7fda1d861967376aebb24d6ba45fc2b4b2d408a418",
+    "scripts/perf_cooling_analyze.py": "d3f1380d5de8f624da0982ad2387e7993ed859d690cc820d46bf2f22a728ff1a",
+    "scripts/perf_catalogue_snapshot_repro.py": "7a9f5cca1878b8cf576c3ea9f4136dae0e303f44768fe1c031f8a68381e9f4db",
+    "scripts/perf_catalogue_checkpoint_repro.py": "85c9970032ce0d216fd5176c13620339d8c1bc78eb0a5c1a889d00b46d768eb4"
+  },
+  "note": "Measurement/diagnostic tools ran from /tmp and were copied unchanged to scripts. Final analyzer additionally persists original rank report mtimes in phase_alignment.json for reproducible phase classification after Git checkout. Initial failed diagnostic profiled iteration 2; successful final diagnostic profiles iteration 1. Learning/engine code unchanged."
+}

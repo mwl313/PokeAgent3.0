@@ -1,0 +1,16 @@
+{
+  "requires_cuda": false,
+  "requires_profiler": false,
+  "sides": [
+    {
+      "side": 0,
+      "reproduced": true,
+      "error": "observation catalogue ID"
+    },
+    {
+      "side": 1,
+      "reproduced": true,
+      "error": "observation catalogue ID"
+    }
+  ]
+}

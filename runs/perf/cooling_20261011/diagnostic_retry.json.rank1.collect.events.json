@@ -1,0 +1,25 @@
+{
+  "scopes": {
+    "encoder": {
+      "calls": 4,
+      "cuda_event_ms": 211.65616416931152,
+      "cpu_wall_s": 0.04555090700068831
+    },
+    "scorer/build_keys": {
+      "calls": 6,
+      "cuda_event_ms": 17.023008346557617,
+      "cpu_wall_s": 0.016166474999863567
+    },
+    "scorer/score_keys": {
+      "calls": 6,
+      "cuda_event_ms": 5.007968038320541,
+      "cpu_wall_s": 0.005345906000002287
+    },
+    "scorer/advance_keys": {
+      "calls": 6,
+      "cuda_event_ms": 3.6777279675006866,
+      "cpu_wall_s": 0.0037163629999668046
+    }
+  },
+  "note": "Nested scopes overlap. Events cover current-stream elapsed time including dependencies; only active sample steps."
+}

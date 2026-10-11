@@ -1,0 +1,10 @@
+{
+  "profiler": false,
+  "checkpoint": "diagnostic_failed_first.pt",
+  "seed_first": 20261010,
+  "seed_second": 20261012,
+  "first_rows": 27279,
+  "reproduced": true,
+  "error": "observation catalogue ID",
+  "traceback": "Traceback (most recent call last):\n  File \"/tmp/pa3_catalogue_repro.py\", line 40, in <module>\n    second=collector(20261012); b=second.collect(1024)\n                                  ^^^^^^^^^^^^^^^^^^^^\n  File \"/home/minidc/Desktop/PokeAgent3.0/agent/train/native_collector.py\", line 753, in collect\n    progressed = self._collect_round(\n                 ^^^^^^^^^^^^^^^^^^^^\n  File \"/home/minidc/Desktop/PokeAgent3.0/agent/train/native_collector.py\", line 432, in _collect_round\n    fixed_bytes, ragged_bytes = self.engine.observe_fixed_batch(handle_rows, side_rows)\n                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/pa3_catalogue_repro.py\", line 13, in observe_fixed_batch\n    try: return self.engine.observe_fixed_batch(handles,sides)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: observation catalogue ID\n"
+}
