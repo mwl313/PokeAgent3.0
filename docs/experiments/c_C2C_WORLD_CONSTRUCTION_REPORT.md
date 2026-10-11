@@ -2,6 +2,13 @@
 
 **Status:** `C2C_PREVIEW_WORLD_ONLY / MIDBATTLE_NOT_VERIFIED / NO_SEARCH / NO_TEACHER / NO_DISTILLATION`
 
+**Implementation commit:** `7771f667a491ba253881bc13991cd1b98dd6e985`
+
+**Files changed:** `engine/src/search/belief.rs`,
+`engine/src/search/information_set.rs`, `engine/src/search/mod.rs`,
+`engine/src/search/world.rs`, `engine/tests/search_belief.rs`,
+`engine/tests/search_world.rs`, and this report.
+
 ## Scope
 
 This milestone adds a restricted, test-oriented constructor for a clean team
