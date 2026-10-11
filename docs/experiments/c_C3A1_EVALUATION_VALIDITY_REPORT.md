@@ -4,7 +4,7 @@
 
 **Base:** `5ffed3d934ba30905549e95b049f3ed9fbcce8c9`
 
-**Implementation commit:** `d61af37` (final SHA recorded after report update)
+**Implementation commit:** `ac2266e` (final commit for this milestone)
 
 ## Purpose
 
