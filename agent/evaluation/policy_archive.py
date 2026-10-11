@@ -6,13 +6,13 @@ immutable storage.  Content-addressed copies are optional for new artifacts.
 """
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 import shutil
 import tempfile
 
 import torch
+from agent.evaluation.identity import canonical_model_digest, sha256_file, MODEL_DIGEST_ALGORITHM
 
 ARCHIVE_SCHEMA = "pa3-policy-archive-v1"
 OBSERVATION_SCHEMA = "pa3-entity-observation-v1"
@@ -20,19 +20,11 @@ ACTION_SCHEMA = "atomic-action-v1"
 
 
 def _sha256(path):
-    digest = hashlib.sha256()
-    with open(path, "rb") as handle:
-        for chunk in iter(lambda: handle.read(1 << 20), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+    return sha256_file(path)
 
 
 def _model_digest(model):
-    digest = hashlib.sha256()
-    for name in sorted(model):
-        digest.update(name.encode())
-        digest.update(model[name].detach().cpu().contiguous().numpy().tobytes())
-    return digest.hexdigest()
+    return canonical_model_digest(model)
 
 
 def _resolve(registry_path, entry, key="path"):
@@ -104,15 +96,21 @@ def register_checkpoint(registry_path, *, policy_id, label, checkpoint_path,
     old = registry["policies"].get(policy_id)
     if old and old["file_sha256"] != file_hash:
         raise ValueError("immutable archive entry cannot be replaced by a different checkpoint")
+    stored_path = checkpoint_path
+    if old and not os.path.isabs(old.get("path", "")) and storage_mode == "verification-only":
+        stored_path = os.path.relpath(checkpoint_path, os.path.dirname(registry_path))
     entry = {
-        "id": policy_id, "label": label, "path": checkpoint_path, "storage_mode": storage_mode,
+        "id": policy_id, "label": label, "path": stored_path, "storage_mode": storage_mode,
         "file_sha256": file_hash, "model_digest": _model_digest(payload["learner"]["model"]),
+        "model_digest_algorithm": MODEL_DIGEST_ALGORITHM,
         "committed_matches": committed_matches if committed_matches is not None else payload.get("accounting", {}).get("committed_matches"),
         "source_sha": source_sha or payload.get("source_sha"), "model_config_hash": payload.get("model_config_hash"),
         "action_schema_hash": payload.get("action_schema_hash"),
         "observation_schema": OBSERVATION_SCHEMA, "action_schema": ACTION_SCHEMA,
     }
-    if rank_peer_path: entry["rank_peer_path"] = os.path.abspath(os.fspath(rank_peer_path))
+    if rank_peer_path:
+        peer = os.path.abspath(os.fspath(rank_peer_path))
+        entry["rank_peer_path"] = os.path.relpath(peer, os.path.dirname(registry_path)) if old and not os.path.isabs(old.get("rank_peer_path", "")) else peer
     registry["policies"][policy_id] = entry
     if latest: registry["latest"] = policy_id
     if incumbent: registry["incumbent"] = policy_id
@@ -127,6 +125,8 @@ def verify_entry(registry_path, entry):
     if _sha256(path) != entry["file_sha256"]: raise ValueError(f"archived checkpoint SHA mismatch: {entry['id']}")
     payload = _load_envelope(path)
     _validate_rank_digests(payload, entry["id"])
+    if entry.get("model_digest_algorithm", MODEL_DIGEST_ALGORITHM) != MODEL_DIGEST_ALGORITHM:
+        raise ValueError(f"unsupported archived model digest algorithm: {entry['id']}")
     if _model_digest(payload["learner"]["model"]) != entry["model_digest"]:
         raise ValueError(f"archived model digest mismatch: {entry['id']}")
     for key in ("source_sha", "model_config_hash", "action_schema_hash"):

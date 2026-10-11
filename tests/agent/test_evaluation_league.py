@@ -6,8 +6,10 @@ import torch
 
 from agent.evaluation.fixed_policy import build_fixture_manifest
 from agent.evaluation.league import matchup_matrix, regression_report, run_pair
+from agent.evaluation.identity import canonical_model_digest
+from agent.evaluation.frozen_policy import FrozenPPOPolicy
 from agent.evaluation.policy_archive import register_checkpoint, verify_entry
-from agent.evaluation.schedule import boundary_jobs, complete_job, pending_jobs
+from agent.evaluation.schedule import bind_job, boundary_jobs, complete_job, pending_jobs
 from agent.mock_engine import MockNativeEngine
 from agent.model import build_model
 
@@ -26,11 +28,19 @@ def test_schedule_all_cycles_restart_missing_and_idempotent(tmp_path):
     created = boundary_jobs(state, 802256, checkpoint={"id": "safe"})
     assert [(x["id"], x["kind"]) for x in created] == [("light:402256", "light"), ("light:452256", "light"), ("light:502256", "light"), ("full:552256", "full"), ("light:602256", "light"), ("light:652256", "light"), ("light:702256", "light"), ("full:752256", "full"), ("light:802256", "light")]
     assert not boundary_jobs(state, 802256, checkpoint={"id": "safe"})
-    receipt = {"status": "success", "identity": "r"}
-    assert complete_job(state, "light:402256", receipt)["status"] == "completed"
-    assert complete_job(state, "light:402256", receipt)["status"] == "completed"
-    with pytest.raises(ValueError): complete_job(state, "light:402256", {"status": "success", "identity": "other"})
-    assert len(pending_jobs(state)) == 8  # state survives a fresh read
+    assert len(pending_jobs(state)) == 9
+    # Crossed historical boundaries are intentionally deferred, never claimed
+    # to have been evaluated by the newer 802,256 checkpoint.
+    assert pending_jobs(state)[0]["missing_snapshot"]
+    exact = tmp_path / "exact.json"
+    checkpoint = {"file_sha256": "sha"}
+    boundary_jobs(exact, 402256, checkpoint=checkpoint)
+    plan = {"candidate_id": "c", "candidate_model_digest": "d", "panels": [{"opponent_id": "o", "games": 2}]}
+    bind_job(exact, "light:402256", plan)
+    receipt = {"status": "success", "job_id": "light:402256", "scheduled_boundary": 402256, "checkpoint_sha256": "sha", "candidate_id": "c", "candidate_model_digest": "d", "matchups": [{"opponent_id": "o", "matches": 2, "identity": "r", "fixture_manifest_hash": "f", "status": "success"}]}
+    assert complete_job(exact, "light:402256", receipt)["status"] == "completed"
+    assert complete_job(exact, "light:402256", receipt)["status"] == "completed"
+    with pytest.raises(ValueError): complete_job(exact, "light:402256", {**receipt, "checkpoint_sha256": "other"})
     missing = tmp_path / "missing.json"
     assert boundary_jobs(missing, 402256)[0]["missing_snapshot"]
     assert pending_jobs(missing)[0]["status"] == "deferred"
@@ -60,3 +70,12 @@ def test_archive_sha_mismatch_rejected_without_touching_original(tmp_path):
     _checkpoint(checkpoint); register_checkpoint(registry, policy_id="copy", label="copy", checkpoint_path=checkpoint)
     data = json.load(open(registry)); torch.save({"not": "the registered artifact"}, checkpoint)
     with pytest.raises(ValueError, match="SHA mismatch"): verify_entry(registry, data["policies"]["copy"])
+
+
+def test_canonical_digest_matches_frozen_policy_and_is_order_independent():
+    model = build_model()
+    digest = canonical_model_digest(model.state_dict())
+    reordered = {key: model.state_dict()[key] for key in reversed(list(model.state_dict()))}
+    assert digest == canonical_model_digest(reordered)
+    adapter = FrozenPPOPolicy(model, device="cpu")
+    assert adapter.identity.model_digest == digest

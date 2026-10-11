@@ -1,0 +1,21 @@
+{
+  "schema": "pa3-a8-batched-benchmark-v1",
+  "host": "MiniDC",
+  "checkpoint_pair": ["a5_control_352256", "a5_historical_352256"],
+  "fixture_seeds": {"16": 116, "32": 132, "64": 164, "128": 228},
+  "games_per_run": 128,
+  "sequential_reference": {"games": 32, "seconds": 7.245313666004222, "games_per_second": 4.416647984496156, "errors": 0, "illegal_actions": 0},
+  "batched": [
+    {"batch_size": 16, "games": 128, "seconds": 5.425374730999977, "games_per_second": 23.592840374439483, "errors": 0, "illegal_actions": 0},
+    {"batch_size": 32, "games": 128, "seconds": 3.4584423379999976, "games_per_second": 37.01088163118598, "errors": 0, "illegal_actions": 0},
+    {"batch_size": 64, "games": 128, "seconds": 2.9234057589999907, "games_per_second": 43.78454807579806, "errors": 0, "illegal_actions": 0},
+    {"batch_size": 128, "games": 128, "seconds": 2.0519648449999863, "games_per_second": 62.379236326537, "errors": 0, "illegal_actions": 0}
+  ],
+  "determinism": {"same_seed_batch_16_vs_128_games": 16, "outcomes_identical": true, "illegal_actions": 0},
+  "heuristic_reference": {"games": 8, "sequential_and_batched_outcomes_identical": true, "errors": 0, "illegal_actions": 0},
+  "notes": [
+    "The historical 2,048-game sequential value is 453.8 seconds / 4.51 games/sec; the fresh sequential run here is a bounded 32-game reference.",
+    "The 128-game batch runs are representative full native matches but are not a fresh 2,048-game production panel.",
+    "GPU peak memory was not captured by the receipt wrapper on this run; this remains incomplete for A8 acceptance."
+  ]
+}

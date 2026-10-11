@@ -45,11 +45,14 @@ def boundary_jobs(state_path, committed_matches, *, anchor=352256, light_interva
             kind = "full" if (index * light_interval) % full_interval == 0 else "light"
             identity = f"{kind}:{boundary}"
             if identity not in state["jobs"]:
+                exact_snapshot = checkpoint is not None and boundary == now
                 state["jobs"][identity] = {"id": identity, "kind": kind, "scheduled_boundary": boundary,
-                    "status": "pending" if checkpoint else "deferred", "captured_checkpoint": checkpoint,
-                    "captured_matches": now if checkpoint else None,
-                    "missing_snapshot": checkpoint is None,
-                    "reason": None if checkpoint else "no safe boundary checkpoint was supplied"}
+                    "status": "pending" if exact_snapshot else "deferred", "captured_checkpoint": checkpoint if exact_snapshot else None,
+                    "captured_matches": now if exact_snapshot else None,
+                    "missing_snapshot": not exact_snapshot,
+                    "reason": None if exact_snapshot else (
+                        "checkpoint crossed this boundary; historical snapshot is unavailable" if checkpoint else
+                        "no safe boundary checkpoint was supplied")}
                 created.append(dict(state["jobs"][identity]))
     _save(state_path, state)
     return created
@@ -60,12 +63,55 @@ def pending_jobs(state_path, *, anchor=352256, light_interval=50000, full_interv
     return [dict(job) for job in state["jobs"].values() if job["status"] in {"pending", "deferred", "failed"}]
 
 
+def bind_job(state_path, job_id, expected, *, anchor=352256, light_interval=50000, full_interval=200000):
+    """Pin candidate/panel metadata before any evaluator is launched."""
+    state = _load(state_path, anchor=anchor, light_interval=light_interval, full_interval=full_interval)
+    job = state["jobs"].get(job_id)
+    if job is None: raise ValueError("unknown evaluation job")
+    if job.get("missing_snapshot"): raise ValueError("cannot bind unavailable historical snapshot")
+    if job.get("expected") and job["expected"] != expected:
+        raise ValueError("job already has a conflicting evaluation plan")
+    job["expected"] = expected
+    _save(state_path, state)
+    return dict(job)
+
+
+def fail_job(state_path, job_id, reason, *, anchor=352256, light_interval=50000, full_interval=200000):
+    state = _load(state_path, anchor=anchor, light_interval=light_interval, full_interval=full_interval)
+    job = state["jobs"].get(job_id)
+    if job is None: raise ValueError("unknown evaluation job")
+    if job.get("status") != "completed":
+        job["status"] = "failed"; job["reason"] = str(reason); _save(state_path, state)
+    return dict(job)
+
+
 def complete_job(state_path, job_id, receipt, *, anchor=352256, light_interval=50000, full_interval=200000):
     state = _load(state_path, anchor=anchor, light_interval=light_interval, full_interval=full_interval)
     job = state["jobs"].get(job_id)
     if job is None: raise ValueError("unknown evaluation job")
-    if not isinstance(receipt, dict) or receipt.get("status") not in {"success", "evaluation_invalid"}:
-        raise ValueError("completion requires a terminal evaluation receipt")
+    if not isinstance(receipt, dict) or receipt.get("status") != "success":
+        raise ValueError("completion requires a successful evaluation receipt")
+    expected = job.get("expected")
+    if job.get("missing_snapshot") or not job.get("captured_checkpoint"):
+        raise ValueError("cannot complete an evaluation without its exact checkpoint snapshot")
+    if receipt.get("job_id") != job_id or receipt.get("scheduled_boundary") != job["scheduled_boundary"]:
+        raise ValueError("receipt does not belong to this scheduled job")
+    checkpoint = job["captured_checkpoint"]
+    if receipt.get("checkpoint_sha256") != checkpoint.get("file_sha256"):
+        raise ValueError("receipt checkpoint identity mismatch")
+    if expected and receipt.get("candidate_id") != expected.get("candidate_id"):
+        raise ValueError("receipt candidate identity mismatch")
+    if expected and receipt.get("candidate_model_digest") != expected.get("candidate_model_digest"):
+        raise ValueError("receipt candidate model digest mismatch")
+    expected_panels = (expected or {}).get("panels", [])
+    observed = receipt.get("matchups", [])
+    if len(observed) != len(expected_panels):
+        raise ValueError("receipt does not contain every required matchup")
+    for panel, result in zip(expected_panels, observed):
+        if result.get("opponent_id") != panel["opponent_id"] or result.get("matches") != panel["games"]:
+            raise ValueError("receipt matchup panel mismatch")
+        if result.get("status") != "success" or not result.get("identity") or not result.get("fixture_manifest_hash"):
+            raise ValueError("receipt contains an invalid matchup")
     if job["status"] == "completed":
         if job.get("receipt") != receipt: raise ValueError("conflicting duplicate evaluation completion")
         return dict(job)

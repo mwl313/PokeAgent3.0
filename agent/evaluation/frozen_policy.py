@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import hashlib
 import os
 from dataclasses import dataclass
 
 import torch
 
 from agent.model import PA3Config, build_model
+from agent.evaluation.identity import canonical_model_digest, sha256_file
 from agent.model.pa3_model import PA3Model
 from agent.train.native_collector import NativeCollector, NativeCollectorConfig
 from agent.types.observation import ObservationLayout
@@ -36,12 +36,8 @@ class FrozenPPOPolicy:
         self.device = torch.device(device)
         for parameter in self.model.parameters():
             parameter.requires_grad_(False)
-        digest = hashlib.sha256()
-        for name, value in self.model.state_dict().items():
-            digest.update(name.encode())
-            digest.update(value.detach().cpu().contiguous().numpy().tobytes())
         self.identity = identity or PolicyIdentity(
-            INTERFACE_VERSION, digest.hexdigest(), None, OBSERVATION_SCHEMA, ACTION_SCHEMA
+            INTERFACE_VERSION, canonical_model_digest(self.model.state_dict()), None, OBSERVATION_SCHEMA, ACTION_SCHEMA
         )
         self._helper = NativeCollector.__new__(NativeCollector)
         self._helper.config = NativeCollectorConfig(record_rows=False)
@@ -59,7 +55,7 @@ class FrozenPPOPolicy:
             raise ValueError("checkpoint does not contain an experimental learner model")
         model = build_model(config or PA3Config(), device=device)
         model.load_state_dict(state, strict=True)
-        file_hash = hashlib.sha256(open(path, "rb").read()).hexdigest()
+        file_hash = sha256_file(path)
         adapter = cls(model, device=device)
         adapter.identity = PolicyIdentity(INTERFACE_VERSION, adapter.identity.model_digest,
                                           file_hash, OBSERVATION_SCHEMA, ACTION_SCHEMA)
