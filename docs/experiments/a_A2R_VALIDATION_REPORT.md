@@ -1,64 +1,20 @@
-# A2-R end-to-end continuation validation
+# A2-R clean-HEAD validation receipt
 
-Date: 2026-10-11. Source branch: `research/a-ppo-efficiency`.
+Date: 2026-10-11. Branch: `research/a-ppo-efficiency`. Executed clean commit: `f8d9a00bd6a2d83cffda10023ceb374a5d16bc6d` (`git_dirty=false`).
 
-The bounded GPU run was executed while the A2-R changes were present but
-before the final commit (`git_sha=166b6fe`, dirty worktree). The clean final
-implementation is `41f4e74`; rerun the same bounded gate from that clean SHA
-before treating this as an integration receipt.
-
-The experimental mode is opt-in through `scripts/run_ddp_ppo.py`:
+The bounded gate used two Tesla V100 ranks, seed `20261009`, 4 games/rank, 4 static environments/rank, one native worker/rank, global minibatch 8, microbatch 4, PPO epochs 2, `--no-recompute`, and `--batch-cache none`.
 
 ```text
---experimental-checkpoint PREFIX
---experimental-resume PREFIX
---dataset-manifest PATH
+PYTHONPATH=engine/python:. /home/minidc/Desktop/PokeAgent3.0/.venv/bin/python \
+  scripts/run_ddp_ppo.py --games 4 --envs 4 --workers 1 --minibatch 8 \
+  --microbatch 4 --epochs 2 --iterations 2 --no-recompute \
+  --batch-cache none --report runs/experiments/a/a2r_final_20261011/uninterrupted.json
 ```
 
-Each rank writes/reads `PREFIX.rankN`. Normal `--checkpoint` behavior is
-unchanged. The mode uses static collector slots, saves only after collection
-has drained all battles, the PPO update has completed, and all rank model and
-optimizer digests agree. DDP is initialized again on every process; no
-communicator or reducer is serialized.
+The resumed arm used the same command with `--iterations 1` and `--experimental-checkpoint`, then a fresh process with `--experimental-resume` and `--iterations 1`. Environment: Python 3.12.3, PyTorch 2.14.0+cu126, CUDA 12.6, two V100s, NUMA binding enabled, static collector slots, current opponent only, and the repository dataset manifest.
 
-## Bounded GPU comparison
+Uninterrupted and resumed second boundaries both produced 8 games, 207 rows, 16 committed matches, 55 second-iteration optimizer steps, equal model tensors, equal learner reports, equal rank digests within each process, and zero operational errors. The owned shuffle RNG and checkpoint contracts were restored. The optimizer digest differed after the fresh CUDA process restart; the measured difference is sub-ULP (`1.3878e-17` in the Adam second moment), so this remains `BOUNDARY_EQUIVALENT`, not `BIT_EXACT`.
 
-Both runs used two Tesla V100s, the same source checkout, seed `20261009`,
-`games=4`, `envs=4`, `workers=1`, `minibatch=8`, `microbatch=4`, `epochs=2`,
-static slots, no recompute gate, and the same dataset manifest.
+Both rank envelopes were independently inspected. They agree on source SHA, iteration 1, committed-match clock 8, current-only opponent manifest, the collector contract hash, and generation. Each contains the complete observed drain proof: `complete=true`, `in_flight_battles=0`, emitted by `NativeCollector.collect` only after all static handles reported termination. The launcher now fails closed if that runtime proof is absent.
 
-Run A was two uninterrupted iterations. Run B was one iteration, process
-exit, then one restored iteration from the two rank envelopes.
-
-| Metric | Uninterrupted iteration 2 | Restored iteration |
-|---|---:|---:|
-| rank 0 games / rows | 4 / 109 | 4 / 109 |
-| rank 1 games / rows | 4 / 98 | 4 / 98 |
-| committed matches | 16 | 16 |
-| optimizer steps cumulative | 102 | 102 |
-| operational errors | 0 | 0 |
-| policy/value report | equal | equal |
-| model digest | equal | equal |
-| owned shuffle RNG state | equal | equal |
-| optimizer digest | differs only in one `exp_avg_sq` value by `1.3878e-17` | same result on both ranks |
-
-The model tensors were byte-identical and the second-iteration row counts,
-decisions, reports and outcomes matched. The optimizer digest is not
-byte-identical because CUDA execution produced a sub-ULP Adam second-moment
-difference after process restart. This is not claimed as bit exact.
-
-**Classification: `BOUNDARY_EQUIVALENT`.** The validated claim is that a
-completed iteration boundary can be restored with identical contract state,
-RNG streams, data counters and model trajectory at this bounded workload,
-within the measured optimizer tolerance. It does not establish bit-exact
-floating-point continuation across a fresh CUDA process.
-
-## Remaining limitations
-
-The collector restart contract is deterministic only at a drained static-slot
-boundary. In-flight native handles are rejected; rolling slots are rejected in
-experimental mode. Historical opponents are still required to be empty and
-their manifest is checked. A future exactness pass would need deterministic
-CUDA/collective controls or a documented optimizer-state tolerance.
-
-No 4-vs-2 learning comparison was started.
+This receipt does not authorize the 4-versus-2 PPO experiment or long RL training.
