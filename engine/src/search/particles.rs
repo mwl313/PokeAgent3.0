@@ -1769,6 +1769,7 @@ mod tests {
         let mut proposal_diverse_boundaries = 0usize;
         let mut chance_diverse_boundaries = 0usize;
         let mut public_outcome_diverse_boundaries = 0usize;
+        let mut mismatch_totals = BTreeMap::<ObservationMismatchCategory, usize>::new();
         let mut by_condition = BTreeMap::<(bool, OpponentProposal), [usize; 7]>::new();
         for side in [SideId::P1, SideId::P2] {
             for out_of_prior in [false, true] {
@@ -1841,6 +1842,9 @@ mod tests {
                                 );
                                 public_outcome_diverse_boundaries +=
                                     usize::from(result.diagnostics.distinct_public_outcomes > 1);
+                                for (category, count) in &result.diagnostics.mismatch_categories {
+                                    *mismatch_totals.entry(*category).or_default() += count;
+                                }
                                 results.push(result);
                                 if results.last().unwrap().conditioned_observation.is_none() {
                                     break;
@@ -1931,6 +1935,9 @@ mod tests {
                  collapsed_boundaries={} diagnosed_rejections={} attempted_boundaries={}",
                 stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6]
             );
+        }
+        for (category, count) in mismatch_totals {
+            println!("C3b-1.2 mismatch {category:?} count={count}");
         }
     }
 }
