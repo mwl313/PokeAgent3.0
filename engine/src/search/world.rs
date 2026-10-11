@@ -346,6 +346,18 @@ impl SyntheticEpisode {
             }
         }
         .ok_or_else(|| invalid_action("baseline opponent has no legal completion"))?;
+        self.submit_root_with_opponent_actions(root_actions, opponent_actions)
+    }
+
+    /// Coordinator-only submission path used after a legal hypothetical
+    /// opponent proposal has already been constructed once for diagnostics.
+    /// The action never appears in `EpisodeBoundary` or any root DTO.
+    pub(crate) fn submit_root_with_opponent_actions(
+        &mut self,
+        root_actions: Vec<crate::actions::AtomicAction>,
+        opponent_actions: Vec<crate::actions::AtomicAction>,
+    ) -> Result<EpisodeBoundary, EpisodeError> {
+        let opponent = self.root_side.other();
         self.submit_joint(&[
             SideChoice {
                 side: self.root_side,
@@ -372,6 +384,14 @@ impl SyntheticEpisode {
                 sampled_complete_legal_actions(&opponent_view.request, proposal_seed)
             }
         }
+    }
+
+    #[cfg(test)]
+    pub(crate) fn checkpoint_bytes_for_test(&self) -> Result<Vec<u8>, EpisodeError> {
+        self.state.snapshot().map_err(|error| EpisodeError {
+            code: EpisodeFailureCode::RollbackError,
+            message: error.to_string(),
+        })
     }
 
     /// Internal rollout hook: both sides use the transparent complete-action
