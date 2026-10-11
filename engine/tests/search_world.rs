@@ -97,10 +97,12 @@ fn genuinely_different_hidden_opponent_builds_share_the_same_root_contract() {
     };
     let a = PreviewWorld::construct(&dex, &first, &samples.hypotheses[0], 17)
         .unwrap()
-        .into_episode(dex.clone());
+        .into_episode(dex.clone())
+        .unwrap();
     let b = PreviewWorld::construct(&dex, &second, &samples.hypotheses[0], 17)
         .unwrap()
-        .into_episode(dex);
+        .into_episode(dex)
+        .unwrap();
     assert_eq!(a.root_view(), b.root_view());
 }
 
@@ -154,7 +156,8 @@ fn synthetic_episode_advances_preview_and_combat_boundaries() {
     let (dex, trusted, sample) = sample_world(SideId::P1);
     let mut episode = PreviewWorld::construct(&dex, &trusted, &sample, 19)
         .unwrap()
-        .into_episode(dex.clone());
+        .into_episode(dex.clone())
+        .unwrap();
     let preview = |side| SideChoice {
         side,
         actions: [0, 1, 4, 5]
@@ -193,7 +196,8 @@ fn invalid_submission_is_nonmutating_and_reports_only_public_error() {
     let (dex, trusted, sample) = sample_world(SideId::P1);
     let mut episode = PreviewWorld::construct(&dex, &trusted, &sample, 23)
         .unwrap()
-        .into_episode(dex);
+        .into_episode(dex)
+        .unwrap();
     let before = episode.root_view();
     let error = match episode.submit_joint(&[SideChoice {
         side: SideId::P1,

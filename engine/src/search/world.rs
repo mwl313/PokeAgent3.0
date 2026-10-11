@@ -56,6 +56,7 @@ pub struct PreviewWorld {
     state: BattleState,
     view: PlayerView,
     diagnostics: WorldConstructionDiagnostics,
+    dex_digest: String,
 }
 
 /// Player-safe diagnostics returned at each synthetic decision boundary.
@@ -205,6 +206,7 @@ impl PreviewWorld {
                     state,
                     view,
                     diagnostics,
+                    dex_digest: dex.asset_digest.clone(),
                 });
             }
             increment(&mut diagnostics.rejection_reasons, "observation_mismatch");
@@ -230,13 +232,19 @@ impl PreviewWorld {
         self.state.observe(self.view.side).request.kind == RequestKind::Preview
     }
 
-    pub fn into_episode(self, dex: Arc<Dex>) -> SyntheticEpisode {
-        SyntheticEpisode {
+    pub fn into_episode(self, dex: Arc<Dex>) -> Result<SyntheticEpisode, EpisodeError> {
+        if self.dex_digest != dex.asset_digest {
+            return Err(EpisodeError {
+                code: EpisodeFailureCode::InvalidAction,
+                message: "synthetic world and Dex asset digests differ".into(),
+            });
+        }
+        Ok(SyntheticEpisode {
             root_side: self.view.side,
             dex,
             state: self.state,
             boundaries: 0,
-        }
+        })
     }
 }
 
