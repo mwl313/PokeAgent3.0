@@ -133,6 +133,7 @@ class FixedPolicyEvaluator:
         started = time.perf_counter()
         outcomes = []
         totals = {"wins": 0, "losses": 0, "draws": 0, "operational_errors": 0, "illegal_actions": 0}
+        team_groups = {}
         for fixture in fixtures:
             handle = self.engine.reset_batch(
                 [fixture.team_a], [fixture.team_b], [fixture.seed],
@@ -141,6 +142,7 @@ class FixedPolicyEvaluator:
             terminated = False
             winner = None
             error = None
+            illegal = False
             for _round in range(max_rounds):
                 submissions = []
                 done = False
@@ -183,6 +185,7 @@ class FixedPolicyEvaluator:
                 accepted, terminated, truncated, winner, error, *_ = result
                 if not accepted:
                     totals["illegal_actions"] += 1
+                    illegal = True
                     error = error or "engine rejected action"
                     break
                 if truncated or error is not None:
@@ -206,13 +209,26 @@ class FixedPolicyEvaluator:
                 totals["losses"] += 1
             outcomes.append({"fixture_id": fixture.fixture_id, "pair_id": fixture.pair_id,
                              "policy_side": fixture.policy_side, "outcome": outcome,
-                             "winner": winner, "error": error})
+                             "team_a": fixture.team_a, "team_b": fixture.team_b,
+                             "winner": winner, "error": error, "illegal_action": illegal})
+            group = f"{fixture.team_a}:{fixture.team_b}"
+            bucket = team_groups.setdefault(group, {"team_a": fixture.team_a, "team_b": fixture.team_b,
+                                                     "matches": 0, "wins": 0, "losses": 0,
+                                                     "draws": 0, "operational_errors": 0,
+                                                     "illegal_actions": 0})
+            bucket["matches"] += 1
+            if outcome in {"win", "loss", "draw"}:
+                bucket[{"win": "wins", "loss": "losses", "draw": "draws"}[outcome]] += 1
+            else:
+                bucket["operational_errors"] += 1
+                bucket["illegal_actions"] += int(illegal)
         scores = [1.0 if row["outcome"] == "win" else 0.5 if row["outcome"] == "draw" else 0.0
                   for row in outcomes if row["outcome"] in {"win", "loss", "draw"}]
         low, high = self._bootstrap_ci(scores, self.seed)
         return {
             "fixtures": _fixture_json(fixtures), "fixture_manifest_hash": fixture_manifest_hash(fixtures),
             "policy": policy, "opponent": opponent, "matches": len(fixtures), **totals,
+            "team_group_results": team_groups,
             "score_mean": sum(scores) / len(scores) if scores else None,
             "score_ci95": [low, high] if scores else None,
             "confidence_status": "inconclusive" if scores and low <= 0.55 and high >= 0.45 else "descriptive_only",

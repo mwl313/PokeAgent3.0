@@ -25,6 +25,7 @@ def test_random_and_heuristic_evaluation_is_reproducible_and_legal():
     assert first["illegal_actions"] == 0
     assert first["operational_errors"] == 0
     assert first["fixture_manifest_hash"] == fixture_manifest_hash(fixtures)
+    assert sum(item["matches"] for item in first["team_group_results"].values()) == len(fixtures)
 
 
 def test_checkpoint_policy_is_frozen_and_legal():
@@ -37,4 +38,3 @@ def test_checkpoint_policy_is_frozen_and_legal():
     assert report["illegal_actions"] == 0
     assert report["operational_errors"] == 0
     assert all((value == before[key]).all() for key, value in model.state_dict().items())
-
