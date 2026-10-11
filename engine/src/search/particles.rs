@@ -1765,7 +1765,8 @@ mod tests {
         let mut combat_two_supported = 0usize;
         let mut collapsed = 0usize;
         let mut diagnosed_rejections = 0usize;
-        let mut by_condition = BTreeMap::<(bool, OpponentProposal), [usize; 6]>::new();
+        let mut attempted_boundaries = 0usize;
+        let mut by_condition = BTreeMap::<(bool, OpponentProposal), [usize; 7]>::new();
         for side in [SideId::P1, SideId::P2] {
             for out_of_prior in [false, true] {
                 for proposal in [
@@ -1829,6 +1830,7 @@ mod tests {
                                 if result.status == ParticleStatus::ParticleCollapse {
                                     collapsed += 1;
                                 }
+                                attempted_boundaries += 1;
                                 results.push(result);
                                 if results.last().unwrap().conditioned_observation.is_none() {
                                     break;
@@ -1880,6 +1882,7 @@ mod tests {
                             ));
                             stats[4] += collapsed - collapsed_before;
                             stats[5] += diagnosed_rejections - rejections_before;
+                            stats[6] += results.len();
                         }
                     }
                 }
@@ -1899,7 +1902,7 @@ mod tests {
             "collapse must have classified rejections"
         );
         println!(
-            "C3b-1.2 matrix rows={rows} preview_supported={preview_supported} \
+            "C3b-1.2 matrix rows={rows} attempted_boundaries={attempted_boundaries} preview_supported={preview_supported} \
              combat_one_supported={combat_one_supported} combat_two_supported={combat_two_supported} \
              collapsed_boundaries={collapsed} diagnosed_rejections={diagnosed_rejections} elapsed_ms={}",
             started.elapsed().as_millis()
@@ -1908,8 +1911,8 @@ mod tests {
             println!(
                 "C3b-1.2 condition out_of_prior={out_of_prior} proposal={proposal:?} \
                  rows={} preview_supported={} combat_one_supported={} combat_two_supported={} \
-                 collapsed_boundaries={} diagnosed_rejections={}",
-                stats[0], stats[1], stats[2], stats[3], stats[4], stats[5]
+                 collapsed_boundaries={} diagnosed_rejections={} attempted_boundaries={}",
+                stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6]
             );
         }
     }
