@@ -28,6 +28,9 @@ class PPOConfig:
     # policy/entropy/KL) and valid value rows (for the value term) instead of
     # the legacy sample_weight/microbatch-count approximation.
     exact_row_weighted_accumulation: bool = True
+    # A1 experiment: use zero-copy views when a cached minibatch is already
+    # contiguous. Disabled by default so the Full Spec path is unchanged.
+    experimental_cached_contiguous_select: bool = False
 
     # PPO objective
     clip_epsilon: float = 0.2

@@ -293,6 +293,14 @@ class PPOLearner:
 
     def _plan_minibatch(self, plan, indices, valid):
         if plan.cached_batch is not None:
+            if self.config.experimental_cached_contiguous_select and len(indices) > 0:
+                first = int(indices[0])
+                expected = torch.arange(first, first + len(indices), dtype=indices.dtype)
+                if torch.equal(indices.cpu(), expected):
+                    return replace(
+                        plan.cached_batch.narrow(first, first + len(indices)),
+                        row_valid=valid,
+                    )
             return plan.cached_batch.select(indices, row_valid=valid)
         rows = [plan.rows[int(index)] for index in indices.tolist()]
         batch = replace(
