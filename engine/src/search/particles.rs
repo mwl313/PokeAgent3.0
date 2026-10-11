@@ -66,6 +66,8 @@ pub enum ParticleStatus {
     OutOfSupport,
     ParticleCollapse,
     InsufficientCoverage,
+    BudgetExhausted,
+    UnsupportedObservation,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -81,6 +83,18 @@ pub struct ParticleDiagnostics {
     pub independent_seed_count: usize,
     pub exact_observation_comparison: bool,
     pub units: u64,
+    pub world_construction_attempts: usize,
+    pub engine_transitions: usize,
+    pub opponent_action_samples: usize,
+    pub chance_samples: usize,
+    pub observation_comparisons: usize,
+    pub distinct_hypotheses: usize,
+    pub trajectory_count: usize,
+    pub prior_schema: u16,
+    pub prior_source_sha256: String,
+    pub dex_digest: String,
+    pub seed_schedule: Vec<u64>,
+    pub budget_exhausted: bool,
     pub status_reason: String,
 }
 
@@ -92,6 +106,11 @@ pub struct ParticleResult {
     pub diagnostics: ParticleDiagnostics,
 }
 
+pub struct PersistentInitialization {
+    pub tracker: Option<PersistentParticleBelief>,
+    pub result: ParticleResult,
+}
+
 /// The comparison contract is intentionally conservative: all current DTO
 /// fields are compared exactly, while private world fields are excluded.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -99,6 +118,7 @@ pub struct ObservationComparisonContract {
     pub schema_version: u16,
     pub exact_fields: Vec<String>,
     pub tolerated_fields: Vec<String>,
+    pub event_history_fields: Vec<String>,
     pub excluded_private_fields: Vec<String>,
 }
 
@@ -115,6 +135,9 @@ pub fn observation_comparison_contract() -> ObservationComparisonContract {
             "own.request".into(),
         ],
         tolerated_fields: vec![],
+        event_history_fields: vec![
+            "public.knowledge.events (exact serialized window; audited, no tolerance)".into(),
+        ],
         excluded_private_fields: vec![
             "BattleState".into(),
             "opponent team identifier and private set".into(),
@@ -124,7 +147,324 @@ pub fn observation_comparison_contract() -> ObservationComparisonContract {
     }
 }
 
+struct PrivateParticle {
+    episode: crate::search::world::SyntheticEpisode,
+    hypothesis_key: Vec<u8>,
+    construction_attempts: usize,
+}
+
+/// Persistent player-safe belief tracker. The synthetic episodes and
+/// hypothesis keys never cross this module's root-facing result boundary.
+pub struct PersistentParticleBelief {
+    root_side: crate::state::SideId,
+    particles: Vec<PrivateParticle>,
+    prior_schema: u16,
+    prior_source_sha256: String,
+    dex_digest: String,
+    seed_schedule: Vec<u64>,
+    min_surviving_particles: usize,
+    current_observation: SearchInformationSet,
+}
+
 pub struct ParticleBelief;
+
+fn diagnostics_seeded(
+    requested_particles: usize,
+    seeds: &[u64],
+    prior: &FrozenOpponentPrior,
+    dex: &Dex,
+) -> ParticleDiagnostics {
+    ParticleDiagnostics {
+        schema_version: PARTICLE_BELIEF_SCHEMA,
+        requested_particles,
+        sampled_particles: 0,
+        constructed_particles: 0,
+        advanced_particles: 0,
+        surviving_particles: 0,
+        rejected_observations: 0,
+        failed_transitions: 0,
+        independent_seed_count: seeds.len(),
+        exact_observation_comparison: true,
+        units: 0,
+        world_construction_attempts: 0,
+        engine_transitions: 0,
+        opponent_action_samples: 0,
+        chance_samples: 0,
+        observation_comparisons: 0,
+        distinct_hypotheses: 0,
+        trajectory_count: 0,
+        prior_schema: prior.manifest().schema_version,
+        prior_source_sha256: prior.manifest().source_sha256.clone(),
+        dex_digest: dex.asset_digest.clone(),
+        seed_schedule: seeds.to_vec(),
+        budget_exhausted: false,
+        status_reason: String::new(),
+    }
+}
+
+impl PersistentParticleBelief {
+    /// Construct private trajectories from a clean-preview observation. The
+    /// prior sample may contain fewer distinct sheets than trajectories; any
+    /// repeated sheet is tracked as an independent seeded trajectory.
+    pub fn initialize(
+        dex: Arc<Dex>,
+        initial: &TrustedSearchInformationSet,
+        prior: &FrozenOpponentPrior,
+        seeds: &[u64],
+        config: ParticleConfig,
+    ) -> Result<PersistentInitialization> {
+        config.validate()?;
+        if seeds.is_empty() {
+            return Err(EngineError::InvalidInput(
+                "at least one particle seed is required".into(),
+            ));
+        }
+        let initial_info = initial.as_info();
+        if initial_info.own.request.kind != crate::actions::RequestKind::Preview
+            || initial_info.public.turn != 0
+        {
+            return Err(EngineError::InvalidInput(
+                "persistent particles require a clean preview root".into(),
+            ));
+        }
+        let mut diagnostics = diagnostics_seeded(config.particles, seeds, prior, &dex);
+        let samples = match prior.sample(initial_info, seeds[0], config.particles)? {
+            BeliefSampleResult::Samples(samples) => samples,
+            BeliefSampleResult::OutOfSupport(belief) => {
+                diagnostics.sampled_particles = belief.sampled_count;
+                diagnostics.status_reason = "prior has no compatible particles".into();
+                return Ok(PersistentInitialization {
+                    tracker: None,
+                    result: ParticleResult {
+                        schema_version: PARTICLE_BELIEF_SCHEMA,
+                        status: ParticleStatus::OutOfSupport,
+                        conditioned_observation: None,
+                        diagnostics,
+                    },
+                });
+            }
+        };
+        diagnostics.sampled_particles = samples.hypotheses.len();
+        diagnostics.units = 1; // prior sampling
+        if samples.hypotheses.is_empty() {
+            return Err(EngineError::InvalidInput(
+                "persistent particle sample is empty".into(),
+            ));
+        }
+        let mut particles = Vec::with_capacity(config.particles);
+        let mut hypothesis_keys = std::collections::BTreeSet::new();
+        for index in 0..config.particles {
+            let sample = &samples.hypotheses[index % samples.hypotheses.len()];
+            let hypothesis_key = serde_json::to_vec(&sample.members).map_err(EngineError::Json)?;
+            hypothesis_keys.insert(hypothesis_key.clone());
+            let trajectory_seed = seeds[index % seeds.len()]
+                .wrapping_add((index as u64).wrapping_mul(0x9e3779b97f4a7c15));
+            let world = PreviewWorld::construct(&dex, initial, sample, trajectory_seed).map_err(
+                |error| EngineError::InvalidInput(format!("particle world construction: {error}")),
+            )?;
+            let construction_attempts = world.diagnostics().attempts;
+            diagnostics.world_construction_attempts += construction_attempts;
+            diagnostics.units = diagnostics
+                .units
+                .saturating_add(1 + construction_attempts as u64);
+            if diagnostics.units > config.max_units {
+                diagnostics.budget_exhausted = true;
+                diagnostics.status_reason =
+                    "particle initialization computation budget exhausted".into();
+                return Ok(PersistentInitialization {
+                    tracker: None,
+                    result: ParticleResult {
+                        schema_version: PARTICLE_BELIEF_SCHEMA,
+                        status: ParticleStatus::BudgetExhausted,
+                        conditioned_observation: None,
+                        diagnostics,
+                    },
+                });
+            }
+            diagnostics.constructed_particles += 1;
+            particles.push(PrivateParticle {
+                episode: world.into_episode(dex.clone()).map_err(|error| {
+                    EngineError::InvalidInput(format!("particle episode construction: {error}"))
+                })?,
+                hypothesis_key,
+                construction_attempts,
+            });
+        }
+        diagnostics.distinct_hypotheses = hypothesis_keys.len();
+        diagnostics.trajectory_count = particles.len();
+        diagnostics.status_reason = "persistent clean-preview support initialized".into();
+        let tracker = Self {
+            root_side: initial_info.own.side,
+            particles,
+            prior_schema: prior.manifest().schema_version,
+            prior_source_sha256: prior.manifest().source_sha256.clone(),
+            dex_digest: prior.manifest().dex_digest.clone(),
+            seed_schedule: seeds.to_vec(),
+            min_surviving_particles: config.min_surviving_particles,
+            current_observation: initial_info.clone(),
+        };
+        let result = ParticleResult {
+            schema_version: PARTICLE_BELIEF_SCHEMA,
+            status: ParticleStatus::Supported,
+            conditioned_observation: Some(initial_info.clone()),
+            diagnostics,
+        };
+        Ok(PersistentInitialization {
+            tracker: Some(tracker),
+            result,
+        })
+    }
+
+    pub fn current_observation(&self) -> &SearchInformationSet {
+        &self.current_observation
+    }
+
+    /// Advance every private surviving trajectory using the actual root
+    /// action and condition on the next trusted root observation.
+    pub fn update(
+        &mut self,
+        root_actions: Vec<AtomicAction>,
+        next_observation: &TrustedSearchInformationSet,
+        config: ParticleConfig,
+    ) -> Result<ParticleResult> {
+        config.validate()?;
+        let target = next_observation.as_info();
+        if target.own.side != self.root_side
+            || target.public.turn < self.current_observation.public.turn
+        {
+            let mut diagnostics = ParticleDiagnostics {
+                schema_version: PARTICLE_BELIEF_SCHEMA,
+                requested_particles: self.particles.len(),
+                sampled_particles: self.particles.len(),
+                constructed_particles: self.particles.len(),
+                advanced_particles: 0,
+                surviving_particles: 0,
+                rejected_observations: 0,
+                failed_transitions: 0,
+                independent_seed_count: self.seed_schedule.len(),
+                exact_observation_comparison: true,
+                units: 0,
+                world_construction_attempts: 0,
+                engine_transitions: 0,
+                opponent_action_samples: 0,
+                chance_samples: 0,
+                observation_comparisons: 0,
+                distinct_hypotheses: 0,
+                trajectory_count: self.particles.len(),
+                prior_schema: self.prior_schema,
+                prior_source_sha256: self.prior_source_sha256.clone(),
+                dex_digest: self.dex_digest.clone(),
+                seed_schedule: self.seed_schedule.clone(),
+                budget_exhausted: false,
+                status_reason: String::new(),
+            };
+            diagnostics.status_reason = "next observation is unsupported for this tracker".into();
+            return Ok(ParticleResult {
+                schema_version: PARTICLE_BELIEF_SCHEMA,
+                status: ParticleStatus::UnsupportedObservation,
+                conditioned_observation: None,
+                diagnostics,
+            });
+        }
+        let mut diagnostics = ParticleDiagnostics {
+            schema_version: PARTICLE_BELIEF_SCHEMA,
+            requested_particles: self.particles.len(),
+            sampled_particles: self.particles.len(),
+            constructed_particles: self.particles.len(),
+            advanced_particles: 0,
+            surviving_particles: 0,
+            rejected_observations: 0,
+            failed_transitions: 0,
+            independent_seed_count: self.seed_schedule.len(),
+            exact_observation_comparison: true,
+            units: 0,
+            world_construction_attempts: self
+                .particles
+                .iter()
+                .map(|p| p.construction_attempts)
+                .sum(),
+            engine_transitions: 0,
+            opponent_action_samples: 0,
+            chance_samples: 0,
+            observation_comparisons: 0,
+            distinct_hypotheses: self
+                .particles
+                .iter()
+                .map(|p| p.hypothesis_key.clone())
+                .collect::<std::collections::BTreeSet<_>>()
+                .len(),
+            trajectory_count: self.particles.len(),
+            prior_schema: self.prior_schema,
+            prior_source_sha256: self.prior_source_sha256.clone(),
+            dex_digest: self.dex_digest.clone(),
+            seed_schedule: self.seed_schedule.clone(),
+            budget_exhausted: false,
+            status_reason: String::new(),
+        };
+        let required_units = (self.particles.len() as u64).saturating_mul(5);
+        if required_units > config.max_units {
+            diagnostics.budget_exhausted = true;
+            diagnostics.status_reason = "particle update computation budget exhausted".into();
+            return Ok(ParticleResult {
+                schema_version: PARTICLE_BELIEF_SCHEMA,
+                status: ParticleStatus::BudgetExhausted,
+                conditioned_observation: None,
+                diagnostics,
+            });
+        }
+        let mut survivors = Vec::with_capacity(self.particles.len());
+        for mut particle in self.particles.drain(..) {
+            diagnostics.units += 5;
+            let boundary = match particle
+                .episode
+                .submit_root_with_baseline(root_actions.clone())
+            {
+                Ok(boundary) => boundary,
+                Err(_) => {
+                    diagnostics.failed_transitions += 1;
+                    continue;
+                }
+            };
+            diagnostics.advanced_particles += 1;
+            diagnostics.engine_transitions += 2;
+            diagnostics.opponent_action_samples += 1;
+            diagnostics.chance_samples += 1;
+            let observed = SearchInformationSet::from_player_view(&boundary.root_view)?;
+            diagnostics.observation_comparisons += 1;
+            if observed == *target {
+                survivors.push(particle);
+            } else {
+                diagnostics.rejected_observations += 1;
+            }
+        }
+        diagnostics.surviving_particles = survivors.len();
+        let status = if diagnostics.budget_exhausted {
+            diagnostics.status_reason = "particle update computation budget exhausted".into();
+            ParticleStatus::BudgetExhausted
+        } else if diagnostics.advanced_particles > 0 && survivors.is_empty() {
+            diagnostics.status_reason =
+                "all advanced particles rejected by exact observation conditioning".into();
+            ParticleStatus::ParticleCollapse
+        } else if survivors.len() < self.min_surviving_particles {
+            diagnostics.status_reason =
+                "surviving particle coverage is below the configured minimum".into();
+            ParticleStatus::InsufficientCoverage
+        } else {
+            diagnostics.status_reason = "persistent exact-support update retained particles".into();
+            ParticleStatus::Supported
+        };
+        self.particles = survivors;
+        if !self.particles.is_empty() {
+            self.current_observation = target.clone();
+        }
+        Ok(ParticleResult {
+            schema_version: PARTICLE_BELIEF_SCHEMA,
+            status,
+            conditioned_observation: (!self.particles.is_empty()).then(|| target.clone()),
+            diagnostics,
+        })
+    }
+}
 
 impl ParticleBelief {
     /// Initialize sampled clean-preview particles, resolve preview, advance
@@ -162,20 +502,7 @@ impl ParticleBelief {
             ));
         }
 
-        let mut diagnostics = ParticleDiagnostics {
-            schema_version: PARTICLE_BELIEF_SCHEMA,
-            requested_particles: config.particles,
-            sampled_particles: 0,
-            constructed_particles: 0,
-            advanced_particles: 0,
-            surviving_particles: 0,
-            rejected_observations: 0,
-            failed_transitions: 0,
-            independent_seed_count: seeds.len(),
-            exact_observation_comparison: true,
-            units: 0,
-            status_reason: String::new(),
-        };
+        let mut diagnostics = diagnostics_seeded(config.particles, seeds, prior, &dex);
         let samples = match prior.sample(initial_info, seeds[0], config.particles)? {
             BeliefSampleResult::Samples(samples) => samples,
             BeliefSampleResult::OutOfSupport(belief) => {
@@ -195,6 +522,7 @@ impl ParticleBelief {
             let units = 2u64;
             if diagnostics.units + units > config.max_units {
                 diagnostics.status_reason = "particle computation budget exhausted".into();
+                diagnostics.budget_exhausted = true;
                 break;
             }
             diagnostics.units += units;
@@ -245,7 +573,10 @@ impl ParticleBelief {
             }
         }
         diagnostics.surviving_particles = survivors;
-        let status = if survivors == 0 {
+        let status = if diagnostics.budget_exhausted {
+            diagnostics.status_reason = "particle computation budget exhausted".into();
+            ParticleStatus::BudgetExhausted
+        } else if survivors == 0 {
             diagnostics.status_reason =
                 "all particles rejected by exact observation conditioning".into();
             ParticleStatus::ParticleCollapse
@@ -308,6 +639,30 @@ mod tests {
         descend(request, &mut Vec::new()).expect("fixture must have a legal action")
     }
 
+    fn complete_last(request: &crate::actions::Request) -> Vec<AtomicAction> {
+        fn descend(
+            request: &crate::actions::Request,
+            prefix: &mut Vec<AtomicAction>,
+        ) -> Option<Vec<AtomicAction>> {
+            let candidates = request.candidates(prefix).ok()?;
+            if candidates.is_empty() {
+                return request
+                    .validate_joint(prefix)
+                    .is_ok()
+                    .then(|| prefix.clone());
+            }
+            for candidate in candidates.into_iter().rev() {
+                prefix.push(candidate);
+                if let Some(result) = descend(request, prefix) {
+                    return Some(result);
+                }
+                prefix.pop();
+            }
+            None
+        }
+        descend(request, &mut Vec::new()).expect("fixture must have a legal action")
+    }
+
     fn preview() -> Vec<AtomicAction> {
         [0, 1, 4, 5]
             .into_iter()
@@ -354,6 +709,67 @@ mod tests {
             .unwrap();
         let target = TrustedSearchInformationSet::from_player_view(&target.root_view).unwrap();
         (initial, prior, preview_actions, combat_actions, target)
+    }
+
+    type TwoTurnSequence = (
+        Arc<Dex>,
+        TrustedSearchInformationSet,
+        FrozenOpponentPrior,
+        Vec<AtomicAction>,
+        TrustedSearchInformationSet,
+        Vec<AtomicAction>,
+        TrustedSearchInformationSet,
+        Vec<AtomicAction>,
+        TrustedSearchInformationSet,
+    );
+
+    fn two_turn_sequence(side: SideId) -> TwoTurnSequence {
+        let (dex, teams) = assets();
+        let state =
+            BattleState::reset(&dex, [&teams[0], &teams[1]], [721, 722, 723, 724], [0, 1]).unwrap();
+        let initial = TrustedSearchInformationSet::from_player_view(&state.observe(side)).unwrap();
+        let prior = FrozenOpponentPrior::from_training_json(
+            &dex,
+            include_bytes!("../../data/training-teams.json"),
+        )
+        .unwrap();
+        let seed = 0xdefaced;
+        let BeliefSampleResult::Samples(samples) =
+            prior.sample(initial.as_info(), seed, 1).unwrap()
+        else {
+            panic!("fixture has support")
+        };
+        let world = PreviewWorld::construct(&dex, &initial, &samples.hypotheses[0], seed).unwrap();
+        let mut episode = world.into_episode(dex.clone()).unwrap();
+        let preview_actions = preview();
+        let after_preview = episode
+            .submit_root_with_baseline(preview_actions.clone())
+            .unwrap();
+        let target_preview =
+            TrustedSearchInformationSet::from_player_view(&after_preview.root_view).unwrap();
+        let combat_one = complete_last(&after_preview.root_view.request);
+        let after_one = episode
+            .submit_root_with_baseline(combat_one.clone())
+            .unwrap();
+        let target_one =
+            TrustedSearchInformationSet::from_player_view(&after_one.root_view).unwrap();
+        let combat_two = complete_last(&after_one.root_view.request);
+        let after_two = episode
+            .submit_root_with_baseline(combat_two.clone())
+            .unwrap();
+        let target_two =
+            TrustedSearchInformationSet::from_player_view(&after_two.root_view).unwrap();
+        (
+            dex,
+            initial,
+            prior,
+            preview_actions,
+            target_preview,
+            combat_one,
+            target_one,
+            combat_two,
+            target_two,
+        )
     }
 
     #[test]
@@ -464,5 +880,206 @@ mod tests {
         )
         .unwrap();
         assert_eq!(a, b);
+    }
+
+    #[test]
+    fn persistent_tracker_advances_two_successive_boundaries_for_both_roots() {
+        for side in [SideId::P1, SideId::P2] {
+            let (
+                dex,
+                initial,
+                prior,
+                preview_actions,
+                target_preview,
+                combat_one,
+                target_one,
+                combat_two,
+                target_two,
+            ) = two_turn_sequence(side);
+            let initialized = PersistentParticleBelief::initialize(
+                dex,
+                &initial,
+                &prior,
+                &[0xdefaced, 0x123456],
+                ParticleConfig {
+                    particles: 4,
+                    min_surviving_particles: 1,
+                    max_units: 2_000,
+                },
+            )
+            .unwrap();
+            let result = initialized.result;
+            let mut tracker = initialized.tracker.expect("supported fixture");
+            assert_eq!(result.status, ParticleStatus::Supported);
+            assert_eq!(result.diagnostics.trajectory_count, 4);
+            assert!(result.diagnostics.distinct_hypotheses >= 1);
+            let first = tracker
+                .update(
+                    preview_actions,
+                    &target_preview,
+                    ParticleConfig {
+                        particles: 4,
+                        min_surviving_particles: 1,
+                        max_units: 128,
+                    },
+                )
+                .unwrap();
+            assert!(matches!(first.status, ParticleStatus::Supported));
+            let second = tracker
+                .update(
+                    combat_one,
+                    &target_one,
+                    ParticleConfig {
+                        particles: 4,
+                        min_surviving_particles: 1,
+                        max_units: 128,
+                    },
+                )
+                .unwrap();
+            assert!(matches!(second.status, ParticleStatus::Supported));
+            let third = tracker
+                .update(
+                    combat_two,
+                    &target_two,
+                    ParticleConfig {
+                        particles: 4,
+                        min_surviving_particles: 1,
+                        max_units: 128,
+                    },
+                )
+                .unwrap();
+            assert!(matches!(third.status, ParticleStatus::Supported));
+            assert!(third.diagnostics.engine_transitions >= 2);
+            assert_eq!(tracker.current_observation(), target_two.as_info());
+        }
+    }
+
+    #[test]
+    fn persistent_budget_exhaustion_is_not_collapse() {
+        let (dex, initial, prior, preview_actions, target_preview, _, _, _, _) =
+            two_turn_sequence(SideId::P1);
+        let initialized = PersistentParticleBelief::initialize(
+            dex,
+            &initial,
+            &prior,
+            &[0xdefaced],
+            ParticleConfig {
+                particles: 1,
+                min_surviving_particles: 1,
+                max_units: 2_000,
+            },
+        )
+        .unwrap();
+        let mut tracker = initialized.tracker.expect("supported fixture");
+        let result = tracker
+            .update(
+                preview_actions,
+                &target_preview,
+                ParticleConfig {
+                    particles: 1,
+                    min_surviving_particles: 1,
+                    max_units: 1,
+                },
+            )
+            .unwrap();
+        assert_eq!(result.status, ParticleStatus::BudgetExhausted);
+        assert!(result.diagnostics.budget_exhausted);
+    }
+
+    #[test]
+    fn persistent_initialization_reports_out_of_support() {
+        let (dex, teams) = assets();
+        let state =
+            BattleState::reset(&dex, [&teams[0], &teams[1]], [731, 732, 733, 734], [0, 1]).unwrap();
+        let mut view = state.observe(SideId::P1);
+        view.knowledge.pokemon[6].species = u16::MAX;
+        let initial = TrustedSearchInformationSet::from_player_view(&view).unwrap();
+        let prior = FrozenOpponentPrior::from_training_json(
+            &dex,
+            include_bytes!("../../data/training-teams.json"),
+        )
+        .unwrap();
+        let result = PersistentParticleBelief::initialize(
+            dex,
+            &initial,
+            &prior,
+            &[0xface],
+            ParticleConfig::default(),
+        )
+        .unwrap();
+        assert_eq!(result.result.status, ParticleStatus::OutOfSupport);
+        assert!(result.tracker.is_none());
+    }
+
+    #[test]
+    fn independent_actual_oracle_is_kept_separate_from_tracker_state() {
+        let (dex, teams) = assets();
+        let prior = FrozenOpponentPrior::from_training_json(
+            &dex,
+            include_bytes!("../../data/training-teams.json"),
+        )
+        .unwrap();
+        for side in [SideId::P1, SideId::P2] {
+            let mut actual =
+                BattleState::reset(&dex, [&teams[0], &teams[1]], [991, 992, 993, 994], [0, 1])
+                    .unwrap();
+            let initial =
+                TrustedSearchInformationSet::from_player_view(&actual.observe(side)).unwrap();
+            let preview_actions = preview();
+            let opponent_preview = preview();
+            actual.step(&dex, SideId::P1, &preview_actions).unwrap();
+            actual.step(&dex, SideId::P2, &opponent_preview).unwrap();
+            let target_preview =
+                TrustedSearchInformationSet::from_player_view(&actual.observe(side)).unwrap();
+            let combat_actions = complete_last(&target_preview.as_info().own.request);
+            let opponent_combat = complete(&actual.observe(side.other()).request);
+            actual.step(&dex, side, &combat_actions).unwrap();
+            actual.step(&dex, side.other(), &opponent_combat).unwrap();
+            let target_combat =
+                TrustedSearchInformationSet::from_player_view(&actual.observe(side)).unwrap();
+            let initialized = PersistentParticleBelief::initialize(
+                dex.clone(),
+                &initial,
+                &prior,
+                &[0x1234, 0x5678],
+                ParticleConfig {
+                    particles: 2,
+                    min_surviving_particles: 1,
+                    max_units: 2_000,
+                },
+            )
+            .unwrap();
+            let mut tracker = initialized.tracker.expect("supported fixture");
+            let preview_result = tracker
+                .update(
+                    preview_actions,
+                    &target_preview,
+                    ParticleConfig {
+                        particles: 2,
+                        min_surviving_particles: 1,
+                        max_units: 128,
+                    },
+                )
+                .unwrap();
+            let combat_result = tracker
+                .update(
+                    combat_actions,
+                    &target_combat,
+                    ParticleConfig {
+                        particles: 2,
+                        min_surviving_particles: 1,
+                        max_units: 128,
+                    },
+                )
+                .unwrap();
+            assert!(preview_result.diagnostics.advanced_particles <= 2);
+            assert!(combat_result.diagnostics.advanced_particles <= 2);
+            assert!(matches!(
+                combat_result.status,
+                ParticleStatus::Supported
+                    | ParticleStatus::InsufficientCoverage
+                    | ParticleStatus::ParticleCollapse
+            ));
+        }
     }
 }
