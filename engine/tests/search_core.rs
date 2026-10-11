@@ -29,6 +29,7 @@ fn config() -> SearchConfig {
         worlds: 2,
         max_root_candidates: 2,
         max_units: 1_000,
+        rollout_combat_turns: 1,
     }
 }
 
@@ -51,6 +52,17 @@ fn deterministic_bounded_search_evaluates_multiple_actions() {
     assert!(first.selected_action.is_none());
     assert!(first.diagnostics.budget.engine_transitions >= 4);
     assert!(first.diagnostics.budget.opponent_action_samples >= 4);
+    assert!(first.diagnostics.opening_pair_count >= 2);
+    assert!(first.diagnostics.reserve_combination_count >= 1);
+    assert!(first.diagnostics.score_variance > 0.0);
+    assert!(first.diagnostics.heuristic_differentiated_actions >= 2);
+    assert_eq!(first.diagnostics.tied_score_pairs, 0);
+    assert!(
+        first
+            .scores
+            .iter()
+            .all(|score| (0.0..=1.0).contains(&score.mean_unknown_health_fraction))
+    );
 }
 
 #[test]
@@ -102,6 +114,7 @@ fn p2_root_and_budget_exhaustion_are_structured() {
             worlds: 1,
             max_root_candidates: 2,
             max_units: 1,
+            rollout_combat_turns: 0,
         },
     )
     .unwrap();

@@ -300,6 +300,27 @@ impl SyntheticEpisode {
         ])
     }
 
+    /// Internal rollout hook: both sides use the transparent complete-action
+    /// baseline from their own player views. No command crosses the root API.
+    pub(crate) fn submit_baseline_turn(&mut self) -> Result<EpisodeBoundary, EpisodeError> {
+        let root_view = self.state.observe(self.root_side);
+        let opponent_view = self.state.observe(self.root_side.other());
+        let root_actions = complete_legal_actions(&root_view.request)
+            .ok_or_else(|| invalid_action("baseline root has no legal completion"))?;
+        let opponent_actions = complete_legal_actions(&opponent_view.request)
+            .ok_or_else(|| invalid_action("baseline opponent has no legal completion"))?;
+        self.submit_joint(&[
+            SideChoice {
+                side: self.root_side,
+                actions: root_actions,
+            },
+            SideChoice {
+                side: self.root_side.other(),
+                actions: opponent_actions,
+            },
+        ])
+    }
+
     /// Validate every side's complete action before mutating the synthetic
     /// state. If resolution reports an operational error, restore the exact
     /// pre-submit snapshot and return a failure.
