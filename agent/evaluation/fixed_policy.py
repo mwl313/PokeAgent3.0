@@ -33,12 +33,20 @@ class EvaluationFixture:
     policy_side: int
 
 
-def build_fixture_manifest(*, pairs: int = 2, team_count: int = 32, seed: int = 20261011) -> list[EvaluationFixture]:
-    """Create deterministic fixtures with one explicit seat-swapped pair."""
+def build_fixture_manifest(*, pairs: int = 2, team_count: Optional[int] = None,
+                           team_ids: Optional[list[int]] = None,
+                           seed: int = 20261011) -> list[EvaluationFixture]:
+    """Create deterministic fixtures from the complete supplied team pool."""
+    if team_ids is None:
+        if team_count is None:
+            raise ValueError("fixture generation requires the actual training-team pool")
+        team_ids = list(range(int(team_count)))
+    if not team_ids:
+        raise ValueError("training-team pool is empty")
     rng = random.Random(int(seed))
     fixtures: list[EvaluationFixture] = []
     for pair_id in range(int(pairs)):
-        team_a, team_b = rng.randrange(team_count), rng.randrange(team_count)
+        team_a, team_b = rng.choice(team_ids), rng.choice(team_ids)
         game_seed = tuple(rng.randrange(1 << 16) for _ in range(4))
         fixtures.append(EvaluationFixture(len(fixtures), pair_id, team_a, team_b, game_seed, 0))
         fixtures.append(EvaluationFixture(len(fixtures), pair_id, team_a, team_b, game_seed, 1))
@@ -116,6 +124,10 @@ class FixedPolicyEvaluator:
     def run(self, fixtures: list[EvaluationFixture], *, policy: str = "random",
             model: Optional[PA3Model] = None, opponent: str = "heuristic",
             opponent_model: Optional[PA3Model] = None, max_rounds: int = 2000) -> dict:
+        if policy == "heuristic":
+            policy = "lexicographic_legal"
+        if opponent == "heuristic":
+            opponent = "lexicographic_legal"
         if policy == "checkpoint" and model is None:
             raise ValueError("checkpoint policy requires a frozen model")
         if opponent == "checkpoint" and opponent_model is None:
@@ -174,7 +186,7 @@ class FixedPolicyEvaluator:
                             hidden = step.hidden
                         else:
                             pick = self._choose(candidates, kind=kind, rng=rng,
-                                                 heuristic=(side_kind == "heuristic"))
+                                                 heuristic=(side_kind == "lexicographic_legal"))
                             prefix.append(candidates[pick])
                     submissions.append((side, prefix))
                 if not submissions:
