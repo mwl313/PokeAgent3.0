@@ -1,12 +1,77 @@
 {
+  "arms": {
+    "control": {
+      "approx_kl": 0.005043784607239628,
+      "checkpoint_sha256": {
+        "rank0": "4ee544921233ca48371ed73296068fe5d45d420cf112c68a69be40a001d61243",
+        "rank1": "defa30521f052e2081b332b31228388a250c47d5045c6e6f2c678d2765666d17"
+      },
+      "entropy": 0.4369753230765409,
+      "final_lr": 0.0001499996499541454,
+      "games": 51200,
+      "games_per_s": 92.5704359625,
+      "operational_errors": 0,
+      "optimizer_steps": 441,
+      "rank0_rows": 438248,
+      "rank1_rows": 436929,
+      "rows": 875177,
+      "rows_per_game": 34.1866015625,
+      "value_loss": 0.2308431012884753,
+      "wall_s": 549.306031106
+    },
+    "historical": {
+      "approx_kl": 0.005476301183542856,
+      "checkpoint_sha256": {
+        "rank0": "8027bd237776e41a6fd4e0037f37e29938912cbde6d7474a2fc28951989b7730",
+        "rank1": "2ecda5e21a4b27044840cd2d64dc0e0fa0a014ac71fcd5a5642d10857a607453"
+      },
+      "current_current_games": 17963,
+      "current_historical_games": 7637,
+      "entropy": 0.43570350670457797,
+      "final_lr": 0.0001499996499541454,
+      "games": 51200,
+      "games_per_s": 92.4025129391,
+      "operational_errors": 0,
+      "optimizer_steps": 400,
+      "rank0_rows": 374116,
+      "rank1_rows": 374414,
+      "rows": 748530,
+      "rows_per_game": 29.239453125,
+      "value_loss": 0.22236135460005368,
+      "wall_s": 550.789581528
+    }
+  },
   "base_matches": 301056,
   "final_matches": 352256,
-  "mixture": {"current_current": 0.7, "current_historical": 0.3},
-  "arms": {
-    "control": {"games": 51200, "rows": 438248, "rows_per_game": 17.118, "optimizer_steps": 441, "wall_s": 549.306031106, "games_per_s": 92.5704359625, "operational_errors": 0, "final_lr": 0.0001499996499541454, "entropy": 0.4369753230765409, "approx_kl": 0.005043784607239628, "value_loss": 0.2308431012884753, "checkpoint_sha256": {"rank0": "4ee544921233ca48371ed73296068fe5d45d420cf112c68a69be40a001d61243", "rank1": "defa30521f052e2081b332b31228388a250c47d5045c6e6f2c678d2765666d17"}},
-    "historical": {"games": 51200, "current_current_games": 17963, "current_historical_games": 7637, "rows": 374116, "rows_per_game": 14.614, "optimizer_steps": 400, "wall_s": 550.789581528, "games_per_s": 92.4025129391, "operational_errors": 0, "final_lr": 0.0001499996499541454, "entropy": 0.43570350670457797, "approx_kl": 0.005476301183542856, "value_loss": 0.22236135460005368, "checkpoint_sha256": {"rank0": "8027bd237776e41a6fd4e0037f37e29938912cbde6d7474a2fc28951989b7730", "rank1": "2ecda5e21a4b27044840cd2d64dc0e0fa0a014ac71fcd5a5642d10857a607453"}}
+  "mixture": {
+    "current_current": 0.7,
+    "current_historical": 0.3
   },
-  "primary_evaluation": {"pairs": 1024, "games": 2048, "control_wins": 1004, "historical_wins": 1044, "draws": 0, "control_score": 0.490234375, "ci95": [0.47314453125, 0.5087890625], "fixture_manifest_hash": "b10c170c6aa5e97843de611e605a92021089c74247202c5355a58fb5fdd640df"},
-  "secondary_start_evaluation": {"pairs": 256, "games": 512, "control_wins": 266, "historical_wins": 265, "control_score": 0.51953125, "historical_score": 0.517578125, "fixture_manifest_hash": "79a27ae937248f131bf8ad4c77a0f9cc32faf82e2a62a66411a83b977f0fcce5"},
-  "recompute_gate": {"max_abs_diff": 0.001050710678100586, "tolerance": 0.001, "status": "unresolved_experimental_bypass"}
+  "primary_evaluation": {
+    "ci95": [
+      0.47314453125,
+      0.5087890625
+    ],
+    "control_score": 0.490234375,
+    "control_wins": 1004,
+    "draws": 0,
+    "fixture_manifest_hash": "b10c170c6aa5e97843de611e605a92021089c74247202c5355a58fb5fdd640df",
+    "games": 2048,
+    "historical_wins": 1044,
+    "pairs": 1024
+  },
+  "recompute_gate": {
+    "max_abs_diff": 0.001050710678100586,
+    "status": "unresolved_experimental_bypass",
+    "tolerance": 0.001
+  },
+  "secondary_start_evaluation": {
+    "control_score": 0.51953125,
+    "control_wins": 266,
+    "fixture_manifest_hash": "79a27ae937248f131bf8ad4c77a0f9cc32faf82e2a62a66411a83b977f0fcce5",
+    "games": 512,
+    "historical_score": 0.517578125,
+    "historical_wins": 265,
+    "pairs": 256
+  }
 }

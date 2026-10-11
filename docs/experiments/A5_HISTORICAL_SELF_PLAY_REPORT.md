@@ -7,11 +7,10 @@ The recompute gate remained explicitly disabled because the known
 `1.0507107e-3` versus `1e-3` discrepancy is unresolved.
 
 The control arm ran 51,200 natural matches to 352,256 using current/current
-self-play only. It produced 438,248 learner rows (17.12 rows/game), 441
+self-play only. Across both ranks it produced 875,177 learner rows (34.19 global rows/game; rank-0 local rows were 438,248), 441
 additional optimizer steps, 549.3 s wall time, and 0 operational errors. The
 historical arm ran the same 51,200-match budget with 70% current/current and
-30% current/historical matches. It produced 374,116 learner rows (14.61
-rows/game), 400 optimizer steps, 550.8 s wall time, and 0 operational errors.
+30% current/historical matches. Across both ranks it produced 748,530 learner rows (29.24 global rows/game; rank-0 local rows were 374,116), 400 optimizer steps, 550.8 s wall time, and 0 operational errors.
 The historical arm completed 17,963 current/current and 7,637
 current/historical games; historical rows were excluded from PPO. Rank digests
 matched in every iteration. Approximate rows/sec were 798 for control and 679
