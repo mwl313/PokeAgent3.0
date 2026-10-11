@@ -67,6 +67,8 @@ def parse_args():
                         help="write a PyTorch profiler Chrome trace of the learner update to this path")
     parser.add_argument("--recompute-tolerance", type=float, default=None,
                         help="declared mixed-precision parity gate (default 1e-4 fp32 / 1e-3 fp16)")
+    parser.add_argument("--recompute-audit", action="store_true",
+                        help="run expensive isolated-row recomputation in addition to the production gate")
     parser.add_argument("--microbatch", type=int, default=None,
                         help="learner microbatch size (global minibatch stays 4096)")
     parser.add_argument("--minibatch", type=int, default=None,
@@ -186,7 +188,7 @@ def run_repeat(args, repeat):
     if args.mode == "full" and learner is not None:
         # Correctness gate before any weight update: the sampled joint
         # log-probability must be reproducible from the stored tables.
-        recompute_diff = recompute_check(learner, buffer, device, amp=(args.precision == "fp16"))
+        recompute_diff = recompute_check(learner, buffer, device, amp=(args.precision == "fp16"), audit=args.recompute_audit)
     if args.mode == "full" and learner is not None:
         wall = time.perf_counter()
         streaming_plan = None
@@ -314,13 +316,15 @@ def run_repeat(args, repeat):
     return report
 
 
-def recompute_check(learner, buffer, device, limit=1024, amp=False, per_stratum=96):
+def recompute_check(learner, buffer, device, limit=1024, amp=False, per_stratum=96, audit=False):
     """Stratified sampled/recomputed log-probability parity gate.
 
     A first-N-rows check cannot be extrapolated to the whole iteration, so rows
     are sampled per (request kind, branch count, actor active) stratum and every
     stratum's row count and max absolute difference is reported.
     """
+    import time as _time
+    started = _time.perf_counter()
     strata: dict[tuple, list] = {}
     for row in buffer.rows:
         key = (int(row.request_kind), int(row.branch_count), bool(row.actor_active))
@@ -333,28 +337,41 @@ def recompute_check(learner, buffer, device, limit=1024, amp=False, per_stratum=
             step = len(group) / per_stratum
             sampled.extend(group[int(index * step)] for index in range(per_stratum))
     sampled = sampled[: max(limit, 1)]
+    selection_wall = _time.perf_counter() - started
+    started = _time.perf_counter()
     batch = buffer.to_batch(sampled, device=device)
+    materialize_wall = _time.perf_counter() - started
     # Recompute under the same forward precision that sampled the rollout, as
     # the plan requires for mixed-precision parity.
     context = (
         torch.autocast(device_type="cuda", dtype=torch.float16)
         if amp and device.type == "cuda" else torch.autocast(device_type="cpu", enabled=False)
     )
+    started = _time.perf_counter()
     with torch.no_grad(), context:
         encoded = learner.model.encode(batch.observation)
         evaluation = learner.model.evaluate_encoded(encoded, batch.candidates, selected=batch.candidates.selected)
+    if device.type == "cuda":
+        torch.cuda.synchronize(device)
+    batched_wall = _time.perf_counter() - started
     stored = torch.tensor([row.old_logprob for row in sampled], dtype=torch.float32, device=device)
     difference = (evaluation.request_logprob.float() - stored).abs()
     # Isolate batch-shape sensitivity: the same preserved row is evaluated
     # alone, without changing its observation, mask, or selected prefix.
     isolated = []
-    with torch.no_grad():
-        for row in sampled:
-            one = buffer.to_batch([row], device=device)
-            with context:
-                one_eval = learner.model.evaluate(one.observation, one.candidates,
-                                                  selected=one.candidates.selected)[1]
-            isolated.append(float(abs(one_eval.request_logprob.float().item() - row.old_logprob)))
+    isolated_wall = 0.0
+    if audit:
+        started = _time.perf_counter()
+        with torch.no_grad():
+            for row in sampled:
+                one = buffer.to_batch([row], device=device)
+                with context:
+                    one_eval = learner.model.evaluate(one.observation, one.candidates,
+                                                      selected=one.candidates.selected)[1]
+                isolated.append(float(abs(one_eval.request_logprob.float().item() - row.old_logprob)))
+        if device.type == "cuda":
+            torch.cuda.synchronize(device)
+        isolated_wall = _time.perf_counter() - started
     per_row = difference.detach().cpu().tolist()
     stratum_report: dict[str, dict] = {}
     for index, row in enumerate(sampled):
@@ -373,8 +390,16 @@ def recompute_check(learner, buffer, device, limit=1024, amp=False, per_stratum=
         "mean_abs_diff": float(difference.mean().item()) if len(sampled) else 0.0,
         "median_abs_diff": float(difference.median().item()) if len(sampled) else 0.0,
         "p95_abs_diff": float(torch.quantile(difference.float(), 0.95).item()) if len(sampled) else 0.0,
-        "isolated_max_abs_diff": max(isolated) if isolated else 0.0,
-        "isolated_mean_abs_diff": sum(isolated) / len(isolated) if isolated else 0.0,
+        "audit_enabled": bool(audit),
+        "isolated_max_abs_diff": max(isolated) if isolated else None,
+        "isolated_mean_abs_diff": sum(isolated) / len(isolated) if isolated else None,
+        "timing_seconds": {
+            "row_selection": selection_wall,
+            "rollout_materialization": materialize_wall,
+            "batched_recompute": batched_wall,
+            "isolated_audit": isolated_wall,
+            "total_gate": selection_wall + materialize_wall + batched_wall + isolated_wall,
+        },
         "tolerance": tolerance,
         "within_gate": bool(float(difference.max().item()) <= tolerance) if len(sampled) else True,
     }

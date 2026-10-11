@@ -116,6 +116,8 @@ def parse_args(argv=None):
     )
     parser.add_argument("--precision-mode", choices=("A", "B", "C", "D"), default="A",
                         help="experimental policy precision contract; A is the A9 FP32 reference")
+    parser.add_argument("--recompute-audit", action="store_true",
+                        help="run isolated-row diagnostics in addition to the production gate")
     parser.add_argument(
         "--columnar-store",
         action="store_true",
@@ -522,7 +524,7 @@ def worker(args) -> None:
         recompute = None
         if recompute_check is not None:
             stage_started = time.perf_counter()
-            recompute = recompute_check(learner, buffer, device, amp=True)
+            recompute = recompute_check(learner, buffer, device, amp=True, audit=args.recompute_audit)
             finish_stage("recompute_wall_s", stage_started)
             note(
                 f"recompute gate: {recompute['rows']} rows max|diff|="
@@ -742,6 +744,7 @@ def parent(args) -> None:
                 "--experimental-resume", args.experimental_resume,
                 "--dataset-manifest", args.dataset_manifest,
                 "--executor", args.executor,
+                "--precision-mode", args.precision_mode,
             ]
             if args.experimental_allow_source_sha:
                 command.append("--experimental-allow-source-sha")
@@ -751,6 +754,8 @@ def parent(args) -> None:
                 command.extend(["--historical-checkpoint", historical_path])
             if not args.recompute_gate:
                 command.append("--no-recompute-gate")
+            if args.recompute_audit:
+                command.append("--recompute-audit")
             command.append("--trim-observation-padding" if args.trim_observation_padding
                            else "--no-trim-observation-padding")
             command.append("--compact-candidates" if args.compact_candidates

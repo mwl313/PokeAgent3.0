@@ -193,10 +193,19 @@ class ConditionalPrefixScorer(nn.Module):
         # Candidate scoring is the behavior-policy contract.  Keeping this
         # small path in FP32 makes sampled and recomputed prefix scores
         # independent of the surrounding encoder autocast batch shape.
-        with torch.autocast(device_type=encoded_tokens.device.type, dtype=torch.float16,
-                            enabled=self.precision_contract.scorer_amp and encoded_tokens.device.type == "cuda"):
+        if self.precision_contract.scorer_amp and encoded_tokens.device.type == "cuda":
+            # Preserve the original AMP graph for experimental B/C. The
+            # explicit FP32 path remains the A9 reference and Mode D scorer.
+            return self._build_keys_amp(encoded_tokens, action_ids, entity_token, move_token)
+        with torch.autocast(device_type=encoded_tokens.device.type, enabled=False):
             encoded_tokens = encoded_tokens.float()
             return self._build_keys_fp32(encoded_tokens, action_ids, entity_token, move_token)
+
+    def _build_keys_amp(self, encoded_tokens, action_ids, entity_token, move_token):
+        shape = action_ids.shape[:-1]
+        d = encoded_tokens.shape[-1]
+        token_part = self.token_references(encoded_tokens, entity_token, move_token).view(*shape, d)
+        return self.key_norm(token_part + self.action_features(action_ids))
 
     def _build_keys_fp32(self, encoded_tokens, action_ids, entity_token, move_token):
         shape = action_ids.shape[:-1]
@@ -232,11 +241,18 @@ class ConditionalPrefixScorer(nn.Module):
         the prefix. Reusing the selected key avoids repeating its embeddings,
         token gathers, projections and LayerNorm after scoring the branch.
         """
-        with torch.autocast(device_type=keys.device.type, dtype=torch.float16,
-                            enabled=self.precision_contract.scorer_amp and keys.device.type == "cuda"):
+        if self.precision_contract.scorer_amp and keys.device.type == "cuda":
+            return self._score_keys_amp(keys, prefix_hidden, mask)
+        with torch.autocast(device_type=keys.device.type, enabled=False):
             keys = keys.float()
             prefix_hidden = prefix_hidden.float()
             return self._score_keys_fp32(keys, prefix_hidden, mask)
+
+    def _score_keys_amp(self, keys, prefix_hidden, mask):
+        query = self.query_projection(self.query_norm(prefix_hidden))
+        logits = (keys * query.unsqueeze(1)).sum(dim=-1) * self.logit_scale
+        logits = logits + self.logit_bias
+        return logits.masked_fill(~mask, float("-inf"))
 
     def _score_keys_fp32(self, keys, prefix_hidden, mask):
         # The small policy output gain is applied last: normalizing the prefix
@@ -263,8 +279,9 @@ class ConditionalPrefixScorer(nn.Module):
         self, selected_keys: torch.Tensor, prefix_hidden: torch.Tensor
     ) -> torch.Tensor:
         """Advance the prefix using a selected key from ``build_keys``."""
-        with torch.autocast(device_type=selected_keys.device.type, dtype=torch.float16,
-                            enabled=self.precision_contract.gru_amp and selected_keys.device.type == "cuda"):
+        if self.precision_contract.gru_amp and selected_keys.device.type == "cuda":
+            return self.gru(selected_keys, prefix_hidden)
+        with torch.autocast(device_type=selected_keys.device.type, enabled=False):
             return self.gru(selected_keys.float(), prefix_hidden.float())
 
     def initial_state(self, batch_size: int, device: torch.device, dtype: torch.dtype) -> torch.Tensor:

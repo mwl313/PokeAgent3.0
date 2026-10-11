@@ -1,0 +1,19 @@
+{
+  "milestone": "A9.2",
+  "base_sha": "ce18e9a",
+  "verdict": "PARTIAL",
+  "historical_a5": {"games": 51200, "all_in_games_per_s": 92.57043596253837, "steady_games_per_s": 93.93631114306893, "recompute_gate": "disabled"},
+  "a91_baseline": {"games": 2048, "all_in_games_per_s": 37.22758080464706, "iteration_wall_s": 48.21, "recompute_gate_s": 9.65, "ppo_update_s": 24.34},
+  "a92_safe_mode_a": {"games": 51200, "iterations": 25, "all_in_games_per_s": 53.21374981369388, "steady_games_per_s": 53.612107067943185, "max_recompute_error_rank0": 3.2067298889160156e-05, "max_recompute_error_rank1": 2.9921531677246094e-05, "gate_seconds_mean": 0.17, "ppo_update_seconds_mean": 23.96, "optimizer_steps_per_rank": 441, "operational_errors": 0, "digests_equal": true, "peak_gpu_reserved_gib": 14.994140625, "status": "safe_reference"},
+  "arms": {
+    "REF": {"games": 12288, "iterations": 6, "all_in_games_per_s": 42.51198509601606, "steady_games_per_s": 43.52187976642386, "isolated_audit": true, "mean_isolated_audit_seconds": 9.049289541000084, "mean_batched_gate_seconds": 0.11645373933303442, "status": "pass"},
+    "B": {"completed_iterations": 2, "failed_iteration": 3, "failure_max_error": 0.001298, "update_seconds": [9.6, 9.2], "status": "failed_closed"},
+    "C": {"completed_iterations": 1, "failed_iteration": 2, "failure_max_error": 0.001671, "update_seconds": [9.5], "status": "failed_closed"},
+    "D": {"completed_iterations": 13, "valid_screen_games": 16384, "screen_all_in_games_per_s": 90.50114473346362, "screen_steady_games_per_s": 94.81535252446687, "failure_iteration": 14, "failure_rank": 1, "failure_max_error": 0.001438, "status": "failed_closed"}
+  },
+  "recompute": {"tolerance": 0.001, "production_gate_isolated_audit": false, "isolated_audit_switch": "--recompute-audit", "gate_negative_behavior": "stored-logprob and nonfinite checks remain fail-closed"},
+  "tests": {"pytest_passed": 27, "pytest_failed": 0, "archive_verify": "passed"},
+  "checkpoint_resume": {"mode": "A", "make_and_resume": "passed", "games_each": 2048, "digests_equal": true},
+  "promotion": {"selected_mode": "A", "ninety_games_per_s_sustained_correct": false, "a10_started": false},
+  "raw_receipts": ["runs/experiments/a/a92_ref_A_audit_6_real.json", "runs/experiments/a/a92_final_A_25.json", "runs/experiments/a/a92_mode_B_8_real.json.rank0.log", "runs/experiments/a/a92_mode_C_8_real.json.rank0.log", "runs/experiments/a/a92_mode_D_8_real.json", "runs/experiments/a/a92_final_D_25.json.rank1.log", "runs/experiments/a/a92_A_checkpoint_make.json", "runs/experiments/a/a92_A_checkpoint_resume.json"]
+}
