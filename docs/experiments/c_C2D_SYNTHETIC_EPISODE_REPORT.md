@@ -2,7 +2,8 @@
 
 **Status:** `C2D_SYNTHETIC_EPISODE_ONLY / NO_MIDBATTLE_ROOT / NO_SEARCH / NO_TEACHER / NO_DISTILLATION`
 
-**Implementation commit:** `4aabdae7caa08695851dd1110e14c24c7a4c654`
+**Implementation commits:** `4aabdae7caa08695851dd1110e14c24c7a4c654`,
+`24da4d5` (Dex provenance validation)
 
 **Files changed:** `engine/src/search/world.rs`,
 `engine/tests/search_world.rs`, and this report.
