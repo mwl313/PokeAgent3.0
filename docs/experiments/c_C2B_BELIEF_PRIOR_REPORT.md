@@ -2,7 +2,7 @@
 
 **Branch:** `research/c-rust-search-teacher`
 **Base:** `6922d9b`
-**Commit:** `c3d04e3`
+**Implementation commit:** `c9a0e66`
 **Status:** `C2B_BELIEF_SAMPLER_ONLY / NO_SEARCH / NO_TEACHER / NO_DISTILLATION`
 
 ## Scope and source
@@ -119,4 +119,4 @@ policy inference, search scoring, and distillation are explicitly out of scope.
 Implementation files: `engine/src/search/belief.rs`,
 `engine/src/search/mod.rs`, and `engine/tests/search_belief.rs`. Documentation:
 this report and the updated `c_SEARCH_API_AUDIT.md`. The verified commit is
-`c3d04e3`.
+`c9a0e66` (documentation-only follow-up may advance branch HEAD).
