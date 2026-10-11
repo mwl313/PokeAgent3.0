@@ -101,6 +101,17 @@ def test_persistent_cli_preserves_one_iteration_default(launcher):
     assert options.batch_cache == "cuda"
 
 
+def test_experimental_resume_is_opt_in_and_has_explicit_paths(launcher):
+    args = launcher.parse_args([
+        "--experimental-checkpoint", "/tmp/a-boundary",
+        "--experimental-resume", "/tmp/a-parent",
+        "--epochs", "2",
+    ])
+    assert args.experimental_checkpoint == "/tmp/a-boundary"
+    assert args.experimental_resume == "/tmp/a-parent"
+    assert args.epochs == 2
+
+
 def test_cli_rejects_zero_iterations(launcher):
     with pytest.raises(SystemExit):
         launcher.parse_args(["--iterations", "0"])

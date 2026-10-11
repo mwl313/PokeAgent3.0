@@ -98,7 +98,14 @@ def build_envelope(
     """
     if not iteration_complete or in_flight_battles != 0:
         raise ValueError("checkpoint requires a completed iteration with no in-flight battles")
-    if rank_digests is not None and len(set(rank_digests.values())) != 1:
+    if not rank_digests or set(rank_digests) != {str(index) for index in range(world_size)}:
+        raise ValueError("checkpoint requires model and optimizer digests for every rank")
+    digest_values = []
+    for rank_key, value in rank_digests.items():
+        if not isinstance(value, dict) or set(value) != {"model", "optimizer"}:
+            raise ValueError(f"rank {rank_key} digest is incomplete")
+        digest_values.append((value["model"], value["optimizer"]))
+    if len(set(digest_values)) != 1:
         raise ValueError("cannot checkpoint divergent rank digests")
     if committed_matches != learner.scheduler.matches:
         raise ValueError("committed-match clock disagrees with learner scheduler")
@@ -124,13 +131,20 @@ def build_envelope(
             "optimizer_steps": int(learner.optimizer_steps),
         },
         "collector_restart": copy.deepcopy(collector_restart),
-        "rank_digests": copy.deepcopy(rank_digests or {}),
+        "model_config_hash": hash_json(learner.model.config.to_dict()),
+        "ppo_config_hash": hash_json(learner.config.__dict__),
+        "rank_digests": copy.deepcopy(rank_digests),
     }
 
 
 def validate_envelope(envelope: dict, *, dataset_manifest_hash: str,
                       action_schema_hash: str, source_sha: Optional[str] = None,
-                      opponent_manifest: Optional[dict] = None) -> None:
+                      opponent_manifest: Optional[dict] = None,
+                      expected_rank: Optional[int] = None,
+                      expected_world_size: Optional[int] = None,
+                      expected_executor: Optional[str] = None,
+                      model_config_hash: Optional[str] = None,
+                      ppo_config_hash: Optional[str] = None) -> None:
     if envelope.get("schema_version") != SCHEMA_VERSION:
         raise ValueError("unsupported experimental checkpoint schema")
     if envelope.get("kind") != "ppo_experimental_iteration_boundary":
@@ -143,9 +157,35 @@ def validate_envelope(envelope: dict, *, dataset_manifest_hash: str,
         raise ValueError("source SHA mismatch")
     if opponent_manifest is not None and envelope.get("opponent_manifest") != opponent_manifest:
         raise ValueError("opponent manifest mismatch")
-    digests = envelope.get("rank_digests", {})
-    if digests and len(set(digests.values())) != 1:
+    ddp = envelope.get("ddp", {})
+    if expected_rank is not None and ddp.get("rank") != expected_rank:
+        raise ValueError("checkpoint rank mismatch")
+    if expected_world_size is not None and ddp.get("world_size") != expected_world_size:
+        raise ValueError("checkpoint world-size mismatch")
+    if expected_executor is not None and ddp.get("executor") != expected_executor:
+        raise ValueError("checkpoint executor mismatch")
+    if ddp.get("communicator") != "recreate":
+        raise ValueError("checkpoint must recreate DDP communicators")
+    if model_config_hash is not None and envelope.get("model_config_hash") != model_config_hash:
+        raise ValueError("model config hash mismatch")
+    if ppo_config_hash is not None and envelope.get("ppo_config_hash") != ppo_config_hash:
+        raise ValueError("PPO config hash mismatch")
+    digests = envelope.get("rank_digests")
+    if not isinstance(digests, dict) or set(digests) != {
+        str(index) for index in range(int(ddp.get("world_size", 0)))
+    }:
+        raise ValueError("checkpoint is missing a rank digest")
+    digest_values = []
+    for value in digests.values():
+        if not isinstance(value, dict) or set(value) != {"model", "optimizer"}:
+            raise ValueError("checkpoint contains an incomplete rank digest")
+        digest_values.append((value["model"], value["optimizer"]))
+    if len(set(digest_values)) != 1:
         raise ValueError("checkpoint contains divergent rank digests")
+    restart = envelope.get("collector_restart", {})
+    required_restart = {"seed", "cohorts", "match_counter", "slot_counter", "config_hash"}
+    if not required_restart.issubset(restart):
+        raise ValueError("checkpoint is missing collector restart state")
     accounting = envelope.get("accounting", {})
     if accounting.get("committed_matches") != envelope["learner"]["scheduler"].get("matches"):
         raise ValueError("checkpoint accounting does not match scheduler clock")
@@ -154,11 +194,19 @@ def validate_envelope(envelope: dict, *, dataset_manifest_hash: str,
 def restore_envelope(learner, envelope: dict, *, dataset_manifest_hash: str,
                      action_schema_hash: str, generators=None,
                      source_sha: Optional[str] = None,
-                     opponent_manifest: Optional[dict] = None) -> None:
+                     opponent_manifest: Optional[dict] = None,
+                     expected_rank: Optional[int] = None,
+                     expected_world_size: Optional[int] = None,
+                     expected_executor: Optional[str] = None,
+                     model_config_hash: Optional[str] = None,
+                     ppo_config_hash: Optional[str] = None) -> None:
     validate_envelope(
         envelope, dataset_manifest_hash=dataset_manifest_hash,
         action_schema_hash=action_schema_hash, source_sha=source_sha,
         opponent_manifest=opponent_manifest,
+        expected_rank=expected_rank, expected_world_size=expected_world_size,
+        expected_executor=expected_executor, model_config_hash=model_config_hash,
+        ppo_config_hash=ppo_config_hash,
     )
     learner.load_state_dict(envelope["learner"])
     restore_rng_state(envelope["rng"], generators)
@@ -189,11 +237,28 @@ def fork_for_epochs(envelope: dict, epochs: int) -> dict:
 
 def save_envelope(path, envelope: dict) -> None:
     """Persist an already validated envelope at an experiment boundary."""
-    torch.save(envelope, path)
+    import os
+
+    target = os.path.abspath(path)
+    os.makedirs(os.path.dirname(target), exist_ok=True)
+    temporary = f"{target}.tmp-{os.getpid()}"
+    try:
+        torch.save(envelope, temporary)
+        with open(temporary, "rb") as handle:
+            os.fsync(handle.fileno())
+        os.replace(temporary, target)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
 
 
 def load_envelope(path) -> dict:
-    """Load an envelope without implicitly restoring any process state."""
+    """Load a trusted local envelope without restoring process state."""
+    import os
+
+    path = os.fspath(path)
+    if not os.path.isabs(path) or "://" in path or not os.path.isfile(path):
+        raise ValueError("experimental checkpoints must be existing local files")
     envelope = torch.load(path, map_location="cpu", weights_only=False)
     if not isinstance(envelope, dict):
         raise ValueError("experimental checkpoint is not an envelope mapping")

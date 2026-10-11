@@ -85,6 +85,18 @@ def parse_args(argv=None):
     parser.add_argument("--teams", default=os.path.join(ROOT, "engine", "data", "training-teams.json"))
     parser.add_argument("--report", default=os.path.join(ROOT, "runs", "perf", "v4_ddp.json"))
     parser.add_argument("--checkpoint", default="")
+    parser.add_argument(
+        "--experimental-checkpoint", default="",
+        help="opt-in iteration-boundary envelope prefix (one file per rank)",
+    )
+    parser.add_argument(
+        "--experimental-resume", default="",
+        help="opt-in envelope prefix to restore (one file per rank)",
+    )
+    parser.add_argument(
+        "--dataset-manifest",
+        default=os.path.join(ROOT, "data/teams/mb-mc-v3-userteam-all-train/manifest.json"),
+    )
     parser.add_argument("--timeout", type=float, default=900.0, help="process-group/task timeout seconds")
     parser.add_argument("--debug", action="store_true", help="enable TORCH_DISTRIBUTED_DEBUG=DETAIL")
     parser.add_argument(
@@ -108,6 +120,8 @@ def parse_args(argv=None):
     args = parser.parse_args(argv)
     if args.iterations < 1:
         parser.error("--iterations must be at least 1")
+    if args.experimental_resume and args.rolling_slots:
+        parser.error("experimental resume requires static collector slots")
     return args
 
 
@@ -284,8 +298,18 @@ def worker(args) -> None:
     from agent.model import PA3Config, build_model
     from agent.ppo import PPOConfig, PPOLearner
     from agent.ppo.ddp import DDPCommunication
+    from agent.ppo.experimental_checkpoint import (
+        build_envelope, hash_file, hash_json, load_envelope, restore_envelope,
+        save_envelope, validate_epoch_override,
+    )
     from agent.train.native_collector import NativeCollector, NativeCollectorConfig
 
+    resume_envelope = None
+    if args.experimental_resume:
+        resume_path = f"{os.path.abspath(args.experimental_resume)}.rank{rank}"
+        if not os.path.isfile(resume_path):
+            raise RuntimeError(f"experimental resume artifact is missing: {resume_path}")
+        resume_envelope = load_envelope(resume_path)
     torch.manual_seed(args.seed + rank)
     engine = pa3_engine.NativeEngine(args.data, args.teams, workers=args.workers)
     model = build_model(PA3Config())
@@ -296,10 +320,35 @@ def worker(args) -> None:
         per_rank_minibatch_size=args.minibatch // world_size,
         grad_accumulation_per_rank=max(1, (args.minibatch // world_size) // args.microbatch),
     )
+    saved_epochs = (
+        int(resume_envelope["learner"]["config"]["ppo"]["ppo_epochs"])
+        if resume_envelope is not None else 4
+    )
     if args.epochs:
         overrides["ppo_epochs"] = args.epochs
+    elif resume_envelope is not None:
+        overrides["ppo_epochs"] = saved_epochs
+    if (args.experimental_resume or args.experimental_checkpoint) and overrides.get("ppo_epochs", 4) not in (2, 4):
+        raise RuntimeError("experimental continuation permits only PPO epochs 2 or 4")
     ppo_config = PPOConfig(**overrides)
     learner = PPOLearner(model, ppo_config, device=device)
+
+    source_sha = source_provenance().get("git_sha")
+    dataset_manifest_hash = hash_file(args.dataset_manifest)
+    action_schema_hash = hash_json({
+        "observation": "pa3-entity-observation-v1",
+        "actions": "atomic-action-v1",
+        "candidates": "branch-candidates-v1",
+    })
+    opponent_manifest = {"current": "current", "historical": []}
+    model_config_hash = hash_json(model.config.to_dict())
+    collector_contract = {
+        "envs": args.envs, "workers": args.workers, "data": os.path.abspath(args.data),
+        "teams": os.path.abspath(args.teams), "observation_mode": "fixed",
+        "candidate_wire": "packed", "columnar_store": bool(args.columnar_store),
+        "rolling_slots": bool(args.rolling_slots), "both_current_sides": True,
+    }
+    collector_config_hash = hash_json(collector_contract)
     if args.executor == "manual":
         # No DDP wrapper: local FP32 gradients are summed explicitly.
         # DDP performs this broadcast in its constructor. The manual executor
@@ -315,6 +364,18 @@ def worker(args) -> None:
         )
         learner.attach_ddp(ddp_model, world_size)
         communication = DDPCommunication(ddp_model)
+    if resume_envelope is not None:
+        validate_epoch_override(resume_envelope, ppo_config, ppo_config.ppo_epochs)
+        restore_envelope(
+            learner, resume_envelope, dataset_manifest_hash=dataset_manifest_hash,
+            action_schema_hash=action_schema_hash, source_sha=source_sha,
+            opponent_manifest=opponent_manifest, expected_rank=rank,
+            expected_world_size=world_size, expected_executor=args.executor,
+            model_config_hash=model_config_hash, generators=None,
+        )
+        restart = resume_envelope.get("collector_restart", {})
+        if restart.get("config_hash") != collector_config_hash:
+            raise RuntimeError("experimental resume collector contract mismatch")
     recompute_check = None
     if args.recompute_gate:
         scripts_dir = os.path.join(ROOT, "scripts")
@@ -327,11 +388,18 @@ def worker(args) -> None:
     # observation stores or row cursors. Each iteration gets a distinct engine
     # and policy-sampling seed; iteration 1 is identical to the legacy seed.
     shuffle_generator = torch.Generator(device="cpu").manual_seed(args.seed + rank)
-    global_games = 0
+    if resume_envelope is not None:
+        # Restore the explicitly owned shuffle stream after the DDP reducer has
+        # been recreated. The envelope has one generator per rank process.
+        from agent.ppo.experimental_checkpoint import restore_rng_state
+        restore_rng_state(resume_envelope["rng"], [shuffle_generator])
+    global_games = int(resume_envelope["accounting"]["committed_matches"]) if resume_envelope else 0
+    iteration_offset = int(resume_envelope["accounting"]["iteration"]) if resume_envelope else 0
     iterations = []
     torch.cuda.synchronize(device)
     startup_wall = time.perf_counter() - worker_started
     for index in range(args.iterations):
+        absolute_iteration = iteration_offset + index
         iteration_started = time.perf_counter()
         timings = {key: 0.0 for key in STAGE_WALL_KEYS}
 
@@ -342,7 +410,7 @@ def worker(args) -> None:
         stage_started = time.perf_counter()
         dist.barrier()
         torch.cuda.reset_peak_memory_stats(device)
-        iteration_seed = args.seed + rank + index * world_size
+        iteration_seed = args.seed + rank + absolute_iteration * world_size
         collector = NativeCollector(
             engine, model,
             NativeCollectorConfig(
@@ -435,6 +503,40 @@ def worker(args) -> None:
                     },
                 },
                 digests_equal=digests_equal,
+            )
+        if args.experimental_checkpoint:
+            if args.rolling_slots:
+                raise RuntimeError("experimental envelope requires static collector restart")
+            envelope = build_envelope(
+                learner,
+                source_sha=source_sha,
+                dataset_manifest_hash=dataset_manifest_hash,
+                action_schema_hash=action_schema_hash,
+                opponent_manifest=opponent_manifest,
+                experiment={
+                    "name": "ddp_ppo_iteration_boundary",
+                    "ppo_epochs": ppo_config.ppo_epochs,
+                    "parent_resume": bool(resume_envelope),
+                },
+                rank=rank, world_size=world_size, executor=args.executor,
+                iteration=absolute_iteration + 1,
+                committed_matches=global_games,
+                natural_games=int(collector.stats.games),
+                learner_rows=len(buffer.rows),
+                collector_restart={
+                    "seed": args.seed, "iteration": absolute_iteration + 1,
+                    "cohorts": int(collector.stats.cohorts),
+                    "match_counter": int(getattr(collector, "_match_counter", 0)),
+                    "slot_counter": int(getattr(collector, "_slot_counter", 0)),
+                    "config_hash": collector_config_hash,
+                },
+                rng_generators=[shuffle_generator],
+                rank_digests={str(index): value for index, value in enumerate(digests)},
+                in_flight_battles=0, iteration_complete=True,
+            )
+            save_envelope(
+                f"{os.path.abspath(args.experimental_checkpoint)}.rank{rank}",
+                envelope,
             )
         finish_stage("checkpoint_wall_s", stage_started)
 
@@ -534,6 +636,9 @@ def parent(args) -> None:
                 "--epochs", str(args.epochs), "--timeout", str(args.timeout),
                 "--data", args.data, "--teams", args.teams, "--port", str(port),
                 "--report", args.report, "--checkpoint", args.checkpoint,
+                "--experimental-checkpoint", args.experimental_checkpoint,
+                "--experimental-resume", args.experimental_resume,
+                "--dataset-manifest", args.dataset_manifest,
                 "--executor", args.executor,
             ]
             if not args.recompute_gate:

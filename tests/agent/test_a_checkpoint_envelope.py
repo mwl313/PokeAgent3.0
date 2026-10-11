@@ -48,7 +48,8 @@ def _envelope(learner, generator):
         collector_restart={"seed": 20261011, "cohorts": 4,
                            "match_counter": 128, "slot_counter": 128,
                            "config_hash": "collector"},
-        rng_generators=[generator], rank_digests={"0": "digest", "1": "digest"},
+        rng_generators=[generator], rank_digests={"0": {"model": "model", "optimizer": "optimizer"},
+                                                 "1": {"model": "model", "optimizer": "optimizer"}},
     )
 
 
@@ -92,10 +93,17 @@ def test_envelope_rejects_hash_and_boundary_or_rank_mismatches(model_factory):
     with pytest.raises(ValueError, match="in-flight"):
         build_envelope(learner, **kwargs, in_flight_battles=1)
     with pytest.raises(ValueError, match="divergent"):
-        build_envelope(learner, **kwargs, rank_digests={"0": "a", "1": "b"})
-    envelope = build_envelope(learner, **kwargs, rank_digests={"0": "a", "1": "a"})
+        build_envelope(learner, **kwargs, rank_digests={"0": {"model": "a", "optimizer": "a"},
+                                                        "1": {"model": "b", "optimizer": "b"}})
+    envelope = build_envelope(learner, **kwargs, rank_digests={"0": {"model": "a", "optimizer": "a"},
+                                                                "1": {"model": "a", "optimizer": "a"}})
     with pytest.raises(ValueError, match="dataset manifest"):
         validate_envelope(envelope, dataset_manifest_hash="wrong", action_schema_hash="actions")
+    with pytest.raises(ValueError, match="action schema"):
+        validate_envelope(envelope, dataset_manifest_hash="dataset", action_schema_hash="wrong")
+    with pytest.raises(ValueError, match="rank"):
+        validate_envelope(envelope, dataset_manifest_hash="dataset", action_schema_hash="actions",
+                          expected_rank=1)
 
 
 def test_epoch_fork_changes_only_explicit_epoch_override(model_factory):

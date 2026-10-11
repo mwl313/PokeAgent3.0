@@ -1,7 +1,8 @@
 # Track A experimental checkpoint continuation design
 
-This is an experiment-only design. It does not change the production launcher
-or the Full Spec defaults.
+This is an experiment-only design. The normal launcher path and Full Spec
+defaults are unchanged. The opt-in `--experimental-checkpoint` and
+`--experimental-resume` paths now implement the boundary protocol below.
 
 ## Boundary and envelope
 
