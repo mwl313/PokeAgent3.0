@@ -849,6 +849,27 @@ impl PersistentParticleBelief {
             diagnostics.status_reason = "persistent exact-support update retained particles".into();
             ParticleStatus::Supported
         };
+        // A public-event proposal with no compatible legal completion has not
+        // advanced any private world and is not an observation contradiction.
+        // Preserve the tracker exactly so a caller can retry with a different
+        // approved proposal policy; do not turn proposal failure into an
+        // irreversible particle collapse.
+        if status == ParticleStatus::ProposalZeroSupport {
+            diagnostics.post_update_particles = self.particles.len();
+            diagnostics.post_update_distinct_hypotheses = self
+                .particles
+                .iter()
+                .map(|particle| particle.hypothesis_key.clone())
+                .collect::<std::collections::BTreeSet<_>>()
+                .len();
+            diagnostics.distinct_hypotheses = diagnostics.post_update_distinct_hypotheses;
+            return Ok(ParticleResult {
+                schema_version: PARTICLE_BELIEF_SCHEMA,
+                status,
+                conditioned_observation: None,
+                diagnostics,
+            });
+        }
         self.particles = std::mem::take(&mut self.particles)
             .into_iter()
             .zip(retain)
@@ -1711,7 +1732,7 @@ mod tests {
         let before = tracker.current_observation().clone();
         let result = tracker
             .update_with_proposal(
-                preview_actions,
+                preview_actions.clone(),
                 &contradictory,
                 ParticleConfig {
                     particles: 1,
@@ -1724,6 +1745,19 @@ mod tests {
         assert_eq!(result.status, ParticleStatus::ProposalZeroSupport);
         assert_eq!(result.diagnostics.public_event_zero_support_particles, 1);
         assert_eq!(tracker.current_observation(), &before);
+        let retry = tracker
+            .update_with_proposal(
+                preview_actions,
+                &target_preview,
+                ParticleConfig {
+                    particles: 1,
+                    min_surviving_particles: 1,
+                    max_units: 128,
+                },
+                OpponentProposal::PublicEventConditionedV1,
+            )
+            .unwrap();
+        assert_eq!(retry.status, ParticleStatus::Supported);
     }
 
     #[test]
