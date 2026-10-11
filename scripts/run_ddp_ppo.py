@@ -72,6 +72,10 @@ def parse_args(argv=None):
     parser.add_argument("--minibatch", type=int, default=4096, help="global minibatch (both ranks)")
     parser.add_argument("--seed", type=int, default=20261009)
     parser.add_argument("--epochs", type=int, default=0, help="override ppo_epochs (0 = config default)")
+    parser.add_argument("--experimental-lr-scale", type=float, default=1.0,
+                        help="opt-in multiplier for the absolute match-clock LR schedule")
+    parser.add_argument("--experimental-allow-source-sha", action="store_true",
+                        help="explicitly migrate a trusted A3 checkpoint from its recorded source SHA")
     parser.add_argument("--executor", choices=["ddp", "manual"], default="ddp")
     parser.add_argument(
         "--batch-cache", choices=["none", "cpu", "cuda"], default="cuda",
@@ -122,6 +126,10 @@ def parse_args(argv=None):
         parser.error("--iterations must be at least 1")
     if args.experimental_resume and args.rolling_slots:
         parser.error("experimental resume requires static collector slots")
+    if args.experimental_lr_scale <= 0.0:
+        parser.error("--experimental-lr-scale must be positive")
+    if args.experimental_lr_scale != 1.0 and not (args.experimental_resume or args.experimental_checkpoint):
+        parser.error("experimental LR scale requires an experimental checkpoint or resume")
     return args
 
 
@@ -331,7 +339,12 @@ def worker(args) -> None:
     if (args.experimental_resume or args.experimental_checkpoint) and overrides.get("ppo_epochs", 4) not in (2, 4):
         raise RuntimeError("experimental continuation permits only PPO epochs 2 or 4")
     ppo_config = PPOConfig(**overrides)
-    learner = PPOLearner(model, ppo_config, device=device)
+    lr_scale = float(args.experimental_lr_scale)
+    if resume_envelope is not None:
+        saved_scale_value = resume_envelope.get("experiment", {}).get("lr_scale")
+        if saved_scale_value is not None and abs(float(saved_scale_value) - lr_scale) > 1e-12:
+            raise RuntimeError("experimental resume LR scale mismatch; use an explicit matching arm")
+    learner = PPOLearner(model, ppo_config, device=device, lr_scale=lr_scale)
 
     source_sha = source_provenance().get("git_sha")
     dataset_manifest_hash = hash_file(args.dataset_manifest)
@@ -366,9 +379,16 @@ def worker(args) -> None:
         communication = DDPCommunication(ddp_model)
     if resume_envelope is not None:
         validate_epoch_override(resume_envelope, ppo_config, ppo_config.ppo_epochs)
+        recorded_source_sha = resume_envelope.get("source_sha")
+        expected_source_sha = source_sha
+        if recorded_source_sha != source_sha:
+            if not args.experimental_allow_source_sha or recorded_source_sha != "30b10e28d608f869811a4525afaa8101613c7adc":
+                raise RuntimeError("source SHA mismatch; pass --experimental-allow-source-sha only for the recorded A3 source")
+            expected_source_sha = recorded_source_sha
+            note(f"explicit checkpoint migration: {recorded_source_sha} -> {source_sha}")
         restore_envelope(
             learner, resume_envelope, dataset_manifest_hash=dataset_manifest_hash,
-            action_schema_hash=action_schema_hash, source_sha=source_sha,
+            action_schema_hash=action_schema_hash, source_sha=expected_source_sha,
             opponent_manifest=opponent_manifest, expected_rank=rank,
             expected_world_size=world_size, expected_executor=args.executor,
             model_config_hash=model_config_hash, generators=None,
@@ -521,6 +541,8 @@ def worker(args) -> None:
                     "name": "ddp_ppo_iteration_boundary",
                     "ppo_epochs": ppo_config.ppo_epochs,
                     "parent_resume": bool(resume_envelope),
+                    "lr_scale": lr_scale,
+                    "source_migration_allowed": bool(args.experimental_allow_source_sha),
                 },
                 rank=rank, world_size=world_size, executor=args.executor,
                 iteration=absolute_iteration + 1,
@@ -579,10 +601,14 @@ def worker(args) -> None:
                 "compact_candidates": args.compact_candidates,
                 "trim_observation_padding": args.trim_observation_padding,
                 "microbatch": args.microbatch,
+                "experimental_lr_scale": lr_scale,
             },
             "sync_calls": communication.sync_calls if communication is not None else None,
             "no_sync_calls": communication.no_sync_calls if communication is not None else None,
             "report": report.as_dict(),
+            "scheduled_learning_rate": learner.scheduler.lr_for_matches(global_games) / lr_scale,
+            "effective_learning_rate": learner.scheduler.learning_rate,
+            "experimental_lr_scale": lr_scale,
             "profile": dict(learner.profile),
             "prepare_profile": dict(learner.prepare_profile),
             "collector_stats": stats,
@@ -644,6 +670,7 @@ def parent(args) -> None:
                 "--workers", str(args.workers), "--microbatch", str(args.microbatch),
                 "--minibatch", str(args.minibatch), "--seed", str(args.seed),
                 "--epochs", str(args.epochs), "--timeout", str(args.timeout),
+                "--experimental-lr-scale", str(args.experimental_lr_scale),
                 "--data", args.data, "--teams", args.teams, "--port", str(port),
                 "--report", args.report, "--checkpoint", args.checkpoint,
                 "--experimental-checkpoint", args.experimental_checkpoint,
@@ -651,6 +678,8 @@ def parent(args) -> None:
                 "--dataset-manifest", args.dataset_manifest,
                 "--executor", args.executor,
             ]
+            if args.experimental_allow_source_sha:
+                command.append("--experimental-allow-source-sha")
             if not args.recompute_gate:
                 command.append("--no-recompute-gate")
             command.append("--trim-observation-padding" if args.trim_observation_padding
@@ -727,6 +756,7 @@ def parent(args) -> None:
         "compact_candidates": args.compact_candidates,
         "trim_observation_padding": args.trim_observation_padding,
         "microbatch": args.microbatch,
+        "experimental_lr_scale": args.experimental_lr_scale,
     }
     if any(result["execution_options"] != expected_execution for result in results):
         raise RuntimeError("worker execution options differ from the requested benchmark")

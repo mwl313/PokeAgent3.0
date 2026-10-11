@@ -1,0 +1,16 @@
+{
+  "source_sha": "30b10e28d608f869811a4525afaa8101613c7adc",
+  "base_matches": 249856,
+  "final_matches": 301056,
+  "backup_sha256": {
+    "rank0": "4b78596187680f543871a3844279bf81d57835c01ff3fdb23f35963fbbc1c776",
+    "rank1": "f2ed95e1c402b2d54991ba518c78a6a9bba3534e810c1038af4d1a4509cce9f8"
+  },
+  "arms": {
+    "lr1": {"scale": 1.0, "wall_s": 551.9854175180008, "optimizer_steps": 441, "effective_lr": 0.0002999998254695575, "entropy": 0.48339056081964155, "approx_kl": 0.006282749760052978, "value_loss": 0.22939844845722301, "early_stops": 1, "wins": 1200, "losses": 848, "draws": 0, "score": 0.5859375, "ci95": [0.56591796875, 0.607421875]},
+    "lr05": {"scale": 0.5, "wall_s": 558.0274485910013, "optimizer_steps": 450, "effective_lr": 0.00014999991273477876, "entropy": 0.48036385085472677, "approx_kl": 0.005316867769980327, "value_loss": 0.2308668426186738, "early_stops": 2, "wins": 1264, "losses": 784, "draws": 0, "score": 0.6171875, "ci95": [0.59814453125, 0.63671875]}
+  },
+  "evaluation": {"pairs": 1024, "games": 2048, "fixture_manifest_hash": "b10c170c6aa5e97843de611e605a92021089c74247202c5355a58fb5fdd640df", "opponent": "ppo4_77824"},
+  "recompute_gate": {"max_abs_diff": 0.001050710678100586, "tolerance": 0.001, "status": "unresolved"},
+  "historical_self_play": "not_started_collector_model_path_required"
+}

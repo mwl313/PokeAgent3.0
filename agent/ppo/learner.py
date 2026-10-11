@@ -91,6 +91,7 @@ class PPOLearner:
         config: Optional[PPOConfig] = None,
         device: Optional[torch.device | str] = None,
         amp: Optional[bool] = None,
+        lr_scale: float = 1.0,
     ) -> None:
         self.config = config or PPOConfig()
         self.config.validate()
@@ -103,7 +104,7 @@ class PPOLearner:
             eps=self.config.eps,
             weight_decay=self.config.weight_decay,
         )
-        self.scheduler = MatchClockScheduler(self.optimizer, self.config)
+        self.scheduler = MatchClockScheduler(self.optimizer, self.config, lr_scale=lr_scale)
         self.amp = bool(amp) if amp is not None else (
             self.config.fp16_autocast and self.device.type == "cuda"
         )

@@ -140,13 +140,17 @@ class FixedPolicyEvaluator:
             opponent_model.eval()
             for parameter in opponent_model.parameters():
                 parameter.requires_grad_(False)
-        rng = random.Random(self.seed)
-        torch_rng = torch.Generator(device=self.device.type).manual_seed(self.seed)
         started = time.perf_counter()
         outcomes = []
         totals = {"wins": 0, "losses": 0, "draws": 0, "operational_errors": 0, "illegal_actions": 0}
         team_groups = {}
         for fixture in fixtures:
+            # Independent streams prevent fixture ordering or the opposite
+            # seat from perturbing a frozen-policy decision stream.
+            fixture_seed = (self.seed * 1000003 + fixture.pair_id * 9176
+                            + fixture.fixture_id * 37 + fixture.policy_side) & 0x7fffffff
+            rng = random.Random(fixture_seed)
+            torch_rng = torch.Generator(device=self.device.type).manual_seed(fixture_seed)
             handle = self.engine.reset_batch(
                 [fixture.team_a], [fixture.team_b], [fixture.seed],
                 [(fixture.policy_side, 1 - fixture.policy_side)],
@@ -236,12 +240,15 @@ class FixedPolicyEvaluator:
                 bucket["illegal_actions"] += int(illegal)
         scores = [1.0 if row["outcome"] == "win" else 0.5 if row["outcome"] == "draw" else 0.0
                   for row in outcomes if row["outcome"] in {"win", "loss", "draw"}]
-        low, high = self._bootstrap_ci(scores, self.seed)
+        pair_scores = self._paired_scores(outcomes)
+        low, high = self._bootstrap_ci(pair_scores, self.seed)
         return {
             "fixtures": _fixture_json(fixtures), "fixture_manifest_hash": fixture_manifest_hash(fixtures),
             "policy": policy, "opponent": opponent, "matches": len(fixtures), **totals,
             "team_group_results": team_groups,
             "score_mean": sum(scores) / len(scores) if scores else None,
+            "paired_score_mean": sum(pair_scores) / len(pair_scores) if pair_scores else None,
+            "paired_fixtures": len(pair_scores),
             "score_ci95": [low, high] if scores else None,
             "confidence_status": "inconclusive" if scores and low <= 0.55 and high >= 0.45 else "descriptive_only",
             "runtime_seconds": time.perf_counter() - started, "outcomes": outcomes,
@@ -255,6 +262,16 @@ class FixedPolicyEvaluator:
                 layout=self.layout, device=self.device,
             )
         return self._helper
+
+    @staticmethod
+    def _paired_scores(outcomes):
+        grouped = {}
+        for row in outcomes:
+            if row["outcome"] not in {"win", "loss", "draw"}:
+                continue
+            score = 1.0 if row["outcome"] == "win" else 0.5 if row["outcome"] == "draw" else 0.0
+            grouped.setdefault(row["pair_id"], []).append(score)
+        return [sum(values) / len(values) for values in grouped.values() if len(values) == 2]
 
     @staticmethod
     def _bootstrap_ci(scores, seed, samples=1000):

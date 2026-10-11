@@ -15,10 +15,13 @@ from agent.ppo.config import PPOConfig
 
 
 class MatchClockScheduler:
-    def __init__(self, optimizer, config: Optional[PPOConfig] = None) -> None:
+    def __init__(self, optimizer, config: Optional[PPOConfig] = None, *, lr_scale: float = 1.0) -> None:
         self.optimizer = optimizer
         self.config = config or PPOConfig()
         self.config.validate()
+        self.lr_scale = float(lr_scale)
+        if not math.isfinite(self.lr_scale) or self.lr_scale <= 0.0:
+            raise ValueError("learning-rate scale must be a finite positive number")
         self.matches = 0
         for group in self.optimizer.param_groups:
             group.setdefault("initial_lr", self.config.warmup_start_lr)
@@ -30,12 +33,12 @@ class MatchClockScheduler:
         matches = max(0.0, float(matches))
         if matches < cfg.warmup_matches:
             progress = matches / max(1.0, float(cfg.warmup_matches))
-            return cfg.warmup_start_lr + (cfg.peak_lr - cfg.warmup_start_lr) * progress
+            return (cfg.warmup_start_lr + (cfg.peak_lr - cfg.warmup_start_lr) * progress) * self.lr_scale
         span = max(1.0, float(cfg.horizon_matches - cfg.warmup_matches))
         progress = min(1.0, (matches - cfg.warmup_matches) / span)
-        return cfg.final_lr + 0.5 * (cfg.peak_lr - cfg.final_lr) * (
+        return (cfg.final_lr + 0.5 * (cfg.peak_lr - cfg.final_lr) * (
             1.0 + math.cos(math.pi * progress)
-        )
+        )) * self.lr_scale
 
     # -- clock ------------------------------------------------------------
     def advance(self, committed_matches: int) -> float:
@@ -59,7 +62,10 @@ class MatchClockScheduler:
 
     # -- checkpointing -----------------------------------------------------
     def state_dict(self) -> dict:
-        return {"matches": self.matches, "lr": self.learning_rate}
+        return {"matches": self.matches, "lr": self.learning_rate, "lr_scale": self.lr_scale}
 
     def load_state_dict(self, state: dict) -> None:
+        saved_scale = state.get("lr_scale")
+        if saved_scale is not None and abs(float(saved_scale) - self.lr_scale) > 1e-12:
+            raise ValueError("learning-rate scale mismatch on scheduler restore")
         self.step_to(int(state.get("matches", 0)))
