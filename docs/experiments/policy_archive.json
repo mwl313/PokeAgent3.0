@@ -1,0 +1,74 @@
+{
+  "evaluations": [],
+  "incumbent": "a5_control_352256",
+  "latest": "a5_historical_352256",
+  "policies": {
+    "a4_ppo2_lr05_301056": {
+      "action_schema": "atomic-action-v1",
+      "committed_matches": 301056,
+      "file_sha256": "411244f2ca3333a194eb8fee6f56701334fe9fe123169195ce2044371f0c827a",
+      "id": "a4_ppo2_lr05_301056",
+      "label": "archive",
+      "model_digest": "b5ad6a0255371d199aa4e8af4892a940cd5a9f3dc91dbba26d9f7218fbc38b97",
+      "observation_schema": "pa3-entity-observation-v1",
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/experiments/a/a4_lr05/boundary.rank0",
+      "source_sha": "575a706e2fed072e30d9f0dda0f8a3327fcb48aa"
+    },
+    "a5_control_352256": {
+      "action_schema": "atomic-action-v1",
+      "committed_matches": 352256,
+      "file_sha256": "4ee544921233ca48371ed73296068fe5d45d420cf112c68a69be40a001d61243",
+      "id": "a5_control_352256",
+      "label": "incumbent",
+      "model_digest": "35cca3196ae97960d663c69e4e6595c8902e8b61a87a013154460df51a01234e",
+      "observation_schema": "pa3-entity-observation-v1",
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/experiments/a/a5_control/boundary.rank0",
+      "source_sha": "0059b34179790610d0f39e832297be8645790a80"
+    },
+    "a5_historical_352256": {
+      "action_schema": "atomic-action-v1",
+      "committed_matches": 352256,
+      "file_sha256": "8027bd237776e41a6fd4e0037f37e29938912cbde6d7474a2fc28951989b7730",
+      "id": "a5_historical_352256",
+      "label": "archive",
+      "model_digest": "077086626c469d419c00846bfeae361dc424665a8183ff41a94f674c01cf5da6",
+      "observation_schema": "pa3-entity-observation-v1",
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/experiments/a/a5_historical/boundary.rank0",
+      "source_sha": "0059b34179790610d0f39e832297be8645790a80"
+    },
+    "ppo2_176128": {
+      "action_schema": "atomic-action-v1",
+      "committed_matches": 176128,
+      "file_sha256": "a011639c0e6551c497df1a98cd6ba203400ed654f5862a8ad001ffc48ec25e35",
+      "id": "ppo2_176128",
+      "label": "archive",
+      "model_digest": "ece9ddbf8846195b820353ce4064f03ce7d6a321cff9872950b71d543496f8f8",
+      "observation_schema": "pa3-entity-observation-v1",
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/experiments/a/a3_ppo2_to250k/chunk04/boundary.rank0",
+      "source_sha": "30b10e28d608f869811a4525afaa8101613c7adc"
+    },
+    "ppo2_249856": {
+      "action_schema": "atomic-action-v1",
+      "committed_matches": 249856,
+      "file_sha256": "4b78596187680f543871a3844279bf81d57835c01ff3fdb23f35963fbbc1c776",
+      "id": "ppo2_249856",
+      "label": "archive",
+      "model_digest": "f7cd2a3330e89ce3c5dcffda140ef4752cce1b1b9551e83b211e0f00846ec1ee",
+      "observation_schema": "pa3-entity-observation-v1",
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/experiments/a/a3_ppo2_to250k/chunk07/boundary.rank0",
+      "source_sha": "30b10e28d608f869811a4525afaa8101613c7adc"
+    },
+    "ppo4_77824": {
+      "action_schema": "atomic-action-v1",
+      "committed_matches": 77824,
+      "file_sha256": "f12124f5e29a97dd874e80c6d9d7173778759158b3c2cd770509dfbfed6e09dc",
+      "id": "ppo4_77824",
+      "label": "archive",
+      "model_digest": "afdde8c8385537589fb78206120a0fc9fb9c2af6a33e7378e0b02ff4400583e6",
+      "observation_schema": "pa3-entity-observation-v1",
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/experiments/a/a3_ppo4_50k/boundary.rank0",
+      "source_sha": "30b10e28d608f869811a4525afaa8101613c7adc"
+    }
+  },
+  "schema": "pa3-policy-archive-v1"
+}

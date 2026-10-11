@@ -11,6 +11,7 @@ import torch
 from agent.model import PA3Config, build_model
 from agent.model.pa3_model import PA3Model
 from agent.train.native_collector import NativeCollector, NativeCollectorConfig
+from agent.types.observation import ObservationLayout
 
 
 INTERFACE_VERSION = "pa3-frozen-policy-v1"
@@ -44,6 +45,8 @@ class FrozenPPOPolicy:
         )
         self._helper = NativeCollector.__new__(NativeCollector)
         self._helper.config = NativeCollectorConfig(record_rows=False)
+        self._helper.layout = ObservationLayout()
+        self._helper.device = self.device
 
     @classmethod
     def from_checkpoint(cls, path, *, device="cpu", config: PA3Config | None = None):
@@ -76,7 +79,11 @@ class FrozenPPOPolicy:
             hidden = self.model.scorer.initial_state(1, device=self.device,
                                                       dtype=encoded.tokens.dtype)
             logprobs = []
+            if len(candidate_lists) > 1 and selected_prefix is None:
+                raise ValueError("multi-branch scoring requires an explicit selected prefix")
             selected_prefix = list(selected_prefix or [])
+            if len(selected_prefix) > len(candidate_lists):
+                raise ValueError("selected prefix is longer than the candidate path")
             for level, candidates in enumerate(candidate_lists):
                 if not candidates:
                     raise ValueError("candidate branch is empty")
@@ -86,7 +93,14 @@ class FrozenPPOPolicy:
                 logits = self.model.scorer.score_keys(keys, hidden, table.mask[:, 0])
                 logprob, probs, _entropy, _kl = self.model._branch_stats(logits, table.mask[:, 0])
                 logprobs.append(logprob.detach().float().cpu())
-                pick = int(selected_prefix[level]) if level < len(selected_prefix) else int(torch.argmax(logits, dim=-1).item())
+                if level < len(selected_prefix):
+                    pick = int(selected_prefix[level])
+                    if pick < 0 or pick >= len(candidates):
+                        raise ValueError("selected action index is outside the legal candidate list")
+                elif len(candidate_lists) == 1:
+                    pick = int(torch.argmax(logits, dim=-1).item())
+                else:
+                    raise ValueError("selected prefix does not cover every branch")
                 selected = keys[:, pick]
                 hidden = self.model.scorer.advance_keys(selected, hidden)
             value = self.model.value(encoded).detach().float().cpu()
