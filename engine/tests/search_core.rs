@@ -140,3 +140,131 @@ fn midbattle_root_is_rejected_without_reconstruction() {
     assert!(matches!(result.status, SearchStatus::InsufficientCoverage));
     assert_eq!(result.scores.len(), 0);
 }
+
+#[test]
+fn candidate_family_diagnostics_match_each_retained_limit() {
+    let (dex, teams) = assets();
+    let trusted = info(&dex, &teams, SideId::P1);
+    let prior = FrozenOpponentPrior::from_training_json(
+        &dex,
+        include_bytes!("../data/training-teams.json"),
+    )
+    .unwrap();
+    for limit in [2, 8, 16, 30, 64] {
+        let result = BoundedSearch::search(
+            dex.clone(),
+            &trusted,
+            &prior,
+            &[0x501, 0x502, 0x503, 0x504],
+            SearchConfig {
+                worlds: 1,
+                max_root_candidates: limit,
+                max_units: 20_000,
+                rollout_combat_turns: 0,
+            },
+        )
+        .unwrap();
+        let openings = result
+            .scores
+            .iter()
+            .map(|score| {
+                score.action[0..2]
+                    .iter()
+                    .map(|action| action.switch_destination)
+                    .collect::<Vec<_>>()
+            })
+            .collect::<std::collections::BTreeSet<_>>();
+        let reserves = result
+            .scores
+            .iter()
+            .map(|score| {
+                score.action[2..4]
+                    .iter()
+                    .map(|action| action.switch_destination)
+                    .collect::<Vec<_>>()
+            })
+            .collect::<std::collections::BTreeSet<_>>();
+        assert_eq!(
+            result.diagnostics.evaluated_root_actions,
+            result.scores.len()
+        );
+        assert_eq!(result.diagnostics.opening_pair_count, openings.len());
+        assert_eq!(result.diagnostics.reserve_combination_count, reserves.len());
+        assert!(result.scores.len() <= limit);
+    }
+}
+
+#[test]
+fn hardened_and_c3a1_baseline_are_available_for_paired_comparison() {
+    let (dex, teams) = assets();
+    let trusted = info(&dex, &teams, SideId::P1);
+    let prior = FrozenOpponentPrior::from_training_json(
+        &dex,
+        include_bytes!("../data/training-teams.json"),
+    )
+    .unwrap();
+    let config = SearchConfig {
+        worlds: 2,
+        max_root_candidates: 2,
+        max_units: 1_000,
+        rollout_combat_turns: 1,
+    };
+    let hardened = BoundedSearch::search(
+        dex.clone(),
+        &trusted,
+        &prior,
+        &[0x601, 0x602],
+        config.clone(),
+    )
+    .unwrap();
+    let baseline =
+        BoundedSearch::search_c3a1_baseline(dex, &trusted, &prior, &[0x601, 0x602], config)
+            .unwrap();
+    assert!(
+        hardened
+            .diagnostics
+            .candidate_selection
+            .contains("stratified")
+    );
+    assert!(
+        baseline
+            .diagnostics
+            .candidate_selection
+            .contains("baseline")
+    );
+    assert!(
+        hardened.diagnostics.budget.engine_transitions
+            > baseline.diagnostics.budget.engine_transitions
+    );
+    assert!(hardened.diagnostics.budget.chance_samples > 0);
+}
+
+#[test]
+fn world_count_comparison_remains_bounded_and_covered() {
+    let (dex, teams) = assets();
+    let trusted = info(&dex, &teams, SideId::P1);
+    let prior = FrozenOpponentPrior::from_training_json(
+        &dex,
+        include_bytes!("../data/training-teams.json"),
+    )
+    .unwrap();
+    for worlds in [2, 4, 8] {
+        let result = BoundedSearch::search(
+            dex.clone(),
+            &trusted,
+            &prior,
+            &[0x701, 0x702, 0x703, 0x704],
+            SearchConfig {
+                worlds,
+                max_root_candidates: 2,
+                max_units: 8_000,
+                rollout_combat_turns: 0,
+            },
+        )
+        .unwrap();
+        assert!(result.diagnostics.sampled_worlds > 0);
+        assert!(result.diagnostics.sampled_worlds <= worlds);
+        assert!(result.diagnostics.effective_world_coverage > 0.99);
+        assert_eq!(result.diagnostics.paired_world_score_differences.len(), 1);
+    }
+}

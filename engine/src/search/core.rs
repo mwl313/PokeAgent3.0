@@ -115,11 +115,24 @@ pub struct SearchDiagnostics {
     pub omitted_opening_pairs: usize,
     pub omitted_reserve_combinations: usize,
     pub score_variance: f32,
+    pub paired_world_score_differences: Vec<PairedScoreDifference>,
+    pub score_dispersion: f32,
+    pub effective_world_coverage: f32,
     pub tied_score_pairs: usize,
+    pub ranking_instability: f32,
     pub unequal_coverage: bool,
     pub heuristic_differentiated_actions: usize,
     pub candidate_selection: String,
     pub budget: SearchBudget,
+}
+
+/// Paired score differences for one candidate pair. Entries are indexed by
+/// sampled-world index; `None` means one side lacked a valid evaluation.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct PairedScoreDifference {
+    pub candidate_a: usize,
+    pub candidate_b: usize,
+    pub per_world: Vec<Option<f32>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -133,6 +146,12 @@ pub struct SearchResult {
 
 pub struct BoundedSearch;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum EvaluationMode {
+    Hardened,
+    C3a1Baseline,
+}
+
 impl BoundedSearch {
     /// Search only a clean preview root. Each candidate is evaluated from a
     /// newly constructed sampled world, and the synthetic opponent uses its
@@ -143,6 +162,37 @@ impl BoundedSearch {
         prior: &FrozenOpponentPrior,
         seeds: &[u64],
         config: SearchConfig,
+    ) -> Result<SearchResult> {
+        Self::search_with_mode(dex, info, prior, seeds, config, EvaluationMode::Hardened)
+    }
+
+    /// Retain the original C3a.1 first-N, candidate-dependent-seed,
+    /// post-preview-only evaluator for apples-to-apples research comparisons.
+    /// Its output is a baseline diagnostic, not a validated recommendation.
+    pub fn search_c3a1_baseline(
+        dex: Arc<Dex>,
+        info: &TrustedSearchInformationSet,
+        prior: &FrozenOpponentPrior,
+        seeds: &[u64],
+        config: SearchConfig,
+    ) -> Result<SearchResult> {
+        Self::search_with_mode(
+            dex,
+            info,
+            prior,
+            seeds,
+            config,
+            EvaluationMode::C3a1Baseline,
+        )
+    }
+
+    fn search_with_mode(
+        dex: Arc<Dex>,
+        info: &TrustedSearchInformationSet,
+        prior: &FrozenOpponentPrior,
+        seeds: &[u64],
+        config: SearchConfig,
+        mode: EvaluationMode,
     ) -> Result<SearchResult> {
         config.validate()?;
         let mut budget = SearchBudget::default();
@@ -160,7 +210,11 @@ impl BoundedSearch {
             omitted_opening_pairs: 0,
             omitted_reserve_combinations: 0,
             score_variance: 0.0,
+            paired_world_score_differences: Vec::new(),
+            score_dispersion: 0.0,
+            effective_world_coverage: 0.0,
             tied_score_pairs: 0,
+            ranking_instability: 0.0,
             unequal_coverage: false,
             heuristic_differentiated_actions: 0,
             candidate_selection: String::new(),
@@ -192,11 +246,21 @@ impl BoundedSearch {
                 budget,
             ));
         }
-        let selected_candidates =
-            select_preview_candidates(&all_candidates, config.max_root_candidates);
+        let selected_candidates = match mode {
+            EvaluationMode::Hardened => {
+                select_preview_candidates(&all_candidates, config.max_root_candidates)
+            }
+            EvaluationMode::C3a1Baseline => all_candidates
+                .iter()
+                .take(config.max_root_candidates)
+                .cloned()
+                .collect(),
+        };
         let candidate_count = selected_candidates.len();
         diagnostics.omitted_root_candidates = all_candidates.len().saturating_sub(candidate_count);
-        diagnostics.candidate_selection = if diagnostics.omitted_root_candidates == 0 {
+        diagnostics.candidate_selection = if mode == EvaluationMode::C3a1Baseline {
+            "C3a.1 baseline first-N selection (comparison only)".into()
+        } else if diagnostics.omitted_root_candidates == 0 {
             "exhaustive legal action set".into()
         } else {
             "stratified opening-pair/reserve selection; omitted actions recorded".into()
@@ -241,14 +305,21 @@ impl BoundedSearch {
 
         let root_side = info.as_info().own.side;
         let mut scores = Vec::with_capacity(candidate_count);
-        for action in selected_candidates {
+        let mut world_score_rows: Vec<Vec<Option<f32>>> = Vec::with_capacity(candidate_count);
+        for (candidate_index, action) in selected_candidates.into_iter().enumerate() {
             let mut total = 0.0f32;
             let mut evaluated = 0usize;
             let mut terminal = 0usize;
             let mut heuristic = 0usize;
             let mut unknown_total = 0.0f32;
+            let mut world_scores = vec![None; samples.hypotheses.len()];
             for (world_index, sample) in samples.hypotheses.iter().enumerate() {
-                let world_seed = derive_seed(seeds, world_index);
+                let world_seed = match mode {
+                    EvaluationMode::Hardened => derive_seed(seeds, world_index),
+                    EvaluationMode::C3a1Baseline => {
+                        derive_legacy_seed(seeds, candidate_index, world_index)
+                    }
+                };
                 let world = match PreviewWorld::construct(&dex, info, sample, world_seed) {
                     Ok(world) => world,
                     Err(error) => {
@@ -302,7 +373,11 @@ impl BoundedSearch {
                 };
                 let mut boundary = boundary;
                 let mut transitions = 0usize;
-                for _ in 0..config.rollout_combat_turns {
+                let rollout_turns = match mode {
+                    EvaluationMode::Hardened => config.rollout_combat_turns,
+                    EvaluationMode::C3a1Baseline => 0,
+                };
+                for _ in 0..rollout_turns {
                     if boundary.root_view.outcome.terminated
                         || boundary.root_view.request.kind != RequestKind::Normal
                     {
@@ -324,21 +399,26 @@ impl BoundedSearch {
                     budget.opponent_action_samples += 1;
                     budget.chance_samples += 1;
                 }
-                if transitions < config.rollout_combat_turns * 2
+                if transitions < rollout_turns * 2
                     && !boundary.root_view.outcome.terminated
-                    && config.rollout_combat_turns > 0
+                    && rollout_turns > 0
                 {
                     continue;
                 }
-                let Some((score, is_terminal, unknown_fraction)) =
-                    score_view(&boundary.root_view, root_side)
-                else {
+                let scored = match mode {
+                    EvaluationMode::Hardened => score_view(&boundary.root_view, root_side),
+                    EvaluationMode::C3a1Baseline => {
+                        Some(score_view_legacy(&boundary.root_view, root_side))
+                    }
+                };
+                let Some((score, is_terminal, unknown_fraction)) = scored else {
                     diagnostics.failed_world_evaluations += 1;
                     continue;
                 };
                 total += score;
                 unknown_total += unknown_fraction;
                 evaluated += 1;
+                world_scores[world_index] = Some(score);
                 if is_terminal {
                     terminal += 1;
                 } else {
@@ -355,6 +435,7 @@ impl BoundedSearch {
                     heuristic_evaluations: heuristic,
                     mean_unknown_health_fraction: unknown_total / evaluated as f32,
                 });
+                world_score_rows.push(world_scores);
             }
             if budget.exhausted {
                 break;
@@ -374,14 +455,15 @@ impl BoundedSearch {
         } else {
             SearchStatus::Complete
         };
-        let selected_action = if matches!(status, SearchStatus::Complete) {
-            scores
-                .iter()
-                .max_by(|a, b| a.mean_score.total_cmp(&b.mean_score))
-                .map(|s| s.action.clone())
-        } else {
-            None
-        };
+        let selected_action =
+            if mode == EvaluationMode::Hardened && matches!(status, SearchStatus::Complete) {
+                scores
+                    .iter()
+                    .max_by(|a, b| a.mean_score.total_cmp(&b.mean_score))
+                    .map(|s| s.action.clone())
+            } else {
+                None
+            };
         if scores.len() > 1 {
             let mean =
                 scores.iter().map(|score| score.mean_score).sum::<f32>() / scores.len() as f32;
@@ -396,10 +478,81 @@ impl BoundedSearch {
                 .flat_map(|(i, a)| scores.iter().skip(i + 1).map(move |b| (a, b)))
                 .filter(|(a, b)| (a.mean_score - b.mean_score).abs() < 1e-6)
                 .count();
-            diagnostics.heuristic_differentiated_actions = scores
+            let mut distinct_scores = scores
                 .iter()
-                .filter(|score| score.mean_score.abs() > 1e-6)
-                .count();
+                .map(|score| score.mean_score)
+                .collect::<Vec<_>>();
+            distinct_scores.sort_by(f32::total_cmp);
+            distinct_scores.dedup_by(|a, b| (*a - *b).abs() < 1e-6);
+            diagnostics.heuristic_differentiated_actions = distinct_scores.len();
+
+            for candidate_a in 0..world_score_rows.len() {
+                for candidate_b in (candidate_a + 1)..world_score_rows.len() {
+                    let per_world = world_score_rows[candidate_a]
+                        .iter()
+                        .zip(&world_score_rows[candidate_b])
+                        .map(|(a, b)| a.zip(*b).map(|(left, right)| left - right))
+                        .collect();
+                    diagnostics
+                        .paired_world_score_differences
+                        .push(PairedScoreDifference {
+                            candidate_a,
+                            candidate_b,
+                            per_world,
+                        });
+                }
+            }
+            let valid_world_scores = world_score_rows
+                .iter()
+                .flat_map(|row| row.iter().flatten().copied())
+                .collect::<Vec<_>>();
+            if valid_world_scores.len() > 1 {
+                let mean = valid_world_scores.iter().sum::<f32>() / valid_world_scores.len() as f32;
+                diagnostics.score_dispersion = valid_world_scores
+                    .iter()
+                    .map(|score| (score - mean).powi(2))
+                    .sum::<f32>()
+                    / valid_world_scores.len() as f32;
+            }
+            diagnostics.effective_world_coverage = if diagnostics.sampled_worlds == 0 {
+                0.0
+            } else {
+                scores
+                    .iter()
+                    .map(|score| score.evaluated_worlds as f32)
+                    .sum::<f32>()
+                    / (scores.len() * diagnostics.sampled_worlds) as f32
+            };
+            let aggregate_winner = scores
+                .iter()
+                .enumerate()
+                .max_by(|(_, left), (_, right)| left.mean_score.total_cmp(&right.mean_score))
+                .map(|(index, _)| index);
+            let mut ranked_worlds = 0usize;
+            let mut unstable_worlds = 0usize;
+            for world_index in 0..diagnostics.sampled_worlds {
+                let Some(world_winner) = world_score_rows
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(index, row)| {
+                        row.get(world_index)
+                            .and_then(|score| score.map(|value| (index, value)))
+                    })
+                    .max_by(|(_, left), (_, right)| left.total_cmp(right))
+                    .map(|(index, _)| index)
+                else {
+                    continue;
+                };
+                ranked_worlds += 1;
+                if Some(world_winner) != aggregate_winner {
+                    unstable_worlds += 1;
+                }
+            }
+            diagnostics.ranking_instability = if ranked_worlds == 0 {
+                0.0
+            } else {
+                unstable_worlds as f32 / ranked_worlds as f32
+            };
         }
         diagnostics.status_reason = format!(
             "evaluated {} root actions across {} sampled worlds",
@@ -466,6 +619,58 @@ fn select_preview_candidates(all: &[Vec<AtomicAction>], limit: usize) -> Vec<Vec
     for action in all {
         let opening = preview_family(action, true);
         let reserve = preview_family(action, false);
+        if !openings.contains(&opening) && !reserves.contains(&reserve) {
+            selected.push(action.clone());
+            openings.insert(opening);
+            reserves.insert(reserve);
+            if selected.len() == limit {
+                return selected;
+            }
+        }
+    }
+    for action in all {
+        let opening = preview_family(action, true);
+        if openings.insert(opening) {
+            selected.push(action.clone());
+            if selected.len() == limit {
+                return selected;
+            }
+        }
+    }
+    for action in all {
+        let reserve = preview_family(action, false);
+        if reserves.insert(reserve) {
+            selected.push(action.clone());
+            if selected.len() == limit {
+                return selected;
+            }
+        }
+    }
+    for action in all {
+        if selected.len() == limit {
+            break;
+        }
+        if !selected.contains(action) {
+            selected.push(action.clone());
+        }
+    }
+    selected
+}
+
+#[cfg(test)]
+fn legacy_select_preview_candidates(
+    all: &[Vec<AtomicAction>],
+    limit: usize,
+) -> Vec<Vec<AtomicAction>> {
+    if all.len() <= limit {
+        return all.to_vec();
+    }
+    let mut selected = Vec::with_capacity(limit);
+    let mut openings = std::collections::BTreeSet::new();
+    let mut reserves = std::collections::BTreeSet::new();
+    for action in all {
+        let opening = preview_family(action, true);
+        let reserve = preview_family(action, false);
         if openings.insert(opening) && reserves.insert(reserve) {
             selected.push(action.clone());
             if selected.len() == limit {
@@ -503,6 +708,9 @@ fn select_preview_candidates(all: &[Vec<AtomicAction>], limit: usize) -> Vec<Vec
 }
 
 fn score_view(view: &PlayerView, side: SideId) -> Option<(f32, bool, f32)> {
+    if view.outcome.truncated || view.outcome.operational_error.is_some() {
+        return None;
+    }
     if let Some(reward) = view.outcome.reward(side) {
         return Some((f32::from(reward), true, 0.0));
     }
@@ -530,6 +738,38 @@ fn score_view(view: &PlayerView, side: SideId) -> Option<(f32, bool, f32)> {
     Some(((own - opponent).clamp(-1.0, 1.0), false, unknown_fraction))
 }
 
+fn score_view_legacy(view: &PlayerView, side: SideId) -> (f32, bool, f32) {
+    if let Some(reward) = view.outcome.reward(side) {
+        return (f32::from(reward), true, 0.0);
+    }
+    let own = view
+        .own
+        .pokemon
+        .iter()
+        .map(|pokemon| pokemon.hp as f32 / pokemon.stats[0].max(1) as f32)
+        .sum::<f32>()
+        / 6.0;
+    let known_count = view.knowledge.pokemon[6..12]
+        .iter()
+        .filter(|pokemon| pokemon.health.known)
+        .count();
+    let opponent = view.knowledge.pokemon[6..12]
+        .iter()
+        .filter_map(|pokemon| {
+            pokemon
+                .health
+                .known
+                .then_some(pokemon.health.value.numerator as f32 / 100.0)
+        })
+        .sum::<f32>()
+        / 6.0;
+    (
+        (own - opponent).clamp(-1.0, 1.0),
+        false,
+        1.0 - known_count as f32 / 6.0,
+    )
+}
+
 fn charge(budget: &mut SearchBudget, limit: u64, units: u64) -> bool {
     let Some(next) = budget.units.checked_add(units) else {
         budget.exhausted = true;
@@ -546,6 +786,12 @@ fn charge(budget: &mut SearchBudget, limit: u64, units: u64) -> bool {
 
 fn derive_seed(seeds: &[u64], world: usize) -> u64 {
     seeds[world % seeds.len()].wrapping_add(world as u64)
+}
+
+fn derive_legacy_seed(seeds: &[u64], candidate: usize, world: usize) -> u64 {
+    seeds[(candidate + world) % seeds.len()]
+        .wrapping_add(candidate as u64)
+        .wrapping_add(world as u64)
 }
 
 fn abstain(mut diagnostics: SearchDiagnostics, reason: &str, budget: SearchBudget) -> SearchResult {
@@ -596,5 +842,29 @@ mod tests {
             pokemon.health.known = false;
         }
         assert_eq!(score_view(&view, SideId::P1), None);
+    }
+
+    #[test]
+    fn candidate_selector_reproduces_and_fixes_legacy_family_mutation() {
+        let dex = Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap();
+        let teams: Vec<crate::state::Team> =
+            serde_json::from_str(include_str!("../../data/training-teams.json")).unwrap();
+        let view = BattleState::reset(&dex, [&teams[0], &teams[1]], [409, 410, 411, 412], [0, 1])
+            .unwrap()
+            .observe(SideId::P1);
+        let all = super::enumerate_complete(&view.request).unwrap();
+        assert_eq!(all.len(), 360);
+        let fixed = super::select_preview_candidates(&all, 8);
+        let legacy = super::legacy_select_preview_candidates(&all, 8);
+        assert_eq!(fixed.len(), 8);
+        assert_eq!(legacy.len(), 8);
+        let fixed_openings = super::unique_family_count(&fixed, true);
+        let legacy_openings = super::unique_family_count(&legacy, true);
+        let fixed_reserves = super::unique_family_count(&fixed, false);
+        let legacy_reserves = super::unique_family_count(&legacy, false);
+        assert!(fixed_openings >= legacy_openings);
+        assert!(fixed_reserves >= legacy_reserves);
+        assert!(fixed_openings != legacy_openings || fixed_reserves != legacy_reserves);
+        assert!(fixed_openings > 0 && fixed_reserves > 0);
     }
 }

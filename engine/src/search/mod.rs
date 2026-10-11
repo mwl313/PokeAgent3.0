@@ -7,5 +7,6 @@
 pub mod belief;
 pub mod core;
 pub mod information_set;
+pub mod particles;
 pub mod test_oracle;
 pub mod world;
