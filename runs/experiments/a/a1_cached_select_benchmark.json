@@ -1,0 +1,17 @@
+{
+  "benchmark": "a1_same_seed_paired_cpu",
+  "source_sha": "535fb56",
+  "seed": 20261011,
+  "rows": 32,
+  "ppo_epochs": 2,
+  "repeats": [
+    {"off_wall_s": 1.263859821, "on_wall_s": 0.674385118, "off_select_s": 0.009050884, "on_select_s": 0.005744675, "off_hits": 0, "on_hits": 0},
+    {"off_wall_s": 0.744301938, "on_wall_s": 0.732629557, "off_select_s": 0.008555176, "on_select_s": 0.006382928, "off_hits": 0, "on_hits": 0},
+    {"off_wall_s": 0.718840004, "on_wall_s": 0.702446241, "off_select_s": 0.007097870, "on_select_s": 0.007209834, "off_hits": 0, "on_hits": 0}
+  ],
+  "all_model_digests_equal": true,
+  "policy_loss_equal": true,
+  "value_loss_equal": true,
+  "decision": "REJECT_PROMOTION_KEEP_OFF",
+  "reason": "torch.randperm shuffling produced zero contiguous cached minibatches in all 24 selections; no production benefit is established"
+}

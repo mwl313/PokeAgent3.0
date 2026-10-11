@@ -119,6 +119,8 @@ class PPOLearner:
         # perf_counter calls per minibatch, no GPU synchronization).
         self.profile: dict[str, float] = {}
         self.prepare_profile: dict[str, float] = {}
+        self._cached_select_calls = 0
+        self._cached_contiguous_hits = 0
 
     @staticmethod
     def _blank_profile() -> dict:
@@ -127,6 +129,14 @@ class PPOLearner:
             "minibatch_select": 0.0, "h2d": 0.0, "forward": 0.0, "backward": 0.0,
             "optimizer": 0.0, "metrics": 0.0, "epoch_sync": 0.0,
         }
+
+    def _attach_select_profile(self, profile: dict) -> None:
+        profile["cached_select_calls"] = float(self._cached_select_calls)
+        profile["cached_contiguous_hits"] = float(self._cached_contiguous_hits)
+        profile["cached_contiguous_fraction"] = (
+            self._cached_contiguous_hits / self._cached_select_calls
+            if self._cached_select_calls else 0.0
+        )
 
     # -- batch preparation -------------------------------------------------
     def prepare_batch(
@@ -293,10 +303,12 @@ class PPOLearner:
 
     def _plan_minibatch(self, plan, indices, valid):
         if plan.cached_batch is not None:
+            self._cached_select_calls += 1
             if self.config.experimental_cached_contiguous_select and len(indices) > 0:
                 first = int(indices[0])
                 expected = torch.arange(first, first + len(indices), dtype=indices.dtype)
                 if torch.equal(indices.cpu(), expected):
+                    self._cached_contiguous_hits += 1
                     return replace(
                         plan.cached_batch.narrow(first, first + len(indices)),
                         row_valid=valid,
@@ -574,6 +586,8 @@ class PPOLearner:
           single global decision, so ranks never diverge on epoch count.
         """
         from contextlib import nullcontext
+        self._cached_select_calls = 0
+        self._cached_contiguous_hits = 0
 
         from agent.ppo.ddp import all_reduce_flag, all_reduce_tensor, ddp_rank_loss
 
@@ -615,6 +629,7 @@ class PPOLearner:
         if batch_count == 0:
             self._finish_report(report, totals, sum_keys)
             profile["total"] = time.perf_counter() - update_started
+            self._attach_select_profile(profile)
             self.profile = profile
             return report
         if not rows and fallback_batch is None:
@@ -770,6 +785,7 @@ class PPOLearner:
 
         self._finish_report(report, totals, sum_keys)
         profile["total"] = time.perf_counter() - update_started
+        self._attach_select_profile(profile)
         self.profile = profile
         return report
 
@@ -790,6 +806,8 @@ class PPOLearner:
         written back, clipped globally and applied by one shared Adam step.
         """
         from contextlib import nullcontext
+        self._cached_select_calls = 0
+        self._cached_contiguous_hits = 0
 
         from agent.ppo.ddp import (
             all_reduce_flag,
@@ -833,6 +851,7 @@ class PPOLearner:
         if batch_count == 0:
             self._finish_report(report, totals, sum_keys)
             profile["total"] = time.perf_counter() - update_started
+            self._attach_select_profile(profile)
             self.profile = profile
             return report
         if not rows and fallback_batch is None:
@@ -974,6 +993,7 @@ class PPOLearner:
 
         self._finish_report(report, totals, sum_keys)
         profile["total"] = time.perf_counter() - update_started
+        self._attach_select_profile(profile)
         self.profile = profile
         return report
 
@@ -1036,6 +1056,7 @@ class PPOLearner:
 
         self._finish_report(report, totals, sum_keys)
         profile["total"] = time.perf_counter() - update_started
+        self._attach_select_profile(profile)
         self.profile = profile
         return report
 
@@ -1052,6 +1073,8 @@ class PPOLearner:
         identical to `update()` over the same rows; only the host memory
         footprint differs (the whole iteration is never expanded at once).
         """
+        self._cached_select_calls = 0
+        self._cached_contiguous_hits = 0
         rows = plan.rows
         report = self._new_report(len(rows), plan.actor_rows, committed_matches)
         self.model.train()
@@ -1109,6 +1132,7 @@ class PPOLearner:
 
         self._finish_report(report, totals, sum_keys)
         profile["total"] = time.perf_counter() - update_started
+        self._attach_select_profile(profile)
         self.profile = profile
         return report
 
