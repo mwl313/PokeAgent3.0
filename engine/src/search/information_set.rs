@@ -5,10 +5,10 @@
 //! not a belief sampler or a search policy.
 
 use crate::{
-    EngineError, Result,
     actions::Request,
     knowledge::Knowledge,
     state::{Outcome, OwnSideView, PlayerView, SideId},
+    EngineError, Result,
 };
 use serde::{Deserialize, Serialize};
 
@@ -65,6 +65,11 @@ impl TrustedSearchInformationSet {
 
     pub fn as_info(&self) -> &SearchInformationSet {
         &self.info
+    }
+
+    #[cfg(test)]
+    pub(crate) fn from_info_for_test(info: SearchInformationSet) -> Self {
+        Self { info }
     }
 }
 

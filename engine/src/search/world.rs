@@ -9,7 +9,10 @@ use crate::{
     assets::Dex,
     batch::SideChoice,
     legality,
-    search::{belief::BeliefTeam, information_set::TrustedSearchInformationSet},
+    search::{
+        belief::BeliefTeam,
+        information_set::{SearchInformationSet, TrustedSearchInformationSet},
+    },
     state::{BattleState, PlayerView, SideId, Team, TeamSet},
     FORMAT,
 };
@@ -23,6 +26,9 @@ pub const MAX_EPISODE_BOUNDARIES: usize = 256;
 /// Reserved accounting budget for future C3 search work. C2d consumes no
 /// search units, but the limit is part of the stable execution contract.
 pub const MAX_SEARCH_COMPUTATION_UNITS: u64 = 100_000;
+/// A deliberately small cap for C3b-1.3's posterior-proposal experiment.
+/// This is not a search expansion budget.
+pub const MAX_PUBLIC_EVENT_PROPOSAL_ATTEMPTS: usize = 8;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum WorldFailureCode {
@@ -81,6 +87,15 @@ pub struct EpisodeDiagnostics {
 pub struct EpisodeBoundary {
     pub root_view: PlayerView,
     pub diagnostics: EpisodeDiagnostics,
+}
+
+/// Coordinator-only result of a bounded posterior proposal. It carries no
+/// hypothetical observation, command provenance, or private state across the
+/// particle module's root-facing result boundary.
+pub(crate) struct PublicEventProposal {
+    pub actions: Option<Vec<crate::actions::AtomicAction>>,
+    pub attempts: usize,
+    pub compatible: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -344,6 +359,7 @@ impl SyntheticEpisode {
             crate::search::particles::OpponentProposal::SeededSampled => {
                 sampled_complete_legal_actions(&opponent_view.request, proposal_seed)
             }
+            crate::search::particles::OpponentProposal::PublicEventConditionedV1 => None,
         }
         .ok_or_else(|| invalid_action("baseline opponent has no legal completion"))?;
         self.submit_root_with_opponent_actions(root_actions, opponent_actions)
@@ -383,7 +399,66 @@ impl SyntheticEpisode {
             crate::search::particles::OpponentProposal::SeededSampled => {
                 sampled_complete_legal_actions(&opponent_view.request, proposal_seed)
             }
+            crate::search::particles::OpponentProposal::PublicEventConditionedV1 => None,
         }
+    }
+
+    /// Offline posterior-proposal experiment. The target contributes only its
+    /// public information after it has been observed at the new boundary; own
+    /// private state, actual opponent commands, snapshots, and RNG are never
+    /// inspected. Each candidate is fully rolled back before a selected action
+    /// is returned, and the caller still performs full exact conditioning.
+    pub(crate) fn public_event_conditioned_opponent_action(
+        &mut self,
+        root_actions: &[crate::actions::AtomicAction],
+        observed_root: &SearchInformationSet,
+        proposal_seed: u64,
+    ) -> Result<PublicEventProposal, EpisodeError> {
+        let opponent_view = self.state.observe(self.root_side.other());
+        let candidates = bounded_complete_legal_actions(
+            &opponent_view.request,
+            proposal_seed,
+            MAX_PUBLIC_EVENT_PROPOSAL_ATTEMPTS,
+        );
+        let checkpoint = self.checkpoint()?;
+        let mut compatible = Vec::new();
+        let mut attempts = 0usize;
+        for actions in candidates {
+            attempts += 1;
+            let boundary =
+                self.submit_root_with_opponent_actions(root_actions.to_vec(), actions.clone());
+            let result = match boundary {
+                Ok(boundary) => {
+                    let candidate =
+                        match SearchInformationSet::from_player_view(&boundary.root_view) {
+                            Ok(candidate) => candidate,
+                            Err(error) => {
+                                self.restore_checkpoint(checkpoint.clone())?;
+                                return Err(EpisodeError {
+                                    code: EpisodeFailureCode::OperationalError,
+                                    message: error.to_string(),
+                                });
+                            }
+                        };
+                    public_event_constraints_match(observed_root, &candidate)
+                }
+                Err(error) => {
+                    self.restore_checkpoint(checkpoint.clone())?;
+                    return Err(error);
+                }
+            };
+            self.restore_checkpoint(checkpoint.clone())?;
+            if result {
+                compatible.push(actions);
+            }
+        }
+        let compatible_count = compatible.len();
+        let selected = compatible.into_iter().next();
+        Ok(PublicEventProposal {
+            actions: selected,
+            attempts,
+            compatible: compatible_count,
+        })
     }
 
     #[cfg(test)]
@@ -589,6 +664,74 @@ fn sampled_complete_legal_actions(
         let index = (rng as usize) % candidates.len();
         prefix.push(candidates[index]);
     }
+}
+
+fn bounded_complete_legal_actions(
+    request: &crate::actions::Request,
+    seed: u64,
+    cap: usize,
+) -> Vec<Vec<crate::actions::AtomicAction>> {
+    fn next(value: &mut u64) -> u64 {
+        *value ^= *value >> 12;
+        *value ^= *value << 25;
+        *value ^= *value >> 27;
+        (*value).wrapping_mul(0x2545f4914f6cdd1d)
+    }
+    fn collect(
+        request: &crate::actions::Request,
+        prefix: &mut Vec<crate::actions::AtomicAction>,
+        out: &mut Vec<Vec<crate::actions::AtomicAction>>,
+        cap: usize,
+        rng: &mut u64,
+    ) {
+        if out.len() >= cap {
+            return;
+        }
+        let Ok(mut candidates) = request.candidates(prefix) else {
+            return;
+        };
+        if candidates.is_empty() {
+            if request.validate_joint(prefix).is_ok() && !out.contains(prefix) {
+                out.push(prefix.clone());
+            }
+            return;
+        }
+        let offset = (next(rng) as usize) % candidates.len();
+        candidates.rotate_left(offset);
+        for action in candidates {
+            prefix.push(action);
+            collect(request, prefix, out, cap, rng);
+            prefix.pop();
+            if out.len() >= cap {
+                return;
+            }
+        }
+    }
+
+    let mut out = complete_legal_actions(request)
+        .into_iter()
+        .collect::<Vec<_>>();
+    if out.len() >= cap {
+        return out;
+    }
+    let mut rng = seed.wrapping_add(0x6a09_e667_f3bc_c909);
+    collect(request, &mut Vec::new(), &mut out, cap, &mut rng);
+    out.truncate(cap);
+    out
+}
+
+/// Version-1 posterior proposal constraint. Every compared field is already
+/// public in the trusted root DTO, and comparison is exact: turn/outcome plus
+/// the full audience-filtered `Knowledge` record, including ordered event
+/// window, displayed health, revealed moves, public resource/field/side state,
+/// switches, faints, and status. Own private state/request intentionally do
+/// not select an opponent command here; final particle conditioning checks the
+/// complete DTO separately.
+fn public_event_constraints_match(
+    observed: &SearchInformationSet,
+    candidate: &SearchInformationSet,
+) -> bool {
+    observed.public == candidate.public
 }
 
 fn own_team(info: &crate::search::information_set::SearchInformationSet) -> Result<Team, String> {

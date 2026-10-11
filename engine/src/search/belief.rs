@@ -6,12 +6,12 @@
 //! evaluation, search teacher, distillation, or training is implemented here.
 
 use crate::{
-    EngineError, FORMAT, Result,
     assets::{Dex, Id},
     knowledge::Known,
     legality,
     search::information_set::SearchInformationSet,
     state::{Team, TeamSet},
+    EngineError, Result, FORMAT,
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -112,6 +112,39 @@ impl FrozenOpponentPrior {
 
     pub fn candidate_count(&self) -> usize {
         self.teams.len()
+    }
+
+    /// Root-safe aggregate diversity audit for a player-visible observation.
+    /// It exposes counts and frozen-prior provenance only; source IDs and the
+    /// private team sheets themselves remain unavailable to callers.
+    pub fn diversity_report(&self, info: &SearchInformationSet) -> PriorDiversityReport {
+        let filtered = self.candidates_for(info);
+        let unique_team_hypotheses = filtered
+            .candidates
+            .iter()
+            .filter_map(|team| serde_json::to_vec(&team.members).ok())
+            .collect::<std::collections::BTreeSet<_>>()
+            .len();
+        PriorDiversityReport {
+            schema_version: BELIEF_PRIOR_SCHEMA,
+            source_sha256: self.manifest.source_sha256.clone(),
+            source_schema: self.manifest.source_schema.clone(),
+            candidate_count: filtered.candidates.len(),
+            unique_team_hypotheses,
+            exact_duplicate_candidates: filtered
+                .candidates
+                .len()
+                .saturating_sub(unique_team_hypotheses),
+            unsupported_observations: filtered.unsupported,
+        }
+    }
+
+    #[cfg(test)]
+    pub(crate) fn contains_complete_team_for_test(&self, team: &Team) -> bool {
+        let encoded = serde_json::to_vec(&team.members).ok();
+        self.teams
+            .iter()
+            .any(|candidate| serde_json::to_vec(&candidate.members).ok() == encoded)
     }
 
     /// Deterministic prior artifact. It contains complete anonymized sheets,
@@ -309,6 +342,17 @@ pub struct PreviewIdentificationReport {
     pub unordered_mean_candidate_count: f32,
     pub source_sheet_disjoint_evaluation: String,
     pub novel_preview_roster_evaluation: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PriorDiversityReport {
+    pub schema_version: u16,
+    pub source_sha256: String,
+    pub source_schema: String,
+    pub candidate_count: usize,
+    pub unique_team_hypotheses: usize,
+    pub exact_duplicate_candidates: usize,
+    pub unsupported_observations: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

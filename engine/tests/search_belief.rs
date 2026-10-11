@@ -49,12 +49,10 @@ fn prior_manifest_is_frozen_legal_uniform_and_id_free() {
         "uniform over legal complete sheets"
     );
     let bytes = prior.to_bytes().unwrap();
-    assert!(
-        !bytes
-            .windows(b"pa3-0010b735d7ce90d2472439ceb0fe959bf6ca8a64c33dc30bacf0dace4f84566e".len())
-            .any(|window| window
-                == b"pa3-0010b735d7ce90d2472439ceb0fe959bf6ca8a64c33dc30bacf0dace4f84566e")
-    );
+    assert!(!bytes
+        .windows(b"pa3-0010b735d7ce90d2472439ceb0fe959bf6ca8a64c33dc30bacf0dace4f84566e".len())
+        .any(|window| window
+            == b"pa3-0010b735d7ce90d2472439ceb0fe959bf6ca8a64c33dc30bacf0dace4f84566e"));
     assert_eq!(bytes, prior.to_bytes().unwrap());
 }
 
@@ -94,6 +92,26 @@ fn seeded_sampling_and_preview_coverage_are_reproducible() {
 }
 
 #[test]
+fn prior_diversity_audit_reports_unique_complete_sheets_without_ids() {
+    let (dex, teams, prior) = prior();
+    let info = information(&dex, &teams);
+    let first = prior.diversity_report(&info);
+    let second = prior.diversity_report(&info);
+    assert_eq!(first, second);
+    assert_eq!(first.schema_version, 1);
+    assert_eq!(first.source_sha256, SOURCE_SHA256);
+    assert!(first.candidate_count >= first.unique_team_hypotheses);
+    assert_eq!(
+        first.candidate_count,
+        first.unique_team_hypotheses + first.exact_duplicate_candidates
+    );
+    println!(
+        "C3b-1.3 prior diversity candidates={} unique={} duplicates={}",
+        first.candidate_count, first.unique_team_hypotheses, first.exact_duplicate_candidates
+    );
+}
+
+#[test]
 fn known_species_filters_unknown_values_do_not_and_out_of_support_is_explicit() {
     let (dex, teams, prior) = prior();
     let info = information(&dex, &teams);
@@ -119,11 +137,9 @@ fn known_species_filters_unknown_values_do_not_and_out_of_support_is_explicit() 
     };
     assert!(diagnostics.out_of_support);
     assert_eq!(diagnostics.candidate_count_after, 0);
-    assert!(
-        diagnostics
-            .rejection_reasons
-            .contains_key("species_mismatch")
-    );
+    assert!(diagnostics
+        .rejection_reasons
+        .contains_key("species_mismatch"));
 }
 
 #[test]

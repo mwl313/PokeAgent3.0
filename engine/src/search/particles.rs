@@ -26,6 +26,10 @@ pub const HARD_MAX_PARTICLE_UNITS: u64 = 2_000;
 pub enum OpponentProposal {
     FirstLegal,
     SeededSampled,
+    /// Research-only posterior proposal. It conditions a bounded legal-action
+    /// enumeration on already observed root-public events, then still requires
+    /// full exact DTO equality before a particle may commit.
+    PublicEventConditionedV1,
 }
 
 /// Root-visible reasons why an exact player-safe observation comparison did
@@ -92,6 +96,7 @@ pub enum ParticleStatus {
     BudgetExhausted,
     UnsupportedObservation,
     InvalidRootAction,
+    ProposalZeroSupport,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -124,6 +129,9 @@ pub struct ParticleDiagnostics {
     /// Number of distinct player-safe next-observation DTOs produced before
     /// exact conditioning. This includes both proposal and chance variation.
     pub distinct_public_outcomes: usize,
+    pub public_event_proposal_attempts: usize,
+    pub public_event_compatible_proposals: usize,
+    pub public_event_zero_support_particles: usize,
     pub opponent_proposal: OpponentProposal,
     pub opponent_proposals_generated: usize,
     pub distinct_opponent_proposals: usize,
@@ -242,6 +250,9 @@ fn diagnostics_seeded(
         mismatch_categories: BTreeMap::new(),
         distinct_chance_trajectories: 0,
         distinct_public_outcomes: 0,
+        public_event_proposal_attempts: 0,
+        public_event_compatible_proposals: 0,
+        public_event_zero_support_particles: 0,
         opponent_proposal: OpponentProposal::FirstLegal,
         opponent_proposals_generated: 0,
         distinct_opponent_proposals: 0,
@@ -574,6 +585,9 @@ impl PersistentParticleBelief {
                 mismatch_categories: BTreeMap::new(),
                 distinct_chance_trajectories: 0,
                 distinct_public_outcomes: 0,
+                public_event_proposal_attempts: 0,
+                public_event_compatible_proposals: 0,
+                public_event_zero_support_particles: 0,
                 opponent_proposal,
                 opponent_proposals_generated: 0,
                 distinct_opponent_proposals: 0,
@@ -623,6 +637,9 @@ impl PersistentParticleBelief {
             mismatch_categories: BTreeMap::new(),
             distinct_chance_trajectories: 0,
             distinct_public_outcomes: 0,
+            public_event_proposal_attempts: 0,
+            public_event_compatible_proposals: 0,
+            public_event_zero_support_particles: 0,
             opponent_proposal,
             opponent_proposals_generated: 0,
             distinct_opponent_proposals: 0,
@@ -647,7 +664,13 @@ impl PersistentParticleBelief {
             budget_exhausted: false,
             status_reason: String::new(),
         };
-        let required_units = (self.particles.len() as u64).saturating_mul(5);
+        let units_per_particle = match opponent_proposal {
+            OpponentProposal::PublicEventConditionedV1 => {
+                5 + (2 * crate::search::world::MAX_PUBLIC_EVENT_PROPOSAL_ATTEMPTS as u64)
+            }
+            OpponentProposal::FirstLegal | OpponentProposal::SeededSampled => 5,
+        };
+        let required_units = (self.particles.len() as u64).saturating_mul(units_per_particle);
         if required_units > config.max_units {
             diagnostics.budget_exhausted = true;
             diagnostics.status_reason = "particle update computation budget exhausted".into();
@@ -699,17 +722,44 @@ impl PersistentParticleBelief {
                 self.current_observation.public.turn,
                 self.particles[particle_index].episode.boundaries(),
             );
-            let proposal_actions = match self.particles[particle_index]
-                .episode
-                .proposed_opponent_action(opponent_proposal, proposal_seed)
-            {
-                Some(actions) => actions,
-                None => {
-                    restore_particles(&mut self.particles, &checkpoints)?;
-                    return Err(EngineError::InvalidInput(
-                        "particle opponent proposal has no legal completion".into(),
-                    ));
+            let proposal_actions = match opponent_proposal {
+                OpponentProposal::PublicEventConditionedV1 => {
+                    let proposal = match self.particles[particle_index]
+                        .episode
+                        .public_event_conditioned_opponent_action(
+                            &root_actions,
+                            target,
+                            proposal_seed,
+                        ) {
+                        Ok(proposal) => proposal,
+                        Err(error) => {
+                            restore_particles(&mut self.particles, &checkpoints)?;
+                            return Err(EngineError::InvalidInput(format!(
+                                "public-event proposal transition failed: {error}"
+                            )));
+                        }
+                    };
+                    diagnostics.units += (2 * proposal.attempts) as u64;
+                    diagnostics.engine_transitions += 2 * proposal.attempts;
+                    diagnostics.public_event_proposal_attempts += proposal.attempts;
+                    diagnostics.public_event_compatible_proposals += proposal.compatible;
+                    match proposal.actions {
+                        Some(actions) => actions,
+                        None => {
+                            diagnostics.public_event_zero_support_particles += 1;
+                            continue;
+                        }
+                    }
                 }
+                OpponentProposal::FirstLegal | OpponentProposal::SeededSampled => self.particles
+                    [particle_index]
+                    .episode
+                    .proposed_opponent_action(opponent_proposal, proposal_seed)
+                    .ok_or_else(|| {
+                        EngineError::InvalidInput(
+                            "particle opponent proposal has no legal completion".into(),
+                        )
+                    })?,
             };
             diagnostics.opponent_proposals_generated += 1;
             if let Ok(key) = serde_json::to_vec(&proposal_actions) {
@@ -781,6 +831,12 @@ impl PersistentParticleBelief {
         let status = if diagnostics.budget_exhausted {
             diagnostics.status_reason = "particle update computation budget exhausted".into();
             ParticleStatus::BudgetExhausted
+        } else if diagnostics.public_event_zero_support_particles > 0
+            && diagnostics.advanced_particles == 0
+        {
+            diagnostics.status_reason =
+                "public-event-conditioned proposal found no compatible legal completion".into();
+            ParticleStatus::ProposalZeroSupport
         } else if diagnostics.advanced_particles > 0 && diagnostics.surviving_particles == 0 {
             diagnostics.status_reason =
                 "all advanced particles rejected by exact observation conditioning".into();
@@ -957,6 +1013,29 @@ mod tests {
             Arc::new(Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap()),
             Arc::new(serde_json::from_str(include_str!("../../data/training-teams.json")).unwrap()),
         )
+    }
+
+    fn legal_held_out_variation(dex: &Dex, team: &Team) -> Team {
+        for member_index in 0..team.members.len() {
+            for donor in 0..6 {
+                for recipient in 0..6 {
+                    if donor == recipient
+                        || team.members[member_index].points[donor] == 0
+                        || team.members[member_index].points[recipient] >= 32
+                    {
+                        continue;
+                    }
+                    let mut variant = team.clone();
+                    variant.id = "held-out-research-fixture".into();
+                    variant.members[member_index].points[donor] -= 1;
+                    variant.members[member_index].points[recipient] += 1;
+                    if crate::legality::validate_team(dex, &variant).legal() {
+                        return variant;
+                    }
+                }
+            }
+        }
+        panic!("fixture must admit a legal held-out point-allocation variation");
     }
 
     fn complete(request: &crate::actions::Request) -> Vec<AtomicAction> {
@@ -1145,6 +1224,40 @@ mod tests {
                 member.ivs = [0; 6];
             }
         }
+        execute_actual_sequence(dex, actual_teams, side, seed_base)
+    }
+
+    /// C3b-1.3's paired study needs a legal held-out truth.  Keep this separate
+    /// from the frozen C3b-1.2 diagnosis fixture above, whose historical rows
+    /// intentionally use its original synthetic mutation.
+    fn legal_independent_actual_sequence(
+        dex: &Dex,
+        teams: &[Team],
+        side: SideId,
+        seed_base: u16,
+        out_of_prior: bool,
+    ) -> IndependentSequence {
+        let mut actual_teams = [teams[0].clone(), teams[1].clone()];
+        if out_of_prior {
+            let opponent_index = match side {
+                SideId::P1 => 1,
+                SideId::P2 => 0,
+            };
+            actual_teams[opponent_index] =
+                legal_held_out_variation(dex, &actual_teams[opponent_index]);
+            actual_teams[opponent_index].id = format!("independent-hidden-{seed_base}");
+        }
+        assert!(crate::legality::validate_team(dex, &actual_teams[0]).legal());
+        assert!(crate::legality::validate_team(dex, &actual_teams[1]).legal());
+        execute_actual_sequence(dex, actual_teams, side, seed_base)
+    }
+
+    fn execute_actual_sequence(
+        dex: &Dex,
+        actual_teams: [Team; 2],
+        side: SideId,
+        seed_base: u16,
+    ) -> IndependentSequence {
         let mut actual = BattleState::reset(
             dex,
             [&actual_teams[0], &actual_teams[1]],
@@ -1509,6 +1622,201 @@ mod tests {
             result.diagnostics.advanced_particles
         );
         assert!(result.diagnostics.distinct_opponent_proposals >= 1);
+    }
+
+    #[test]
+    fn public_event_conditioning_retains_exact_replay_without_relaxing_final_match() {
+        let (dex, teams) = assets();
+        let state =
+            BattleState::reset(&dex, [&teams[0], &teams[1]], [745, 746, 747, 748], [0, 1]).unwrap();
+        let initial =
+            TrustedSearchInformationSet::from_player_view(&state.observe(SideId::P1)).unwrap();
+        let prior = FrozenOpponentPrior::from_training_json(
+            &dex,
+            include_bytes!("../../data/training-teams.json"),
+        )
+        .unwrap();
+        let seed = 0xabc456;
+        let BeliefSampleResult::Samples(samples) =
+            prior.sample(initial.as_info(), seed, 1).unwrap()
+        else {
+            panic!("fixture has support")
+        };
+        let mut target_episode =
+            PreviewWorld::construct(&dex, &initial, &samples.hypotheses[0], seed)
+                .unwrap()
+                .into_episode(dex.clone())
+                .unwrap();
+        let preview_actions = preview();
+        let target = target_episode
+            .submit_root_with_baseline(preview_actions.clone())
+            .unwrap();
+        let target = TrustedSearchInformationSet::from_player_view(&target.root_view).unwrap();
+        let initialized = PersistentParticleBelief::initialize_with_proposal(
+            dex,
+            &initial,
+            &prior,
+            &[seed],
+            ParticleConfig {
+                particles: 1,
+                min_surviving_particles: 1,
+                max_units: 2_000,
+            },
+            OpponentProposal::PublicEventConditionedV1,
+        )
+        .unwrap();
+        let mut tracker = initialized.tracker.expect("supported fixture");
+        let result = tracker
+            .update_with_proposal(
+                preview_actions,
+                &target,
+                ParticleConfig {
+                    particles: 1,
+                    min_surviving_particles: 1,
+                    max_units: 128,
+                },
+                OpponentProposal::PublicEventConditionedV1,
+            )
+            .unwrap();
+        assert_eq!(result.status, ParticleStatus::Supported);
+        assert!(result.diagnostics.public_event_proposal_attempts > 0);
+        assert!(result.diagnostics.public_event_compatible_proposals > 0);
+        assert_eq!(
+            result.conditioned_observation,
+            Some(target.as_info().clone())
+        );
+    }
+
+    #[test]
+    fn public_event_conditioning_rejects_authoritative_public_contradiction() {
+        let (dex, initial, prior, preview_actions, target_preview, _, _, _, _) =
+            two_turn_sequence(SideId::P1);
+        let mut contradictory = target_preview.as_info().clone();
+        contradictory.public.knowledge.pokemon[6].species = u16::MAX;
+        let contradictory = TrustedSearchInformationSet::from_info_for_test(contradictory);
+        let initialized = PersistentParticleBelief::initialize_with_proposal(
+            dex,
+            &initial,
+            &prior,
+            &[0xdefaced],
+            ParticleConfig {
+                particles: 1,
+                min_surviving_particles: 1,
+                max_units: 2_000,
+            },
+            OpponentProposal::PublicEventConditionedV1,
+        )
+        .unwrap();
+        let mut tracker = initialized.tracker.expect("supported fixture");
+        let before = tracker.current_observation().clone();
+        let result = tracker
+            .update_with_proposal(
+                preview_actions,
+                &contradictory,
+                ParticleConfig {
+                    particles: 1,
+                    min_surviving_particles: 1,
+                    max_units: 128,
+                },
+                OpponentProposal::PublicEventConditionedV1,
+            )
+            .unwrap();
+        assert_eq!(result.status, ParticleStatus::ProposalZeroSupport);
+        assert_eq!(result.diagnostics.public_event_zero_support_particles, 1);
+        assert_eq!(tracker.current_observation(), &before);
+    }
+
+    #[test]
+    fn public_event_conditioned_proposals_are_hidden_truth_metamorphic() {
+        let (dex, teams) = assets();
+        let mut hidden = legal_held_out_variation(&dex, &teams[1]);
+        hidden.id = "different-hidden-world-never-consumed".into();
+        let baseline =
+            BattleState::reset(&dex, [&teams[0], &teams[1]], [749, 750, 751, 752], [0, 1]).unwrap();
+        let altered =
+            BattleState::reset(&dex, [&teams[0], &hidden], [749, 750, 751, 752], [0, 1]).unwrap();
+        let first =
+            TrustedSearchInformationSet::from_player_view(&baseline.observe(SideId::P1)).unwrap();
+        let second =
+            TrustedSearchInformationSet::from_player_view(&altered.observe(SideId::P1)).unwrap();
+        assert_eq!(first.as_info(), second.as_info());
+        let prior = FrozenOpponentPrior::from_training_json(
+            &dex,
+            include_bytes!("../../data/training-teams.json"),
+        )
+        .unwrap();
+        let seed = 0xface_1234;
+        let BeliefSampleResult::Samples(samples) = prior.sample(first.as_info(), seed, 1).unwrap()
+        else {
+            panic!("fixture has support")
+        };
+        let mut target_episode =
+            PreviewWorld::construct(&dex, &first, &samples.hypotheses[0], seed)
+                .unwrap()
+                .into_episode(dex.clone())
+                .unwrap();
+        let actions = preview();
+        let target = target_episode
+            .submit_root_with_baseline(actions.clone())
+            .unwrap();
+        let target = TrustedSearchInformationSet::from_player_view(&target.root_view).unwrap();
+        let config = ParticleConfig {
+            particles: 1,
+            min_surviving_particles: 1,
+            max_units: 512,
+        };
+        let mut left = PersistentParticleBelief::initialize_with_proposal(
+            dex.clone(),
+            &first,
+            &prior,
+            &[seed],
+            config.clone(),
+            OpponentProposal::PublicEventConditionedV1,
+        )
+        .unwrap()
+        .tracker
+        .expect("fixture has support");
+        let mut right = PersistentParticleBelief::initialize_with_proposal(
+            dex,
+            &second,
+            &prior,
+            &[seed],
+            config.clone(),
+            OpponentProposal::PublicEventConditionedV1,
+        )
+        .unwrap()
+        .tracker
+        .expect("fixture has support");
+        let left = left
+            .update_with_proposal(
+                actions.clone(),
+                &target,
+                config.clone(),
+                OpponentProposal::PublicEventConditionedV1,
+            )
+            .unwrap();
+        let right = right
+            .update_with_proposal(
+                actions,
+                &target,
+                config,
+                OpponentProposal::PublicEventConditionedV1,
+            )
+            .unwrap();
+        assert_eq!(left, right);
+    }
+
+    #[test]
+    fn held_out_hidden_build_is_legal_and_not_in_frozen_prior() {
+        let (dex, teams) = assets();
+        let prior = FrozenOpponentPrior::from_training_json(
+            &dex,
+            include_bytes!("../../data/training-teams.json"),
+        )
+        .unwrap();
+        let held_out = legal_held_out_variation(&dex, &teams[1]);
+        assert!(crate::legality::validate_team(&dex, &held_out).legal());
+        assert!(!prior.contains_complete_team_for_test(&held_out));
     }
 
     #[test]
@@ -1939,5 +2247,147 @@ mod tests {
         for (category, count) in mismatch_totals {
             println!("C3b-1.2 mismatch {category:?} count={count}");
         }
+    }
+
+    #[test]
+    fn paired_public_event_conditioning_matrix_keeps_exact_final_filter() {
+        let started = Instant::now();
+        let (dex, teams) = assets();
+        let prior = FrozenOpponentPrior::from_training_json(
+            &dex,
+            include_bytes!("../../data/training-teams.json"),
+        )
+        .unwrap();
+        // rows, boundaries, preview support, combat-1 support, combat-2
+        // support, collapse, zero-support, conditioned attempts, compatible.
+        let mut stats = BTreeMap::<OpponentProposal, [usize; 9]>::new();
+        for side in [SideId::P1, SideId::P2] {
+            for out_of_prior in [false, true] {
+                for seed_base in [801u16, 811u16] {
+                    for particles in [2usize, 4] {
+                        let (
+                            initial,
+                            preview_actions,
+                            target_preview,
+                            combat_one,
+                            target_one,
+                            combat_two,
+                            target_two,
+                        ) = legal_independent_actual_sequence(
+                            &dex,
+                            &teams,
+                            side,
+                            seed_base,
+                            out_of_prior,
+                        );
+                        for proposal in [
+                            OpponentProposal::FirstLegal,
+                            OpponentProposal::SeededSampled,
+                            OpponentProposal::PublicEventConditionedV1,
+                        ] {
+                            let config = ParticleConfig {
+                                particles,
+                                min_surviving_particles: 1,
+                                max_units: 512,
+                            };
+                            let initialized = PersistentParticleBelief::initialize_with_proposal(
+                                dex.clone(),
+                                &initial,
+                                &prior,
+                                &[0x601, 0x602, 0x603, 0x604],
+                                config.clone(),
+                                proposal,
+                            )
+                            .unwrap();
+                            let mut tracker = initialized.tracker.expect("fixture has support");
+                            let mut results = Vec::new();
+                            for (actions, target) in [
+                                (preview_actions.clone(), target_preview.clone()),
+                                (combat_one.clone(), target_one.clone()),
+                                (combat_two.clone(), target_two.clone()),
+                            ] {
+                                let result = tracker
+                                    .update_with_proposal(
+                                        actions,
+                                        &target,
+                                        config.clone(),
+                                        proposal,
+                                    )
+                                    .unwrap();
+                                results.push(result);
+                                if results.last().unwrap().conditioned_observation.is_none() {
+                                    break;
+                                }
+                            }
+                            let entry = stats.entry(proposal).or_default();
+                            entry[0] += 1;
+                            entry[1] += results.len();
+                            entry[2] += usize::from(matches!(
+                                results.first().map(|result| &result.status),
+                                Some(
+                                    ParticleStatus::Supported
+                                        | ParticleStatus::InsufficientCoverage
+                                )
+                            ));
+                            entry[3] += usize::from(matches!(
+                                results.get(1).map(|result| &result.status),
+                                Some(
+                                    ParticleStatus::Supported
+                                        | ParticleStatus::InsufficientCoverage
+                                )
+                            ));
+                            entry[4] += usize::from(matches!(
+                                results.get(2).map(|result| &result.status),
+                                Some(
+                                    ParticleStatus::Supported
+                                        | ParticleStatus::InsufficientCoverage
+                                )
+                            ));
+                            entry[5] += results
+                                .iter()
+                                .filter(|result| result.status == ParticleStatus::ParticleCollapse)
+                                .count();
+                            entry[6] += results
+                                .iter()
+                                .filter(|result| {
+                                    result.status == ParticleStatus::ProposalZeroSupport
+                                })
+                                .count();
+                            entry[7] += results
+                                .iter()
+                                .map(|result| result.diagnostics.public_event_proposal_attempts)
+                                .sum::<usize>();
+                            entry[8] += results
+                                .iter()
+                                .map(|result| result.diagnostics.public_event_compatible_proposals)
+                                .sum::<usize>();
+                        }
+                    }
+                }
+            }
+        }
+        let first = stats[&OpponentProposal::FirstLegal];
+        let sampled = stats[&OpponentProposal::SeededSampled];
+        let conditioned = stats[&OpponentProposal::PublicEventConditionedV1];
+        assert_eq!(first[0], 16);
+        assert_eq!(sampled[0], 16);
+        assert_eq!(conditioned[0], 16);
+        assert!(first[2] > 0, "paired baseline must retain preview support");
+        assert!(
+            conditioned[7] > 0,
+            "conditioned mode must enumerate legal proposals"
+        );
+        println!(
+            "C3b-1.3 paired proposal=FirstLegal rows={} boundaries={} preview={} combat1={} combat2={} collapse={} zero_support={} attempts={} compatible={}",
+            first[0], first[1], first[2], first[3], first[4], first[5], first[6], first[7], first[8]
+        );
+        println!(
+            "C3b-1.3 paired proposal=SeededSampled rows={} boundaries={} preview={} combat1={} combat2={} collapse={} zero_support={} attempts={} compatible={}",
+            sampled[0], sampled[1], sampled[2], sampled[3], sampled[4], sampled[5], sampled[6], sampled[7], sampled[8]
+        );
+        println!(
+            "C3b-1.3 paired proposal=PublicEventConditionedV1 rows={} boundaries={} preview={} combat1={} combat2={} collapse={} zero_support={} attempts={} compatible={} elapsed_ms={}",
+            conditioned[0], conditioned[1], conditioned[2], conditioned[3], conditioned[4], conditioned[5], conditioned[6], conditioned[7], conditioned[8], started.elapsed().as_millis()
+        );
     }
 }
