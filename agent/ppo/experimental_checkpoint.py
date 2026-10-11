@@ -90,6 +90,7 @@ def build_envelope(
     rank_digests: Optional[dict] = None,
     in_flight_battles: int = 0,
     iteration_complete: bool = True,
+    drain_status: Optional[dict] = None,
 ) -> dict:
     """Build a validated, iteration-boundary-only experimental envelope.
 
@@ -98,6 +99,13 @@ def build_envelope(
     """
     if not iteration_complete or in_flight_battles != 0:
         raise ValueError("checkpoint requires a completed iteration with no in-flight battles")
+    drain = dict(drain_status or {
+        "complete": bool(iteration_complete),
+        "in_flight_battles": int(in_flight_battles),
+        "source": "caller",
+    })
+    if drain.get("complete") is not True or int(drain.get("in_flight_battles", -1)) != 0:
+        raise ValueError("checkpoint requires an observed drained collector")
     if not rank_digests or set(rank_digests) != {str(index) for index in range(world_size)}:
         raise ValueError("checkpoint requires model and optimizer digests for every rank")
     digest_values = []
@@ -131,6 +139,7 @@ def build_envelope(
             "optimizer_steps": int(learner.optimizer_steps),
         },
         "collector_restart": copy.deepcopy(collector_restart),
+        "collector_drain": drain,
         "model_config_hash": hash_json(learner.model.config.to_dict()),
         "ppo_config_hash": hash_json(learner.config.__dict__),
         "rank_digests": copy.deepcopy(rank_digests),
@@ -186,6 +195,10 @@ def validate_envelope(envelope: dict, *, dataset_manifest_hash: str,
     required_restart = {"seed", "cohorts", "match_counter", "slot_counter", "config_hash"}
     if not required_restart.issubset(restart):
         raise ValueError("checkpoint is missing collector restart state")
+    drain = envelope.get("collector_drain")
+    if not isinstance(drain, dict) or drain.get("complete") is not True \
+            or int(drain.get("in_flight_battles", -1)) != 0:
+        raise ValueError("checkpoint does not contain an observed drained collector")
     accounting = envelope.get("accounting", {})
     if accounting.get("committed_matches") != envelope["learner"]["scheduler"].get("matches"):
         raise ValueError("checkpoint accounting does not match scheduler clock")

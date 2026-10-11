@@ -159,6 +159,10 @@ class NativeCollector:
         self.telemetry: dict = {}
         self._round_active_envs = 0
         self._slot_counter = 0
+        # Set from the completed static/rolling drain loops.  This is a
+        # runtime invariant, rather than a caller-supplied checkpoint flag.
+        self.in_flight_battles = None
+        self.drain_complete = False
 
     # -- helpers ----------------------------------------------------------
     def _reset_cohort(self) -> tuple[list, list, list]:
@@ -791,7 +795,15 @@ class NativeCollector:
                             cohort_wall - cohort_t50 if cohort_t50 is not None else None
                         ),
                     }
-                )
+                    )
+            # The loop exits only after every native handle in this cohort has
+            # reported termination.  Record that observed state for consumers
+            # that publish iteration-boundary checkpoints.
+            self.in_flight_battles = sum(1 for value in finished if not value)
+        if self.config.rolling_slots:
+            # _collect_rolling exits only when its open-game count is zero.
+            self.in_flight_battles = 0
+        self.drain_complete = self.in_flight_battles == 0
         self.stats.wall_seconds = time.perf_counter() - started
         accounted = (self.stats.reset_seconds + self.stats.observation_seconds + self.stats.parse_seconds
                      + self.stats.h2d_seconds + self.stats.request_info_seconds

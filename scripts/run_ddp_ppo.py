@@ -507,6 +507,10 @@ def worker(args) -> None:
         if args.experimental_checkpoint:
             if args.rolling_slots:
                 raise RuntimeError("experimental envelope requires static collector restart")
+            if not collector.drain_complete or collector.in_flight_battles != 0:
+                raise RuntimeError(
+                    "experimental envelope requires the native collector to report a drained boundary"
+                )
             envelope = build_envelope(
                 learner,
                 source_sha=source_sha,
@@ -532,7 +536,13 @@ def worker(args) -> None:
                 },
                 rng_generators=[shuffle_generator],
                 rank_digests={str(index): value for index, value in enumerate(digests)},
-                in_flight_battles=0, iteration_complete=True,
+                in_flight_battles=int(collector.in_flight_battles),
+                iteration_complete=bool(collector.drain_complete),
+                drain_status={
+                    "complete": bool(collector.drain_complete),
+                    "in_flight_battles": int(collector.in_flight_battles),
+                    "source": "NativeCollector.collect static drain invariant",
+                },
             )
             save_envelope(
                 f"{os.path.abspath(args.experimental_checkpoint)}.rank{rank}",
