@@ -5,10 +5,10 @@
 //! not a belief sampler or a search policy.
 
 use crate::{
+    EngineError, Result,
     actions::Request,
     knowledge::Knowledge,
     state::{Outcome, OwnSideView, PlayerView, SideId},
-    EngineError, Result,
 };
 use serde::{Deserialize, Serialize};
 

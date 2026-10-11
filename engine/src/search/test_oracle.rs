@@ -6,11 +6,11 @@
 //! labels or be wired into Python/training.
 
 use crate::{
+    EngineError, Result,
     actions::{AtomicAction, Request},
     batch::{BattleBatch, Handle, SideChoice, StepSpec},
     battle::StepResult,
     state::SideId,
-    EngineError, Result,
 };
 
 /// Result of one isolated, fully specified joint-action branch.

@@ -4,5 +4,6 @@
 //! is not an information-set search API and is deliberately unsuitable for
 //! teacher generation.
 
+pub mod belief;
 pub mod information_set;
 pub mod test_oracle;
