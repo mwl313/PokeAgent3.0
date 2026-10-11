@@ -80,6 +80,9 @@ fn seeded_sampling_and_preview_coverage_are_reproducible() {
     let coverage = prior.preview_identification_report();
     assert_eq!(coverage.observations, 1137);
     assert!((0.0..=1.0).contains(&coverage.singleton_fraction));
+    assert_eq!(coverage.ordered_singleton_observations, 817);
+    assert_eq!(coverage.unordered_singleton_observations, 793);
+    assert!((coverage.unordered_mean_candidate_count - 3.12665).abs() < 0.0001);
     assert_eq!(
         coverage.source_sheet_disjoint_evaluation,
         "not available from the frozen training pool"

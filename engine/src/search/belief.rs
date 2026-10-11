@@ -127,12 +127,17 @@ impl FrozenOpponentPrior {
     /// Measure closed-pool identification from six revealed species. This is
     /// a prior-coverage statistic, not a generalization or strength result.
     pub fn preview_identification_report(&self) -> PreviewIdentificationReport {
-        let mut singleton = 0usize;
-        let mut zero = 0usize;
-        let mut total_matches = 0usize;
+        let mut ordered_singleton = 0usize;
+        let mut ordered_zero = 0usize;
+        let mut ordered_total = 0usize;
+        let mut unordered_singleton = 0usize;
+        let mut unordered_zero = 0usize;
+        let mut unordered_total = 0usize;
         for team in &self.teams {
             let species: [Id; 6] = std::array::from_fn(|i| team.members[i].species);
-            let matches = self
+            let mut unordered_species = species;
+            unordered_species.sort_unstable();
+            let ordered_matches = self
                 .teams
                 .iter()
                 .filter(|candidate| {
@@ -143,17 +148,38 @@ impl FrozenOpponentPrior {
                         .all(|(member, expected)| member.species == expected)
                 })
                 .count();
-            total_matches += matches;
-            singleton += usize::from(matches == 1);
-            zero += usize::from(matches == 0);
+            let unordered_matches = self
+                .teams
+                .iter()
+                .filter(|candidate| {
+                    let mut candidate_species: [Id; 6] =
+                        std::array::from_fn(|i| candidate.members[i].species);
+                    candidate_species.sort_unstable();
+                    candidate_species == unordered_species
+                })
+                .count();
+            ordered_total += ordered_matches;
+            ordered_singleton += usize::from(ordered_matches == 1);
+            ordered_zero += usize::from(ordered_matches == 0);
+            unordered_total += unordered_matches;
+            unordered_singleton += usize::from(unordered_matches == 1);
+            unordered_zero += usize::from(unordered_matches == 0);
         }
         let observations = self.teams.len();
         PreviewIdentificationReport {
             observations,
-            singleton_observations: singleton,
-            zero_match_observations: zero,
-            singleton_fraction: singleton as f32 / observations as f32,
-            mean_candidate_count: total_matches as f32 / observations as f32,
+            singleton_observations: ordered_singleton,
+            zero_match_observations: ordered_zero,
+            singleton_fraction: ordered_singleton as f32 / observations as f32,
+            mean_candidate_count: ordered_total as f32 / observations as f32,
+            ordered_singleton_observations: ordered_singleton,
+            ordered_zero_match_observations: ordered_zero,
+            ordered_singleton_fraction: ordered_singleton as f32 / observations as f32,
+            ordered_mean_candidate_count: ordered_total as f32 / observations as f32,
+            unordered_singleton_observations: unordered_singleton,
+            unordered_zero_match_observations: unordered_zero,
+            unordered_singleton_fraction: unordered_singleton as f32 / observations as f32,
+            unordered_mean_candidate_count: unordered_total as f32 / observations as f32,
             source_sheet_disjoint_evaluation: "not available from the frozen training pool".into(),
             novel_preview_roster_evaluation: "not available from the frozen training pool".into(),
         }
@@ -273,6 +299,14 @@ pub struct PreviewIdentificationReport {
     pub zero_match_observations: usize,
     pub singleton_fraction: f32,
     pub mean_candidate_count: f32,
+    pub ordered_singleton_observations: usize,
+    pub ordered_zero_match_observations: usize,
+    pub ordered_singleton_fraction: f32,
+    pub ordered_mean_candidate_count: f32,
+    pub unordered_singleton_observations: usize,
+    pub unordered_zero_match_observations: usize,
+    pub unordered_singleton_fraction: f32,
+    pub unordered_mean_candidate_count: f32,
     pub source_sheet_disjoint_evaluation: String,
     pub novel_preview_roster_evaluation: String,
 }

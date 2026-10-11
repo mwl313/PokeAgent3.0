@@ -48,6 +48,26 @@ pub struct SearchInformationSet {
     pub own: OwnInformation,
 }
 
+/// A player-view-derived information set that has not crossed a serialized
+/// or user-controlled boundary.  World construction accepts this wrapper,
+/// never an arbitrary deserialized DTO.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TrustedSearchInformationSet {
+    info: SearchInformationSet,
+}
+
+impl TrustedSearchInformationSet {
+    pub fn from_player_view(view: &PlayerView) -> Result<Self> {
+        Ok(Self {
+            info: SearchInformationSet::from_player_view(view)?,
+        })
+    }
+
+    pub fn as_info(&self) -> &SearchInformationSet {
+        &self.info
+    }
+}
+
 impl SearchInformationSet {
     /// Copy only fields already present in one player's `PlayerView`.
     pub fn from_player_view(view: &PlayerView) -> Result<Self> {
