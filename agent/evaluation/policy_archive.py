@@ -1,82 +1,150 @@
-"""Small immutable JSON policy archive and non-blocking evaluation records."""
+"""Verified local policy archive used by the evaluation league.
+
+``verification-only`` entries point to protected local artifacts and are
+re-verified before every evaluation.  They are deliberately not called
+immutable storage.  Content-addressed copies are optional for new artifacts.
+"""
 from __future__ import annotations
 
 import hashlib
 import json
 import os
+import shutil
 import tempfile
-from pathlib import Path
 
 import torch
 
-from agent.evaluation.frozen_policy import FrozenPPOPolicy
-
-
 ARCHIVE_SCHEMA = "pa3-policy-archive-v1"
+OBSERVATION_SCHEMA = "pa3-entity-observation-v1"
+ACTION_SCHEMA = "atomic-action-v1"
 
 
 def _sha256(path):
-    h = hashlib.sha256()
-    with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(1 << 20), b""):
-            h.update(chunk)
-    return h.hexdigest()
+    digest = hashlib.sha256()
+    with open(path, "rb") as handle:
+        for chunk in iter(lambda: handle.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _model_digest(model):
+    digest = hashlib.sha256()
+    for name in sorted(model):
+        digest.update(name.encode())
+        digest.update(model[name].detach().cpu().contiguous().numpy().tobytes())
+    return digest.hexdigest()
+
+
+def _resolve(registry_path, entry, key="path"):
+    path = entry[key]
+    return path if os.path.isabs(path) else os.path.abspath(os.path.join(os.path.dirname(registry_path), path))
+
+
+def _load_envelope(path):
+    if "://" in path or not os.path.isfile(path):
+        raise ValueError("evaluation checkpoints must be trusted local files")
+    payload = torch.load(path, map_location="cpu", weights_only=False)
+    if not isinstance(payload, dict) or not isinstance(payload.get("learner"), dict):
+        raise ValueError("archive requires an experimental learner envelope")
+    if not isinstance(payload["learner"].get("model"), dict):
+        raise ValueError("archive envelope has no model state")
+    return payload
+
+
+def _atomic_json(path, value):
+    path = os.path.abspath(path)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    fd, tmp = tempfile.mkstemp(prefix=".archive-", dir=os.path.dirname(path))
+    try:
+        with os.fdopen(fd, "w") as handle:
+            json.dump(value, handle, indent=2, sort_keys=True)
+            handle.flush(); os.fsync(handle.fileno())
+        os.replace(tmp, path)
+    finally:
+        if os.path.exists(tmp): os.unlink(tmp)
+
+
+def _validate_rank_digests(payload, policy_id):
+    digests = payload.get("rank_digests")
+    if not isinstance(digests, dict) or not digests:
+        raise ValueError(f"archived rank digests missing: {policy_id}")
+    values = list(digests.values())
+    if any(not row.get("model") or not row.get("optimizer") for row in values):
+        raise ValueError(f"archived rank digests incomplete: {policy_id}")
+    if len({row["model"] for row in values}) != 1 or len({row["optimizer"] for row in values}) != 1:
+        raise ValueError(f"archived rank digests inconsistent: {policy_id}")
 
 
 def register_checkpoint(registry_path, *, policy_id, label, checkpoint_path,
-                        committed_matches=None, source_sha=None, incumbent=False):
-    """Register a local checkpoint; refuse replacement with a new digest."""
+                        committed_matches=None, source_sha=None, incumbent=False,
+                        latest=False, storage_mode="verification-only", archive_root=None,
+                        rank_peer_path=None):
+    """Add an identity-pinned artifact without changing active policy by default."""
     checkpoint_path = os.path.abspath(os.fspath(checkpoint_path))
-    if not os.path.isfile(checkpoint_path):
-        raise ValueError(f"checkpoint is missing: {checkpoint_path}")
+    payload = _load_envelope(checkpoint_path)
     file_hash = _sha256(checkpoint_path)
-    payload = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
-    if not isinstance(payload, dict) or "learner" not in payload:
-        raise ValueError("archive requires an experimental learner envelope")
-    model = payload["learner"]["model"]
-    model_hash = hashlib.sha256()
-    for name, value in model.items():
-        model_hash.update(name.encode())
-        model_hash.update(value.detach().cpu().contiguous().numpy().tobytes())
+    if storage_mode == "content-addressed":
+        if not archive_root: raise ValueError("content-addressed registration requires archive_root")
+        destination = os.path.join(os.path.abspath(archive_root), file_hash[:2], file_hash)
+        os.makedirs(os.path.dirname(destination), exist_ok=True)
+        if not os.path.exists(destination):
+            if shutil.disk_usage(os.path.abspath(archive_root)).free < os.path.getsize(checkpoint_path):
+                raise ValueError("insufficient archive disk space")
+            shutil.copy2(checkpoint_path, destination)
+            os.chmod(destination, 0o444)
+        if _sha256(destination) != file_hash: raise ValueError("content-addressed copy verification failed")
+        checkpoint_path, storage_mode = destination, "content-addressed"
+    elif storage_mode != "verification-only":
+        raise ValueError("unsupported archive storage mode")
     registry_path = os.path.abspath(os.fspath(registry_path))
-    if os.path.exists(registry_path):
-        registry = json.load(open(registry_path))
-    else:
-        registry = {"schema": ARCHIVE_SCHEMA, "policies": {}, "evaluations": [], "latest": None, "incumbent": None}
-    if registry.get("schema") != ARCHIVE_SCHEMA:
-        raise ValueError("unsupported policy archive schema")
+    registry = json.load(open(registry_path)) if os.path.exists(registry_path) else {
+        "schema": ARCHIVE_SCHEMA, "policies": {}, "evaluations": [], "latest": None, "incumbent": None,
+    }
+    if registry.get("schema") != ARCHIVE_SCHEMA: raise ValueError("unsupported policy archive schema")
     old = registry["policies"].get(policy_id)
     if old and old["file_sha256"] != file_hash:
         raise ValueError("immutable archive entry cannot be replaced by a different checkpoint")
     entry = {
-        "id": policy_id, "label": label, "path": checkpoint_path,
-        "file_sha256": file_hash, "model_digest": model_hash.hexdigest(),
-        "committed_matches": committed_matches,
-        "source_sha": source_sha or payload.get("source_sha"),
-        "observation_schema": "pa3-entity-observation-v1",
-        "action_schema": "atomic-action-v1",
+        "id": policy_id, "label": label, "path": checkpoint_path, "storage_mode": storage_mode,
+        "file_sha256": file_hash, "model_digest": _model_digest(payload["learner"]["model"]),
+        "committed_matches": committed_matches if committed_matches is not None else payload.get("accounting", {}).get("committed_matches"),
+        "source_sha": source_sha or payload.get("source_sha"), "model_config_hash": payload.get("model_config_hash"),
+        "action_schema_hash": payload.get("action_schema_hash"),
+        "observation_schema": OBSERVATION_SCHEMA, "action_schema": ACTION_SCHEMA,
     }
+    if rank_peer_path: entry["rank_peer_path"] = os.path.abspath(os.fspath(rank_peer_path))
     registry["policies"][policy_id] = entry
-    registry["latest"] = policy_id
-    if incumbent:
-        registry["incumbent"] = policy_id
-    os.makedirs(os.path.dirname(registry_path), exist_ok=True)
-    fd, tmp = tempfile.mkstemp(prefix=".archive-", dir=os.path.dirname(registry_path))
-    try:
-        with os.fdopen(fd, "w") as f:
-            json.dump(registry, f, indent=2, sort_keys=True)
-            f.flush(); os.fsync(f.fileno())
-        os.replace(tmp, registry_path)
-    finally:
-        if os.path.exists(tmp): os.unlink(tmp)
+    if latest: registry["latest"] = policy_id
+    if incumbent: registry["incumbent"] = policy_id
+    _atomic_json(registry_path, registry)
     return entry
+
+
+def verify_entry(registry_path, entry):
+    """Verify identity, architecture contract, provenance, and optional DDP peer."""
+    path = _resolve(registry_path, entry)
+    if not os.path.isfile(path): raise ValueError(f"archived checkpoint missing: {entry['id']}")
+    if _sha256(path) != entry["file_sha256"]: raise ValueError(f"archived checkpoint SHA mismatch: {entry['id']}")
+    payload = _load_envelope(path)
+    _validate_rank_digests(payload, entry["id"])
+    if _model_digest(payload["learner"]["model"]) != entry["model_digest"]:
+        raise ValueError(f"archived model digest mismatch: {entry['id']}")
+    for key in ("source_sha", "model_config_hash", "action_schema_hash"):
+        if not entry.get(key) or payload.get(key) != entry[key]:
+            raise ValueError(f"archived {key} mismatch: {entry['id']}")
+    if payload.get("accounting", {}).get("committed_matches") != entry.get("committed_matches"):
+        raise ValueError(f"archived committed-match mismatch: {entry['id']}")
+    if entry.get("observation_schema") != OBSERVATION_SCHEMA or entry.get("action_schema") != ACTION_SCHEMA:
+        raise ValueError(f"archived schema mismatch: {entry['id']}")
+    if entry.get("rank_peer_path"):
+        peer_payload = _load_envelope(_resolve(registry_path, entry, "rank_peer_path"))
+        if peer_payload.get("rank_digests") != payload.get("rank_digests") or peer_payload.get("source_sha") != payload.get("source_sha"):
+            raise ValueError(f"archived DDP rank mismatch: {entry['id']}")
+    return path
 
 
 def verify_archive(registry_path):
     registry = json.load(open(registry_path))
-    if registry.get("schema") != ARCHIVE_SCHEMA:
-        raise ValueError("unsupported policy archive schema")
-    for entry in registry["policies"].values():
-        if _sha256(entry["path"]) != entry["file_sha256"]:
-            raise ValueError(f"archived checkpoint digest mismatch: {entry['id']}")
+    if registry.get("schema") != ARCHIVE_SCHEMA: raise ValueError("unsupported policy archive schema")
+    for entry in registry["policies"].values(): verify_entry(registry_path, entry)
     return registry

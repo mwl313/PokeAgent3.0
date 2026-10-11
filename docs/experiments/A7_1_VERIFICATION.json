@@ -1,0 +1,43 @@
+{
+  "schema": "a7.1-evaluation-league-verification-v1",
+  "execution_head_before_a7_1_commit": "6e917062bb042c5580b226765fc9e0d58e49cb6d",
+  "working_tree_clean_at_execution": false,
+  "environment": {
+    "host": "MiniDC",
+    "python": "/home/minidc/Desktop/PokeAgent3.0/.venv/bin/python",
+    "device": "cuda:0",
+    "engine": "pa3-native-fixed-policy-v1"
+  },
+  "archive_registry": "docs/experiments/policy_archive.json",
+  "all_registered_checkpoints_verified": true,
+  "schedule_demo": {
+    "checkpoint": "runs/experiments/a/a5_control/boundary.rank0",
+    "checkpoint_committed_matches": 352256,
+    "demo_anchor": 302256,
+    "created_job": "light:352256",
+    "recorded_rank_digests": true,
+    "note": "The alternate anchor is solely an external-CLI lifecycle demonstration; the production experimental anchor remains 352256."
+  },
+  "native_evaluation": {
+    "command": "PYTHONPATH=engine/python:. .venv/bin/python scripts/run_evaluation_league.py run-pair --candidate a5_control_352256 --opponent a5_historical_352256 --pairs 16 --seed 20261011 --device cuda:0 --receipts runs/experiments/a/a7_1/receipts.json",
+    "receipt_path": "runs/experiments/a/a7_1/receipts.json",
+    "candidate": "a5_control_352256",
+    "opponent": "a5_historical_352256",
+    "candidate_checkpoint_sha256": "4ee544921233ca48371ed73296068fe5d45d420cf112c68a69be40a001d61243",
+    "opponent_checkpoint_sha256": "8027bd237776e41a6fd4e0037f37e29938912cbde6d7474a2fc28951989b7730",
+    "identity": "936365d3100641b584e7e14354593f029e3341049015f009773a0ac5021b9eec",
+    "fixture_manifest_hash": "ebdb0c520580b109f47822e619e2c2d7322e8b561e387e3308be51c4be969ea5",
+    "completed_games": 32,
+    "wins": 18,
+    "losses": 14,
+    "draws": 0,
+    "operational_errors": 0,
+    "illegal_actions": 0,
+    "score_mean": 0.5625,
+    "paired_score_ci95": [0.40625, 0.71875],
+    "runtime_seconds": 6.7551923300052295,
+    "status": "success",
+    "rerun_cached_by_identity": true,
+    "negative_sha_identity_test_rejected": true
+  }
+}
