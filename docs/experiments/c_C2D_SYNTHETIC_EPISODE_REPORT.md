@@ -2,6 +2,11 @@
 
 **Status:** `C2D_SYNTHETIC_EPISODE_ONLY / NO_MIDBATTLE_ROOT / NO_SEARCH / NO_TEACHER / NO_DISTILLATION`
 
+**Implementation commit:** `4aabdae7caa08695851dd1110e14c24c7a4c654`
+
+**Files changed:** `engine/src/search/world.rs`,
+`engine/tests/search_world.rs`, and this report.
+
 ## Scope and boundary
 
 C2d extends the C2c clean-preview world with a privately owned
@@ -81,4 +86,3 @@ copied/transformed moves or abilities, item changes, pending commands, event
 ordering, or live RNG. The executor currently accepts joint choices supplied by
 its caller; it does not implement an opponent policy or belief search. C2c-2,
 C3 search, teacher labels, and PPO integration remain future review-gated work.
-
