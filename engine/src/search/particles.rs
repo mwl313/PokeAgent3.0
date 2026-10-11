@@ -414,7 +414,7 @@ mod tests {
 
     #[test]
     fn hidden_truth_metamorphic_inputs_produce_identical_particle_results() {
-        let (initial, prior, preview_actions, combat_actions, target) = run_for_side(SideId::P1);
+        let (_, prior, preview_actions, combat_actions, target) = run_for_side(SideId::P1);
         let (dex, teams) = assets();
         let baseline =
             BattleState::reset(&dex, [&teams[0], &teams[1]], [711, 712, 713, 714], [0, 1]).unwrap();
@@ -434,7 +434,7 @@ mod tests {
         let (dex_a, _) = assets();
         let a = ParticleBelief::advance_preview_and_one_turn(
             dex_a,
-            &initial,
+            &first,
             &prior,
             preview_actions.clone(),
             combat_actions.clone(),
@@ -450,7 +450,7 @@ mod tests {
         let (dex_b, _) = assets();
         let b = ParticleBelief::advance_preview_and_one_turn(
             dex_b,
-            &initial,
+            &second,
             &prior,
             preview_actions,
             combat_actions,
