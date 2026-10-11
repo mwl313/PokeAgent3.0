@@ -5,13 +5,13 @@
 //! then builds a fresh preview-only engine state with an independent seed.
 
 use crate::{
-    FORMAT,
     actions::RequestKind,
     assets::Dex,
     batch::SideChoice,
     legality,
     search::{belief::BeliefTeam, information_set::TrustedSearchInformationSet},
     state::{BattleState, PlayerView, SideId, Team, TeamSet},
+    FORMAT,
 };
 use std::{collections::BTreeMap, fmt, sync::Arc};
 
@@ -111,6 +111,12 @@ pub struct SyntheticEpisode {
     dex: Arc<Dex>,
     state: BattleState,
     root_side: SideId,
+    boundaries: usize,
+}
+
+#[derive(Clone)]
+pub(crate) struct EpisodeCheckpoint {
+    state: Vec<u8>,
     boundaries: usize,
 }
 
@@ -256,6 +262,38 @@ impl PreviewWorld {
 }
 
 impl SyntheticEpisode {
+    pub(crate) fn validate_root_actions(
+        &self,
+        actions: &[crate::actions::AtomicAction],
+    ) -> Result<(), EpisodeError> {
+        self.state
+            .validate_choice(self.root_side, actions)
+            .map_err(|error| invalid_action(error.to_string()))
+    }
+
+    pub(crate) fn checkpoint(&self) -> Result<EpisodeCheckpoint, EpisodeError> {
+        Ok(EpisodeCheckpoint {
+            state: self.state.snapshot().map_err(|error| EpisodeError {
+                code: EpisodeFailureCode::RollbackError,
+                message: error.to_string(),
+            })?,
+            boundaries: self.boundaries,
+        })
+    }
+
+    pub(crate) fn restore_checkpoint(
+        &mut self,
+        checkpoint: EpisodeCheckpoint,
+    ) -> Result<(), EpisodeError> {
+        self.state =
+            BattleState::restore(&self.dex, &checkpoint.state).map_err(|error| EpisodeError {
+                code: EpisodeFailureCode::RollbackError,
+                message: error.to_string(),
+            })?;
+        self.boundaries = checkpoint.boundaries;
+        Ok(())
+    }
+
     pub fn root_view(&self) -> PlayerView {
         self.state.observe(self.root_side)
     }
@@ -284,10 +322,30 @@ impl SyntheticEpisode {
         &mut self,
         root_actions: Vec<crate::actions::AtomicAction>,
     ) -> Result<EpisodeBoundary, EpisodeError> {
+        self.submit_root_with_proposal(
+            root_actions,
+            crate::search::particles::OpponentProposal::FirstLegal,
+            0,
+        )
+    }
+
+    pub(crate) fn submit_root_with_proposal(
+        &mut self,
+        root_actions: Vec<crate::actions::AtomicAction>,
+        proposal: crate::search::particles::OpponentProposal,
+        proposal_seed: u64,
+    ) -> Result<EpisodeBoundary, EpisodeError> {
         let opponent = self.root_side.other();
         let opponent_view = self.state.observe(opponent);
-        let opponent_actions = complete_legal_actions(&opponent_view.request)
-            .ok_or_else(|| invalid_action("baseline opponent has no legal completion"))?;
+        let opponent_actions = match proposal {
+            crate::search::particles::OpponentProposal::FirstLegal => {
+                complete_legal_actions(&opponent_view.request)
+            }
+            crate::search::particles::OpponentProposal::SeededSampled => {
+                sampled_complete_legal_actions(&opponent_view.request, proposal_seed)
+            }
+        }
+        .ok_or_else(|| invalid_action("baseline opponent has no legal completion"))?;
         self.submit_joint(&[
             SideChoice {
                 side: self.root_side,
@@ -298,6 +356,22 @@ impl SyntheticEpisode {
                 actions: opponent_actions,
             },
         ])
+    }
+
+    pub(crate) fn proposed_opponent_action(
+        &self,
+        proposal: crate::search::particles::OpponentProposal,
+        proposal_seed: u64,
+    ) -> Option<Vec<crate::actions::AtomicAction>> {
+        let opponent_view = self.state.observe(self.root_side.other());
+        match proposal {
+            crate::search::particles::OpponentProposal::FirstLegal => {
+                complete_legal_actions(&opponent_view.request)
+            }
+            crate::search::particles::OpponentProposal::SeededSampled => {
+                sampled_complete_legal_actions(&opponent_view.request, proposal_seed)
+            }
+        }
     }
 
     /// Internal rollout hook: both sides use the transparent complete-action
@@ -476,6 +550,25 @@ fn complete_legal_actions(
         None
     }
     descend(request, &mut Vec::new())
+}
+
+fn sampled_complete_legal_actions(
+    request: &crate::actions::Request,
+    seed: u64,
+) -> Option<Vec<crate::actions::AtomicAction>> {
+    let mut rng = seed.wrapping_add(0x9e3779b97f4a7c15);
+    let mut prefix = Vec::new();
+    loop {
+        let candidates = request.candidates(&prefix).ok()?;
+        if candidates.is_empty() {
+            return request.validate_joint(&prefix).is_ok().then_some(prefix);
+        }
+        rng ^= rng >> 12;
+        rng ^= rng << 25;
+        rng ^= rng >> 27;
+        let index = (rng as usize) % candidates.len();
+        prefix.push(candidates[index]);
+    }
 }
 
 fn own_team(info: &crate::search::information_set::SearchInformationSet) -> Result<Team, String> {
