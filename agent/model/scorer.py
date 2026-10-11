@@ -188,6 +188,14 @@ class ConditionalPrefixScorer(nn.Module):
         entity_token: torch.Tensor,
         move_token: torch.Tensor,
     ) -> torch.Tensor:
+        # Candidate scoring is the behavior-policy contract.  Keeping this
+        # small path in FP32 makes sampled and recomputed prefix scores
+        # independent of the surrounding encoder autocast batch shape.
+        with torch.autocast(device_type=encoded_tokens.device.type, enabled=False):
+            encoded_tokens = encoded_tokens.float()
+            return self._build_keys_fp32(encoded_tokens, action_ids, entity_token, move_token)
+
+    def _build_keys_fp32(self, encoded_tokens, action_ids, entity_token, move_token):
         shape = action_ids.shape[:-1]
         d = encoded_tokens.shape[-1]
         token_part = self.token_references(
@@ -221,6 +229,12 @@ class ConditionalPrefixScorer(nn.Module):
         the prefix. Reusing the selected key avoids repeating its embeddings,
         token gathers, projections and LayerNorm after scoring the branch.
         """
+        with torch.autocast(device_type=keys.device.type, enabled=False):
+            keys = keys.float()
+            prefix_hidden = prefix_hidden.float()
+            return self._score_keys_fp32(keys, prefix_hidden, mask)
+
+    def _score_keys_fp32(self, keys, prefix_hidden, mask):
         # The small policy output gain is applied last: normalizing the prefix
         # state first keeps the projection (and therefore the initial logits)
         # genuinely small, so the random policy starts near uniform.
@@ -245,7 +259,8 @@ class ConditionalPrefixScorer(nn.Module):
         self, selected_keys: torch.Tensor, prefix_hidden: torch.Tensor
     ) -> torch.Tensor:
         """Advance the prefix using a selected key from ``build_keys``."""
-        return self.gru(selected_keys, prefix_hidden)
+        with torch.autocast(device_type=selected_keys.device.type, enabled=False):
+            return self.gru(selected_keys.float(), prefix_hidden.float())
 
     def initial_state(self, batch_size: int, device: torch.device, dtype: torch.dtype) -> torch.Tensor:
         return self.initial_hidden.to(device=device, dtype=dtype).expand(batch_size, -1).contiguous()

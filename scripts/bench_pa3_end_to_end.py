@@ -345,6 +345,16 @@ def recompute_check(learner, buffer, device, limit=1024, amp=False, per_stratum=
         evaluation = learner.model.evaluate_encoded(encoded, batch.candidates, selected=batch.candidates.selected)
     stored = torch.tensor([row.old_logprob for row in sampled], dtype=torch.float32, device=device)
     difference = (evaluation.request_logprob.float() - stored).abs()
+    # Isolate batch-shape sensitivity: the same preserved row is evaluated
+    # alone, without changing its observation, mask, or selected prefix.
+    isolated = []
+    with torch.no_grad():
+        for row in sampled:
+            one = buffer.to_batch([row], device=device)
+            with context:
+                one_eval = learner.model.evaluate(one.observation, one.candidates,
+                                                  selected=one.candidates.selected)[1]
+            isolated.append(float(abs(one_eval.request_logprob.float().item() - row.old_logprob)))
     per_row = difference.detach().cpu().tolist()
     stratum_report: dict[str, dict] = {}
     for index, row in enumerate(sampled):
@@ -361,6 +371,10 @@ def recompute_check(learner, buffer, device, limit=1024, amp=False, per_stratum=
         "strata": stratum_report,
         "max_abs_diff": float(difference.max().item()) if len(sampled) else 0.0,
         "mean_abs_diff": float(difference.mean().item()) if len(sampled) else 0.0,
+        "median_abs_diff": float(difference.median().item()) if len(sampled) else 0.0,
+        "p95_abs_diff": float(torch.quantile(difference.float(), 0.95).item()) if len(sampled) else 0.0,
+        "isolated_max_abs_diff": max(isolated) if isolated else 0.0,
+        "isolated_mean_abs_diff": sum(isolated) / len(isolated) if isolated else 0.0,
         "tolerance": tolerance,
         "within_gate": bool(float(difference.max().item()) <= tolerance) if len(sampled) else True,
     }

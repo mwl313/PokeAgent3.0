@@ -419,10 +419,11 @@ class ObservationBatch:
 
     # -- packed representation for the rollout buffer --------------------
     def to_compact_numpy(self):
-        """Compact (low precision) per-row arrays for the rollout buffer.
+        """Compact per-row arrays for the rollout buffer.
 
-        Only the typed observation is stored; encoder activations are never
-        part of this representation.
+        Integer fields use compact integer dtypes; policy-critical continuous
+        fields remain float32 so behavior-policy recomputation sees the exact
+        same inputs as the native actor. Encoder activations are never stored.
         """
         if np is None:  # pragma: no cover - defensive
             raise RuntimeError("numpy is required for the compact representation")
@@ -446,8 +447,10 @@ class ObservationBatch:
                 value = value.copy()
             if value.dtype == np.int64:
                 value = value.astype(np.uint16)
-            elif value.dtype == np.float32:
-                value = value.astype(np.float16)
+            # Policy-critical continuous features stay lossless.  The native
+            # actor samples from the FP32 observation; downcasting only the
+            # rollout copy makes recomputation evaluate a different policy,
+            # which was the source of the A5 FP16 branch-2 discrepancy.
             out[name] = value
         return out
 

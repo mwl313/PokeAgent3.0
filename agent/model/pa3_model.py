@@ -193,7 +193,14 @@ class PA3Model(nn.Module):
         return encoded, values
 
     def encode(self, observation: ObservationBatch) -> EncodedState:
-        tokens = self.encoder(observation)
+        # The encoder output feeds the behavior-policy probability.  Running
+        # it in FP32 keeps the sampled and recomputed policy identical across
+        # the collector's grouped batches and the learner's audit batch.  The
+        # narrower scorer path is FP32 as well; value/update math remains
+        # unchanged.  This is an intentional A9 numerical contract, not a
+        # tolerance relaxation.
+        with torch.autocast(device_type=observation.device.type, enabled=False):
+            tokens = self.encoder(observation)
         global_index = observation.layout.GLOBAL
         token_mask = observation.token_mask
         weights = token_mask.unsqueeze(-1).to(tokens.dtype)

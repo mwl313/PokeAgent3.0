@@ -76,10 +76,11 @@ def test_native_payload_adapter_and_compact_round_trip():
     assert batch.floats.dtype == torch.float32
 
     compact = batch.to_compact_numpy()
+    assert compact["floats"].dtype == np.float32
     rebuilt = ObservationBatch.from_compact_numpy(compact)
     assert torch.equal(rebuilt.token_mask, batch.token_mask)
     assert torch.equal(rebuilt.categories, batch.categories)
-    assert torch.allclose(rebuilt.floats, batch.floats, atol=1e-3)
+    assert torch.equal(rebuilt.floats, batch.floats)
 
 
 def test_payload_with_junk_floats_is_flushed_not_propagated():

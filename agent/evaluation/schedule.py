@@ -39,21 +39,30 @@ def boundary_jobs(state_path, committed_matches, *, anchor=352256, light_interva
     """Persist and return every boundary due through a safe checkpoint."""
     state = _load(state_path, anchor=anchor, light_interval=light_interval, full_interval=full_interval)
     now, created = int(committed_matches), []
+    checkpoint_claimed = any(job.get("captured_checkpoint") == checkpoint for job in state["jobs"].values()) if checkpoint else False
     if now >= anchor + light_interval:
         for index in range(1, (now - anchor) // light_interval + 1):
             boundary = anchor + index * light_interval
             kind = "full" if (index * light_interval) % full_interval == 0 else "light"
             identity = f"{kind}:{boundary}"
             if identity not in state["jobs"]:
-                exact_snapshot = checkpoint is not None and boundary == now
+                exact_snapshot = checkpoint is not None and not checkpoint_claimed
+                checkpoint_claimed = checkpoint_claimed or exact_snapshot
                 state["jobs"][identity] = {"id": identity, "kind": kind, "scheduled_boundary": boundary,
                     "status": "pending" if exact_snapshot else "deferred", "captured_checkpoint": checkpoint if exact_snapshot else None,
                     "captured_matches": now if exact_snapshot else None,
                     "missing_snapshot": not exact_snapshot,
                     "reason": None if exact_snapshot else (
-                        "checkpoint crossed this boundary; historical snapshot is unavailable" if checkpoint else
+                        "catch-up policy assigns one safe checkpoint to the earliest crossed boundary" if checkpoint else
                         "no safe boundary checkpoint was supplied")}
                 created.append(dict(state["jobs"][identity]))
+            elif checkpoint and not checkpoint_claimed:
+                job = state["jobs"][identity]
+                if job.get("missing_snapshot") and job.get("status") in {"deferred", "failed"}:
+                    job.update({"status": "pending", "captured_checkpoint": checkpoint, "captured_matches": now,
+                                "missing_snapshot": False, "reason": "delayed evaluation uses first safe checkpoint after scheduled boundary"})
+                    checkpoint_claimed = True
+                    created.append(dict(job))
     _save(state_path, state)
     return created
 

@@ -29,9 +29,11 @@ def test_schedule_all_cycles_restart_missing_and_idempotent(tmp_path):
     assert [(x["id"], x["kind"]) for x in created] == [("light:402256", "light"), ("light:452256", "light"), ("light:502256", "light"), ("full:552256", "full"), ("light:602256", "light"), ("light:652256", "light"), ("light:702256", "light"), ("full:752256", "full"), ("light:802256", "light")]
     assert not boundary_jobs(state, 802256, checkpoint={"id": "safe"})
     assert len(pending_jobs(state)) == 9
-    # Crossed historical boundaries are intentionally deferred, never claimed
-    # to have been evaluated by the newer 802,256 checkpoint.
-    assert pending_jobs(state)[0]["missing_snapshot"]
+    # Catch-up assigns one safe checkpoint only to the earliest crossed
+    # boundary; later boundaries remain explicit historical misses.
+    jobs = pending_jobs(state)
+    earliest = next(job for job in jobs if job["id"] == "light:402256")
+    assert earliest["captured_matches"] == 802256 and any(job["missing_snapshot"] for job in jobs if job["id"] != earliest["id"])
     exact = tmp_path / "exact.json"
     checkpoint = {"file_sha256": "sha"}
     boundary_jobs(exact, 402256, checkpoint=checkpoint)
@@ -44,6 +46,18 @@ def test_schedule_all_cycles_restart_missing_and_idempotent(tmp_path):
     missing = tmp_path / "missing.json"
     assert boundary_jobs(missing, 402256)[0]["missing_snapshot"]
     assert pending_jobs(missing)[0]["status"] == "deferred"
+
+
+def test_non_aligned_boundary_uses_first_safe_checkpoint_after_threshold(tmp_path):
+    state = tmp_path / "nonaligned.json"
+    assert boundary_jobs(state, 401408) == []
+    first = boundary_jobs(state, 402256)
+    assert first[0]["missing_snapshot"] and first[0]["status"] == "deferred"
+    assigned = boundary_jobs(state, 403456, checkpoint={"file_sha256": "after"})
+    assert assigned[0]["captured_matches"] == 403456
+    assert assigned[0]["scheduled_boundary"] == 402256
+    again = boundary_jobs(state, 403456, checkpoint={"file_sha256": "after"})
+    assert again == []
 
 
 def test_archive_identity_latest_independent_and_league_deduplicates(tmp_path):

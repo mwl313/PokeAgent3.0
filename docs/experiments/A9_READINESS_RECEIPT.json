@@ -1,0 +1,44 @@
+{
+  "track": "A",
+  "milestone": "A9",
+  "base_sha": "94043b9",
+  "scope": "recompute-correction-and-nonaligned-evaluation-scheduling",
+  "recompute_gate": {
+    "tolerance": 0.001,
+    "tolerance_changed": false,
+    "trained_resume_rank0_max_abs_diff": 1.430511474609375e-05,
+    "trained_resume_rank1_max_abs_diff": 1.6391277313232422e-05,
+    "trained_resume_rank0_mean_abs_diff": 5.4230559953794e-07,
+    "trained_resume_rank1_mean_abs_diff": 5.864507670594321e-07,
+    "trained_resume_rank0_p95_abs_diff": 2.768634431049577e-06,
+    "trained_resume_rank1_p95_abs_diff": 2.7328726446285145e-06,
+    "gate_passed": true,
+    "diagnosis": "rollout compact FP16 downcast of policy-critical FP32 observations, amplified by mixed-precision behavior-policy recompute"
+  },
+  "ddp_resume_smoke": {
+    "command": "run_ddp_ppo.py --games 4 --iterations 1 --envs 1024 --workers 16 --microbatch 1024 --minibatch 4096 --epochs 2 --experimental-lr-scale 0.5 --experimental-resume runs/experiments/a/a5_control/boundary --experimental-allow-source-sha --experimental-allow-opponent-migration --recompute-gate --report runs/experiments/a/a9_resume_smoke_lossless.json",
+    "world_size": 2,
+    "total_games": 2048,
+    "global_committed_matches": 354304,
+    "digests_equal": true,
+    "operational_errors": 0,
+    "rank0_within_gate": true,
+    "rank1_within_gate": true
+  },
+  "evaluation_smoke": {
+    "backend": "batched",
+    "games": 4,
+    "wins": 2,
+    "losses": 2,
+    "draws": 0,
+    "operational_errors": 0,
+    "illegal_actions": 0
+  },
+  "tests": {
+    "command_group": "A9 relevant pytest group",
+    "passed": 55,
+    "failed": 0
+  },
+  "a8_archive_verify": "passed",
+  "a10_started": false
+}
