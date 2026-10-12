@@ -45,5 +45,10 @@
     "available_bytes": 162416193536,
     "available_gb": 162.416193536,
     "source": "df captured before Rust restore/build"
+  },
+  "final_measurement": {
+    "available_bytes": 122803937280,
+    "available_gb": 122.80393728,
+    "available_gib": 114.37007904052734
   }
 }

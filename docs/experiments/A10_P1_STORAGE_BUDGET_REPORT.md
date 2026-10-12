@@ -9,3 +9,5 @@ A reusable generation store now writes both DDP rank files into a unique directo
 A bounded synthetic two-rank 16 MiB publication took 0.973 s (17.25 decimal MB/s on this filesystem). This measures the storage path only, not a production learner checkpoint size or PPO throughput.
 
 The initial P1 measurement recorded 162.42 GB decimal free before toolchain restoration. The post-validation measurement is 124.99 GB decimal free. The difference is reported as an observed filesystem change and is not attributed solely to this worktree; the measured PokeAgent-owned usage is 7.63 GB at the later capture.
+
+The final post-commit measurement is 122.80 GB decimal free (114.37 GiB).
