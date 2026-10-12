@@ -58,6 +58,8 @@ RANKS = [{"rank": 0, "numa": 0, "cpus": "0-15", "gpu": 0},
 
 def parse_args(argv=None):
     parser = argparse.ArgumentParser()
+    parser.add_argument("--profile", default="", help="strict validated runtime profile")
+    parser.add_argument("--print-effective-config", action="store_true", help="resolve profile and exit")
     parser.add_argument("--games", type=int, default=2048, help="natural matches per rank")
     parser.add_argument(
         "--iterations", type=int, default=1,
@@ -133,6 +135,17 @@ def parse_args(argv=None):
     parser.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--port", type=int, default=0, help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
+    if args.profile:
+        from agent.runtime.config import resolve_profile, launcher_values
+        resolved = resolve_profile(args.profile)
+        for key, value in launcher_values(resolved).items():
+            setattr(args, key if key not in {"minibatch", "microbatch"} else key, value)
+        args.effective_profile = resolved
+        if args.print_effective_config:
+            print(json.dumps({**resolved, "launcher_values": launcher_values(resolved)}, indent=2, sort_keys=True))
+            raise SystemExit(0)
+    elif args.print_effective_config:
+        parser.error("--print-effective-config requires --profile")
     if args.iterations < 1:
         parser.error("--iterations must be at least 1")
     if args.experimental_resume and args.rolling_slots:

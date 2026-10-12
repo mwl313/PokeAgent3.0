@@ -19,6 +19,7 @@ from agent.evaluation.fixed_policy import FixedPolicyEvaluator, fixture_manifest
 from agent.train.native_collector import NativeCollector, NativeCollectorConfig
 from agent.types.observation import ObservationBatch, ObservationLayout
 from agent.types.requests import RequestKind
+from agent.model.precision import get_precision_contract
 
 BATCHED_EVALUATOR_VERSION = "pa3-native-batched-evaluator-v2"
 SAMPLING_SEMANTICS = "fixture-seat-decision-branch-keyed-cdf-v2"
@@ -91,6 +92,7 @@ class BatchedPolicyEvaluator:
                     if mode == "checkpoint":
                         model_start = time.perf_counter()
                         with torch.inference_mode():
+                            subset = get_precision_contract(sample_model.precision_contract.mode).prepare_observation(subset)
                             encoded = sample_model.encode(subset); hidden = sample_model.scorer.initial_state(len(indices), device=self.device, dtype=encoded.tokens.dtype)
                         self.timing["model"] += time.perf_counter()-model_start
                     prefix = np.zeros((len(indices), branches, 6), dtype=np.uint8); walk_handles=[(handles[decision[i][0]][0], handles[decision[i][0]][1]) for i in indices]; walk_sides=[decision[i][1] for i in indices]

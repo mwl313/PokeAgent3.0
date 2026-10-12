@@ -1,4 +1,7 @@
 # Active project config. Original Full Spec 1.1 package is preserved unchanged.
+# Validated executable baseline: configs/validated_a94_runtime.yaml. This file
+# remains the broader design/source inventory; launchers must select the
+# versioned validated profile rather than infer PPO or precision defaults here.
 # User overrides: fixed M-B/M-C source pool; all eligible teams train; no holdouts.
 project:
   name: PokeAgent3.0

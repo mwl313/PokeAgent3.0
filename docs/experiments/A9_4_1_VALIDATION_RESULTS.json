@@ -1,0 +1,13 @@
+{
+  "milestone": "A9.4.1",
+  "commit_base": "a8a6b19",
+  "profile": "configs/validated_a94_runtime.yaml",
+  "profile_hash": "c88661aa62291921c8cabf97109ff9fe386be1239f23daed36946c598f2499c5",
+  "independent_training": {"seed": 20261010, "games": 51200, "gates": "25/25", "all_in_games_per_s": 91.41169680126546, "steady_games_per_s": 92.67238208106048, "max_error_rank0": 3.516674041748047e-05, "max_error_rank1": 3.218650817871094e-05, "ddp_parity": true, "operational_errors": 0},
+  "evaluation": {"games": 2048, "batch_size": 128, "games_per_s": 93.63233188305632, "wins": 1042, "losses": 1006, "draws": 0, "score_ci95": [0.49072265625, 0.52685546875], "illegal_actions": 0, "operational_errors": 0},
+  "tests": {"relevant_pytest": "17 passed", "archive_verify": "6 passed", "profile_drift": "3 passed", "scheduler_restart": "covered by evaluation league tests"},
+  "engine_readiness": {"status": "blocked_unverified", "reason": "cargo unavailable on host; authoritative readiness_check could not execute"},
+  "new_team_import": "not executed",
+  "a10_training": "not started",
+  "classification": "A9.4.1_PASS_WITH_A10_ENGINE_BLOCKER"
+}

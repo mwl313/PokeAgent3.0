@@ -1,0 +1,1 @@
+{"schema":"pa3-pending-profile-v1","profile":"a10_pending","runnable":false,"requires":["new_dataset_manifest","engine_compatibility_report","training_initialization_decision","experiment_identity","evaluation_archive_namespace","fixture_manifest","zero_match_schedule","retention_budget","user_authorization"]}
