@@ -1,0 +1,664 @@
+{
+  "ok": [
+    {
+      "id": "MC584",
+      "fingerprint": "a7215188c72ea39f7af87a0f49a7a256c5fd87c9823ca7e7c1b4c9e5d89e29f5",
+      "duplicate": false
+    },
+    {
+      "id": "MC583",
+      "fingerprint": "ff9a3a5dd1575461e0454e593aa28f045ed01fd0893ec998e522c488d38ec5c1",
+      "duplicate": false
+    },
+    {
+      "id": "MC578",
+      "fingerprint": "7efb7f8a6e811edefc7d78146113c0b21478b3c9dba6bee8e5a969522b0e1090",
+      "duplicate": false
+    },
+    {
+      "id": "MC574",
+      "fingerprint": "0d756247953dcee158c1f2dba2842cd34b5cde32fec8437be9d9a10d74d857e8",
+      "duplicate": false
+    },
+    {
+      "id": "MC573",
+      "fingerprint": "2e82c231cfa3b975e6d7394e6abf9c2f7c762450d75252a4c82fe8c7332a8e0e",
+      "duplicate": false
+    },
+    {
+      "id": "MC572",
+      "fingerprint": "97b695e8463163edebe43c053c9c653eb629e59b96edac31b2a8490b62e1adb2",
+      "duplicate": false
+    },
+    {
+      "id": "MC571",
+      "fingerprint": "f8feb0c5d03742c16507cdee34da3126ec807638a80223fb7fd472d14fd10231",
+      "duplicate": false
+    },
+    {
+      "id": "MC570",
+      "fingerprint": "bf2adc6b33c012d6c73efb9047006eadb8716d64c8cb6a5f56cfa96f044fa271",
+      "duplicate": false
+    },
+    {
+      "id": "MC569",
+      "fingerprint": "175102cf01b363ba2527d86be1eb02edc4858df5f4ead26506d5ffc8be64016d",
+      "duplicate": false
+    },
+    {
+      "id": "MC568",
+      "fingerprint": "836ff24fab9cf917618a38a73057d6f95ad6d25c51baab67f3dccba2d03d0bc2",
+      "duplicate": false
+    },
+    {
+      "id": "MC567",
+      "fingerprint": "cd77453049e9738e694246dd8fa0008d5270cdaae033434057f84b4f2c23d918",
+      "duplicate": false
+    },
+    {
+      "id": "MC566",
+      "fingerprint": "61d30778f942eeb24cde2d9162bf5f3d690fd1df5baa3a6c9c0f689b34e8502b",
+      "duplicate": false
+    },
+    {
+      "id": "MC565",
+      "fingerprint": "db40f14858e7a4452831d18a450a253f6fb10b4e7ff85f219407c5bf4605a281",
+      "duplicate": false
+    },
+    {
+      "id": "MC564",
+      "fingerprint": "519a4e6edf81c3c1f9c3473afdee5cb7fa5080e07a34d2b9e6b575324285f882",
+      "duplicate": false
+    },
+    {
+      "id": "MC563",
+      "fingerprint": "d85764d893218f307eb7ffd3f1f7abf4e4e2bbcb1cae2503d30d09abd50e39e7",
+      "duplicate": false
+    },
+    {
+      "id": "MC561",
+      "fingerprint": "69d2b1d4f2fde7a430099e80c3c6a251521e8bc1720f91189369e39de625a001",
+      "duplicate": false
+    },
+    {
+      "id": "MC560",
+      "fingerprint": "bb892803450c26bbeee2b9a30c63523e67d90e970a84bfa6bdca14d3f647d4f3",
+      "duplicate": false
+    },
+    {
+      "id": "MC559",
+      "fingerprint": "01f7573174288812588c65b0b23003e6061dcb710ac98096be7d0a7ef6cabad7",
+      "duplicate": false
+    },
+    {
+      "id": "MC553",
+      "fingerprint": "48b5b237be859ba6884bba1cd77906eb68a52310c6dd77140777c914cf0c0d13",
+      "duplicate": false
+    },
+    {
+      "id": "MC546",
+      "fingerprint": "3cbeb9ef5d6e4fcd41a77c3062af47d53a2c36a4d5afaf2bc522bf0caa90ae26",
+      "duplicate": false
+    },
+    {
+      "id": "MC533",
+      "fingerprint": "70892d414b76e525e12b3b068a3011f170692e9230a90b6456783fadb052e143",
+      "duplicate": false
+    },
+    {
+      "id": "MC532",
+      "fingerprint": "65731d3649d52b6d088c8cb008843cc43af2b001ac2db44abe60b09d39eaa96f",
+      "duplicate": false
+    },
+    {
+      "id": "MC531",
+      "fingerprint": "32799c71eec03e48e1e89e14f600c69f83e29cda6a6242127480351c07d8ddbc",
+      "duplicate": false
+    },
+    {
+      "id": "MC530",
+      "fingerprint": "d9555e34cbf808a2fde1fb199edf73a09d6ee68926522d67df655df264fe0a55",
+      "duplicate": false
+    },
+    {
+      "id": "MC529",
+      "fingerprint": "f4371c5c69e5d964ca9aae4b42a0ee4b60ec556a0ae70a510efbe16acb705da6",
+      "duplicate": false
+    },
+    {
+      "id": "MC528",
+      "fingerprint": "cd46a1aaa4f7ccb6f8d6f7c3f535df5bbd56738f562f74d7891fd928064181e9",
+      "duplicate": false
+    },
+    {
+      "id": "MC526",
+      "fingerprint": "9a790b5ef71ca18c9270f4d900e9d6a7cdb8f2aa4127be1a7f4767f7648bf351",
+      "duplicate": false
+    },
+    {
+      "id": "MC524",
+      "fingerprint": "54f941ce7d0e440638328351b018f41a93c6f757e4ef0e2818c9e4ed79a13b99",
+      "duplicate": false
+    },
+    {
+      "id": "MC523",
+      "fingerprint": "148431933b6355fb558c0cba01d3fa41eddc25c97043f751cbf95e888963be86",
+      "duplicate": false
+    },
+    {
+      "id": "MC522",
+      "fingerprint": "376f13c9c34cd09c0975c1704affd04ddb646f072b17f38d2d3420455ea0d005",
+      "duplicate": false
+    },
+    {
+      "id": "MC521",
+      "fingerprint": "ebca53020d91dbefddedbb331dd5c40bcc991348333c736cf37793f38b7cbece",
+      "duplicate": false
+    },
+    {
+      "id": "MC520",
+      "fingerprint": "89ecfc257c33b96bf9bc485bf368a3521e902a48367341329f3b518745f6cac0",
+      "duplicate": false
+    },
+    {
+      "id": "MC519",
+      "fingerprint": "baab9aa6b77192db4a9de7ae174a66affe98324d525dcb9275330500d127e9ad",
+      "duplicate": false
+    },
+    {
+      "id": "MC518",
+      "fingerprint": "3235b5c98cf6b55d318f5c7dc64532df8e75675376e31ebbc863530799bd4957",
+      "duplicate": false
+    },
+    {
+      "id": "MC517",
+      "fingerprint": "767540ff15f0c61406d968523a9ffdc89bdd013c25a408eca591496d33d57e7c",
+      "duplicate": false
+    },
+    {
+      "id": "MC516",
+      "fingerprint": "474c7805f577781c84d5fed6356a6f0ba4cea879aef6ed97ede7aa33b27585e9",
+      "duplicate": false
+    },
+    {
+      "id": "MC515",
+      "fingerprint": "836ff24fab9cf917618a38a73057d6f95ad6d25c51baab67f3dccba2d03d0bc2",
+      "duplicate": false
+    },
+    {
+      "id": "MC514",
+      "fingerprint": "9a5b1526a898073c38e8fe25f6792ed4d84173fa8cf84e8b8733d7f1ae6c2366",
+      "duplicate": false
+    },
+    {
+      "id": "MC513",
+      "fingerprint": "6e5bb2e80ab13ae3d772220aa4671900266453b8287f32e935526a9b549bfbfe",
+      "duplicate": false
+    },
+    {
+      "id": "MC512",
+      "fingerprint": "07d6fcb682debdf8b4c8d57585d56fbc10653b6ea367cb99816b415d39d8210d",
+      "duplicate": false
+    },
+    {
+      "id": "MC511",
+      "fingerprint": "bb74da452775c8f6b6dd8a0ef8e8328d5724cd7e301b5d368b78cddc3aa60e61",
+      "duplicate": false
+    },
+    {
+      "id": "MC510",
+      "fingerprint": "d5021264c76592f765cab17443206db5236635654d0186abffd073d49639fae2",
+      "duplicate": false
+    },
+    {
+      "id": "MC509",
+      "fingerprint": "bb5a40bddff8d20f21058865eb9703adbf25f268922fab954463efab6e1e6feb",
+      "duplicate": false
+    },
+    {
+      "id": "MC508",
+      "fingerprint": "24159aac6831877481c32218f2c28a0a8ca853dab199e91b199a1614a2c45b63",
+      "duplicate": false
+    },
+    {
+      "id": "MC507",
+      "fingerprint": "c28864223ca1019b4ba2442921c2e32568b5f95e20cf063808c52837148170b6",
+      "duplicate": false
+    },
+    {
+      "id": "MC506",
+      "fingerprint": "73ab98de15db06980fbb44b33832d6acf4ed33f2492cba3df7fe6be818cc23c7",
+      "duplicate": false
+    },
+    {
+      "id": "MC505",
+      "fingerprint": "fc6912b0f79cf2153540045782a974479eb8dc40d8b8ee6e3950aab77e76461e",
+      "duplicate": false
+    },
+    {
+      "id": "MC504",
+      "fingerprint": "11ae6c81d12d51d2080e02ba4d04df29d0c2e5b54472940b2df9d93e3ebacd04",
+      "duplicate": false
+    },
+    {
+      "id": "MC503",
+      "fingerprint": "5b31336e844f85d4f5651523ca4d6a4e74ce7c53ec83ff863467b9515e3d29b5",
+      "duplicate": false
+    },
+    {
+      "id": "MC502",
+      "fingerprint": "45b017578482c96e6075134bae71ae930dc2abb1b17f0e6381a706f009867a74",
+      "duplicate": false
+    },
+    {
+      "id": "MC501",
+      "fingerprint": "a4fb7abd56277b645f33aa35ad6c43ef5d8dcc58f502c5ddc6056bf94647fa35",
+      "duplicate": false
+    },
+    {
+      "id": "MC500",
+      "fingerprint": "60878ac96a02cfe408d39a5edfbd58afc390595276dc4d3e9172bf10b88055d4",
+      "duplicate": false
+    },
+    {
+      "id": "MC499",
+      "fingerprint": "eb9d5b7822db54435e30e56e6b30dd75e9eff65e40df297db780a9b6d54f4a60",
+      "duplicate": false
+    },
+    {
+      "id": "MC496",
+      "fingerprint": "1e5f21e0c44176a382f8bb47b9a375484b8adacf6089610a4357e5be6fbb50b1",
+      "duplicate": false
+    },
+    {
+      "id": "MC495",
+      "fingerprint": "80451342e0817ce17843302e4a95ed3ff68fa090b71206fdbb9fef2fdcd7ff22",
+      "duplicate": false
+    },
+    {
+      "id": "MC494",
+      "fingerprint": "1b27c51dbce8d1b3d43b77be873723c8ab1d8f9d5e1fcc545e0749288730a677",
+      "duplicate": false
+    },
+    {
+      "id": "MC493",
+      "fingerprint": "87a4683f5e14beed72c53f6b6bce74329c58438ef731794fb7c576789254b83e",
+      "duplicate": false
+    },
+    {
+      "id": "MC492",
+      "fingerprint": "591aee7968b6e897d826637c8c26aa99b3299a8ed0fdbfdba1a0e8d4c88b59b1",
+      "duplicate": false
+    },
+    {
+      "id": "MC491",
+      "fingerprint": "c40ba574d6c94a843e7ff375c3a6f72c20e0be4e95e16a068a65692e1a60a39b",
+      "duplicate": false
+    },
+    {
+      "id": "MC490",
+      "fingerprint": "e810d211619d3256a56167c5ac8f4246f1c9235d27ebf91c4917023516eea12a",
+      "duplicate": false
+    },
+    {
+      "id": "MC489",
+      "fingerprint": "ff92a66d76727d2453fa1113f1b368c96113e194d4c827e43fe0430f6644de5e",
+      "duplicate": false
+    },
+    {
+      "id": "MC488",
+      "fingerprint": "942614a428b6e858c87c77f94e3c6495ffd900463e2305ddf5d2d48e7e7d0166",
+      "duplicate": false
+    },
+    {
+      "id": "MC487",
+      "fingerprint": "ed5e158d4c80ff5a0ce14e8645044b19fab85ed04780605b5a886ba046838e22",
+      "duplicate": false
+    },
+    {
+      "id": "MC486",
+      "fingerprint": "8bc14adb283f877a921149830ea9fbfd3462f47560b134952fa679570e2ec009",
+      "duplicate": false
+    },
+    {
+      "id": "MC485",
+      "fingerprint": "c4366512b09047e329f2c51b9f0ac78fc5515fdbaa2a4118051ecbf706e4cce5",
+      "duplicate": false
+    },
+    {
+      "id": "MC484",
+      "fingerprint": "80457cd429a46e2bad50a7be241a6ea060e55091a1732e162c4b419b3522307c",
+      "duplicate": false
+    },
+    {
+      "id": "MC483",
+      "fingerprint": "7ae8aa48568c939c4d47a130a764ccf6d724c1df38aa6aa8226824c5c962bfa3",
+      "duplicate": false
+    },
+    {
+      "id": "MC482",
+      "fingerprint": "2a8343dd2ec9019b7ef6a0f8cab060558ca59af5c5bd371d9cde4dbdbad3d38e",
+      "duplicate": false
+    },
+    {
+      "id": "MC481",
+      "fingerprint": "3d810d1010c21979535d8db593b84ab52f84309feb54d0bd28dbec2b19aa7534",
+      "duplicate": false
+    },
+    {
+      "id": "MC480",
+      "fingerprint": "29457651b039b239078fed950e26849bb88d4be28606754d40c77e6674a8b94c",
+      "duplicate": false
+    },
+    {
+      "id": "MC478",
+      "fingerprint": "97d955846742b15902b5868aacf8180e3c9a5ad23dab3fa10f383aa9ce0adf47",
+      "duplicate": false
+    },
+    {
+      "id": "MC477",
+      "fingerprint": "e1bd49b4eb56d5fb0bd62067980c5b2d2cc01e6d3cb8622a09ae03d3c5f371f4",
+      "duplicate": false
+    },
+    {
+      "id": "MC476",
+      "fingerprint": "49f749fec803d2a6ceef1b9545aaf1aaf63fbaec41b6e396e2921bea26270b53",
+      "duplicate": false
+    },
+    {
+      "id": "MC475",
+      "fingerprint": "0ac049561df7390890d216bd4edb6851208789123a2bc19193d624fc57596f19",
+      "duplicate": false
+    },
+    {
+      "id": "MC474",
+      "fingerprint": "d211b0905406e96c2bff4a18d9117c7e76152a06fbcabe2b5e94da99c2da5e1a",
+      "duplicate": false
+    },
+    {
+      "id": "MC473",
+      "fingerprint": "1ccbd53d3039c5853dde83d8055bf105db3179fbd53f9348bc5327403ba382e5",
+      "duplicate": false
+    },
+    {
+      "id": "MC472",
+      "fingerprint": "ae3ce5c5eea52df847f2690a48c416b47be48f01d6ef2daac293930b9e28c68c",
+      "duplicate": false
+    },
+    {
+      "id": "MC471",
+      "fingerprint": "42e84c1a115403c7a13fb35c9a7983390153519a083362b810bc9a19d157a1d8",
+      "duplicate": false
+    },
+    {
+      "id": "MC470",
+      "fingerprint": "75b033a6ec6cebd2f27e7fa4d043a58c506340f7d03786be83e0aa8889e1dea2",
+      "duplicate": false
+    },
+    {
+      "id": "MC469",
+      "fingerprint": "70892d414b76e525e12b3b068a3011f170692e9230a90b6456783fadb052e143",
+      "duplicate": false
+    },
+    {
+      "id": "MC468",
+      "fingerprint": "08c20567c07a41385a5cf300a9fb0de117163e26ba05636561e2063a69bf580e",
+      "duplicate": false
+    },
+    {
+      "id": "MC467",
+      "fingerprint": "04362b67c34c7d8a9763cdd514389770c48ad4c85e9f619e1e6071e9ff05006f",
+      "duplicate": false
+    },
+    {
+      "id": "MC466",
+      "fingerprint": "20a727286c079673ce6fd8ad35dc951e3834632b1dc240f4a6636ac6414dc8e6",
+      "duplicate": false
+    },
+    {
+      "id": "MC465",
+      "fingerprint": "704fc6b3970142bb36909f033fe26b5fbda5bb148fd151c0b54711efc9a61903",
+      "duplicate": false
+    },
+    {
+      "id": "MC464",
+      "fingerprint": "f8eab613bd73b359da2a40bf7b117cf80ecda69652cf5f765eaf6426859f5687",
+      "duplicate": false
+    }
+  ],
+  "bad": [
+    {
+      "id": "MC582",
+      "reasons": [
+        {
+          "code": "ambiguous_base_ability",
+          "member_index": 1,
+          "details": {
+            "source": "No Guard",
+            "oracle_default": "Static",
+            "base_species": "Raichu",
+            "alternatives": [
+              "Lightning Rod",
+              "Static"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "MC581",
+      "reasons": [
+        {
+          "code": "ambiguous_base_ability",
+          "member_index": 0,
+          "details": {
+            "source": "Levitate",
+            "oracle_default": "Sand Veil",
+            "base_species": "Garchomp",
+            "alternatives": [
+              "Rough Skin",
+              "Sand Veil"
+            ]
+          }
+        },
+        {
+          "code": "ambiguous_base_ability",
+          "member_index": 2,
+          "details": {
+            "source": "Fairy Aura",
+            "oracle_default": "Flower Veil",
+            "base_species": "Floette-Eternal",
+            "alternatives": [
+              "Flower Veil",
+              "Symbiosis"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "MC580",
+      "reasons": [
+        {
+          "code": "ambiguous_base_ability",
+          "member_index": 0,
+          "details": {
+            "source": "Aerilate",
+            "oracle_default": "Intimidate",
+            "base_species": "Salamence",
+            "alternatives": [
+              "Intimidate",
+              "Moxie"
+            ]
+          }
+        },
+        {
+          "code": "ambiguous_base_ability",
+          "member_index": 1,
+          "details": {
+            "source": "No Guard",
+            "oracle_default": "Static",
+            "base_species": "Raichu",
+            "alternatives": [
+              "Lightning Rod",
+              "Static"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "MC579",
+      "reasons": [
+        {
+          "code": "ambiguous_base_ability",
+          "member_index": 4,
+          "details": {
+            "source": "Levitate",
+            "oracle_default": "Sand Veil",
+            "base_species": "Garchomp",
+            "alternatives": [
+              "Rough Skin",
+              "Sand Veil"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "MC577",
+      "reasons": [
+        {
+          "code": "ambiguous_base_ability",
+          "member_index": 1,
+          "details": {
+            "source": "Pixilate",
+            "oracle_default": "Synchronize",
+            "base_species": "Gardevoir",
+            "alternatives": [
+              "Synchronize",
+              "Telepathy",
+              "Trace"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "MC576",
+      "reasons": [
+        {
+          "code": "ambiguous_base_ability",
+          "member_index": 0,
+          "details": {
+            "source": "No Guard",
+            "oracle_default": "Static",
+            "base_species": "Raichu",
+            "alternatives": [
+              "Lightning Rod",
+              "Static"
+            ]
+          }
+        },
+        {
+          "code": "ambiguous_base_ability",
+          "member_index": 1,
+          "details": {
+            "source": "Contrary",
+            "oracle_default": "Intimidate",
+            "base_species": "Staraptor",
+            "alternatives": [
+              "Intimidate",
+              "Reckless"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "MC575",
+      "reasons": [
+        {
+          "code": "ambiguous_base_ability",
+          "member_index": 0,
+          "details": {
+            "source": "Aerilate",
+            "oracle_default": "Intimidate",
+            "base_species": "Salamence",
+            "alternatives": [
+              "Intimidate",
+              "Moxie"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "MC562",
+      "reasons": [
+        {
+          "code": "reference_illegal",
+          "member_index": null,
+          "details": "Gardevoir can't have Triage."
+        }
+      ]
+    },
+    {
+      "id": "MC527",
+      "reasons": [
+        {
+          "code": "missing_explicit_nature",
+          "member_index": 2,
+          "details": "Annihilape @ Choice Scarf"
+        },
+        {
+          "code": "unapproved_set_change",
+          "member_index": 2,
+          "details": {
+            "field": "nature",
+            "before": "",
+            "after": "Serious"
+          }
+        }
+      ]
+    },
+    {
+      "id": "MC498",
+      "reasons": [
+        {
+          "code": "ambiguous_base_ability",
+          "member_index": 5,
+          "details": {
+            "source": "Adaptability",
+            "oracle_default": "Toxic Debris",
+            "base_species": "Glimmora",
+            "alternatives": [
+              "Corrosion",
+              "Toxic Debris"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "MC497",
+      "reasons": [
+        {
+          "code": "member_count",
+          "member_index": null,
+          "details": 1
+        }
+      ]
+    },
+    {
+      "id": "MC479",
+      "reasons": [
+        {
+          "code": "reference_illegal",
+          "member_index": null,
+          "details": "Espathra's item Electirizer does not exist in Gen 9."
+        }
+      ]
+    }
+  ]
+}

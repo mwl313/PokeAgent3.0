@@ -1,0 +1,239 @@
+{
+  "schema": "pa3-a10-p0-vgcpastes-delta-v1",
+  "captured_at_utc": "2026-10-12T08:42:03.621010+00:00",
+  "source": {
+    "spreadsheet_id": "1axlwmzPA49rYkqXh7zHvAtSP-TKbM0ijGYBPRflLSWw",
+    "tabs": {
+      "Champions M-C": {
+        "gid": 2001945654,
+        "snapshot": "data/raw/vgcpastes/champions-mc/20261012/live_sheet_snapshot.json",
+        "csv_sha256": "2552cd9ed7f3c8dc530d723cc2bec21c955a804bf7f2670f8c355781a312effc",
+        "previous_boundary": "MC463",
+        "current_boundary": "MC584",
+        "current_rows": 584,
+        "current_evs_yes": 521,
+        "new_rows": 121,
+        "new_evs_yes": 97,
+        "fetched_new_pastes": 97
+      },
+      "Champions M-B": {
+        "gid": 1458357160,
+        "snapshot": "data/raw/vgcpastes/champions-mb/20261012/sheet_snapshot.json",
+        "csv_sha256": "6349adc94abf4e024b19a187307530c0e2511dd8f99a76ce92c8081393c0dfce",
+        "previous_boundary": "MB861",
+        "current_boundary": "MB861",
+        "current_rows": 861,
+        "current_evs_yes": 783,
+        "new_rows": 0,
+        "new_evs_yes": 0,
+        "fetched_new_pastes": 0
+      }
+    }
+  },
+  "candidate_validation": {
+    "fetched_records": 97,
+    "reference_valid": 85,
+    "quarantined": 12,
+    "quarantined_ids": [
+      "MC582",
+      "MC581",
+      "MC580",
+      "MC579",
+      "MC577",
+      "MC576",
+      "MC575",
+      "MC562",
+      "MC527",
+      "MC498",
+      "MC497",
+      "MC479"
+    ],
+    "reason_counts": {
+      "ambiguous_base_ability": 11,
+      "reference_illegal": 2,
+      "missing_explicit_nature": 1,
+      "unapproved_set_change": 1,
+      "member_count": 1
+    },
+    "internal_duplicate_groups": [
+      {
+        "team_id": "pa3-70892d414b76e525e12b3b068a3011f170692e9230a90b6456783fadb052e143",
+        "source_team_ids": [
+          "MC469",
+          "MC533"
+        ]
+      },
+      {
+        "team_id": "pa3-836ff24fab9cf917618a38a73057d6f95ad6d25c51baab67f3dccba2d03d0bc2",
+        "source_team_ids": [
+          "MC515",
+          "MC568"
+        ]
+      }
+    ],
+    "internal_duplicate_rows": 2,
+    "duplicates_against_v3": 0,
+    "accepted_unique_additions": 83
+  },
+  "proposed_dataset": {
+    "path": "data/teams/a10-p0-proposed-20261013",
+    "manifest_sha256": "1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb",
+    "dataset_id": "a10-p0-proposed-20261013",
+    "unique_eligible_teams": 1220,
+    "predecessor": "mb-mc-v3-userteam-all-train",
+    "predecessor_teams_verified_unchanged": 1137
+  },
+  "source_comparison": {
+    "mc": {
+      "added_ids": [
+        "MC464",
+        "MC465",
+        "MC466",
+        "MC467",
+        "MC468",
+        "MC469",
+        "MC470",
+        "MC471",
+        "MC472",
+        "MC473",
+        "MC474",
+        "MC475",
+        "MC476",
+        "MC477",
+        "MC478",
+        "MC479",
+        "MC480",
+        "MC481",
+        "MC482",
+        "MC483",
+        "MC484",
+        "MC485",
+        "MC486",
+        "MC487",
+        "MC488",
+        "MC489",
+        "MC490",
+        "MC491",
+        "MC492",
+        "MC493",
+        "MC494",
+        "MC495",
+        "MC496",
+        "MC497",
+        "MC498",
+        "MC499",
+        "MC500",
+        "MC501",
+        "MC502",
+        "MC503",
+        "MC504",
+        "MC505",
+        "MC506",
+        "MC507",
+        "MC508",
+        "MC509",
+        "MC510",
+        "MC511",
+        "MC512",
+        "MC513",
+        "MC514",
+        "MC515",
+        "MC516",
+        "MC517",
+        "MC518",
+        "MC519",
+        "MC520",
+        "MC521",
+        "MC522",
+        "MC523",
+        "MC524",
+        "MC525",
+        "MC526",
+        "MC527",
+        "MC528",
+        "MC529",
+        "MC530",
+        "MC531",
+        "MC532",
+        "MC533",
+        "MC534",
+        "MC535",
+        "MC536",
+        "MC537",
+        "MC538",
+        "MC539",
+        "MC540",
+        "MC541",
+        "MC542",
+        "MC543",
+        "MC544",
+        "MC545",
+        "MC546",
+        "MC547",
+        "MC548",
+        "MC549",
+        "MC550",
+        "MC551",
+        "MC552",
+        "MC553",
+        "MC554",
+        "MC555",
+        "MC556",
+        "MC557",
+        "MC558",
+        "MC559",
+        "MC560",
+        "MC561",
+        "MC562",
+        "MC563",
+        "MC564",
+        "MC565",
+        "MC566",
+        "MC567",
+        "MC568",
+        "MC569",
+        "MC570",
+        "MC571",
+        "MC572",
+        "MC573",
+        "MC574",
+        "MC575",
+        "MC576",
+        "MC577",
+        "MC578",
+        "MC579",
+        "MC580",
+        "MC581",
+        "MC582",
+        "MC583",
+        "MC584"
+      ],
+      "changed_existing_ids": [
+        {
+          "id": "MC189",
+          "fields": [
+            "report_url"
+          ]
+        }
+      ],
+      "changed_pokepaste_ids": [],
+      "duplicate_pokepaste_groups": [
+        [
+          "MC533",
+          "MC497"
+        ]
+      ]
+    },
+    "mb": {
+      "added_ids": [],
+      "changed_existing_ids": [],
+      "changed_pokepaste_ids": [],
+      "duplicate_pokepaste_groups": [
+        [
+          "MB843",
+          "MB791"
+        ]
+      ]
+    }
+  }
+}

@@ -114,3 +114,7 @@
 - 2026-10-09 (밤): v5 체인 반영(s5a 종결, 최종 32.50 games/s), 진행 지도(브랜치/문서) 갱신, 훈련 리서치 v1 정본 `docs/research/` 커밋.
 - 2026-10-09 (미니DC v6): 로컬 최적화 코드 3fbc749, clean 3회 패널 37.23 games/s, 현황/상한 추정 교정. main 변경 없음.
 - 2026-10-11: 하드웨어 정본 175W/175W·냉각 개선 반영, 코드6eb48c0 전 구간 재측정 36.563 cold / 43.477 steady games/s. Poltergeist Item(0) observation 오류를 별도 진단·CPU snapshot에서 재현. 학습/엔진 동작 수정 없음.
+
+## A10-P0 status (2026-10-12)
+
+The incremental VGCPastes import is captured and prepared as `data/teams/a10-p0-proposed-20261013` (1,220 teams; 83 unique additions; 1,137 v3 teams verified unchanged). M-C advanced to MC584 while M-B remained MB861. The proposal is non-runnable: native Rust pool compatibility is NOT VERIFIED because the Rust toolchain is unavailable, and no A10 PPO training has started. See the A10-P0 experiment reports for source hashes, quarantine reasons, and required gates.

@@ -1,0 +1,66 @@
+Pelipper @ Sitrus Berry  
+Ability: Drizzle  
+Level: 50  
+EVs: 31 HP / 5 SpA / 20 SpD / 10 Spe  
+Modest Nature  
+- Helping Hand  
+- Tailwind  
+- Hurricane  
+- Muddy Water  
+
+
+Basculegion-F (F) @ Life Orb  
+Ability: Swift Swim  
+Level: 50  
+EVs: 4 HP / 13 Def / 30 SpA / 19 Spe  
+Modest Nature  
+- Shadow Ball  
+- Muddy Water  
+- Protect  
+- Ice Beam  
+
+
+Archaludon @ Leftovers  
+Ability: Stamina  
+Level: 50  
+EVs: 32 HP / 7 SpA / 19 SpD / 8 Spe  
+Modest Nature  
+- Protect  
+- Dragon Pulse  
+- Electro Shot  
+- Snarl  
+
+
+Golisopod @ Golisopite  
+Ability: Emergency Exit  
+Level: 50  
+EVs: 31 HP / 32 Atk / 2 SpD / 1 Spe  
+Adamant Nature  
+- Sucker Punch  
+- Iron Head  
+- Leech Life  
+- Protect  
+
+
+Grimmsnarl (M) @ Light Clay  
+Ability: Prankster  
+Level: 50  
+EVs: 31 HP / 20 Def / 14 SpD / 1 Spe  
+Impish Nature  
+- Reflect  
+- Spirit Break  
+- Light Screen  
+- Parting Shot  
+
+
+Garchomp @ Haban Berry  
+Ability: Rough Skin  
+Level: 50  
+EVs: 32 HP / 1 Atk / 15 Def / 17 SpD / 1 Spe  
+Impish Nature  
+- Stomping Tantrum  
+- Dragon Tail  
+- Stealth Rock  
+- Protect  
+
+

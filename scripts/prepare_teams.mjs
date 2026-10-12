@@ -295,9 +295,9 @@ export function prepare(outputDir = path.join(ROOT, 'data/teams', DATASET_ID), o
   assertReference();
   const inferred = Object.keys(DATASETS).find(id => path.basename(outputDir) === id);
   const datasetId = options.datasetId || inferred || DATASET_ID;
-  const dataset = DATASETS[datasetId];
+  const dataset = DATASETS[datasetId] || options.datasetConfig;
   assert(dataset, `Unknown dataset id: ${datasetId}`);
-  const sources = (options.sources || dataset.sources).map(id => id === 'user' ? {...USER_SOURCE} : {
+  const sources = (options.sources || dataset.sources).map(id => typeof id === 'object' ? id : id === 'user' ? {...USER_SOURCE} : {
     kind: 'vgcpastes', tab: id, provider: 'VGCPastes', source_tab: SOURCE_TABS[id],
     relative: `data/raw/vgcpastes/champions-${id}/20261006`,
   }).map(source => ({...source, record_file: `${source.relative}/teams.jsonl`}));
@@ -308,16 +308,17 @@ export function prepare(outputDir = path.join(ROOT, 'data/teams', DATASET_ID), o
     let records;
     let confirmations = [];
     if (source.kind === 'vgcpastes') {
-      const collection = readJSON(path.join(ROOT, `docs/20261006-${source.tab}-team-collection.json`));
-      for (const [name, digest] of Object.entries(collection.artifact_sha256)) {
+      const collectionPath = source.collection_file || path.join(ROOT, `docs/20261006-${source.tab}-team-collection.json`);
+      const collection = fs.existsSync(collectionPath) ? readJSON(collectionPath) : null;
+      if (collection) for (const [name, digest] of Object.entries(collection.artifact_sha256)) {
         assert.equal(hash(fs.readFileSync(path.join(root, name))), digest, `Raw source changed: ${source.tab}/${name}`);
       }
       records = readJSONL(path.join(root, 'teams.jsonl'));
-      const selected = readJSON(path.join(root, 'sheet_snapshot.json')).rows.filter(r => r.evs.trim().toLowerCase() === 'yes');
-      assert.deepEqual(records.map(r => r.source.team_id).sort(), selected.map(r => r.team_id).sort());
+      const selected = fs.existsSync(path.join(root, 'sheet_snapshot.json')) ? readJSON(path.join(root, 'sheet_snapshot.json')).rows.filter(r => r.evs.trim().toLowerCase() === 'yes') : null;
+      if (selected) assert.deepEqual(records.map(r => r.source.team_id).sort(), selected.map(r => r.team_id).sort());
       inputs.push({tab: source.source_tab, path: source.relative, records: records.length,
         teams_jsonl_sha256: hash(fs.readFileSync(path.join(root, 'teams.jsonl'))),
-        sheet_snapshot_sha256: hash(fs.readFileSync(path.join(root, 'sheet_snapshot.json')))});
+        ...(fs.existsSync(path.join(root, 'sheet_snapshot.json')) ? {sheet_snapshot_sha256: hash(fs.readFileSync(path.join(root, 'sheet_snapshot.json')))} : {})});
     } else {
       // Re-derive the manual record from the saved HTML/text and refuse a stale hand-written file.
       const rebuilt = buildUserRecord(root).record;
@@ -408,14 +409,15 @@ export function prepare(outputDir = path.join(ROOT, 'data/teams', DATASET_ID), o
   // Every team carried into a successor dataset must be byte-identical to its
   // immutable predecessor record; only new teams and new provenance may appear.
   let predecessorVerification = null;
-  if (datasetId !== DATASET_ID && fs.existsSync(path.join(ROOT, 'data/teams', DATASET_ID, 'all.jsonl'))) {
-    const predecessor = readJSONL(path.join(ROOT, 'data/teams', DATASET_ID, 'all.jsonl'));
+  const predecessorId = options.predecessor_dataset || DATASET_ID;
+  if (datasetId !== predecessorId && fs.existsSync(path.join(ROOT, 'data/teams', predecessorId, 'all.jsonl'))) {
+    const predecessor = readJSONL(path.join(ROOT, 'data/teams', predecessorId, 'all.jsonl'));
     const current = new Map(teams.map(team => [team.team_id, team]));
     for (const team of predecessor) {
       assert(current.has(team.team_id), `Predecessor team missing from ${datasetId}: ${team.team_id}`);
       assert.equal(stable(current.get(team.team_id)), stable(team), `Predecessor team changed: ${team.team_id}`);
     }
-    predecessorVerification = {dataset_id: DATASET_ID, teams_verified_unchanged: predecessor.length,
+    predecessorVerification = {dataset_id: predecessorId, teams_verified_unchanged: predecessor.length,
       new_teams: teams.length - predecessor.length};
   }
   const manifest = {
@@ -453,7 +455,7 @@ export function prepare(outputDir = path.join(ROOT, 'data/teams', DATASET_ID), o
       field: row.field, source_value: row.source_value, resolved_value: row.reference_value,
       ...row.user_confirmed,
     }));
-    manifest.scope_exception_note = 'The only new accepted source in this dataset is the single user-approved Pokepaste. No crawl, discovery or automatic refresh ran, and no other team was added.';
+    manifest.scope_exception_note = options.scope_exception_note || 'No crawl, discovery, automatic refresh, or unapproved source addition ran.';
   }
   // Write to a temporary sibling and refuse to replace a different frozen dataset.
   const staging = outputDir + `.staging-${process.pid}`;

@@ -111,3 +111,7 @@ Verification passed: all v3 accepted records satisfy their declared contract (`p
 The v3 direct inventory is unchanged from v2: the manual team introduces no new species, resource form, move, item or ability. It covers 194 base species/forms, 72 resource forms, 344 moves, 134 items, 139 base abilities, 52 resource-form abilities and 18 natures. Every eligible team contributes to both engine support requirements and the training pool. Evaluation episodes still remain separate from training match counters.
 
 The next engine work must resolve and implement the complete dependencies and interactions of these effects, including called moves such as Sleep Talk. The inventory is a frozen input to that work, not a claim that the Rust engine or full effect closure has been implemented. Engine difficulty must not be used to remove accepted teams.
+
+## A10-P0 proposed incremental pool (2026-10-12)
+
+A live-source comparison against the 2026-10-06 MC463/MB861 boundary found 97 new M-C EVs=Yes rows and no new M-B rows. Pinned-reference validation and deduplication produced 83 unique additions, yielding the proposed `a10-p0-proposed-20261013` pool of 1,220 teams. The v3 1,137-team pool is preserved unchanged. This proposed pool remains blocked from engine/training use until the pool-scoped Rust compatibility and whole-pool natural validation gates pass.

@@ -1,0 +1,10 @@
+Salamence @ Salamencite  
+Ability: Intimidate  
+Level: 50  
+EVs: 13 HP / 1 Atk / 28 SpD / 24 Spe  
+Hasty Nature  
+- Hyper Voice  
+- Double-Edge  
+- Tailwind  
+- Protect  
+

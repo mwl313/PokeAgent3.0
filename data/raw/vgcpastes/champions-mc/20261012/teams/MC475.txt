@@ -1,0 +1,66 @@
+Staraptor @ Staraptite  
+Ability: Intimidate  
+Level: 50  
+EVs: 15 HP / 19 Atk / 32 Spe  
+Jolly Nature  
+- Brave Bird  
+- Close Combat  
+- Roost  
+- Protect  
+
+
+Farigiraf @ Focus Sash  
+Ability: Armor Tail  
+Level: 50  
+EVs: 1 Def / 32 SpA / 1 SpD / 32 Spe  
+Timid Nature  
+- Expanding Force  
+- Hyper Voice  
+- Imprison  
+- Ally Switch  
+
+
+Golisopod @ Golisopite  
+Ability: Emergency Exit  
+Level: 50  
+EVs: 32 HP / 25 Atk / 9 SpD  
+Adamant Nature  
+- Iron Head  
+- Leech Life  
+- Sucker Punch  
+- Swords Dance  
+
+
+Milotic @ Leftovers  
+Ability: Competitive  
+Level: 50  
+EVs: 31 HP / 32 Def / 1 SpD / 2 Spe  
+Bold Nature  
+- Scald  
+- Recover  
+- Ice Beam  
+- Psych Up  
+
+
+Indeedee-F (F) @ Sitrus Berry  
+Ability: Psychic Surge  
+Level: 50  
+EVs: 32 HP / 32 Def / 2 SpD  
+Relaxed Nature  
+- Terrain Pulse  
+- Follow Me  
+- Helping Hand  
+- Trick Room  
+
+
+Zoroark-Hisui @ Choice Scarf  
+Ability: Illusion  
+Level: 50  
+EVs: 1 HP / 1 Def / 32 SpA / 32 Spe  
+Timid Nature  
+- Shadow Ball  
+- Icy Wind  
+- Will-O-Wisp  
+- Memento  
+
+

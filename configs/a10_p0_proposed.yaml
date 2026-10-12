@@ -1,0 +1,13 @@
+# Deliberately non-runnable A10-P0 proposal. Native pool gate is NOT VERIFIED.
+runnable: false
+track: A
+phase: A10-P0
+source_sha: 8910195d6967728d9547db1eaa073a099d8cfac7
+dataset_id: a10-p0-proposed-20261013
+dataset_manifest: data/teams/a10-p0-proposed-20261013/manifest.json
+team_count: 1220
+ppo_training_started: false
+requires:
+  - pool-scoped Rust handler and reachable-closure checks
+  - action/request differential fixtures
+  - bounded whole-pool natural validation with no operational errors

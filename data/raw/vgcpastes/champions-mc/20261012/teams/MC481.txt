@@ -1,0 +1,60 @@
+Froslass @ Froslassite  
+Ability: Cursed Body  
+EVs: 10 HP / 15 Def / 9 SpA / 32 Spe  
+Timid Nature  
+- Blizzard  
+- Shadow Ball  
+- Aurora Veil  
+- Protect  
+
+
+Raichu @ Raichunite Y  
+Ability: Lightning Rod  
+EVs: 30 HP / 13 Def / 23 Spe  
+Timid Nature  
+- Zap Cannon  
+- Focus Blast  
+- Encore  
+- Protect  
+
+
+Rillaboom @ Miracle Seed  
+Ability: Grassy Surge  
+EVs: 32 HP / 15 Atk / 19 SpD  
+Brave Nature  
+- Fake Out  
+- Grassy Glide  
+- Wood Hammer  
+- High Horsepower  
+
+
+Kingambit @ Life Orb  
+Ability: Defiant  
+EVs: 32 HP / 32 Atk / 2 SpD  
+Adamant Nature  
+- Kowtow Cleave  
+- Sucker Punch  
+- Iron Head  
+- Protect  
+
+
+Sneasler @ Grassy Seed  
+Ability: Unburden  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Adamant Nature  
+- Close Combat  
+- Dire Claw  
+- Fake Out  
+- Protect  
+
+
+Arcanine-Hisui @ Focus Sash  
+Ability: Rock Head  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Jolly Nature  
+- Flare Blitz  
+- Rock Slide  
+- Extreme Speed  
+- Protect  
+
+

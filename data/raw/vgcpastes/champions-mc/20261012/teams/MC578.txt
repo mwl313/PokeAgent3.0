@@ -1,0 +1,60 @@
+Dragonite @ Dragoninite  
+Ability: Inner Focus  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Modest Nature  
+- Dragon Pulse  
+- Heat Wave  
+- Tailwind  
+- Protect  
+
+
+Floette-Eternal @ Floettite  
+Ability: Flower Veil  
+EVs: 10 HP / 26 Def / 15 SpA / 15 Spe  
+Modest Nature  
+- Dazzling Gleam  
+- Moonblast  
+- Calm Mind  
+- Protect  
+
+
+Gholdengo @ Life Orb  
+Ability: Good as Gold  
+EVs: 17 HP / 7 SpA / 15 SpD / 27 Spe  
+Modest Nature  
+- Make It Rain  
+- Shadow Ball  
+- Nasty Plot  
+- Protect  
+
+
+Sneasler @ White Herb  
+Ability: Unburden  
+EVs: 10 HP / 30 Atk / 8 SpD / 18 Spe  
+Adamant Nature  
+- Close Combat  
+- Dire Claw  
+- Rock Tomb  
+- Protect  
+
+
+Incineroar @ Sitrus Berry  
+Ability: Intimidate  
+EVs: 30 HP / 20 Def / 9 SpD / 7 Spe  
+Impish Nature  
+- Flare Blitz  
+- Fake Out  
+- Throat Chop  
+- Parting Shot  
+
+
+Rillaboom @ Miracle Seed  
+Ability: Grassy Surge  
+EVs: 17 HP / 25 Atk / 1 Def / 10 SpD / 13 Spe  
+Adamant Nature  
+- Wood Hammer  
+- Grassy Glide  
+- High Horsepower  
+- Fake Out  
+
+
