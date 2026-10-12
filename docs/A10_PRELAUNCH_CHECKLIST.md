@@ -28,3 +28,13 @@ Current verdict: **BLOCKED / NOT VERIFIED**. No A10 training started.
 - [ ] Authorize A10 first training run.
 
 Current verdict: **BLOCKED / NOT VERIFIED for engine; storage infrastructure bounded-ready**.
+
+## A10-P2 status
+
+- [x] Rust 1.90 toolchain verified and release pool probe built.
+- [x] 1,220-team initialization/natural trajectory probe: 1,220/1,220 complete, zero reported blockers.
+- [x] 83 new-team targeted both-seat probe: 332/332 complete, zero operational errors.
+- [x] Generation storage integrated behind an opt-in launcher flag.
+- [ ] Exhaustive exact-pool closure/action differential validation and fully varied all-team natural campaign.
+
+Current verdict: **BLOCKED for exact-pool engine PASS; storage integration bounded-ready**.

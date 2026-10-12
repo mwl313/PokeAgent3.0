@@ -54,13 +54,15 @@ class CheckpointGenerationStore:
     replaced.  Incomplete directories are ignored by discovery.
     """
 
-    def __init__(self, root: str | Path, *, budget_bytes: int = 50 * GB,
-                 reserve_bytes: int = 15 * GIB, keep_generations: int = 3):
+    def __init__(self, root: str | Path, *, budget_bytes: int | None = None,
+                 reserve_bytes: int = 15 * GIB, concurrent_write_allowance_bytes: int = 0,
+                 keep_generations: int = 3):
         self.root = Path(root).resolve()
         self.generations = self.root / "generations"
         self.registry_path = self.root / "protected_artifacts.json"
         self.latest_path = self.root / "LATEST"
-        self.budget_bytes = int(budget_bytes)
+        self.budget_bytes = None if budget_bytes is None else int(budget_bytes)
+        self.concurrent_write_allowance_bytes = int(concurrent_write_allowance_bytes)
         self.reserve_bytes = int(reserve_bytes)
         self.keep_generations = int(keep_generations)
         if self.keep_generations < 3:
@@ -82,13 +84,13 @@ class CheckpointGenerationStore:
         usage = shutil.disk_usage(self.root)
         owned = sum(p.stat().st_size for p in self.root.rglob("*") if p.is_file())
         checkpoint = sum(p.stat().st_size for p in self.generations.rglob("*") if p.is_file())
-        projected = int(projected_write_bytes) * 2  # generation plus temporary copy
+        projected = int(projected_write_bytes) * 2 + self.concurrent_write_allowance_bytes  # generation plus temporary copy and external writer allowance
         return {
             "path": str(self.root), "available_bytes": usage.free,
             "filesystem_total_bytes": usage.total, "filesystem_used_bytes": usage.used,
             "project_owned_bytes": owned, "checkpoint_bytes": checkpoint,
             "project_budget_bytes": self.budget_bytes,
-            "project_budget_remaining_bytes": max(0, self.budget_bytes - owned),
+            "project_budget_remaining_bytes": (max(0, self.budget_bytes - owned) if self.budget_bytes is not None else None),
             "projected_peak_write_bytes": projected,
             "safe_to_write": usage.free - projected >= self.reserve_bytes,
         }

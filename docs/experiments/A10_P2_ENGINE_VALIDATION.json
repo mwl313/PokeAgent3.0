@@ -1,0 +1,69 @@
+{
+  "dataset_id": "a10-p0-proposed-20261013",
+  "manifest_sha256": "1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb",
+  "team_count": 1220,
+  "predecessor_unchanged": 1137,
+  "rust_toolchain": {
+    "rustc": "1.90.0",
+    "cargo": "1.90.0",
+    "check": "PASS"
+  },
+  "static_inventory": {
+    "species": 194,
+    "moves": 346,
+    "abilities": 139,
+    "items": 137,
+    "resource_forms": 73
+  },
+  "closure": {
+    "universes": {
+      "moves": 346,
+      "abilities": 233,
+      "items": 137,
+      "species_forms": 267
+    },
+    "entries": 12,
+    "rules": [
+      "call-move",
+      "transform",
+      "copy-ability",
+      "transfer-item",
+      "suppress-ability",
+      "end-held-item"
+    ],
+    "status": "STATIC_CONSERVATIVE_NOT_EXECUTION_VERIFIED"
+  },
+  "pool_run_report": {
+    "teams": 1220,
+    "games": 1220,
+    "completed": 1220,
+    "blocked": 0,
+    "operational_errors": 0,
+    "unsupported": 0,
+    "truncated": 0,
+    "note": "deterministic seeded same-team trajectory; natural completion supplements but does not prove universal support"
+  },
+  "new_team_targeted_probe": {
+    "teams": 83,
+    "games": 332,
+    "completed": 332,
+    "operational_errors": 0,
+    "unsupported": 0,
+    "truncated": 0,
+    "both_seats": true,
+    "opponents_per_team": 2,
+    "seeds_per_team": 1
+  },
+  "existing_differential_suites": {
+    "contracts": 16,
+    "fixture_coverage": 2,
+    "legality": 1,
+    "ability_contact": 1,
+    "ability_interactions": 2,
+    "move_hooks": 1,
+    "poltergeist": 3,
+    "status": "PASS"
+  },
+  "exact_pool_verdict": "NOT_VERIFIED",
+  "training_started": false
+}

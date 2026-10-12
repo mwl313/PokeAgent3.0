@@ -13,11 +13,14 @@ requires:
   - bounded whole-pool natural validation with no operational errors
 
 storage:
-  budget_gb: 50
+  project_quota_gb: null
+  expected_post_install_free_gb: 50
   reserve_gib: 15
+  concurrent_write_allowance_gb: 5
   checkpoint_interval_committed_games: 100000
   retained_complete_generations: 3
   manager: agent/ppo/storage_manager.py
   guard: scripts/check_storage_budget.py
+  launcher_flag: --rolling-checkpoint-root
 engine_compatibility_report: docs/experiments/A10_P1_ENGINE_COMPATIBILITY_REPORT.md
 runnable: false

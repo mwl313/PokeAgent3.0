@@ -48,6 +48,7 @@ import socket
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 import torch
 
@@ -96,6 +97,10 @@ def parse_args(argv=None):
     parser.add_argument("--teams", default=os.path.join(ROOT, "engine", "data", "training-teams.json"))
     parser.add_argument("--report", default=os.path.join(ROOT, "runs", "perf", "v4_ddp.json"))
     parser.add_argument("--checkpoint", default="")
+    parser.add_argument(
+        "--rolling-checkpoint-root", default="",
+        help="opt-in generation-based publication root; requires experimental checkpoint envelopes",
+    )
     parser.add_argument(
         "--experimental-checkpoint", default="",
         help="opt-in iteration-boundary envelope prefix (one file per rank)",
@@ -803,6 +808,7 @@ def parent(args) -> None:
                 "--report", args.report, "--checkpoint", args.checkpoint,
                 "--experimental-checkpoint", args.experimental_checkpoint,
                 "--experimental-resume", args.experimental_resume,
+                "--rolling-checkpoint-root", args.rolling_checkpoint_root,
                 "--dataset-manifest", args.dataset_manifest,
                 "--executor", args.executor,
                 "--precision-mode", args.precision_mode,
@@ -887,6 +893,24 @@ def parent(args) -> None:
             raise SystemExit(f"rank {entry['rank']} produced no metrics JSON at {path}")
         with open(path) as handle:
             results.append(json.load(handle))
+    if args.rolling_checkpoint_root:
+        if not args.experimental_checkpoint:
+            raise RuntimeError("--rolling-checkpoint-root requires --experimental-checkpoint")
+        from agent.ppo.storage_manager import CheckpointGenerationStore
+        envelope_files = {rank: Path(f"{os.path.abspath(args.experimental_checkpoint)}.rank{rank}") for rank in (0, 1)}
+        if any(not path.is_file() for path in envelope_files.values()):
+            raise RuntimeError("rolling publication requires both verified rank envelopes")
+        store = CheckpointGenerationStore(os.path.abspath(args.rolling_checkpoint_root))
+        store.publish(
+            f"iter-{int(results[0]['global_committed_matches']):012d}",
+            {rank: path.read_bytes() for rank, path in envelope_files.items()},
+            {"schema": "ppo-experimental-envelope-v1", "iteration_complete": True,
+             "world_size": 2, "iteration": int(results[0]["iterations"][-1]["iteration"]),
+             "committed_matches": int(results[0]["global_committed_matches"]),
+             "dataset_manifest": os.path.abspath(args.dataset_manifest),
+             "precision_mode": args.precision_mode,
+             "ppo_epochs": int(args.epochs or results[0]["config"].get("ppo_epochs", 2))},
+        )
     expected_execution = {
         "batch_cache": args.batch_cache,
         "compact_candidates": args.compact_candidates,

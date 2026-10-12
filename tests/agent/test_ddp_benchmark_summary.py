@@ -112,6 +112,14 @@ def test_experimental_resume_is_opt_in_and_has_explicit_paths(launcher):
     assert args.epochs == 2
 
 
+def test_generation_checkpoint_root_is_opt_in(launcher):
+    args = launcher.parse_args([
+        "--rolling-checkpoint-root", "/tmp/rolling",
+        "--experimental-checkpoint", "/tmp/a-boundary",
+    ])
+    assert args.rolling_checkpoint_root == "/tmp/rolling"
+
+
 def test_cli_rejects_zero_iterations(launcher):
     with pytest.raises(SystemExit):
         launcher.parse_args(["--iterations", "0"])

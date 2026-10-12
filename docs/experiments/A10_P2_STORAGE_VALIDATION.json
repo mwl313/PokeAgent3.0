@@ -1,0 +1,45 @@
+{
+  "generated_at_utc": "2026-10-12T10:13:29.976693+00:00",
+  "dynamic_capacity": {
+    "initial_observed_free_bytes": 83515752448,
+    "initial_observed_free_gb": 83.515752448,
+    "final_free_bytes": 83488280576,
+    "final_free_gb": 83.488280576,
+    "final_free_gib": 77.75452041625977
+  },
+  "project_owned_bytes": 7629667316,
+  "project_owned_gb": 7.629667316,
+  "directories_bytes": {
+    "runs": 4449224942,
+    "data": 161941337,
+    "target": 1875578268,
+    ".tools": 933992646
+  },
+  "checkpoint_storage_bytes": 0,
+  "new_storage_this_milestone": "No production checkpoints; temporary build artifacts remain project-owned",
+  "external_installation": {
+    "treated_as_protected": true,
+    "process_identity": null,
+    "filesystem_shared": true,
+    "activity_inferred_from_falling_free_space": true,
+    "modified": false
+  },
+  "policy": {
+    "minimum_reserve_gib": 15,
+    "project_quota_bytes": null,
+    "concurrent_write_allowance_gb": 5,
+    "retain_generations": 3,
+    "checkpoint_interval_matches": 100000
+  },
+  "launcher_integration": {
+    "flag": "--rolling-checkpoint-root",
+    "requires_experimental_envelopes": true,
+    "production_default_changed": false
+  },
+  "tests": {
+    "storage_and_checkpoint_tests": 26,
+    "storage_manager_dedicated": 6,
+    "status": "PASS"
+  },
+  "training_started": false
+}

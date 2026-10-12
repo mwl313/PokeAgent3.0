@@ -122,3 +122,7 @@ The incremental VGCPastes import is captured and prepared as `data/teams/a10-p0-
 ## A10-P1 status (2026-10-12)
 
 The P0 1,220-team manifest remains unchanged. Rust 1.90/Cargo 1.90 was restored locally and the bounded native suites pass, but exact-pool dependency closure, follow-up action validation, and whole-pool natural execution remain NOT VERIFIED. Generation-based three-checkpoint storage and disk guards are implemented; no PPO/A10 training started.
+
+## A10-P2 status (2026-10-12)
+
+Exact-pool bounded native probes are clean (1,220/1,220 trajectory completions; 332/332 targeted new-team seat-swapped games), but the stricter pool-scoped closure/action/differential acceptance gate remains NOT VERIFIED. Adaptive generation checkpoint storage is integrated into the DDP launcher via an opt-in flag with dynamic filesystem guards. No PPO training started.

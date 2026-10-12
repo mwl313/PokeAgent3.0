@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 import pytest
+import torch
 
 from agent.ppo.storage_manager import CheckpointGenerationStore, StorageBudgetError
 
@@ -49,3 +50,23 @@ def test_protected_generation_is_not_rotated(tmp_path):
     store.protect(first_dir, reason="A5 control anchor")
     for i in range(1, 5): store.publish(f"g{i}", {0: str(i).encode(), 1: str(i).encode()}, META)
     assert first_dir.exists()
+
+
+def test_real_torch_payload_round_trip_and_metadata_parity(tmp_path):
+    store = CheckpointGenerationStore(tmp_path / "rolling", reserve_bytes=0)
+    payloads = {}
+    for rank in (0, 1):
+        payload = {"model": {"weight": torch.arange(8) + rank},
+                   "optimizer": {"state": {"step": torch.tensor(3)}},
+                   "scheduler": {"matches": 4096}, "scaler": {"scale": 65536.0},
+                   "dataset_manifest_hash": "d" * 64, "precision_mode": "D"}
+        path = tmp_path / f"rank{rank}.pt"
+        torch.save(payload, path)
+        payloads[rank] = path.read_bytes()
+    manifest = store.publish("torch", payloads, {**META, "dataset_manifest_hash": "d" * 64, "precision_mode": "D"})
+    generation = store.latest()
+    for rank in (0, 1):
+        restored = torch.load(generation / manifest["ranks"][str(rank)]["path"], weights_only=True)
+        assert restored["optimizer"]["state"]["step"].item() == 3
+        assert restored["scheduler"]["matches"] == 4096
+        assert restored["dataset_manifest_hash"] == "d" * 64
