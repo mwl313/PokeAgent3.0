@@ -116,6 +116,8 @@ def parse_args(argv=None):
     )
     parser.add_argument("--precision-mode", choices=("A", "B", "C", "D"), default="A",
                         help="experimental policy precision contract; A is the A9 FP32 reference")
+    parser.add_argument("--precision-stability", choices=("default", "fp16-reduction-off"), default="default",
+                        help="opt-in numerical stability setting for precision experiments")
     parser.add_argument("--recompute-audit", action="store_true",
                         help="run isolated-row diagnostics in addition to the production gate")
     parser.add_argument(
@@ -293,6 +295,9 @@ def summarize_iterations(rank_results: list[dict]) -> tuple[list[dict], dict | N
 def worker(args) -> None:
     """One rank: local rollout, fixed-step DDP update, per-rank metrics JSON."""
     import torch.distributed as dist
+
+    if args.precision_stability == "fp16-reduction-off":
+        torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = False
 
     worker_started = time.perf_counter()
     rank = int(os.environ["RANK"])
@@ -608,6 +613,7 @@ def worker(args) -> None:
                     "lr_scale": lr_scale,
                     "source_migration_allowed": bool(args.experimental_allow_source_sha),
                     "precision_mode": args.precision_mode,
+                    "precision_stability": args.precision_stability,
                 },
                 rank=rank, world_size=world_size, executor=args.executor,
                 iteration=absolute_iteration + 1,
@@ -745,6 +751,7 @@ def parent(args) -> None:
                 "--dataset-manifest", args.dataset_manifest,
                 "--executor", args.executor,
                 "--precision-mode", args.precision_mode,
+                "--precision-stability", args.precision_stability,
             ]
             if args.experimental_allow_source_sha:
                 command.append("--experimental-allow-source-sha")

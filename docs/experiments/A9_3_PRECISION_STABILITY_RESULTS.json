@@ -1,0 +1,43 @@
+{
+  "experiment": "A9.3",
+  "source_sha": "6665024401660a307dfd760be48f7d6082e134d5",
+  "original_D": {
+    "games": 16384,
+    "failed_iteration": 14,
+    "max_abs_diff": 0.001438
+  },
+  "D1": {
+    "stability": "fp16-reduction-off",
+    "games": 51200,
+    "iterations": 25,
+    "gate_passes": 25,
+    "gate_total": 25,
+    "all_in_games_per_s": 88.41234021924446,
+    "steady_games_per_s": 89.44679436221799,
+    "ddp_digests_equal": true,
+    "ranks": [
+      {
+        "rank": 0,
+        "max_gate_error": 2.7835369110107422e-05,
+        "mean_update_s": 10.270538354960008,
+        "gate_passes": 25
+      },
+      {
+        "rank": 1,
+        "max_gate_error": 2.9087066650390625e-05,
+        "mean_update_s": 10.406659564719922,
+        "gate_passes": 25
+      }
+    ],
+    "checkpoint_resume": {
+      "checkpoint": "runs/experiments/a/a93_D1_resume_boundary.rank0",
+      "restore_report": "runs/experiments/a/a93_D1_resume_after.json",
+      "digests_equal": true,
+      "precision_contract": "pa3-precision-D-v1"
+    }
+  },
+  "tests": {
+    "precision_evaluation_recompute": "11 passed"
+  },
+  "classification": "VIABLE_STABLE_CANDIDATE"
+}

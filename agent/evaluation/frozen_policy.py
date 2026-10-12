@@ -10,6 +10,7 @@ import torch
 from agent.model import PA3Config, build_model
 from agent.evaluation.identity import canonical_model_digest, sha256_file
 from agent.model.pa3_model import PA3Model
+from agent.model.precision import get_precision_contract
 from agent.train.native_collector import NativeCollector, NativeCollectorConfig
 from agent.types.observation import ObservationLayout
 
@@ -26,6 +27,7 @@ class PolicyIdentity:
     checkpoint_sha256: str | None
     observation_schema: str
     action_schema: str
+    precision_contract: str = "pa3-precision-A-v1"
 
 
 class FrozenPPOPolicy:
@@ -37,7 +39,8 @@ class FrozenPPOPolicy:
         for parameter in self.model.parameters():
             parameter.requires_grad_(False)
         self.identity = identity or PolicyIdentity(
-            INTERFACE_VERSION, canonical_model_digest(self.model.state_dict()), None, OBSERVATION_SCHEMA, ACTION_SCHEMA
+            INTERFACE_VERSION, canonical_model_digest(self.model.state_dict()), None, OBSERVATION_SCHEMA, ACTION_SCHEMA,
+            getattr(self.model, "precision_contract", get_precision_contract("A")).identity
         )
         self._helper = NativeCollector.__new__(NativeCollector)
         self._helper.config = NativeCollectorConfig(record_rows=False)
@@ -54,11 +57,15 @@ class FrozenPPOPolicy:
         if state is None:
             raise ValueError("checkpoint does not contain an experimental learner model")
         model = build_model(config or PA3Config(), device=device)
+        experiment = payload.get("experiment", {}) if isinstance(payload, dict) else {}
+        precision_mode = experiment.get("precision_mode", "A")
+        model.configure_precision(precision_mode)
         model.load_state_dict(state, strict=True)
         file_hash = sha256_file(path)
         adapter = cls(model, device=device)
         adapter.identity = PolicyIdentity(INTERFACE_VERSION, adapter.identity.model_digest,
-                                          file_hash, OBSERVATION_SCHEMA, ACTION_SCHEMA)
+                                          file_hash, OBSERVATION_SCHEMA, ACTION_SCHEMA,
+                                          get_precision_contract(precision_mode).identity)
         return adapter
 
     def priors_and_value(self, observation, candidate_lists, selected_prefix=None):
