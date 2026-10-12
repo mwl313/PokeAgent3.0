@@ -115,3 +115,7 @@ The next engine work must resolve and implement the complete dependencies and in
 ## A10-P0 proposed incremental pool (2026-10-12)
 
 A live-source comparison against the 2026-10-06 MC463/MB861 boundary found 97 new M-C EVs=Yes rows and no new M-B rows. Pinned-reference validation and deduplication produced 83 unique additions, yielding the proposed `a10-p0-proposed-20261013` pool of 1,220 teams. The v3 1,137-team pool is preserved unchanged. This proposed pool remains blocked from engine/training use until the pool-scoped Rust compatibility and whole-pool natural validation gates pass.
+
+## A10-P1 engine gate
+
+The proposed 1,220-team pool retains its P0 identity. Static catalog IDs are present in the native dex, but pool-specific form execution, reachable closure, and all-team natural validation remain unverified. It must not replace the v3 engine dataset or become runnable until those gates pass.

@@ -18,3 +18,13 @@ model initialization from a zeroed schedule clock.
 - [ ] User authorization to start A10 PPO training.
 
 Current verdict: **BLOCKED / NOT VERIFIED**. No A10 training started.
+
+## A10-P1 storage and engine gate
+
+- [x] Restore project-local Rust 1.90 toolchain without system-wide changes.
+- [x] Add generation-based three-generation checkpoint retention and disk guard.
+- [x] Test atomic publication, corruption fallback, missing rank, insufficient space, and protected generation behavior.
+- [ ] Verify exact 1,220-team reachable native closure and whole-pool natural completion.
+- [ ] Authorize A10 first training run.
+
+Current verdict: **BLOCKED / NOT VERIFIED for engine; storage infrastructure bounded-ready**.

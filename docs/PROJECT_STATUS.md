@@ -118,3 +118,7 @@
 ## A10-P0 status (2026-10-12)
 
 The incremental VGCPastes import is captured and prepared as `data/teams/a10-p0-proposed-20261013` (1,220 teams; 83 unique additions; 1,137 v3 teams verified unchanged). M-C advanced to MC584 while M-B remained MB861. The proposal is non-runnable: native Rust pool compatibility is NOT VERIFIED because the Rust toolchain is unavailable, and no A10 PPO training has started. See the A10-P0 experiment reports for source hashes, quarantine reasons, and required gates.
+
+## A10-P1 status (2026-10-12)
+
+The P0 1,220-team manifest remains unchanged. Rust 1.90/Cargo 1.90 was restored locally and the bounded native suites pass, but exact-pool dependency closure, follow-up action validation, and whole-pool natural execution remain NOT VERIFIED. Generation-based three-checkpoint storage and disk guards are implemented; no PPO/A10 training started.

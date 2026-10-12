@@ -1,0 +1,40 @@
+{
+  "dataset_id": "a10-p0-proposed-20261013",
+  "manifest_sha256": "1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb",
+  "team_count": 1220,
+  "oracle_commit": "14546894d86f9589ac11130c510bbe73b6968665",
+  "static_catalog": {
+    "species": {
+      "required": 194,
+      "catalogued": 194
+    },
+    "moves": {
+      "required": 346,
+      "catalogued": 346
+    },
+    "abilities": {
+      "required": 139,
+      "catalogued": 139
+    },
+    "items": {
+      "required": 137,
+      "catalogued": 137
+    },
+    "resource_forms": {
+      "required": 73,
+      "executable_verified": "NOT_VERIFIED"
+    }
+  },
+  "rust_toolchain": {
+    "rustc": "1.90.0",
+    "cargo": "1.90.0",
+    "manifest_check": "PASS",
+    "engine_unit_tests": "PASS for bounded selected suites"
+  },
+  "dynamic_closure": "NOT_VERIFIED",
+  "legal_action_followups": "NOT_VERIFIED for exact 1220 pool; existing engine legality/reference suites pass",
+  "differential": "PASS for existing pinned fixtures; exact-pool expansion NOT_VERIFIED",
+  "whole_pool_natural_validation": "NOT_VERIFIED",
+  "unsupported_effect_failures": [],
+  "training_started": false
+}

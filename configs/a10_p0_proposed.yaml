@@ -11,3 +11,13 @@ requires:
   - pool-scoped Rust handler and reachable-closure checks
   - action/request differential fixtures
   - bounded whole-pool natural validation with no operational errors
+
+storage:
+  budget_gb: 50
+  reserve_gib: 15
+  checkpoint_interval_committed_games: 100000
+  retained_complete_generations: 3
+  manager: agent/ppo/storage_manager.py
+  guard: scripts/check_storage_budget.py
+engine_compatibility_report: docs/experiments/A10_P1_ENGINE_COMPATIBILITY_REPORT.md
+runnable: false

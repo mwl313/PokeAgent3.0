@@ -1,0 +1,49 @@
+{
+  "generated_at_utc": "2026-10-12T09:51:58.016792+00:00",
+  "filesystem": {
+    "path": ".",
+    "total_bytes": 234039422976,
+    "used_bytes": 95885803520,
+    "available_bytes": 126190469120,
+    "available_gib": 117.52
+  },
+  "project_owned_bytes": 7626028612,
+  "project_owned_gib": 7.1,
+  "directories_bytes": {
+    "runs": 4449224906,
+    "data": 161941337,
+    "target": 1871966266,
+    ".tools": 933992646,
+    "checkpoints_by_extension": 0
+  },
+  "budget": {
+    "user_headroom_gb": 50000000000,
+    "user_headroom_gib": 46.57,
+    "interpreted_as": "configured project budget, not filesystem quota",
+    "project_budget_remaining_bytes": 42373971388
+  },
+  "policy": {
+    "keep_complete_generations": 3,
+    "full_checkpoint_interval_committed_games": 100000,
+    "safety_reserve_gib": 15,
+    "evaluation_light_interval_games": 50000,
+    "evaluation_full_interval_games": 200000
+  },
+  "training_started": false,
+  "bounded_serialization_benchmark": {
+    "payload_bytes": 16777216,
+    "elapsed_seconds": 0.9726489429995127,
+    "throughput_decimal_mb_s": 17.248994224227935,
+    "note": "synthetic two-rank bytes, not a production learner checkpoint"
+  },
+  "filesystem_after_bounded_validation": {
+    "available_bytes": 123704139776,
+    "available_gb": 123.704139776,
+    "available_gib": 115.20845794677734
+  },
+  "before_p1_measurement": {
+    "available_bytes": 162416193536,
+    "available_gb": 162.416193536,
+    "source": "df captured before Rust restore/build"
+  }
+}
