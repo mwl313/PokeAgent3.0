@@ -298,6 +298,9 @@ def worker(args) -> None:
 
     if args.precision_stability == "fp16-reduction-off":
         torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = False
+    if args.precision_stability == "default":
+        torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = True
+    effective_reduction = bool(torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction)
 
     worker_started = time.perf_counter()
     rank = int(os.environ["RANK"])
@@ -429,6 +432,23 @@ def worker(args) -> None:
             raise RuntimeError(
                 f"precision contract mismatch: checkpoint={saved_precision} requested={args.precision_mode}"
             )
+        saved_stability = resume_envelope.get("experiment", {}).get("precision_stability")
+        if saved_stability is None:
+            legacy_ok = bool(args.experimental_allow_source_sha and resume_envelope.get("source_sha") in {
+                "30b10e28d608f869811a4525afaa8101613c7adc",
+                "0059b34179790610d0f39e832297be8645790a80",
+                "575a706e2fed072e30d9f0dda0f8a3327fcb48aa",
+            })
+            if args.precision_mode == "D" and args.precision_stability != "default" and not legacy_ok:
+                raise RuntimeError("checkpoint lacks required precision-stability metadata for Mode D")
+            if legacy_ok:
+                note("explicit trusted legacy migration: missing precision-stability metadata")
+        elif saved_stability != args.precision_stability:
+            raise RuntimeError(
+                f"precision stability mismatch: checkpoint={saved_stability} requested={args.precision_stability}"
+            )
+        if args.precision_stability == "fp16-reduction-off" and effective_reduction:
+            raise RuntimeError("effective CUDA FP16 reduction setting does not match D1 contract")
         validate_epoch_override(resume_envelope, ppo_config, ppo_config.ppo_epochs)
         recorded_source_sha = resume_envelope.get("source_sha")
         expected_source_sha = source_sha
@@ -614,6 +634,8 @@ def worker(args) -> None:
                     "source_migration_allowed": bool(args.experimental_allow_source_sha),
                     "precision_mode": args.precision_mode,
                     "precision_stability": args.precision_stability,
+                    "precision_contract_version": "pa3-execution-contract-v1",
+                    "fp16_reduced_precision_reduction": effective_reduction,
                 },
                 rank=rank, world_size=world_size, executor=args.executor,
                 iteration=absolute_iteration + 1,

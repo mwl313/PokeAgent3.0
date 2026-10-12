@@ -18,6 +18,7 @@ import torch
 
 from agent.model import PA3Config, build_model
 from agent.model.pa3_model import PA3Model
+from agent.model.precision import get_precision_contract
 from agent.train.native_collector import NativeCollector, NativeCollectorConfig
 from agent.types.observation import ObservationBatch, ObservationLayout
 from agent.types.requests import RequestKind
@@ -108,6 +109,7 @@ class FixedPolicyEvaluator:
                 layout=self.layout, device=self.device,
             )
         with torch.inference_mode():
+            observation = get_precision_contract(model.precision_contract.mode).prepare_observation(observation)
             encoded = model.encode(observation)
             hidden = model.scorer.initial_state(
                 1, device=encoded.tokens.device, dtype=encoded.tokens.dtype
@@ -174,6 +176,7 @@ class FixedPolicyEvaluator:
                     if side_kind == "checkpoint":
                         observation = self._observation(handle, side)
                         with torch.inference_mode():
+                            observation = get_precision_contract(side_model.precision_contract.mode).prepare_observation(observation)
                             encoded = side_model.encode(observation)
                             hidden = side_model.scorer.initial_state(
                                 1, device=encoded.tokens.device, dtype=encoded.tokens.dtype

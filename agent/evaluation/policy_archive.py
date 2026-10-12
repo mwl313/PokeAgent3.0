@@ -107,6 +107,9 @@ def register_checkpoint(registry_path, *, policy_id, label, checkpoint_path,
         "source_sha": source_sha or payload.get("source_sha"), "model_config_hash": payload.get("model_config_hash"),
         "action_schema_hash": payload.get("action_schema_hash"),
         "observation_schema": OBSERVATION_SCHEMA, "action_schema": ACTION_SCHEMA,
+        "precision_mode": payload.get("experiment", {}).get("precision_mode", "A"),
+        "precision_stability": payload.get("experiment", {}).get("precision_stability", "default"),
+        "precision_contract_version": payload.get("experiment", {}).get("precision_contract_version", "legacy"),
     }
     if rank_peer_path:
         peer = os.path.abspath(os.fspath(rank_peer_path))
@@ -132,6 +135,11 @@ def verify_entry(registry_path, entry):
     for key in ("source_sha", "model_config_hash", "action_schema_hash"):
         if not entry.get(key) or payload.get(key) != entry[key]:
             raise ValueError(f"archived {key} mismatch: {entry['id']}")
+    experiment = payload.get("experiment", {})
+    if entry.get("precision_mode", "A") != experiment.get("precision_mode", "A"):
+        raise ValueError(f"archived precision-mode mismatch: {entry['id']}")
+    if entry.get("precision_stability", "default") != experiment.get("precision_stability", "default"):
+        raise ValueError(f"archived precision-stability mismatch: {entry['id']}")
     if payload.get("accounting", {}).get("committed_matches") != entry.get("committed_matches"):
         raise ValueError(f"archived committed-match mismatch: {entry['id']}")
     if entry.get("observation_schema") != OBSERVATION_SCHEMA or entry.get("action_schema") != ACTION_SCHEMA:

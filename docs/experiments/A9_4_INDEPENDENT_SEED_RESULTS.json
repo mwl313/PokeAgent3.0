@@ -1,0 +1,12 @@
+{
+  "experiment": "A9.4-independent-seed",
+  "seed": 20261010,
+  "precision_mode": "D",
+  "precision_stability": "fp16-reduction-off",
+  "epochs": 2,
+  "gate_tolerance": 0.001,
+  "report": "runs/experiments/a/a94_seed2_25.json",
+  "status": "running",
+  "initial_checkpoint": "runs/experiments/a/a5_control/boundary.rank0",
+  "note": "Receipt is updated after the bounded 25-iteration arm completes."
+}
