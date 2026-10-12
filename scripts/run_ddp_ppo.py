@@ -134,10 +134,30 @@ def parse_args(argv=None):
     )
     parser.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--port", type=int, default=0, help=argparse.SUPPRESS)
+    raw_argv = list(sys.argv[1:] if argv is None else argv)
     args = parser.parse_args(argv)
     if args.profile:
         from agent.runtime.config import resolve_profile, launcher_values
         resolved = resolve_profile(args.profile)
+        # Reject explicit contradictions instead of silently overwriting them.
+        controlled = {"epochs": str(resolved["profile"]["training"]["ppo_epochs"]),
+                      "experimental-lr-scale": str(resolved["profile"]["training"]["lr_scale"]),
+                      "precision-mode": resolved["profile"]["precision"]["mode"],
+                      "precision-stability": resolved["profile"]["precision"]["stability"],
+                      "historical-probability": str(resolved["profile"]["training"]["historical_probability"]),
+                      "microbatch": str(resolved["profile"]["training"]["microbatch"]),
+                      "minibatch": str(resolved["profile"]["training"]["global_minibatch"]),
+                      "envs": str(resolved["profile"]["training"]["envs"]),
+                      "workers": str(resolved["profile"]["training"]["workers"])}
+        for index, token in enumerate(raw_argv):
+            if not token.startswith("--") or token in {"--profile", "--print-effective-config"}: continue
+            name, _, value = token[2:].partition("=")
+            if not value and index + 1 < len(raw_argv) and not raw_argv[index + 1].startswith("--"):
+                value = raw_argv[index + 1]
+            if name in controlled and value and value != controlled[name]:
+                raise ValueError(f"profile conflict: --{name}={value} != {controlled[name]}")
+        if "--no-recompute-gate" in raw_argv:
+            raise ValueError("profile conflict: recompute gate cannot be disabled")
         for key, value in launcher_values(resolved).items():
             setattr(args, key if key not in {"minibatch", "microbatch"} else key, value)
         args.effective_profile = resolved

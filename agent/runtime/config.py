@@ -32,8 +32,14 @@ def resolve_profile(path: str) -> dict:
     digest = hashlib.sha256(open(d["manifest"], "rb").read()).hexdigest()
     if digest != d.get("manifest_sha256"): raise ValueError("dataset manifest hash mismatch")
     canonical = json.loads(json.dumps(data, sort_keys=True, separators=(",", ":")))
+    artifact_bytes = json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode()
+    semantic = {key: canonical[key] for key in ("version", "training", "precision", "dataset", "collector", "evaluation")}
+    semantic_bytes = json.dumps(semantic, sort_keys=True, separators=(",", ":")).encode()
+    artifact_hash = hashlib.sha256(artifact_bytes).hexdigest()
+    semantic_hash = hashlib.sha256(semantic_bytes).hexdigest()
     return {"profile": canonical, "profile_path": os.path.abspath(path),
-            "config_hash": hashlib.sha256(json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode()).hexdigest()}
+            "config_hash": semantic_hash, "semantic_hash": semantic_hash,
+            "artifact_hash": artifact_hash}
 
 def launcher_values(resolved: dict) -> dict:
     t, p, c = resolved["profile"]["training"], resolved["profile"]["precision"], resolved["profile"]["collector"]

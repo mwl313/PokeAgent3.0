@@ -1,0 +1,11 @@
+{
+  "milestone": "A9.4.2",
+  "semantic_profile_hash": "c88661aa62291921c8cabf97109ff9fe386be1239f23daed36946c598f2499c5",
+  "configuration": {"ppo_epochs": 2, "lr_scale": 0.5, "precision_mode": "D", "precision_stability": "fp16-reduction-off", "recompute_tolerance": 0.001},
+  "fresh_evaluation": {"namespace": "a942_fresh_eval_receipts.json", "cache_hit": false, "games": 2048, "batch_size": 128, "games_per_s": 80.71220714848315, "wins": 1050, "losses": 998, "draws": 0, "score_ci95": [0.4912109375, 0.5341796875], "illegal_actions": 0, "operational_errors": 0, "identity": "0754dc070d36bc48d7fed97217485e67409f4490dde09081d1916b502c09d2fb"},
+  "batch_comparison": {"32": 46.35105702821875, "64": 65.56222250988199, "128": 80.71220714848315, "256": 80.79713821229564, "all_outcomes_equal": true, "all_error_counts_zero": true},
+  "tests": {"pytest": "18 passed", "archive": "6 passed", "profile_dry_run": "pass", "cli_conflict": "rejects", "scheduler_restart": "pass"},
+  "cargo": {"cargo_found": false, "rustc_found": false, "rustup_found": false, "readiness_check": "NOT VERIFIED"},
+  "new_teams_imported": false,
+  "a10_started": false
+}

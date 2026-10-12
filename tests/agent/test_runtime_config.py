@@ -22,3 +22,11 @@ def test_profile_rejects_dataset_hash_drift(tmp_path):
     try: resolve_profile(path)
     except ValueError as exc: assert "manifest hash" in str(exc)
     else: raise AssertionError("dataset drift was accepted")
+
+def test_semantic_hash_ignores_evidence_metadata(tmp_path):
+    data = json.load(open(PROFILE)); data["evidence"]["note"] = "changed documentation"
+    path = tmp_path / "meta.yaml"; path.write_text(json.dumps(data))
+    changed = resolve_profile(path)
+    original = resolve_profile(PROFILE)
+    assert changed["semantic_hash"] == original["semantic_hash"]
+    assert changed["artifact_hash"] != original["artifact_hash"]

@@ -56,8 +56,14 @@ def environment_identity(*, engine_path=None, data_path=None, teams_path=None):
 
 
 def evaluation_identity(left, right, fixtures, *, seed, max_rounds, environment):
-    body = {"candidate": [left["id"], left["file_sha256"], left["model_digest"]],
-            "opponent": [right["id"], right["file_sha256"], right["model_digest"]],
+    def contract(entry):
+        return {"precision_mode": entry.get("precision_mode", "A"),
+                "precision_stability": entry.get("precision_stability", "default"),
+                "precision_contract_version": entry.get("precision_contract_version", "legacy"),
+                "observation_quantization": "fp16-round-continuous-v1" if entry.get("precision_mode", "A") == "D" else "none"}
+    body = {"identity_version": "pa3-evaluation-identity-v3",
+            "candidate": [left["id"], left["file_sha256"], left["model_digest"], contract(left)],
+            "opponent": [right["id"], right["file_sha256"], right["model_digest"], contract(right)],
             "fixture_manifest_hash": fixture_manifest_hash(fixtures), "environment": environment,
             "engine": ENGINE_ID, "evaluator": EVALUATOR_VERSION,
             "seed": int(seed), "max_rounds": int(max_rounds),

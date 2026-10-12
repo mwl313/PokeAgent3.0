@@ -84,6 +84,7 @@ class FrozenPPOPolicy:
         """
         if not candidate_lists:
             raise ValueError("at least one legal action branch is required")
+        observation = self.model.precision_contract.prepare_observation(observation)
         with torch.inference_mode():
             encoded = self.model.encode(observation.to(self.device))
             hidden = self.model.scorer.initial_state(1, device=self.device,
