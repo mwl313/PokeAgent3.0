@@ -1,15 +1,29 @@
 {
   "experiment": "A9.4",
-  "status": "pending_full_2048_panel",
-  "common_fixture_manifest": "A8 pinned fixture manifest; reuse required for final panel",
-  "historical_reference": {
+  "selected_batch_size": 128,
+  "full_panel": {
+    "games": 2048,
+    "pairs": 1024,
+    "backend": "batched",
+    "runtime_seconds": 21.87278644900016,
+    "games_per_second": 93.63233188305632,
+    "wins": 1042,
+    "losses": 1006,
+    "draws": 0,
+    "score_mean": 0.5087890625,
+    "score_ci95": [0.49072265625, 0.52685546875],
+    "operational_errors": 0,
+    "illegal_actions": 0,
+    "gpu_peak_bytes": 226488832,
+    "receipt": "runs/experiments/a/a94_eval_receipts.json",
+    "fixture_manifest_hash": "ca341f10c87fd7f411eaa12473a4e04cff5dbc389c6171e0a92614c4d885fe0e"
+  },
+  "historical_comparison": {
     "sequential_32_games_per_s": 4.42,
     "batch_16_games_per_s": 23.59,
     "batch_32_games_per_s": 37.01,
     "batch_64_games_per_s": 43.78,
     "batch_128_games_per_s": 62.38
   },
-  "new_contract": "precision-aware loader with per-policy observation quantization and D1 backend identity",
-  "batch_sizes": [32, 64, 128, 256, 512],
-  "note": "A9.4 implementation preserves the sequential reference; a fresh 2048-game GPU panel remains a required promotion gate."
+  "note": "The fresh 2048-game panel is complete. A full 32/64/128/256/512 same-manifest sweep was not rerun in this bounded campaign."
 }
