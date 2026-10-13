@@ -1,3 +1,4 @@
+import {publicMoveDisabled, publicMoveTarget} from './public_request_moves.mjs';
 // Development-only interaction corpus: battles that combine landed mechanic
 // families so their ordering, request-mask and RNG interactions are compared
 // against the pinned reference at every decision boundary.
@@ -76,6 +77,7 @@ const requestDetail = (session, side) => {
     const info = req.active?.[slot];
     const forced = Boolean(req.forceSwitch?.[slot]);
     if (!p) return {present: false, requires_replacement: forced, can_mega: false, moves: []};
+    if (!info) return {present: !p.fainted, requires_replacement: forced, can_mega: false, trapped: false, maybe_trapped: false, moves: []};
     const locked = p.getLockedMove();
     if (locked === 'recharge') {
       return {present: !p.fainted, requires_replacement: forced, can_mega: false, locked_recharge: true, trapped: true, maybe_trapped: false, moves: []};
@@ -88,7 +90,7 @@ const requestDetail = (session, side) => {
     }
     return {present: !p.fainted, requires_replacement: forced, can_mega: Boolean(info?.canMegaEvo),
       trapped: Boolean(info?.trapped), maybe_trapped: Boolean(info?.maybeTrapped),
-      moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp, disabled: Boolean(m.disabled), target: m.target}))};
+      moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp, disabled: publicMoveDisabled(info, m), target: publicMoveTarget(info, m)}))};
   });
   const bench = side.pokemon.map((p, i) => [p, i]).filter(([p]) => !p.fainted && !side.active.includes(p)).map(([p]) => roster(p));
   return {kind, slots, bench, preview: []};

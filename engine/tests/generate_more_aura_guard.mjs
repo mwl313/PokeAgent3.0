@@ -2,6 +2,7 @@
 // abilities, generated from the pinned reference. Merged into
 // engine/data/turn-fixtures.json by scripts/export_engine_data.mjs.
 import fs from 'node:fs';
+import {publicMoveDisabled,publicMoveTarget} from './public_request_moves.mjs';
 import {createRequire} from 'node:module';
 import {ReferenceSession, verifyReference, FORMAT, ORACLE_COMMIT} from '../reference.mjs';
 const require = createRequire(import.meta.url);
@@ -62,9 +63,10 @@ const compact = session => ({turn: session.battle.turn, rng_seed: session.battle
         const info = req.active?.[slot];
         const forced = Boolean(req.forceSwitch?.[slot]);
         if (!p) return {present: false, requires_replacement: forced, can_mega: false, moves: []};
+        if (!info) return {present: !p.fainted, requires_replacement: forced, can_mega: false, trapped: false, maybe_trapped: false, moves: []};
         return {present: !p.fainted, requires_replacement: forced, can_mega: Boolean(info?.canMegaEvo),
           trapped: Boolean(info?.trapped), maybe_trapped: Boolean(info?.maybeTrapped),
-          moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp, disabled: Boolean(m.disabled), target: m.target}))};
+          moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp, disabled: publicMoveDisabled(info,m), target: publicMoveTarget(info,m)}))};
       });
       const bench = s.pokemon.map((p, i) => [p, i]).filter(([p]) => !p.fainted && !s.active.includes(p)).map(([p]) => roster(p));
       return {kind, slots, bench, preview: []};

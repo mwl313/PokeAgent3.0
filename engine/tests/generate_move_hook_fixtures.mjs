@@ -356,6 +356,7 @@ const capture = session => {
         item: p.item ? ids.items[p.item] : 0,
         types: p.types.map(t => ids.types[toID(t)] ?? 0),
         pp: p.moveSlots.map(m => m.pp),
+        // Privileged World debugging only; never the public request oracle.
         disabled: p.moveSlots.map(m => Boolean(m.disabled)),
         volatiles: Object.keys(p.volatiles).map(id => ids.conditions[id]).sort((a, b) => a - b),
       })),

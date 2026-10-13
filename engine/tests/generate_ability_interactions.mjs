@@ -133,6 +133,7 @@ const compact = session => {
         previous_item: ids.items[p.lastItem] ?? 0,
         types: p.types.map(t => ids.types[toID(t)] ?? 0),
         pp: p.moveSlots.map(m => m.pp),
+        // Privileged World debugging only; never the public request oracle.
         disabled: p.moveSlots.map(m => Boolean(m.disabled)),
         volatiles: Object.keys(p.volatiles).map(volatileId).sort((a, c) => a - c),
       })),

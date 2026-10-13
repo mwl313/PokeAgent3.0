@@ -150,6 +150,27 @@ impl BattleState {
         actions: &[AtomicAction],
     ) -> Result<StepResult> {
         self.validate_choice(side, actions)?;
+        // A hidden Imprison move can be advertised to the last active slot,
+        // but Side.chooseMove rejects it and emits a revised request before
+        // committing either choice or consuming RNG. The native batch/actor
+        // protocol does not yet implement that retry transaction. Fail closed
+        // instead of accepting it and substituting an execution-time failure.
+        for action in actions {
+            if action.kind != ActionKind::Move || action.move_slot == NO_SLOT {
+                continue;
+            }
+            let request = &self.requests[side.index()].slots[action.own_slot as usize];
+            if request.locked_move.is_some() || request.locked_recharge {
+                continue;
+            }
+            let roster = self.sides[side.index()].active[action.own_slot as usize].unwrap();
+            let mv = &self.sides[side.index()].pokemon[roster as usize].moves[action.move_slot as usize];
+            if mv.disabled && mv.hidden && request.last_active {
+                return Err(EngineError::Unsupported(
+                    "Imprison hidden-choice rejection requires player re-request transaction".into(),
+                ));
+            }
+        }
         let i = side.index();
         if let Some(trace) = &mut self.trace {
             trace.actions.push(TraceEntry {

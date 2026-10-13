@@ -1,3 +1,4 @@
+import {publicMoveDisabled, publicMoveTarget} from './public_request_moves.mjs';
 // Development-only interaction corpus for the rampage lock
 // (`conditions:lockedmove`: Outrage / Thrash / Petal Dance / Raging Fury).
 //
@@ -53,6 +54,7 @@ const requestDetail = (session, side) => {
     const info = req.active?.[slot];
     const forced = Boolean(req.forceSwitch?.[slot]);
     if (!p) return {present: false, requires_replacement: forced, can_mega: false, moves: []};
+    if (!info) return {present: !p.fainted, requires_replacement: forced, can_mega: false, trapped: false, maybe_trapped: false, moves: []};
     // Reference `getLockedMove()`: a charging, recharging or rampaging Pokémon
     // is served exactly one entry and refuses switches; `moveSlots` alone would
     // over-report the legal mask.
@@ -69,7 +71,7 @@ const requestDetail = (session, side) => {
     }
     return {present: !p.fainted, requires_replacement: forced, can_mega: Boolean(info?.canMegaEvo),
       trapped: Boolean(info?.trapped), maybe_trapped: Boolean(info?.maybeTrapped),
-      moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp, disabled: Boolean(m.disabled), target: m.target}))};
+      moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp, disabled: publicMoveDisabled(info, m), target: publicMoveTarget(info, m)}))};
   });
   const bench = side.pokemon.map((p, i) => [p, i])
     .filter(([p]) => !p.fainted && !side.active.includes(p)).map(([p]) => roster(p));

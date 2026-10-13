@@ -1,3 +1,4 @@
+import {publicMoveDisabled, publicMoveTarget} from './public_request_moves.mjs';
 // Shared, development-only fixture scaffolding for the `generate_more_*.mjs`
 // corpus generators. It never runs in the engine path: the pinned Showdown
 // checkout is only used to record reference decision boundaries at generation
@@ -59,6 +60,7 @@ export function createScaffold() {
       const info = req.active?.[slot];
       const forced = Boolean(req.forceSwitch?.[slot]);
       if (!p) return {present: false, requires_replacement: forced, can_mega: false, moves: []};
+    if (!info) return {present: !p.fainted, requires_replacement: forced, can_mega: false, trapped: false, maybe_trapped: false, moves: []};
       return {present: !p.fainted, requires_replacement: forced, can_mega: Boolean(info?.canMegaEvo),
         trapped: Boolean(info?.trapped), maybe_trapped: Boolean(info?.maybeTrapped),
         moves: p.moveSlots.map((m, i) => {
@@ -70,8 +72,8 @@ export function createScaffold() {
           // belongs to this move slot (a locked or all-disabled request
           // substitutes its own list, e.g. Struggle).
           const served = info?.moves?.[i];
-          const target = served && served.id === m.id ? served.target ?? m.target : m.target;
-          return {id: ids.moves[m.id], pp: m.pp, disabled: Boolean(m.disabled), target};
+          const target = publicMoveTarget(info, m);
+          return {id: ids.moves[m.id], pp: m.pp, disabled: publicMoveDisabled(info, m), target};
         })};
     });
     const bench = side.pokemon.map((p, i) => [p, i])

@@ -111,3 +111,40 @@ fn public_type_reversion_is_visible_on_reentry() {
     assert_eq!(state.knowledge[0].pokemon[actor.roster as usize].types, original);
     assert_eq!(state.knowledge[1].pokemon[actor.roster as usize + 6].types, original);
 }
+
+#[test]
+fn hidden_imprison_choice_cannot_commit_without_reference_rerequest_protocol() {
+    let dex = Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap();
+    let body:serde_json::Value=serde_json::from_str(include_str!("../../data/more_interactions.json")).unwrap();
+    let fixture=body["fixtures"].as_array().unwrap().iter().find(|f|f["name"]=="imprison_shared_pool").unwrap();
+    let teams:[Team;2]=serde_json::from_value(fixture["teams"].clone()).unwrap();
+    let mut state=BattleState::reset(&dex,[&teams[0],&teams[1]],serde_json::from_value(fixture["seed"].clone()).unwrap(),[0,1]).unwrap();
+    for step in fixture["steps"].as_array().unwrap().iter().take(4) {
+        state.step(&dex,serde_json::from_value(step["side"].clone()).unwrap(),
+            &serde_json::from_value::<Vec<AtomicAction>>(step["actions"].clone()).unwrap()).unwrap();
+    }
+    let request=state.observe(SideId::P2).request;
+    let first=*request.candidates(&[]).unwrap().iter().find(|a|a.kind==ActionKind::Move && a.move_slot==255).unwrap();
+    let protect=*request.candidates(&[first]).unwrap().iter().find(|a|a.kind==ActionKind::Move && a.move_slot==1).unwrap();
+    let before=state.snapshot().unwrap();
+    assert!(matches!(state.step(&dex,SideId::P2,&[first,protect]),Err(EngineError::Unsupported(_))));
+    assert_eq!(before,state.snapshot().unwrap());
+}
+
+#[test]
+fn replacement_view_has_no_inherited_move_mask() {
+    let dex = Dex::load(Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))).unwrap();
+    let body:serde_json::Value=serde_json::from_str(include_str!("../../data/more_witness_tail.json")).unwrap();
+    let fixture=body["fixtures"].as_array().unwrap().iter().find(|f|f["name"]=="witness_emergencyexit_switches_at_half_hp_8500").unwrap();
+    let teams:[Team;2]=serde_json::from_value(fixture["teams"].clone()).unwrap();
+    let mut state=BattleState::reset(&dex,[&teams[0],&teams[1]],serde_json::from_value(fixture["seed"].clone()).unwrap(),[0,1]).unwrap();
+    for step in fixture["steps"].as_array().unwrap().iter().take(8) {
+        state.step(&dex,serde_json::from_value(step["side"].clone()).unwrap(),
+            &serde_json::from_value::<Vec<AtomicAction>>(step["actions"].clone()).unwrap()).unwrap();
+    }
+    let before=state.snapshot().unwrap();
+    let request=state.observe(SideId::P1).request;
+    assert_eq!(request.kind,RequestKind::Replacement);
+    assert!(request.slots.iter().all(|slot|slot.moves.is_empty()));
+    assert_eq!(before,state.snapshot().unwrap());
+}

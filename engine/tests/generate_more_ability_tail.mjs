@@ -1,3 +1,4 @@
+import {publicMoveDisabled, publicMoveTarget} from './public_request_moves.mjs';
 // Differential corpus for the Moody ability: the residual pass samples one
 // stat below +6 to raise by two and a different stat above -6 to drop by one,
 // consuming one `battle.sample` draw per non-empty pool.
@@ -50,10 +51,11 @@ const requestDetail = (session, side) => {
     const info = req.active?.[slot];
     const forced = Boolean(req.forceSwitch?.[slot]);
     if (!p) return {present: false, requires_replacement: forced, can_mega: false, moves: []};
+    if (!info) return {present: !p.fainted, requires_replacement: forced, can_mega: false, trapped: false, maybe_trapped: false, moves: []};
     return {present: !p.fainted, requires_replacement: forced, can_mega: Boolean(info?.canMegaEvo),
       trapped: Boolean(info?.trapped), maybe_trapped: Boolean(info?.maybeTrapped),
       moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp,
-        disabled: Boolean(m.disabled), target: m.target}))};
+        disabled: publicMoveDisabled(info, m), target: publicMoveTarget(info, m)}))};
   });
   const bench = side.pokemon.map((p, i) => [p, i])
     .filter(([p]) => !p.fainted && !side.active.includes(p)).map(([p]) => roster(p));

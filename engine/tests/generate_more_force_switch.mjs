@@ -1,3 +1,4 @@
+import {publicMoveDisabled, publicMoveTarget} from './public_request_moves.mjs';
 // Development-only corpus for the force-switch (phazing) family: Roar,
 // Whirlwind, Dragon Tail and Circle Throw. The main move generator excludes
 // `forceSwitch` moves because the drag-in and the mid-turn switch request need
@@ -120,9 +121,10 @@ const requestDetail = (session, side) => {
     const info = req.active?.[slot];
     const forced = Boolean(req.forceSwitch?.[slot]);
     if (!p) return {present: false, requires_replacement: forced, can_mega: false, moves: []};
+    if (!info) return {present: !p.fainted, requires_replacement: forced, can_mega: false, trapped: false, maybe_trapped: false, moves: []};
     return {present: !p.fainted, requires_replacement: forced, can_mega: Boolean(info?.canMegaEvo),
       trapped: Boolean(info?.trapped), maybe_trapped: Boolean(info?.maybeTrapped),
-      moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp, disabled: Boolean(m.disabled), target: m.target}))};
+      moves: p.moveSlots.map(m => ({id: ids.moves[m.id], pp: m.pp, disabled: publicMoveDisabled(info, m), target: publicMoveTarget(info, m)}))};
   });
   // Reference switch destinations are positions in the request team order,
   // which after preview is the pick order. The native request reports stable

@@ -11,6 +11,7 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {ReferenceSession, verifyReference} from '../reference.mjs';
+import {outboundRequests} from './p1_reference_probe.mjs';
 
 const root = new URL('../../', import.meta.url);
 const data = JSON.parse(fs.readFileSync(new URL('engine/data/dex.json', root), 'utf8'));
@@ -31,13 +32,17 @@ const requestDetail = (session, side) => {
   if (side.requestState === 'teampreview') {
     return {kind: side.isChoiceDone() ? 'Wait' : 'Preview', slots: [], bench: [], preview: [0, 1, 2, 3, 4, 5]};
   }
-  const req = side.activeRequest ?? {};
+  // Independent verifier: read the serialized outbound player payload, not
+  // the generator adapter or privileged moveSlots disabled state.
+  const req = outboundRequests(session)[side.id] ?? {};
   const kind = req.wait || side.isChoiceDone() ? 'Wait' : side.requestState === 'switch' ? 'Replacement' : 'Normal';
   const slots = [0, 1].map(slot => {
     const p = side.active[slot];
     const info = req.active?.[slot];
     const forced = Boolean(req.forceSwitch?.[slot]);
     if (!p) return {present: false, requires_replacement: forced, can_mega: false, moves: []};
+    if (!info) return {present: !p.fainted, requires_replacement: forced, can_mega: false,
+      trapped: false, maybe_trapped: false, moves: []};
     // Reference `getLockedMove()`: a charging or recharging Pokemon is served
     // exactly one entry and refuses switches; `moveSlots` alone would
     // over-report the legal mask. Keep this in sync with the charge generator.
@@ -55,7 +60,7 @@ const requestDetail = (session, side) => {
         moves: [{id: ids.moves[locked], pp: slotData?.pp ?? 0, disabled: false,
           target: slotData?.target ?? 'normal'}]};
     }
-    // World move list and raw disable flag: the served choice legality. The
+    // Stable owner-known move identity with the serialized public mask. The
     // target is the *served* value (`Pokemon#getMoves` rewrites a non-Ghost
     // Curse to `self`, a Heal-Blocked Pollen Puff to `adjacentFoe` and Tera
     // Starstorm to `allAdjacentFoes`), which is what `Side#chooseMove` checks -
@@ -66,7 +71,9 @@ const requestDetail = (session, side) => {
       moves: p.moveSlots.map((m, i) => {
         const served = info?.moves?.[i];
         const target = served && served.id === m.id ? served.target ?? m.target : m.target;
-        return {id: ids.moves[m.id], pp: m.pp, disabled: Boolean(m.disabled), target};
+        const sent = info?.moves?.find(entry => entry.id === m.id);
+        return {id: ids.moves[m.id], pp: m.pp, disabled: info ? !sent || sent.disabled === true : false,
+          target: sent?.target ?? m.target};
       })};
   });
   const bench = side.pokemon.map((p, i) => [p, i])
@@ -140,15 +147,63 @@ function compare(label, actual, expected) {
 
 let checkedSteps = 0;
 let checkedFixtures = 0;
+const publicCoverage = {};
+const witness = (kind, fixture, boundary, detail) => {
+  const entry = publicCoverage[kind] ??= {count: 0, first: {fixture, boundary, ...detail}};
+  entry.count++;
+};
 for (const fixture of corpus.fixtures) {
   const session = new ReferenceSession({
     teams: [sets(fixture.teams[0], 0), sets(fixture.teams[1], 1)], seed: fixture.seed,
   });
+  let previousImprison = false;
+  const seenActive = new Set(), leftField = new Set();
+  function inspectPublic(boundary) {
+    const sent = outboundRequests(session);
+    const anyImprison = session.battle.sides.some(s => s.active.some(p => p && !p.fainted && p.volatiles.imprison));
+    if (!previousImprison && anyImprison) witness('imprison_activation', fixture.name, boundary, {});
+    if (previousImprison && !anyImprison) witness('imprison_deactivation', fixture.name, boundary, {});
+    previousImprison = anyImprison;
+    for (const side of session.battle.sides) {
+      const req = sent[side.id];
+      const activeNames = new Set(side.active.filter(Boolean).map(p => p.name));
+      for (const key of seenActive) if (key.startsWith(side.id + ':') && !activeNames.has(key.slice(3))) leftField.add(key);
+      for (const [slot,pokemon] of side.active.entries()) {
+        if (!pokemon || pokemon.fainted) continue;
+        const key=side.id + ':' + pokemon.name;
+        if (leftField.delete(key)) witness('switch_reentry', fixture.name, boundary, {side:side.id,slot});
+        seenActive.add(key);
+        const info=req?.active?.[slot];
+        if (!info) continue;
+        const foes=session.battle.sides[1-side.n].active;
+        const foeImprison=foes.some(p=>p && !p.fainted && p.volatiles.imprison);
+        const last=pokemon.isLastActive();
+        for (const move of info.moves ?? []) {
+          assert.ok(move.disabled == null || typeof move.disabled === 'boolean', 'outbound must not contain hidden');
+          if (move.id==='struggle') witness('struggle',fixture.name,boundary,{side:side.id,slot});
+          if (move.id==='recharge') witness('recharge',fixture.name,boundary,{side:side.id,slot});
+          const raw=pokemon.moveSlots.find(m=>m.id===move.id);
+          if (!raw) continue;
+          if (raw.disabled==='hidden' && raw.pp>0 && !pokemon.getLockedMove()) {
+            assert.equal(move.disabled,!last,`${fixture.name} ${boundary} outbound hidden normalization`);
+            witness(last?'imprison_last_active':'imprison_normal_active',fixture.name,boundary,{side:side.id,slot,move:move.id});
+            if (side.active.filter(p=>p && !p.fainted).length===1) witness('imprison_only_survivor',fixture.name,boundary,{side:side.id,slot,move:move.id});
+          }
+          if (foeImprison && !raw.disabled) witness('imprison_nonshared_move',fixture.name,boundary,{side:side.id,slot,move:move.id});
+          if (raw.disabled===true) witness('unrelated_disable',fixture.name,boundary,{side:side.id,slot,move:move.id});
+          if (pokemon.getLockedMove()) witness('locked_move',fixture.name,boundary,{side:side.id,slot,move:move.id});
+        }
+        if (!foeImprison) witness('normal_active',fixture.name,boundary,{side:side.id,slot});
+      }
+    }
+  }
   try {
+    inspectPublic(-1);
     compare(`${fixture.name}: initial`, compact(session), fixture.initial);
     for (const [stepIndex, step] of fixture.steps.entries()) {
       const result = session.choose(step.side === 'P1' ? 'p1' : 'p2', step.command);
       assert.ok(result.accepted, `${fixture.name}: rejected ${step.command}`);
+      inspectPublic(stepIndex);
       compare(
         `${fixture.name}: step ${stepIndex} (${step.command})`,
         compact(session),
@@ -162,3 +217,4 @@ for (const fixture of corpus.fixtures) {
   }
 }
 console.log(`verified ${checkedFixtures}/${corpus.fixtures.length} fixtures / ${checkedSteps} decision boundaries against the pinned reference`);
+console.log(JSON.stringify({public_request_coverage:publicCoverage}));

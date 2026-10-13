@@ -660,6 +660,13 @@ impl BattleState {
             mega_used: own.mega_used,
         };
         let mut request = self.requests[side.index()].clone();
+        if request.kind != crate::actions::RequestKind::Normal {
+            for slot in &mut request.slots {
+                slot.moves.clear();
+                slot.locked_move = None;
+                slot.locked_recharge = false;
+            }
+        }
         // `hidden` is server metadata (notably Imprison), not a player fact.
         // Expose exactly the disabled status served by getMoves/restrictData.
         // Physical state and execution-time restriction checks stay untouched.
