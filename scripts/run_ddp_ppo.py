@@ -57,6 +57,69 @@ RANKS = [{"rank": 0, "numa": 0, "cpus": "0-15", "gpu": 0},
          {"rank": 1, "numa": 1, "cpus": "20-35", "gpu": 1}]
 
 
+def _publish_completed_rolling_boundary(args, store, published_keys):
+    """Publish a pair only after both ranks expose the same drained boundary.
+
+    Workers atomically replace their per-rank envelope after each iteration.  A
+    parent-side poll therefore must treat mismatched or partially-written files
+    as transient and never make either one resumable on its own.
+    """
+    if not args.rolling_checkpoint_root or not args.experimental_checkpoint:
+        return None
+    from agent.ppo.experimental_checkpoint import load_envelope
+    paths = {rank: Path(f"{os.path.abspath(args.experimental_checkpoint)}.rank{rank}") for rank in (0, 1)}
+    if any(not path.is_file() for path in paths.values()):
+        return None
+    try:
+        envelopes = {rank: load_envelope(str(path)) for rank, path in paths.items()}
+        a0, a1 = (envelopes[0].get("accounting", {}), envelopes[1].get("accounting", {}))
+        # Rows and natural-game counts are rank-local.  The boundary identity
+        # is the global iteration/clock (and cumulative optimizer step count).
+        if any(a0.get(field) != a1.get(field) for field in ("iteration", "committed_matches", "optimizer_steps")):
+            return None
+        if any(not e.get("collector_drain", {}).get("complete") or
+               int(e.get("collector_drain", {}).get("in_flight_battles", -1)) != 0
+               for e in envelopes.values()):
+            return None
+        if envelopes[0].get("rank_digests") != envelopes[1].get("rank_digests"):
+            return None
+        if envelopes[0].get("source_sha") != envelopes[1].get("source_sha") or \
+           envelopes[0].get("dataset_manifest_hash") != envelopes[1].get("dataset_manifest_hash") or \
+           envelopes[0].get("opponent_manifest") != envelopes[1].get("opponent_manifest"):
+            return None
+        committed = int(a0.get("committed_matches", -1))
+        iteration = int(a0.get("iteration", -1))
+        if committed < 0 or iteration < 0:
+            return None
+        key = (iteration, committed)
+        if key in published_keys:
+            return None
+        generation_name = f"iter-{committed:012d}"
+        for ready in store.generations_ready():
+            try:
+                if (ready / "manifest.json").read_text(encoding="utf-8").find(f'"generation": "{generation_name}"') >= 0:
+                    published_keys.add(key)
+                    return None
+            except OSError:
+                continue
+        manifest = store.publish(
+            generation_name,
+            {rank: path.read_bytes() for rank, path in paths.items()},
+            {"schema": "ppo-experimental-envelope-v1", "iteration_complete": True,
+             "world_size": 2, "iteration": iteration, "committed_matches": committed,
+             "dataset_manifest": os.path.abspath(args.dataset_manifest),
+             "dataset_manifest_hash": envelopes[0].get("dataset_manifest_hash"),
+             "source_sha": envelopes[0].get("source_sha"),
+             "precision_mode": args.precision_mode,
+             "ppo_epochs": int(args.epochs or envelopes[0].get("experiment", {}).get("ppo_epochs", 2))},
+        )
+        published_keys.add(key)
+        return manifest
+    except (OSError, RuntimeError, ValueError, KeyError, TypeError):
+        # A worker may be replacing the file or still completing its peer.
+        return None
+
+
 def parse_args(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--profile", default="", help="strict validated runtime profile")
@@ -855,6 +918,13 @@ def parent(args) -> None:
             procs.append((entry, subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT, env=env, cwd=ROOT)))
 
         deadline = time.time() + args.timeout * args.iterations + 300.0
+        rolling_store = None
+        published_rolling_keys = set()
+        if args.rolling_checkpoint_root:
+            if not args.experimental_checkpoint:
+                raise RuntimeError("--rolling-checkpoint-root requires --experimental-checkpoint")
+            from agent.ppo.storage_manager import CheckpointGenerationStore
+            rolling_store = CheckpointGenerationStore(os.path.abspath(args.rolling_checkpoint_root))
         while any(proc.poll() is None for _, proc in procs):
             # A failed correctness gate must not leave its peer blocked in a
             # collective until the full process-group timeout expires.
@@ -863,6 +933,8 @@ def parent(args) -> None:
             if time.time() > deadline:
                 failures.append("launcher watchdog timeout")
                 break
+            if rolling_store is not None:
+                _publish_completed_rolling_boundary(args, rolling_store, published_rolling_keys)
             time.sleep(1.0)
         stop_workers([proc for _, proc in procs])
         for entry, proc in procs:
@@ -894,23 +966,9 @@ def parent(args) -> None:
         with open(path) as handle:
             results.append(json.load(handle))
     if args.rolling_checkpoint_root:
-        if not args.experimental_checkpoint:
-            raise RuntimeError("--rolling-checkpoint-root requires --experimental-checkpoint")
         from agent.ppo.storage_manager import CheckpointGenerationStore
-        envelope_files = {rank: Path(f"{os.path.abspath(args.experimental_checkpoint)}.rank{rank}") for rank in (0, 1)}
-        if any(not path.is_file() for path in envelope_files.values()):
-            raise RuntimeError("rolling publication requires both verified rank envelopes")
         store = CheckpointGenerationStore(os.path.abspath(args.rolling_checkpoint_root))
-        store.publish(
-            f"iter-{int(results[0]['global_committed_matches']):012d}",
-            {rank: path.read_bytes() for rank, path in envelope_files.items()},
-            {"schema": "ppo-experimental-envelope-v1", "iteration_complete": True,
-             "world_size": 2, "iteration": int(results[0]["iterations"][-1]["iteration"]),
-             "committed_matches": int(results[0]["global_committed_matches"]),
-             "dataset_manifest": os.path.abspath(args.dataset_manifest),
-             "precision_mode": args.precision_mode,
-             "ppo_epochs": int(args.epochs or results[0]["config"].get("ppo_epochs", 2))},
-        )
+        _publish_completed_rolling_boundary(args, store, set())
     expected_execution = {
         "batch_cache": args.batch_cache,
         "compact_candidates": args.compact_candidates,

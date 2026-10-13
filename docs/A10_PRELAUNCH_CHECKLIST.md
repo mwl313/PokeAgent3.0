@@ -38,3 +38,12 @@ Current verdict: **BLOCKED / NOT VERIFIED for engine; storage infrastructure bou
 - [ ] Exhaustive exact-pool closure/action differential validation and fully varied all-team natural campaign.
 
 Current verdict: **BLOCKED for exact-pool engine PASS; storage integration bounded-ready**.
+
+## A10-P3 acceptance (2026-10-13)
+
+- [x] One-time M-B/M-C refresh captured; no new eligible teams; P0 pool frozen at 1,220.
+- [x] Varied all-pool native campaign: 19,520/19,520 completed, zero operational errors.
+- [x] Rolling checkpoint publication tested at live iteration boundaries; three generations retained with disk guard.
+- [x] Bounded 4,096-match two-V100 PPO smoke passed recompute and rank digest gates.
+- [ ] Global full move/ability/dynamic closure gate: blocked (29 moves, 23 abilities, 11 callers).
+- [ ] Production launch: requires coverage closure and explicit authorization.

@@ -9,3 +9,7 @@ The disk guard measures actual bytes before serialization, counts a temporary pl
 ## Adaptive capacity and launcher integration
 
 Filesystem free capacity is the primary guard. `project_quota_bytes` is optional and unset by default; an expected post-install free-space target is informational. Before a generation, the launcher measures free bytes, estimates temporary plus final generation size, adds the configured concurrent-writer allowance, and requires the minimum reserve. `--rolling-checkpoint-root` publishes the two experimental rank envelopes as one verified generation; the flag is opt-in and leaves normal production behavior unchanged.
+
+## A10-P3 publication rule
+
+When enabled with `--rolling-checkpoint-root`, the launcher parent polls the atomically replaced rank envelopes while workers remain active. A generation is published only when both ranks report the same iteration, committed-match clock, optimizer-step boundary, source/dataset/opponent provenance, complete collector drain, and identical model/optimizer digests. DDP communicators are recreated on restore. Three complete generations are retained; the filesystem reserve and concurrent-write allowance remain enforced.

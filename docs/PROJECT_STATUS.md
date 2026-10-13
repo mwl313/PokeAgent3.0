@@ -126,3 +126,7 @@ The P0 1,220-team manifest remains unchanged. Rust 1.90/Cargo 1.90 was restored 
 ## A10-P2 status (2026-10-12)
 
 Exact-pool bounded native probes are clean (1,220/1,220 trajectory completions; 332/332 targeted new-team seat-swapped games), but the stricter pool-scoped closure/action/differential acceptance gate remains NOT VERIFIED. Adaptive generation checkpoint storage is integrated into the DDP launcher via an opt-in flag with dynamic filesystem guards. No PPO training started.
+
+## A10-P3 status (2026-10-13)
+
+The one-time VGCPastes refresh produced no additions. All 1,220 frozen teams completed 19,520 varied native games with zero operational errors. Global engine readiness remains blocked by 29 moves, 23 abilities, and 11 dynamic-closure callers. The opt-in DDP launcher now publishes verified rolling checkpoint generations at live iteration boundaries with three-generation retention and adaptive filesystem guards. A bounded 4,096-match two-V100 PPO-2 smoke passed recompute and DDP digest gates; no production A10 training started.

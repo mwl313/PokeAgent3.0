@@ -119,3 +119,7 @@ A live-source comparison against the 2026-10-06 MC463/MB861 boundary found 97 ne
 ## A10-P1 engine gate
 
 The proposed 1,220-team pool retains its P0 identity. Static catalog IDs are present in the native dex, but pool-specific form execution, reachable closure, and all-team natural validation remain unverified. It must not replace the v3 engine dataset or become runnable until those gates pass.
+
+## A10-P3 refresh (2026-10-13)
+
+The final authorized M-C/M-B refresh remained MC584/MB861 with no new eligible rows. The frozen `a10-p0-proposed-20261013` pool therefore remains 1,220 teams and its manifest is unchanged (`1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb`).

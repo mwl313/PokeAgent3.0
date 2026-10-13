@@ -1,0 +1,12 @@
+{
+  "schema": "a10-p3-vgcpastes-refresh-v1",
+  "captured_at_utc": "2026-10-13T02:46:33Z",
+  "sources": {
+    "M-C": {"gid": 2001945654, "latest_id": "MC584", "rows": 584, "ev_yes": 521, "added_ids": [], "changed_metadata": [], "link_changes": [], "csv_sha256": "2552cd9ed7f3c8dc530d723cc2bec21c955a804bf7f2670f8c355781a312effc"},
+    "M-B": {"gid": 1458357160, "latest_id": "MB861", "rows": 861, "ev_yes": 783, "added_ids": [], "changed_metadata": [], "link_changes": [], "csv_sha256": "see sheet_snapshot.json"}
+  },
+  "new_eligible_candidates": 0,
+  "new_pokepastes_fetched": 0,
+  "duplicate_link_groups": [["MC533", "MC497"], ["MB843", "MB791"]],
+  "final_dataset": {"path": "data/teams/a10-p0-proposed-20261013", "teams": 1220, "manifest_sha256": "1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb", "frozen": true}
+}
