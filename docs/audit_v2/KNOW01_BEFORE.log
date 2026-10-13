@@ -1,0 +1,21 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running unittests src/lib.rs (/home/minidc/Desktop/PokeAgent3.0-V2/.audit-target/debug/deps/pa3_engine-82c9718762a72ec4)
+
+running 2 tests
+
+thread 'battle::public_type_tests::public_set_type_updates_both_viewers_without_revealing_identity' panicked at engine/src/battle/public_type_tests.rs:27:5:
+assertion `left == right` failed
+  left: [20, 10]
+ right: [20]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test battle::public_type_tests::public_set_type_updates_both_viewers_without_revealing_identity ... FAILED
+test battle::public_type_tests::unsupported_empty_type_change_is_atomic ... ok
+
+failures:
+
+failures:
+    battle::public_type_tests::public_set_type_updates_both_viewers_without_revealing_identity
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.61s
+
+error: test failed, to rerun pass `--lib`

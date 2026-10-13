@@ -1,0 +1,31 @@
+﻿test_id,phase,area,fixture,expected_result,execution_mode,release_blocking
+T-DATA-01,P0,Dataset identity,Read actual rank resolved profile + NativeEngine team_count + 1220 SHA,"rank0==rank1, team_count=1220, manifest SHA pinned",LOCAL_RANKS,YES
+T-OPS-03,P0,Archival,Snapshot old process checkpoint SHA files and independent evaluation PID,"Historical files unmodified, explicit PPO-only stop receipt",LOCAL,YES
+T-ENG-01,P1,Engine,Pinned Showdown oracle comparison across reachable effects,No silent unsupported effects; representative fixture parity,RUST_ORACLE,YES
+T-KNOW-01,P1,Public typing,Soak Magic Powder Double Shock Burn Up Protean Libero,Observed types same as permitted public rules,RUST_FIXTURE,YES
+T-KNOW-02,P1,Type reversion,"type change → switch out → reenter, both side views",No stale public type or hidden data leak,RUST_FIXTURE,YES
+T-KNOW-03,P1,Hidden information,Imprison twin states with same public state and legal actions,Bit-identical policy observation & candidate; distribution identical,RUST_PY,YES
+T-KNOW-04,P1,Bench disabled,disabled on field → switch → bench → reenter,No historical restriction marked current,RUST_FIXTURE,YES
+T-KNOW-05,P1,Identity,Illusion and Transform public/private divergence,Visible knowledge changes correctly without actual identity leak,RUST_FIXTURE,YES
+T-KNOW-06,P1,Duration,Trick Room weather terrain Tailwind screens Mega Mimicry,Existing correct code behavior preserved,RUST_FIXTURE,YES
+T-OBS-01,P2,Ragged,Nonempty all 5 sections through observation→buffer→model,Changing permitted ragged feature changes model input; all survive,PY_RUST,YES
+T-OBS-02,P2,Known,Known value=0 / known=false / true nonzero,Distinct appropriate features for FP32 and Mode D,PY,YES
+T-OBS-03,P2,FP16,"Event change [-6,-1,0,1,6], HP small deltas",Meaningful magnitudes and signedness distinguishable,RUST_PY_FP16,YES
+T-OBS-04,P2,Repertoire,Reveal moves in slot order different from real slot index,Historical reveals preserved but no unjustified true-slot claim,RUST_PY,YES
+T-OBS-05,P2,Normalization,All 50 continuous features representative min/max,Finite nonaliased meaningful values and versioned scale,RUST_PY_FP16,YES
+T-OBS-06,P2,Categorical IDs,Scan all emitted valid IDs and vocab,"No invalid clamp, correct category namespace",PY_RUST,YES
+T-OPS-01,P2,Schema,Construct wrong version/mismatched schema in all ingestion paths,Fail closed with clear error; never silently default,PY,YES
+T-ACT-01,P3,Actor reference,Roster indices 4 & 5 active at positions 0 & 1,Actor and move token point to 4 & 5 (all paths),PY_RUST,YES
+T-ACT-02,P3,Target signed,"All [-2,-1,0,1,2] typed and packed","Unique canonical target identities, scores equal within tolerance",PY_RUST,YES
+T-ACT-03,P3,Target feature,Change target HP and switch destination state,Candidate features respond with documented architecture,PY,YES
+T-ACT-04,P3,Legality,Preview normal replacement including Mega and forced switch,Exhaustive candidate sets and prefix equivalence,PY_RUST,YES
+T-PPO-04,P3,Rolling,Partial slot refill with live unrelated assignments,Other slots stable or rolling explicitly disabled,PY,YES
+T-PPO-01,P4,PPO reference,"Terminal 2-sided matches, draw, bootstrap, singleton",GAE/rewards match independent exact reference,PY_RUST,YES
+T-PPO-02,P4,Recompute,Actor stored rows & learner recompute with Mode D,Semantic hashes and logprob reference match with legitimate tolerance,CUDA,YES
+T-PPO-03,P4,DDP,Real 2-V100 4096 game smoke,"Model/Adam digests, gradient finite, gates pass",CUDA_2RANK,YES
+T-STAT-01,P4,Counters,Wins loss draw selfsame team seat coverage,2 appearances per match; score reconciliation; 1220 rows,PY,YES
+T-STAT-02,P4,Stats resume,"Commit iteration twice, rollback then replay",Idempotent by iteration/generation and rank,PY_LOCAL,YES
+T-STAT-03,P4,Reporting,Dashboard CLI on fixture ground truth,CSV top bottom matchup reproducible; confidence intervals,PY,YES
+T-EVAL-01,P4,Generalization,Separate unseen roster groups not PPO training,No evaluation team bleed into training,PY_DATA,NO
+T-EVAL-02,P4,CDF,"cdf[-1]<1 and padding tail, identical fixed uniform",Never choose padding; fixture deterministic,PY,NO
+T-OPS-02,P5,Scratch,Compare saved new checkpoint to old + optimizer initial state,"No old weight imported, steps=0, run ID new",LOCAL_2RANK,YES

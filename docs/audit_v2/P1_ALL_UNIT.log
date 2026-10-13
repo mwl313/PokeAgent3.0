@@ -1,0 +1,17 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.05s
+     Running unittests src/lib.rs (/home/minidc/Desktop/PokeAgent3.0-V2/.audit-target/debug/deps/pa3_engine-82c9718762a72ec4)
+
+running 10 tests
+test items::tests::mega_stones_classify_only_with_the_exact_declaration ... ok
+test observation::tests::batch_high_water_pool_hides_inactive_rows_and_retains_ragged_storage ... ok
+test battle::type_conversion_tests::cold_move_metadata_preserves_canonical_exclusions ... ok
+test battle::public_type_tests::imprison_hidden_disable_cannot_change_served_last_active_observation ... ok
+test battle::public_type_tests::public_type_reversion_is_visible_on_reentry ... ok
+test battle::public_type_tests::stale_bench_disabled_does_not_become_a_current_public_restriction ... ok
+test battle::public_type_tests::public_set_type_updates_both_viewers_without_revealing_identity ... ok
+test battle::public_type_tests::unsupported_empty_type_change_is_atomic ... ok
+test battle::type_conversion_tests::synchronize_failed_reflection_keeps_activation_but_allocates_no_source_status ... ok
+test battle::type_conversion_tests::all_seven_type_callbacks_match_pinned_primary_primitives ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 38.25s
+

@@ -1,0 +1,3 @@
+# Agent prompt — Phase 2
+
+Read the root `AGENT_MASTER_PROMPT.md`, `04_OBSERVATION_V2_CONTRACT.md` and `09_TEST_MATRIX.csv`. Implement `OBS-01..06`, `OPS-01`: five ragged groups reaching the actual 320d neural model, all known masks, all 50 float feature scale audit under Mode D, signed event ±1/±6 preserved, weight and range handling, strict categorical ID and schema checks, typed/packed/SoA/rollout/eval parity. Protect player-only/public knowledge. Freeze V2 hashes and tests; fail closed on mismatched V1 wire or checkpoint. Produce feature ledger, tensor hashes, negative tests, benchmark and PHASE_2_EXIT_REPORT. Do not launch training.

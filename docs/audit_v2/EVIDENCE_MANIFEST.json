@@ -1,0 +1,44 @@
+{
+  "inventory_and_dossier_source_sha": "55d3b0a5e7ae776b53b4278add5acd2904f93983",
+  "tested_runtime_source_sha": "0492577d2ae611b3720f52f57939422b0148e103",
+  "runtime_note": "Later source commit changes only inventory/status scripts; Rust runtime unchanged.",
+  "production_started": false,
+  "phase_status": {
+    "P0": "inventory/archive complete",
+    "P1": "partial; release blocked",
+    "P2-P5": "not started"
+  },
+  "test_runs": {
+    "P1_ALL_UNIT.log": {
+      "passed": 10,
+      "failed": 0
+    },
+    "P1_FINAL_REGRESSION.log": {
+      "passed": 19,
+      "failed": 0
+    },
+    "P1_ORACLE_RELEASE.log": {
+      "passed": 0,
+      "failed": 1,
+      "counterexample": "imprison_shared_pool decision 3 P2 slot 1"
+    }
+  },
+  "artifacts_sha256": {
+    "02_DEFECT_REGISTER.csv": "3b27b97b6a547996726f8bbaf8b43a6f68029f83b92ba31a5f39fef9088df14a",
+    "09_TEST_MATRIX.csv": "f5a25605e9b9dddfca81ea03d1297f303a3e58fc71c8d360eb7e23d6bccf9e45",
+    "EXACT_POOL_COVERAGE.log": "27b4bf4b8fe998f118ec48fd947eb29de83d3a179cf7df6833780883d6b74ad5",
+    "KNOW01_AFTER.log": "f5908bd30bd02bac4bb715e7e84079627b60f6f13de2f01955ed9865f2c7d056",
+    "KNOW01_BEFORE.log": "86799368eb040db524d835cfbcd9a3d13d1f8f7da489a132d6ae22d4d41a6d3f",
+    "KNOW02_BEFORE.log": "44bcf02f0da51ea85df4e63b04a02528c086bfa4afc6af4c1ccf350016d90c45",
+    "KNOW03_BEFORE.log": "0ccca1bf5fc76a56a151ec4bc08cd3369781d5d0ff1c0e663ecb0fc2f8c75698",
+    "P0_INVENTORY.json": "624965abd27f3da4829ed6f8e95acb58d6f5c155d08e684a2e9d09da7ad453fb",
+    "P0_PHASE_EXIT_REPORT.md": "38737628481197fa834119ad53097a03a0984e85e38a2814710543041eda72cb",
+    "P1_ALL_UNIT.log": "3fbd5f78ba1907bd74e208e36caf5b0f9c225ad0df93412c50ee52dc1b57d0e6",
+    "P1_FINAL_REGRESSION.log": "e649d9f5f1ae2748c0b43f5f4dcc84f8c819f4a3cbb48f5811e9ce3fab005268",
+    "P1_ORACLE.log": "0dcd46386373a9cb8cf8b1c21cce48eecf1bfa1a8d9a268de2d89ba5c3bb8044",
+    "P1_ORACLE_RELEASE.log": "8c70226958d3889f0a2fd12ef0a508c0a0d4fa273d00a1a8a4852a2e276d1d73",
+    "P1_PHASE_EXIT_REPORT.md": "cbffff2f98d973c059b5ada9f0ac8c3e6a5de4a939fe05e4636cb4765a596baf",
+    "P1_PRIMITIVES_AFTER.log": "ea99050245d391279d2209bbb087a412766c254af22a0c116bc8143ebd4349a7",
+    "P1_REGRESSION.log": "db7e2ebc4faedf1b915bd6fe0873b9520f4975321322e9b91143ef45f70db5d1"
+  }
+}

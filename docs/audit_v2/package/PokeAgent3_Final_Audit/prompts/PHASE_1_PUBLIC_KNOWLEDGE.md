@@ -1,0 +1,3 @@
+# Agent prompt — Phase 1
+
+Read the root `AGENT_MASTER_PROMPT.md`, `01_AUDIT_VERDICT_EVIDENCE.md` and `03_PHASED_EXECUTION_PLAN.md` P1. Implement/verify `KNOW-01..06`, `ENG-01`: deterministic Soak, Magic Powder, Double Shock, Burn Up, Protean/Libero typing fixtures, permanent Mega and Mimicry regression, switch-out and re-entry, Transform, Illusion, Imprison paired hidden-only information boundary, stale bench disabled flags, and reachable effects vs pinned Showdown oracle. Fix only failures actually reproduced, keep public knowledge distinct from world state and never leak private information. Produce reproducible before/after evidence, an engine oracle matrix, defect status updates and PHASE_1_EXIT_REPORT. Do not run new PPO.

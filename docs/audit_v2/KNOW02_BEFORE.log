@@ -1,0 +1,24 @@
+   Compiling pa3-engine v0.1.0 (/home/minidc/Desktop/PokeAgent3.0-V2/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.30s
+     Running unittests src/lib.rs (/home/minidc/Desktop/PokeAgent3.0-V2/.audit-target/debug/deps/pa3_engine-82c9718762a72ec4)
+
+running 1 test
+test battle::public_type_tests::public_type_reversion_is_visible_on_reentry ... FAILED
+
+failures:
+
+---- battle::public_type_tests::public_type_reversion_is_visible_on_reentry stdout ----
+
+thread 'battle::public_type_tests::public_type_reversion_is_visible_on_reentry' panicked at engine/src/battle/public_type_tests.rs:90:5:
+assertion `left == right` failed
+  left: [20]
+ right: [20, 10]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    battle::public_type_tests::public_type_reversion_is_visible_on_reentry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.56s
+
+error: test failed, to rerun pass `--lib`

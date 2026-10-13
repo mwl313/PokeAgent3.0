@@ -1,0 +1,3 @@
+# Agent prompt — Phase 3
+
+Read the root `AGENT_MASTER_PROMPT.md`, `05_ACTION_V2_CONTRACT.md` and `09_TEST_MATRIX.csv`. Implement `ACT-01..04` and optional `PPO-04`: canonical signed target decoding (all -2,-1,0,1,2), actor active-position→stable roster index, correct acting move/target/destination token, every conditional legal prefix and Mega/Struggle/replacement case. Prove Typed, Packed, Collector, Evaluator and RolloutBuffer candidate ordering/action identity and logit parity. Fix rolling assignment partial resets or fail-close disable feature. Complete before/after regression tests and PHASE_3_EXIT_REPORT. Do not launch PPO.

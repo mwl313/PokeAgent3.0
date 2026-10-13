@@ -1,0 +1,313 @@
+{
+  "legacy_policy_classification": "V1 historical only; prohibited as V2 initialization",
+  "latest_generation": "iter-000001400832-1791883571874674126",
+  "archive_verified_files": [
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/rolling/generations/iter-000001302528-1791879907652446477/rank0.pt",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/rolling/generations/iter-000001302528-1791879907652446477/rank0.pt",
+      "sha256": "74cfcf62b593b6c26e597ffb6075738c7790cccc8e96ce91a8c127b69a27cfa7"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/rolling/generations/iter-000001302528-1791879907652446477/rank1.pt",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/rolling/generations/iter-000001302528-1791879907652446477/rank1.pt",
+      "sha256": "788b4285142eeedbf837bf83aac4dbe3dfd698ec3fcb4e236a9939232e68264f"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/rolling/generations/iter-000001200128-1791878814312205908/rank0.pt",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/rolling/generations/iter-000001200128-1791878814312205908/rank0.pt",
+      "sha256": "4d6af5aab4748517fa74cae7970e79084731bebd7e28f38c8642fb0f47999745"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/rolling/generations/iter-000001200128-1791878814312205908/rank1.pt",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/rolling/generations/iter-000001200128-1791878814312205908/rank1.pt",
+      "sha256": "61989235ca10fee59add3e01cdb953bf5234c6d0a3f7ef3920e31fcf74e6d559"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/rolling/generations/iter-000001400832-1791883571874674126/rank0.pt",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/rolling/generations/iter-000001400832-1791883571874674126/rank0.pt",
+      "sha256": "eae57dff95e81cfb2c6db300eee93de44e4b9c5d2f0fce018ba47a465c60051b"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/rolling/generations/iter-000001400832-1791883571874674126/rank1.pt",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/rolling/generations/iter-000001400832-1791883571874674126/rank1.pt",
+      "sha256": "c4f184e6a9f8bad5f00c566a9d9de6d82d486f0b611f96de37b49178aac74219"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/rolling/generations/iter-000001302528-1791879907652446477/manifest.json",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/rolling/generations/iter-000001302528-1791879907652446477/manifest.json",
+      "sha256": "aee5eceb790e31158dfb8715000ef8c4f9c6c2ac4689c0192e0c7ffde5ced219"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/rolling/generations/iter-000001200128-1791878814312205908/manifest.json",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/rolling/generations/iter-000001200128-1791878814312205908/manifest.json",
+      "sha256": "b878bf5d5ca5cda73416d5513de3e03a95be5a5a33b0fe2eaac629c652fa49dd"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/rolling/generations/iter-000001400832-1791883571874674126/manifest.json",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/rolling/generations/iter-000001400832-1791883571874674126/manifest.json",
+      "sha256": "2fd9d48cf88c6b06774a2573b01966231a13ff6d11d75bb8f29864940d0d3c4f"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/evaluation/league_v2/policies/4bac091e4281059e552c066a20ad71054713ef40a3361572cecbd7928d42aa54.pt",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/evaluation/league_v2/policies/4bac091e4281059e552c066a20ad71054713ef40a3361572cecbd7928d42aa54.pt",
+      "sha256": "a515b175395dd254c8418228a892d52c54244b2ed94babfd6c603d498531624a"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/evaluation/league_v2/policies/76aea4330f11238e6d3905ab3b499c3c2716275031bb0ce574625c961ce9d5aa.pt",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/evaluation/league_v2/policies/76aea4330f11238e6d3905ab3b499c3c2716275031bb0ce574625c961ce9d5aa.pt",
+      "sha256": "1649c44c56f86eea7d1e3fa195325777aef53bb909f59902bee4a0a4f143f394"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/evaluation/league_v2/policies/124c0992bee0d69e74df4ae6f9a0f9fd502ebddb50ca66392e02ff3292050a9a.pt",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/evaluation/league_v2/policies/124c0992bee0d69e74df4ae6f9a0f9fd502ebddb50ca66392e02ff3292050a9a.pt",
+      "sha256": "2b24944992ba1c9708346e55a10a814d42d64096feff72b917f7b43c7284ec41"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/evaluation/league_v2/policies/db7ba3058b7a4c78d79835e885a2f7009287bdb5ef730d4502bbd0f948e62bf7.pt",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/evaluation/league_v2/policies/db7ba3058b7a4c78d79835e885a2f7009287bdb5ef730d4502bbd0f948e62bf7.pt",
+      "sha256": "243761d4779cd1552cb4b5911efe0148716a31c3e85ccc1cad6221d9e3708e7a"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/evaluation/league_v2/policies/434b4f08d03d58a4dd8d087c5bf7b2b6c721c957fb6678303ef3e9321bde0b31.pt",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/evaluation/league_v2/policies/434b4f08d03d58a4dd8d087c5bf7b2b6c721c957fb6678303ef3e9321bde0b31.pt",
+      "sha256": "89f2f3372b519d1584bd69de22eeb0fecff276428910f1a5ec109198477af99f"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/evaluation/league_v2/policies/6a701101a27a4f93f54ed1d878c21bdc2d1167acada47f7e29ce65b7b2904d6f.pt",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/evaluation/league_v2/policies/6a701101a27a4f93f54ed1d878c21bdc2d1167acada47f7e29ce65b7b2904d6f.pt",
+      "sha256": "a529869deb9c0c152f9d99785f9645a7ad49058191261f750cd4aa0bb8dfba44"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/evaluation/league_v2/policies/f6ca2a8bdc6d17062348c1f4c34563041e470ab09f4fa1ac1cb7a36d837ef95a.pt",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/evaluation/league_v2/policies/f6ca2a8bdc6d17062348c1f4c34563041e470ab09f4fa1ac1cb7a36d837ef95a.pt",
+      "sha256": "4ba539a3e89a01a30a2453b6a5c8ec74561cb6c0a255f506c56cb30b2cfec3df"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/evaluation/league_v2/policies/d7268f6a4c92d5009166682fb1c598013dce7b4b7daaad0817defb6c98d004e4.pt",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/evaluation/league_v2/policies/d7268f6a4c92d5009166682fb1c598013dce7b4b7daaad0817defb6c98d004e4.pt",
+      "sha256": "98182d1c144869d797926d3816ff1fd70f3536b67307179ea421c55ec16f38d9"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/evaluation/league_v2/policies/4f420bacc4e96a4ee67092b8d70a5beed993bd6a2551005ef1879aab91a850c6.pt",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/evaluation/league_v2/policies/4f420bacc4e96a4ee67092b8d70a5beed993bd6a2551005ef1879aab91a850c6.pt",
+      "sha256": "04df558b2b9fa0d46ec79f628868da202b50fb7c16fe42001f81decad7bb09c5"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/evaluation/league_v2/policies/a73fff2d0b46bfdbc0d1169b61e799c9fa34f00007f930890247a7bc8dc42313.pt",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/evaluation/league_v2/policies/a73fff2d0b46bfdbc0d1169b61e799c9fa34f00007f930890247a7bc8dc42313.pt",
+      "sha256": "06750394f517e73c8ae161b360a8c84c2fef64078c9805786091fabc86cfa467"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/evaluation/league_v2/policies/f019865b1a3fc4bd98c769e3d2cbce46528985604623aa1eb3fd88f37464b324.pt",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/evaluation/league_v2/policies/f019865b1a3fc4bd98c769e3d2cbce46528985604623aa1eb3fd88f37464b324.pt",
+      "sha256": "99b639ec001c54b6e32e3287b82b9bb86ddf8ef12c100be0b543af51ad4d3396"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/evaluation/league_v2/policies/45cc1841c2cac615850b99e27297751a83735728a250033ae1203548c1426fb6.pt",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/evaluation/league_v2/policies/45cc1841c2cac615850b99e27297751a83735728a250033ae1203548c1426fb6.pt",
+      "sha256": "d84263b5490c3e60fbdf44ee9be7323efa845015c09f1f7b7ae471460826bbed"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/evaluation/league_v2/policies/a0c068e50be4b3ed5ed93c625287620d34f5db18bc4d958c7bf06f319fa747db.pt",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/evaluation/league_v2/policies/a0c068e50be4b3ed5ed93c625287620d34f5db18bc4d958c7bf06f319fa747db.pt",
+      "sha256": "d44cf7ae62170f17282e36c051613016d59c559e107daebcd791962c1146ebfb"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/evaluation/league_v2/policies/5c9ac5eb450e1310dc8428508894a54201df4ef076741cffbb80f416babf51d0.pt",
+      "archive": "/home/minidc/Desktop/pa3-legacy-evidence-20261013/a10_production_20261013_v2/evaluation/league_v2/policies/5c9ac5eb450e1310dc8428508894a54201df4ef076741cffbb80f416babf51d0.pt",
+      "sha256": "f4bb7078e182c23eeac3e279e9d1046e629b8e3a67ad3a7d136e7f7d4c3df48c"
+    }
+  ],
+  "archive_scope": "same-disk independent copy; mutable league metadata is a snapshot",
+  "team_file": "/home/minidc/Desktop/PokeAgent3.0-A/engine/data/a10-training-teams.json",
+  "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f",
+  "dataset_manifest": "/home/minidc/Desktop/PokeAgent3.0-A/data/teams/a10-p0-proposed-20261013/manifest.json",
+  "dataset_manifest_sha256": "1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb",
+  "native_loader_counts": [
+    1220,
+    1220
+  ],
+  "native_loader_order": "JSON array index, identical file bytes for both loader instances; not DDP proof",
+  "engine_binary_sha256": "105cb6140a205279948ba741f40951219dbe0c8b2b21c7ba9d826df8ea12e8a3",
+  "worktrees": {
+    "PokeAgent3.0": {
+      "head": {
+        "returncode": 0,
+        "stdout": "8997cb40c18481f96ba64b72d7480896510a9840\n",
+        "stderr": ""
+      },
+      "status": {
+        "returncode": 0,
+        "stdout": " M engine/test_support/corpus.rs\n?? docs/PokeAgent3_AC_Codex_Design_Pack_2026-10-11/\n?? docs/experiments/\n",
+        "stderr": ""
+      },
+      "remote": {
+        "returncode": 0,
+        "stdout": "origin\thttps://github.com/mwl313/PokeAgent3.0.git (fetch)\norigin\thttps://github.com/mwl313/PokeAgent3.0.git (push)\n",
+        "stderr": ""
+      },
+      "audit_diff": {
+        "returncode": 0,
+        "stdout": " agent/evaluation/__init__.py                       |    15 -\n agent/evaluation/a10_league.py                     |   152 -\n agent/evaluation/batched_policy.py                 |   142 -\n agent/evaluation/best_policy.py                    |    16 -\n agent/evaluation/fixed_policy.py                   |   314 -\n agent/evaluation/frozen_policy.py                  |   118 -\n agent/evaluation/identity.py                       |    34 -\n agent/evaluation/league.py                         |   176 -\n agent/evaluation/policy_archive.py                 |   158 -\n agent/evaluation/schedule.py                       |   150 -\n agent/model/pa3_model.py                           |    16 +-\n agent/model/precision.py                           |    39 -\n agent/model/scorer.py                              |    39 +-\n agent/ppo/checkpoint_schedule.py                   |    34 -\n agent/ppo/config.py                                |     3 -\n agent/ppo/experimental_checkpoint.py               |   278 -\n agent/ppo/learner.py                               |    35 +-\n agent/ppo/schedule.py                              |    16 +-\n agent/ppo/storage_manager.py                       |   192 -\n agent/ppo/telemetry.py                             |   100 -\n agent/runtime/__init__.py                          |     1 -\n agent/runtime/config.py                            |    60 -\n agent/train/native_collector.py                    |   123 +-\n agent/types/observation.py                         |    13 +-\n configs/a10_p0_proposed.yaml                       |    26 -\n configs/a10_pending.yaml                           |     1 -\n configs/a10_production.yaml                        |    11 -\n configs/train.yaml                                 |     3 -\n configs/validated_a94_runtime.yaml                 |    11 -\n .../champions-mb/20261012/sheet_export.csv         |   865 -\n .../champions-mb/20261012/sheet_snapshot.json      | 13791 ----\n .../champions-mb/20261013/sheet_export.csv         |   865 -\n .../champions-mb/20261013/sheet_snapshot.json      | 13788 ----\n .../raw/vgcpastes/champions-mc/20261012/delta.json |   875 -\n .../20261012/fetch_metadata/01f9c4d5df525bb3.json  |     1 -\n .../20261012/fetch_metadata/029819f3cc786892.json  |     1 -\n .../20261012/fetch_metadata/03b70606ab4a36bc.json  |     1 -\n .../20261012/fetch_metadata/04fc15e954465886.json  |     1 -\n .../20261012/fetch_metadata/07dee8df83934522.json  |     1 -\n .../20261012/fetch_metadata/0a06c68a3abcf58f.json  |     1 -\n .../20261012/fetch_metadata/0b4ca15a5b1bf532.json  |     1 -\n .../20261012/fetch_metadata/0b6af1abfcc298bc.json  |     1 -\n .../20261012/fetch_metadata/0ba662c224b5c7d2.json  |     1 -\n .../20261012/fetch_metadata/0d7fdd32aab559a9.json  |     1 -\n .../20261012/fetch_metadata/0f133fb49fafc52d.json  |     1 -\n .../20261012/fetch_metadata/13685dc8613804f1.json  |     1 -\n .../20261012/fetch_metadata/14b59480a6716132.json  |     1 -\n .../20261012/fetch_metadata/1eba63914fc5d787.json  |     1 -\n .../20261012/fetch_metadata/234daae345da97a1.json  |     1 -\n .../20261012/fetch_metadata/2578d527cfb7d00a.json  |     1 -\n .../20261012/fetch_metadata/2721aaa25125b17a.json  |     1 -\n .../20261012/fetch_metadata/2961537a2765c8bd.json  |     1 -\n .../20261012/fetch_metadata/2f7127befa6a8508.json  |     1 -\n .../20261012/fetch_metadata/3262866aa92dbb70.json  |     1 -\n .../20261012/fetch_metadata/35491993f33b6a9b.json  |     1 -\n .../20261012/fetch_metadata/372ff624eeec249a.json  |     1 -\n .../20261012/fetch_metadata/3887c8321915e063.json  |     1 -\n .../20261012/fetch_metadata/3a92ad67f728bdad.json  |     1 -\n .../20261012/fetch_metadata/3c441ea97058e6c1.json  |     1 -\n .../20261012/fetch_metadata/3efb4e6794e60726.json  |     1 -\n .../20261012/fetch_metadata/4109eb2c68d5b6d5.json  |     1 -\n .../20261012/fetch_metadata/41f8680834a90064.json  |     1 -\n .../20261012/fetch_metadata/456ec804dc6c1581.json  |     1 -\n .../20261012/fetch_metadata/461cd59321a363b6.json  |     1 -\n .../20261012/fetch_metadata/46884272dbd70522.json  |     1 -\n .../20261012/fetch_metadata/4a62400d2f6845ac.json  |     1 -\n .../20261012/fetch_metadata/4da277917028127a.json  |     1 -\n .../20261012/fetch_metadata/4e3e9b1b1731e947.json  |     1 -\n .../20261012/fetch_metadata/5578c4ae0fef4c0b.json  |     1 -\n .../20261012/fetch_metadata/56f142639821e358.json  |     1 -\n .../20261012/fetch_metadata/5a9a8c047dc2566d.json  |     1 -\n .../20261012/fetch_metadata/5d8e02213d03cc5e.json  |     1 -\n .../20261012/fetch_metadata/5f32a28b77caca48.json  |     1 -\n .../20261012/fetch_metadata/6283a52559e15d6a.json  |     1 -\n .../20261012/fetch_metadata/63e3af2310b6d7d8.json  |     1 -\n .../20261012/fetch_metadata/67475a10a41f9e5a.json  |     1 -\n .../20261012/fetch_metadata/67974460bcb44368.json  |     1 -\n .../20261012/fetch_metadata/6e9a33c311ede31a.json  |     1 -\n .../20261012/fetch_metadata/6e9db6efbc4fc6bc.json  |     1 -\n .../20261012/fetch_metadata/76f48da693bcf6a9.json  |     1 -\n .../20261012/fetch_metadata/778a4b30d4ca9145.json  |     1 -\n .../20261012/fetch_metadata/7b92fad48d17a229.json  |     1 -\n .../20261012/fetch_metadata/7fccba432286b652.json  |     1 -\n .../20261012/fetch_metadata/82ec0abc7fc3dfc9.json  |     1 -\n .../20261012/fetch_metadata/8470a8a3825b5b1f.json  |     1 -\n .../20261012/fetch_metadata/85980e9db8f786a0.json  |     1 -\n .../20261012/fetch_metadata/85a4a7885caa15e0.json  |     1 -\n .../20261012/fetch_metadata/8a201b2bc62600ed.json  |     1 -\n .../20261012/fetch_metadata/8b3c5d4c0e2753a4.json  |     1 -\n .../20261012/fetch_metadata/8f01286485312a05.json  |     1 -\n .../20261012/fetch_metadata/8f66526021c0de09.json  |     1 -\n .../20261012/fetch_metadata/92f2d49c309928a4.json  |     1 -\n .../20261012/fetch_metadata/93091b6b7f4b18fd.json  |     1 -\n .../20261012/fetch_metadata/93368a4210904261.json  |     1 -\n .../20261012/fetch_metadata/9387c29abe2fbdfe.json  |     1 -\n .../20261012/fetch_metadata/97a3c12af5f02e3e.json  |     1 -\n .../20261012/fetch_metadata/9d5b91ecd46a02b4.json  |     1 -\n .../20261012/fetch_metadata/9e70befc49a72bfc.json  |     1 -\n .../20261012/fetch_metadata/a53eecff7111e000.json  |     1 -\n .../20261012/fetch_metadata/a60511b3c0aae3e4.json  |     1 -\n .../20261012/fetch_metadata/a9e31ad606644502.json  |     1 -\n .../20261012/fetch_metadata/b144ff818976986e.json  |     1 -\n .../20261012/fetch_metadata/b348857d349709ae.json  |     1 -\n .../20261012/fetch_metadata/b3e34f9cd1acead7.json  |     1 -\n .../20261012/fetch_metadata/b6a23f2673c38660.json  |     1 -\n .../20261012/fetch_metadata/c01bd0cc7a235e81.json  |     1 -\n .../20261012/fetch_metadata/c097ddeba8ffa6e1.json  |     1 -\n .../20261012/fetch_metadata/c4a6e112b5801e0d.json  |     1 -\n .../20261012/fetch_metadata/c7e82f90c1bd0922.json  |     1 -\n .../20261012/fetch_metadata/c7ff2c0573f3ada1.json  |     1 -\n .../20261012/fetch_metadata/c82c7a0d0a21ecab.json  |     1 -\n .../20261012/fetch_metadata/c9e3287deb22160d.json  |     1 -\n .../20261012/fetch_metadata/cd3db624c89c6493.json  |     1 -\n .../20261012/fetch_metadata/cd4787e3fa9cb858.json  |     1 -\n .../20261012/fetch_metadata/d093e52e364167c0.json  |     1 -\n .../20261012/fetch_metadata/d0cbf371c4e2f310.json  |     1 -\n .../20261012/fetch_metadata/d5221c1d37d6e58a.json  |     1 -\n .../20261012/fetch_metadata/d66cb668443202d9.json  |     1 -\n .../20261012/fetch_metadata/d827f98ce19f5ae4.json  |     1 -\n .../20261012/fetch_metadata/db88406d4a9f92cf.json  |     1 -\n .../20261012/fetch_metadata/de143b9678816b44.json  |     1 -\n .../20261012/fetch_metadata/e43dd40477436e39.json  |     1 -\n .../20261012/fetch_metadata/e4da2bd007f8c23c.json  |     1 -\n .../20261012/fetch_metadata/e53152a753891635.json  |     1 -\n .../20261012/fetch_metadata/e883ba6865e59719.json  |     1 -\n .../20261012/fetch_metadata/eaf20ebd3763e539.json  |     1 -\n .../20261012/fetch_metadata/ef3402cf114f64b0.json  |     1 -\n .../20261012/fetch_metadata/f2f80d5c3174cc40.json  |     1 -\n .../20261012/fetch_metadata/f3a1dc8b06bd97ab.json  |     1 -\n .../20261012/fetch_metadata/fb9b1b33e46437a4.json  |     1 -\n .../20261012/html/01f9c4d5df525bb3.html            |   123 -\n .../20261012/html/029819f3cc786892.html            |   123 -\n .../20261012/html/03b70606ab4a36bc.html            |   123 -\n .../20261012/html/04fc15e954465886.html            |   123 -\n .../20261012/html/07dee8df83934522.html            |   123 -\n .../20261012/html/0a06c68a3abcf58f.html            |   124 -\n .../20261012/html/0b4ca15a5b1bf532.html            |   124 -\n .../20261012/html/0b6af1abfcc298bc.html            |   122 -\n .../20261012/html/0ba662c224b5c7d2.html            |   123 -\n .../20261012/html/0d7fdd32aab559a9.html            |   123 -\n .../20261012/html/0f133fb49fafc52d.html            |   122 -\n .../20261012/html/13685dc8613804f1.html            |   123 -\n .../20261012/html/14b59480a6716132.html            |   123 -\n .../20261012/html/1eba63914fc5d787.html            |   123 -\n .../20261012/html/234daae345da97a1.html            |   127 -\n .../20261012/html/2578d527cfb7d00a.html            |   119 -\n .../20261012/html/2721aaa25125b17a.html            |   124 -\n .../20261012/html/2961537a2765c8bd.html            |   123 -\n .../20261012/html/2f7127befa6a8508.html            |   119 -\n .../20261012/html/3262866aa92dbb70.html            |   124 -\n .../20261012/html/35491993f33b6a9b.html            |   124 -\n .../20261012/html/372ff624eeec249a.html            |   123 -\n .../20261012/html/3887c8321915e063.html            |   122 -\n .../20261012/html/3a92ad67f728bdad.html            |   122 -\n .../20261012/html/3c441ea97058e6c1.html            |   122 -\n .../20261012/html/3efb4e6794e60726.html            |   124 -\n .../20261012/html/4109eb2c68d5b6d5.html            |   124 -\n .../20261012/html/41f8680834a90064.html            |   122 -\n .../20261012/html/456ec804dc6c1581.html            |   122 -\n .../20261012/html/461cd59321a363b6.html            |   123 -\n .../20261012/html/46884272dbd70522.html            |   116 -\n .../20261012/html/4a62400d2f6845ac.html            |   123 -\n .../20261012/html/4da277917028127a.html            |   120 -\n .../20261012/html/4e3e9b1b1731e947.html            |   124 -\n .../20261012/html/5578c4ae0fef4c0b.html            |   123 -\n .../20261012/html/56f142639821e358.html            |   122 -\n .../20261012/html/5a9a8c047dc2566d.html            |   123 -\n .../20261012/html/5d8e02213d03cc5e.html            |   123 -\n .../20261012/html/5f32a28b77caca48.html            |   124 -\n .../20261012/html/6283a52559e15d6a.html            |   123 -\n .../20261012/html/63e3af2310b6d7d8.html            |   124 -\n .../20261012/html/67475a10a41f9e5a.html            |   124 -\n .../20261012/html/67974460bcb44368.html            |   125 -\n .../20261012/html/6e9a33c311ede31a.html            |   124 -\n .../20261012/html/6e9db6efbc4fc6bc.html            |   124 -\n .../20261012/html/76f48da693bcf6a9.html            |   123 -\n .../20261012/html/778a4b30d4ca9145.html            |   124 -\n .../20261012/html/7b92fad48d17a229.html            |   123 -\n .../20261012/html/7fccba432286b652.html            |   123 -\n .../20261012/html/82ec0abc7fc3dfc9.html            |   116 -\n .../20261012/html/8470a8a3825b5b1f.html            |   123 -\n .../20261012/html/85980e9db8f786a0.html            |   122 -\n .../20261012/html/85a4a7885caa15e0.html            |   121 -\n .../20261012/html/8a201b2bc62600ed.html            |   123 -\n .../20261012/html/8b3c5d4c0e2753a4.html            |   124 -\n .../20261012/html/8f01286485312a05.html            |   122 -\n .../20261012/html/8f66526021c0de09.html            |   122 -\n .../20261012/html/92f2d49c309928a4.html            |   123 -\n .../20261012/html/93091b6b7f4b18fd.html            |   122 -\n .../20261012/html/93368a4210904261.html            |   124 -\n .../20261012/html/9387c29abe2fbdfe.html            |   123 -\n .../20261012/html/97a3c12af5f02e3e.html            |   118 -\n .../20261012/html/9d5b91ecd46a02b4.html            |   122 -\n .../20261012/html/9e70befc49a72bfc.html            |   122 -\n .../20261012/html/a53eecff7111e000.html            |   123 -\n .../20261012/html/a60511b3c0aae3e4.html            |   124 -\n .../20261012/html/a9e31ad606644502.html            |   123 -\n .../20261012/html/b144ff818976986e.html            |   117 -\n .../20261012/html/b348857d349709ae.html            |   122 -\n .../20261012/html/b3e34f9cd1acead7.html            |   123 -\n .../20261012/html/b6a23f2673c38660.html            |   122 -\n .../20261012/html/c01bd0cc7a235e81.html            |   123 -\n .../20261012/html/c097ddeba8ffa6e1.html            |   123 -\n .../20261012/html/c4a6e112b5801e0d.html            |   123 -\n .../20261012/html/c7e82f90c1bd0922.html            |   122 -\n .../20261012/html/c7ff2c0573f3ada1.html            |   123 -\n .../20261012/html/c82c7a0d0a21ecab.html            |   124 -\n .../20261012/html/c9e3287deb22160d.html            |   122 -\n .../20261012/html/cd3db624c89c6493.html            |   124 -\n .../20261012/html/cd4787e3fa9cb858.html            |   122 -\n .../20261012/html/d093e52e364167c0.html            |   123 -\n .../20261012/html/d0cbf371c4e2f310.html            |   124 -\n .../20261012/html/d5221c1d37d6e58a.html            |   122 -\n .../20261012/html/d66cb668443202d9.html            |   122 -\n .../20261012/html/d827f98ce19f5ae4.html            |   123 -\n .../20261012/html/db88406d4a9f92cf.html            |   125 -\n .../20261012/html/de143b9678816b44.html            |   124 -\n .../20261012/html/e43dd40477436e39.html            |   124 -\n .../20261012/html/e4da2bd007f8c23c.html            |   122 -\n .../20261012/html/e53152a753891635.html            |   123 -\n .../20261012/html/e883ba6865e59719.html            |   123 -\n .../20261012/html/eaf20ebd3763e539.html            |   122 -\n .../20261012/html/ef3402cf114f64b0.html            |   118 -\n .../20261012/html/f2f80d5c3174cc40.html            |   123 -\n .../20261012/html/f3a1dc8b06bd97ab.html            |   124 -\n .../20261012/html/fb9b1b33e46437a4.html            |   118 -\n .../champions-mc/20261012/live_sheet_snapshot.json |  9359 ---\n .../champions-mc/20261012/sheet_export.csv         |   588 -\n .../champions-mc/20261012/sheet_snapshot.json      |  1567 -\n .../vgcpastes/champions-mc/20261012/teams.jsonl    |    97 -\n .../champions-mc/20261012/teams/MC464.txt          |    66 -\n .../champions-mc/20261012/teams/MC465.txt          |    66 -\n .../champions-mc/20261012/teams/MC466.txt          |    66 -\n .../champions-mc/20261012/teams/MC467.txt          |    66 -\n .../champions-mc/20261012/teams/MC468.txt          |    66 -\n .../champions-mc/20261012/teams/MC469.txt          |    66 -\n .../champions-mc/20261012/teams/MC470.txt          |    66 -\n .../champions-mc/20261012/teams/MC471.txt          |    66 -\n .../champions-mc/20261012/teams/MC472.txt          |    66 -\n .../champions-mc/20261012/teams/MC473.txt          |    65 -\n .../champions-mc/20261012/teams/MC474.txt          |    66 -\n .../champions-mc/20261012/teams/MC475.txt          |    66 -\n .../champions-mc/20261012/teams/MC476.txt          |    66 -\n .../champions-mc/20261012/teams/MC477.txt          |    66 -\n .../champions-mc/20261012/teams/MC478.txt          |    66 -\n .../champions-mc/20261012/teams/MC479.txt          |    66 -\n .../champions-mc/20261012/teams/MC480.txt          |    66 -\n .../champions-mc/20261012/teams/MC481.txt          |    60 -\n .../champions-mc/20261012/teams/MC482.txt          |    69 -\n .../champions-mc/20261012/teams/MC483.txt          |    66 -\n .../champions-mc/20261012/teams/MC484.txt          |    66 -\n .../champions-mc/20261012/teams/MC485.txt          |    66 -\n .../champions-mc/20261012/teams/MC486.txt          |    67 -\n .../champions-mc/20261012/teams/MC487.txt          |    66 -\n .../champions-mc/20261012/teams/MC488.txt          |    66 -\n .../champions-mc/20261012/teams/MC489.txt          |    68 -\n .../champions-mc/20261012/teams/MC490.txt          |    66 -\n .../champions-mc/20261012/teams/MC491.txt          |    66 -\n .../champions-mc/20261012/teams/MC492.txt          |    66 -\n .../champions-mc/20261012/teams/MC493.txt          |    66 -\n .../champions-mc/20261012/teams/MC494.txt          |    66 -\n .../champions-mc/20261012/teams/MC495.txt          |    66 -\n .../champions-mc/20261012/teams/MC496.txt          |    66 -\n .../champions-mc/20261012/teams/MC497.txt          |    10 -\n .../champions-mc/20261012/teams/MC498.txt          |    65 -\n .../champions-mc/20261012/teams/MC499.txt          |    66 -\n .../champions-mc/20261012/teams/MC500.txt          |    66 -\n .../champions-mc/20261012/teams/MC501.txt          |    66 -\n .../champions-mc/20261012/teams/MC502.txt          |    66 -\n .../champions-mc/20261012/teams/MC503.txt          |    66 -\n .../champions-mc/20261012/teams/MC504.txt          |    66 -\n .../champions-mc/20261012/teams/MC505.txt          |    66 -\n .../champions-mc/20261012/teams/MC506.txt          |    66 -\n .../champions-mc/20261012/teams/MC507.txt          |    66 -\n .../champions-mc/20261012/teams/MC508.txt          |    66 -\n .../champions-mc/20261012/teams/MC509.txt          |    66 -\n .../champions-mc/20261012/teams/MC510.txt          |    66 -\n .../champions-mc/20261012/teams/MC511.txt          |    66 -\n .../champions-mc/20261012/teams/MC512.txt          |    66 -\n .../champions-mc/20261012/teams/MC513.txt          |    66 -\n .../champions-mc/20261012/teams/MC514.txt          |    66 -\n .../champions-mc/20261012/teams/MC515.txt          |    66 -\n .../champions-mc/20261012/teams/MC516.txt          |    66 -\n .../champions-mc/20261012/teams/MC517.txt          |    66 -\n .../champions-mc/20261012/teams/MC518.txt          |    66 -\n .../champions-mc/20261012/teams/MC519.txt          |    66 -\n .../champions-mc/20261012/teams/MC520.txt          |    66 -\n .../champions-mc/20261012/teams/MC521.txt          |    66 -\n .../champions-mc/20261012/teams/MC522.txt          |    66 -\n .../champions-mc/20261012/teams/MC523.txt          |    66 -\n .../champions-mc/20261012/teams/MC524.txt          |    66 -\n .../champions-mc/20261012/teams/MC526.txt          |    66 -\n .../champions-mc/20261012/teams/MC527.txt          |    64 -\n .../champions-mc/20261012/teams/MC528.txt          |    66 -\n .../champions-mc/20261012/teams/MC529.txt          |    66 -\n .../champions-mc/20261012/teams/MC530.txt          |    66 -\n .../champions-mc/20261012/teams/MC531.txt          |    66 -\n .../champions-mc/20261012/teams/MC532.txt          |    66 -\n .../champions-mc/20261012/teams/MC533.txt          |    66 -\n .../champions-mc/20261012/teams/MC546.txt          |    66 -\n .../champions-mc/20261012/teams/MC553.txt          |    63 -\n .../champions-mc/20261012/teams/MC559.txt          |    66 -\n .../champions-mc/20261012/teams/MC560.txt          |    66 -\n .../champions-mc/20261012/teams/MC561.txt          |    66 -\n .../champions-mc/20261012/teams/MC562.txt          |    66 -\n .../champions-mc/20261012/teams/MC563.txt          |    70 -\n .../champions-mc/20261012/teams/MC564.txt          |    66 -\n .../champions-mc/20261012/teams/MC565.txt          |    66 -\n .../champions-mc/20261012/teams/MC566.txt          |    66 -\n .../champions-mc/20261012/teams/MC567.txt          |    62 -\n .../champions-mc/20261012/teams/MC568.txt          |    66 -\n .../champions-mc/20261012/teams/MC569.txt          |    66 -\n .../champions-mc/20261012/teams/MC570.txt          |    66 -\n .../champions-mc/20261012/teams/MC571.txt          |    66 -\n .../champions-mc/20261012/teams/MC572.txt          |    66 -\n .../champions-mc/20261012/teams/MC573.txt          |    66 -\n .../champions-mc/20261012/teams/MC574.txt          |    66 -\n .../champions-mc/20261012/teams/MC575.txt          |    67 -\n .../champions-mc/20261012/teams/MC576.txt          |    62 -\n .../champions-mc/20261012/teams/MC577.txt          |    61 -\n .../champions-mc/20261012/teams/MC578.txt          |    60 -\n .../champions-mc/20261012/teams/MC579.txt          |    66 -\n .../champions-mc/20261012/teams/MC580.txt          |    62 -\n .../champions-mc/20261012/teams/MC581.txt          |    66 -\n .../champions-mc/20261012/teams/MC582.txt          |    61 -\n .../champions-mc/20261012/teams/MC583.txt          |    66 -\n .../champions-mc/20261012/teams/MC584.txt          |    62 -\n .../champions-mc/20261012/validation.json          |   664 -\n .../champions-mc/20261013/sheet_export.csv         |   588 -\n .../champions-mc/20261013/sheet_snapshot.json      |  9356 ---\n data/teams/a10-p0-proposed-20261013/all.jsonl      |  1220 -\n data/teams/a10-p0-proposed-20261013/all_teams.txt  | 77007 -------------------\n data/teams/a10-p0-proposed-20261013/dev.jsonl      |     0\n .../a10-p0-proposed-20261013/dev.showdown.jsonl    |     0\n .../teams/a10-p0-proposed-20261013/duplicates.json |   121 -\n data/teams/a10-p0-proposed-20261013/final.jsonl    |     0\n .../a10-p0-proposed-20261013/final.showdown.jsonl  |     0\n data/teams/a10-p0-proposed-20261013/groups.json    |  7042 --\n data/teams/a10-p0-proposed-20261013/inventory.json |   986 -\n data/teams/a10-p0-proposed-20261013/manifest.json  |   162 -\n .../a10-p0-proposed-20261013/quarantine.jsonl      |    68 -\n .../a10-p0-proposed-20261013/source-index.jsonl    |  1305 -\n data/teams/a10-p0-proposed-20261013/train.jsonl    |  1220 -\n .../a10-p0-proposed-20261013/train.showdown.jsonl  |  1220 -\n docs/A10_BACKGROUND_OPERATIONS.md                  |    28 -\n docs/A10_PRELAUNCH_CHECKLIST.md                    |    74 -\n docs/A10_STORAGE_AND_CHECKPOINT_POLICY.md          |    23 -\n docs/A10_TEAM_POOL_UPDATE_RUNBOOK.md               |    10 -\n docs/ENGINE_READINESS_A10_BLOCKERS.md              |     5 -\n docs/PROJECT_STATUS.md                             |    28 -\n docs/TEAM_POOL.md                                  |    12 -\n docs/TRAINING_CONFIGURATION_CURRENT.md             |    20 -\n docs/experiments/A10_2_ACCEPTANCE.json             |   125 -\n docs/experiments/A10_2_BENCHMARK.json              |   342 -\n .../A10_2_CONCURRENT_EVALUATION_REPORT.md          |    36 -\n .../A10_EVALUATION_BASELINE_RESULTS.json           |    32 -\n docs/experiments/A10_EVALUATION_CPU_BENCHMARK.json |     1 -\n .../A10_EVALUATION_LEAGUE_ACCEPTANCE.json          |     1 -\n docs/experiments/A10_EVALUATION_LEAGUE_DESIGN.md   |     7 -\n docs/experiments/A10_EVALUATION_OPERATIONS.md      |    17 -\n .../experiments/A10_EVALUATION_SNAPSHOT_AUDIT.json |     1 -\n docs/experiments/A10_EVAL_CPU_FEASIBILITY.json     |     1 -\n docs/experiments/A10_EVAL_REGRESSION_RESULTS.json  |     1 -\n docs/experiments/A10_LIVE_EVAL_FINAL_HANDOFF.md    |     5 -\n docs/experiments/A10_LIVE_EVAL_INTEGRATION.json    |     1 -\n docs/experiments/A10_LIVE_EVAL_INTEGRATION.md      |    11 -\n docs/experiments/A10_LIVE_TELEMETRY_AUDIT.md       |     5 -\n docs/experiments/A10_P0_FINAL_READINESS.md         |     7 -\n .../A10_P0_POOL_ENGINE_COMPATIBILITY.json          |  1051 -\n .../A10_P0_POOL_ENGINE_COMPATIBILITY.md            |     7 -\n docs/experiments/A10_P0_VGCPASTES_DELTA.json       |   239 -\n .../A10_P0_VGCPASTES_INCREMENTAL_IMPORT.md         |    11 -\n .../A10_P1_ENGINE_COMPATIBILITY_REPORT.md          |    13 -\n .../A10_P1_ENGINE_COMPATIBILITY_RESULTS.json       |    40 -\n docs/experiments/A10_P1_FINAL_HANDOFF.md           |     3 -\n docs/experiments/A10_P1_STORAGE_BUDGET_REPORT.md   |    13 -\n docs/experiments/A10_P1_STORAGE_VALIDATION.json    |    54 -\n docs/experiments/A10_P2_ENGINE_VALIDATION.json     |    69 -\n docs/experiments/A10_P2_ENGINE_VALIDATION.md       |    11 -\n docs/experiments/A10_P2_FINAL_HANDOFF.md           |     3 -\n docs/experiments/A10_P2_STORAGE_INTEGRATION.md     |     9 -\n docs/experiments/A10_P2_STORAGE_VALIDATION.json    |    45 -\n .../A10_P3_CHECKPOINT_FINAL_ACCEPTANCE.json        |     1 -\n .../A10_P3_ENGINE_FINAL_ACCEPTANCE.json            |     1 -\n docs/experiments/A10_P3_ENGINE_FINAL_ACCEPTANCE.md |     5 -\n docs/experiments/A10_P3_FINAL_HANDOFF.md           |     7 -\n docs/experiments/A10_P3_PPO_SMOKE_RESULTS.json     |     1 -\n docs/experiments/A10_P3_VGCPASTES_REFRESH.json     |    12 -\n docs/experiments/A10_P3_VGCPASTES_REFRESH.md       |     5 -\n .../experiments/A10_P4_CHECKPOINT_CORRECTNESS.json |     1 -\n docs/experiments/A10_P4_CHECKPOINT_CORRECTNESS.md  |     7 -\n docs/experiments/A10_P4_ENGINE_SCOPE_AUDIT.json    |   408 -\n docs/experiments/A10_P4_ENGINE_SCOPE_AUDIT.md      |     7 -\n docs/experiments/A10_P4_FINAL_ACCEPTANCE.json      |     1 -\n docs/experiments/A10_P4_FINAL_ACCEPTANCE.md        |     7 -\n docs/experiments/A10_P4_PRODUCTION_PILOT.json      |     1 -\n .../A10_P4_PRODUCTION_RUN_MANIFEST.json            |    44 -\n docs/experiments/A10_P4_RESUME_PARITY.json         |     1 -\n docs/experiments/A10_P5_CHECKPOINT_REGRESSION.json |     1 -\n docs/experiments/A10_P5_CONTINUITY_ACCEPTANCE.json |     1 -\n docs/experiments/A10_P5_FINAL_REPORT.md            |     9 -\n docs/experiments/A10_P5_PARITY_ROOT_CAUSE.md       |     7 -\n .../A10_P5_PARITY_STAGE_COMPARISON.json            |     1 -\n .../experiments/A10_P5_PRODUCTION_PERFORMANCE.json |     1 -\n docs/experiments/A10_PPO_TRAINING_TELEMETRY.md     |    48 -\n docs/experiments/A3_LEARNING_COMPARISON_REPORT.md  |    47 -\n docs/experiments/A3_PPO2_TO250K_REPORT.md          |    50 -\n docs/experiments/A3_PPO2_TO250K_RESULTS.json       |    31 -\n docs/experiments/A4_LR_COMPARISON_REPORT.md        |    42 -\n docs/experiments/A4_LR_COMPARISON_RESULTS.json     |    16 -\n docs/experiments/A5_HISTORICAL_SELF_PLAY_REPORT.md |    49 -\n .../A5_HISTORICAL_SELF_PLAY_RESULTS.json           |    77 -\n docs/experiments/A6_TRACK_A_HANDOFF.md             |    36 -\n docs/experiments/A7_1_EVALUATION_LEAGUE_HANDOFF.md |    31 -\n docs/experiments/A7_1_VERIFICATION.json            |    43 -\n docs/experiments/A7_EVALUATION_INFRA_REPORT.md     |    34 -\n docs/experiments/A8_BATCHED_BENCHMARK.json         |    21 -\n docs/experiments/A8_BATCHED_EVALUATION_REPORT.md   |    53 -\n docs/experiments/A9_1_PRECISION_BENCHMARK.json     |    29 -\n docs/experiments/A9_1_PRECISION_RECOVERY_REPORT.md |    85 -\n docs/experiments/A9_2_A10_PERFORMANCE_HANDOFF.md   |    17 -\n docs/experiments/A9_2_FULL_CAMPAIGN_RESULTS.json   |    19 -\n .../A9_2_THROUGHPUT_ROOT_CAUSE_REPORT.md           |   100 -\n docs/experiments/A9_3_A10_READINESS_HANDOFF.md     |    11 -\n docs/experiments/A9_3_FINAL_PERFORMANCE_REPORT.md  |    24 -\n docs/experiments/A9_3_FP16_PARITY_ROOT_CAUSE.md    |    25 -\n .../A9_3_PRECISION_STABILITY_RESULTS.json          |    43 -\n docs/experiments/A9_4_1_FINALIZATION_REPORT.md     |    34 -\n docs/experiments/A9_4_1_VALIDATION_RESULTS.json    |    13 -\n docs/experiments/A9_4_2_FINAL_REPORT.md            |    15 -\n docs/experiments/A9_4_2_VALIDATION_RESULTS.json    |    11 -\n docs/experiments/A9_4_A10_FINAL_HANDOFF.md         |    16 -\n docs/experiments/A9_4_EVALUATION_BENCHMARK.json    |    29 -\n .../experiments/A9_4_INDEPENDENT_SEED_RESULTS.json |    32 -\n .../A9_4_PRODUCTION_READINESS_REPORT.md            |    55 -\n docs/experiments/A9_PPO_RECOMPUTE_REPORT.md        |    62 -\n docs/experiments/A9_READINESS_RECEIPT.json         |    44 -\n docs/experiments/a_A1_VALIDATION_AND_NEXT.md       |    45 -\n docs/experiments/a_A2E_VALIDATION_REPORT.md        |    11 -\n docs/experiments/a_A2R_VALIDATION_REPORT.md        |    20 -\n .../a_CHECKPOINT_CONTINUATION_DESIGN.md            |    54 -\n docs/experiments/a_ENVIRONMENT_AND_CONTRACT.md     |    19 -\n docs/experiments/a_FIXED_POLICY_EVAL_DESIGN.md     |    27 -\n docs/experiments/policy_archive.json               |   104 -\n engine/data/a10-training-teams.json                |     1 -\n runs/experiments/a/a1_cached_select_benchmark.json |    17 -\n runs/experiments/a/a2r_resume_validation.json      |    61 -\n runs/experiments/a/a3/A3_LEARNING_COMPARISON.json  | 46086 -----------\n runs/experiments/a/a3/fixed_panel.json             |  3337 -\n runs/experiments/a/a3_baseline/eval_lexical.json   |  7451 --\n runs/experiments/a/a3_ppo2_50k/eval_lexical.json   |  7451 --\n runs/experiments/a/a3_ppo4_50k/eval_lexical.json   |  7451 --\n runs/experiments/a/baseline_eval_random.json       |  7451 --\n runs/experiments/a/ppo2_eval_random.json           |  7451 --\n runs/experiments/a/ppo4_eval_random.json           |  7451 --\n scripts/__init__.py                                |     0\n scripts/a10_eval_pipeline.py                       |    69 -\n scripts/a10_eval_scheduler.py                      |    19 -\n scripts/a10_evaluation_benchmark.py                |    29 -\n scripts/a10_evaluation_runner.py                   |    54 -\n scripts/a10_evaluation_sidecar.py                  |    30 -\n scripts/a10_evaluation_status.py                   |    15 -\n scripts/a10_evaluation_worker.py                   |    93 -\n scripts/a10_incident_dispatch.py                   |    18 -\n scripts/a10_league_discover.py                     |    37 -\n scripts/a10_safe_stop.py                           |     6 -\n scripts/a10_status.py                              |    90 -\n scripts/a10_watchdog.py                            |    65 -\n scripts/bench_pa3_end_to_end.py                    |    43 +-\n scripts/build_incremental_records.mjs              |    15 -\n scripts/check_storage_budget.py                    |    28 -\n scripts/evaluate_fixed_policy.py                   |    63 -\n scripts/prepare_a10_p0_dataset.mjs                 |     6 -\n scripts/prepare_teams.mjs                          |    24 +-\n scripts/resolve_training_config.py                 |     5 -\n scripts/run_a92_throughput_campaign.py             |    74 -\n scripts/run_a93_precision_stability_campaign.py    |    27 -\n scripts/run_a942_final_acceptance.py               |    14 -\n scripts/run_a94_production_readiness_campaign.py   |    23 -\n scripts/run_ddp_ppo.py                             |   475 +-\n scripts/run_evaluation_league.py                   |   133 -\n systemd-user/a10-eval-scheduler.service            |     8 -\n systemd-user/a10-eval-scheduler.timer              |    11 -\n systemd-user/a10-evaluation-worker.service         |    22 -\n systemd-user/a10-evaluation.service                |    16 -\n systemd-user/a10-evaluation.timer                  |    11 -\n systemd-user/a10-watchdog.service                  |     7 -\n systemd-user/a10-watchdog.timer                    |    11 -\n tests/agent/test_a10_2_league.py                   |    62 -\n tests/agent/test_a10_eval_pipeline.py              |    19 -\n tests/agent/test_a10_evaluation_runner.py          |    11 -\n tests/agent/test_a10_evaluation_sidecar.py         |    18 -\n tests/agent/test_a10_status_monitoring.py          |    23 -\n tests/agent/test_a10_telemetry.py                  |     5 -\n tests/agent/test_a10_training_telemetry.py         |    59 -\n tests/agent/test_a10_watchdog.py                   |    29 -\n tests/agent/test_a91_precision.py                  |    33 -\n tests/agent/test_a_cached_select.py                |    54 -\n tests/agent/test_a_checkpoint_continuation.py      |    23 -\n tests/agent/test_a_checkpoint_envelope.py          |   133 -\n tests/agent/test_a_experimental_resume_smoke.py    |    75 -\n tests/agent/test_checkpoint_schedule.py            |    22 -\n tests/agent/test_contract.py                       |     3 +-\n tests/agent/test_ddp_benchmark_summary.py          |    19 -\n tests/agent/test_evaluation_league.py              |    95 -\n tests/agent/test_fixed_policy_eval.py              |    40 -\n tests/agent/test_ppo_update.py                     |     6 +-\n tests/agent/test_runtime_config.py                 |    39 -\n tests/agent/test_storage_manager.py                |    72 -\n 509 files changed, 46 insertions(+), 264161 deletions(-)\n",
+        "stderr": ""
+      },
+      "user_changes": {
+        "returncode": 0,
+        "stdout": "diff --git a/engine/test_support/corpus.rs b/engine/test_support/corpus.rs\nindex 31f1874..7a68f70 100644\n--- a/engine/test_support/corpus.rs\n+++ b/engine/test_support/corpus.rs\n@@ -15,9 +15,7 @@ use std::path::{Path, PathBuf};\n \n /// `turn-fixtures.json` -> Some(1), `turn-fixtures-2.json` -> Some(2).\n pub fn part_index(name: &str) -> Option<u32> {\n-    let rest = name\n-        .strip_prefix(\"turn-fixtures\")?\n-        .strip_suffix(\".json\")?;\n+    let rest = name.strip_prefix(\"turn-fixtures\")?.strip_suffix(\".json\")?;\n     if rest.is_empty() {\n         return Some(1);\n     }\n@@ -48,10 +46,12 @@ pub fn corpus_json(dir: &Path) -> String {\n     let mut fixtures: Vec<serde_json::Value> = Vec::new();\n     let (mut oracle, mut format) = (String::new(), String::new());\n     for (_, bytes) in corpus_parts(dir) {\n-        let value: serde_json::Value =\n-            serde_json::from_slice(&bytes).expect(\"corpus part json\");\n+        let value: serde_json::Value = serde_json::from_slice(&bytes).expect(\"corpus part json\");\n         if oracle.is_empty() {\n-            oracle = value[\"oracle_commit\"].as_str().unwrap_or_default().to_string();\n+            oracle = value[\"oracle_commit\"]\n+                .as_str()\n+                .unwrap_or_default()\n+                .to_string();\n             format = value[\"format\"].as_str().unwrap_or_default().to_string();\n         }\n         fixtures.extend(value[\"fixtures\"].as_array().cloned().unwrap_or_default());\n",
+        "stderr": ""
+      }
+    },
+    "PokeAgent3.0-A": {
+      "head": {
+        "returncode": 0,
+        "stdout": "4ace3cf24426f141ff9cc1c4816d55c5fdc44f83\n",
+        "stderr": ""
+      },
+      "status": {
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "remote": {
+        "returncode": 0,
+        "stdout": "origin\thttps://github.com/mwl313/PokeAgent3.0.git (fetch)\norigin\thttps://github.com/mwl313/PokeAgent3.0.git (push)\n",
+        "stderr": ""
+      },
+      "audit_diff": {
+        "returncode": 0,
+        "stdout": " agent/evaluation/a10_league.py                     | 152 ---------\n agent/evaluation/batched_policy.py                 |   3 +-\n agent/evaluation/best_policy.py                    |  16 -\n agent/ppo/telemetry.py                             | 100 ------\n docs/experiments/A10_2_ACCEPTANCE.json             | 125 --------\n docs/experiments/A10_2_BENCHMARK.json              | 342 ---------------------\n .../A10_2_CONCURRENT_EVALUATION_REPORT.md          |  36 ---\n .../A10_EVALUATION_BASELINE_RESULTS.json           |  32 --\n docs/experiments/A10_EVALUATION_CPU_BENCHMARK.json |   1 -\n .../A10_EVALUATION_LEAGUE_ACCEPTANCE.json          |   1 -\n docs/experiments/A10_EVALUATION_LEAGUE_DESIGN.md   |   7 -\n docs/experiments/A10_EVALUATION_OPERATIONS.md      |  17 -\n .../experiments/A10_EVALUATION_SNAPSHOT_AUDIT.json |   1 -\n docs/experiments/A10_EVAL_CPU_FEASIBILITY.json     |   1 -\n docs/experiments/A10_EVAL_REGRESSION_RESULTS.json  |   1 -\n docs/experiments/A10_LIVE_EVAL_FINAL_HANDOFF.md    |   5 -\n docs/experiments/A10_LIVE_EVAL_INTEGRATION.json    |   1 -\n docs/experiments/A10_LIVE_EVAL_INTEGRATION.md      |  11 -\n docs/experiments/A10_LIVE_TELEMETRY_AUDIT.md       |   5 -\n docs/experiments/A10_PPO_TRAINING_TELEMETRY.md     |  48 ---\n scripts/a10_eval_pipeline.py                       |  69 -----\n scripts/a10_eval_scheduler.py                      |  19 --\n scripts/a10_evaluation_benchmark.py                |  29 --\n scripts/a10_evaluation_runner.py                   |  54 ----\n scripts/a10_evaluation_sidecar.py                  |  30 --\n scripts/a10_evaluation_status.py                   |  15 -\n scripts/a10_evaluation_worker.py                   |  93 ------\n scripts/a10_league_discover.py                     |  37 ---\n scripts/a10_status.py                              |  24 +-\n scripts/a10_watchdog.py                            |   5 +-\n scripts/run_ddp_ppo.py                             |  19 --\n systemd-user/a10-eval-scheduler.service            |   8 -\n systemd-user/a10-eval-scheduler.timer              |  11 -\n systemd-user/a10-evaluation-worker.service         |  22 --\n systemd-user/a10-evaluation.service                |  16 -\n systemd-user/a10-evaluation.timer                  |  11 -\n tests/agent/test_a10_2_league.py                   |  62 ----\n tests/agent/test_a10_eval_pipeline.py              |  19 --\n tests/agent/test_a10_evaluation_runner.py          |  11 -\n tests/agent/test_a10_evaluation_sidecar.py         |  18 --\n tests/agent/test_a10_status_monitoring.py          |  23 --\n tests/agent/test_a10_telemetry.py                  |   5 -\n tests/agent/test_a10_training_telemetry.py         |  59 ----\n 43 files changed, 8 insertions(+), 1556 deletions(-)\n",
+        "stderr": ""
+      },
+      "user_changes": {
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    "PokeAgent3.0-A-telemetry": {
+      "head": {
+        "returncode": 0,
+        "stdout": "266bb65c3cb47a7e44512f9049338efdd35333cf\n",
+        "stderr": ""
+      },
+      "status": {
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "remote": {
+        "returncode": 0,
+        "stdout": "origin\thttps://github.com/mwl313/PokeAgent3.0.git (fetch)\norigin\thttps://github.com/mwl313/PokeAgent3.0.git (push)\n",
+        "stderr": ""
+      },
+      "audit_diff": {
+        "returncode": 0,
+        "stdout": " agent/evaluation/a10_league.py                     |  23 +++-\n agent/ppo/recompute_safety.py                      | 131 +++++++++++++++++++++\n agent/ppo/source_migration.py                      | 109 +++++++++++++++++\n agent/ppo/telemetry.py                             |   3 +-\n agent/train/native_collector.py                    |  21 ++++\n .../A10_RECOMPUTE_TELEMETRY_RECOVERY.md            |  63 ++++++++++\n scripts/a10_recompute_recovery_probe.py            |  61 ++++++++++\n scripts/bench_pa3_end_to_end.py                    |  47 +++++++-\n scripts/run_ddp_ppo.py                             |  56 ++++++++-\n tests/agent/test_a10_2_league.py                   |  36 ++++++\n tests/agent/test_a10_recompute_safety.py           |  73 ++++++++++++\n tests/agent/test_a10_source_migration.py           |  29 +++++\n 12 files changed, 642 insertions(+), 10 deletions(-)\n",
+        "stderr": ""
+      },
+      "user_changes": {
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    "PokeAgent3.0-A-recovery": {
+      "head": {
+        "returncode": 0,
+        "stdout": "0b5d930743298720e073f65264464f0d953ca7d3\n",
+        "stderr": ""
+      },
+      "status": {
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "remote": {
+        "returncode": 0,
+        "stdout": "origin\thttps://github.com/mwl313/PokeAgent3.0.git (fetch)\norigin\thttps://github.com/mwl313/PokeAgent3.0.git (push)\n",
+        "stderr": ""
+      },
+      "audit_diff": {
+        "returncode": 0,
+        "stdout": " agent/evaluation/a10_league.py                     | 152 ---------\n agent/evaluation/batched_policy.py                 |   3 +-\n agent/evaluation/best_policy.py                    |  16 -\n agent/ppo/telemetry.py                             | 100 ------\n docs/A10_BACKGROUND_OPERATIONS.md                  |  28 --\n docs/A10_PRELAUNCH_CHECKLIST.md                    |   7 -\n docs/PROJECT_STATUS.md                             |   4 -\n docs/experiments/A10_2_ACCEPTANCE.json             | 125 --------\n docs/experiments/A10_2_BENCHMARK.json              | 342 ---------------------\n .../A10_2_CONCURRENT_EVALUATION_REPORT.md          |  36 ---\n .../A10_EVALUATION_BASELINE_RESULTS.json           |  32 --\n docs/experiments/A10_EVALUATION_CPU_BENCHMARK.json |   1 -\n .../A10_EVALUATION_LEAGUE_ACCEPTANCE.json          |   1 -\n docs/experiments/A10_EVALUATION_LEAGUE_DESIGN.md   |   7 -\n docs/experiments/A10_EVALUATION_OPERATIONS.md      |  17 -\n .../experiments/A10_EVALUATION_SNAPSHOT_AUDIT.json |   1 -\n docs/experiments/A10_EVAL_CPU_FEASIBILITY.json     |   1 -\n docs/experiments/A10_EVAL_REGRESSION_RESULTS.json  |   1 -\n docs/experiments/A10_LIVE_EVAL_FINAL_HANDOFF.md    |   5 -\n docs/experiments/A10_LIVE_EVAL_INTEGRATION.json    |   1 -\n docs/experiments/A10_LIVE_EVAL_INTEGRATION.md      |  11 -\n docs/experiments/A10_LIVE_TELEMETRY_AUDIT.md       |   5 -\n .../A10_P4_PRODUCTION_RUN_MANIFEST.json            |  45 +--\n docs/experiments/A10_PPO_TRAINING_TELEMETRY.md     |  48 ---\n scripts/__init__.py                                |   0\n scripts/a10_eval_pipeline.py                       |  69 -----\n scripts/a10_eval_scheduler.py                      |  19 --\n scripts/a10_evaluation_benchmark.py                |  29 --\n scripts/a10_evaluation_runner.py                   |  54 ----\n scripts/a10_evaluation_sidecar.py                  |  30 --\n scripts/a10_evaluation_status.py                   |  15 -\n scripts/a10_evaluation_worker.py                   |  93 ------\n scripts/a10_incident_dispatch.py                   |  18 --\n scripts/a10_league_discover.py                     |  37 ---\n scripts/a10_safe_stop.py                           |   6 -\n scripts/a10_status.py                              |  90 ------\n scripts/a10_watchdog.py                            |  65 ----\n scripts/run_ddp_ppo.py                             |  19 --\n systemd-user/a10-eval-scheduler.service            |   8 -\n systemd-user/a10-eval-scheduler.timer              |  11 -\n systemd-user/a10-evaluation-worker.service         |  22 --\n systemd-user/a10-evaluation.service                |  16 -\n systemd-user/a10-evaluation.timer                  |  11 -\n systemd-user/a10-watchdog.service                  |   7 -\n systemd-user/a10-watchdog.timer                    |  11 -\n tests/agent/test_a10_2_league.py                   |  62 ----\n tests/agent/test_a10_eval_pipeline.py              |  19 --\n tests/agent/test_a10_evaluation_runner.py          |  11 -\n tests/agent/test_a10_evaluation_sidecar.py         |  18 --\n tests/agent/test_a10_status_monitoring.py          |  23 --\n tests/agent/test_a10_telemetry.py                  |   5 -\n tests/agent/test_a10_training_telemetry.py         |  59 ----\n tests/agent/test_a10_watchdog.py                   |  29 --\n 53 files changed, 2 insertions(+), 1843 deletions(-)\n",
+        "stderr": ""
+      },
+      "user_changes": {
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    "PokeAgent3.0-A-evaluation-league": {
+      "head": {
+        "returncode": 0,
+        "stdout": "3c5f252338038525c762c8cde084ff50a4192169\n",
+        "stderr": ""
+      },
+      "status": {
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "remote": {
+        "returncode": 0,
+        "stdout": "origin\thttps://github.com/mwl313/PokeAgent3.0.git (fetch)\norigin\thttps://github.com/mwl313/PokeAgent3.0.git (push)\n",
+        "stderr": ""
+      },
+      "audit_diff": {
+        "returncode": 0,
+        "stdout": " agent/evaluation/a10_league.py                     |  23 +++-\n agent/ppo/telemetry.py                             |  81 --------------\n docs/experiments/A10_PPO_TRAINING_TELEMETRY.md     |  48 ---------\n docs/experiments/A10_ROUND_ROBIN_20261013.md       |  73 +++++++++++++\n .../A10_ROUND_ROBIN_20261013_3X_REPORT.md          |  62 +++++++++++\n scripts/a10_round_robin.py                         | 117 +++++++++++++++++++++\n scripts/run_ddp_ppo.py                             |  19 ----\n tests/agent/test_a10_2_league.py                   |  36 +++++++\n tests/agent/test_a10_training_telemetry.py         |  59 -----------\n 9 files changed, 309 insertions(+), 209 deletions(-)\n",
+        "stderr": ""
+      },
+      "user_changes": {
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    "PokeAgent3.0-V2": {
+      "head": {
+        "returncode": 0,
+        "stdout": "d48ef2eb237d1f7716a91ee8d148d0e3c0fbc7bc\n",
+        "stderr": ""
+      },
+      "status": {
+        "returncode": 0,
+        "stdout": "?? docs/audit_v2/\n",
+        "stderr": ""
+      },
+      "remote": {
+        "returncode": 0,
+        "stdout": "origin\thttps://github.com/mwl313/PokeAgent3.0.git (fetch)\norigin\thttps://github.com/mwl313/PokeAgent3.0.git (push)\n",
+        "stderr": ""
+      },
+      "audit_diff": {
+        "returncode": 0,
+        "stdout": " .gitignore                                         |   1 +\n agent/evaluation/a10_league.py                     |  23 +++-\n agent/ppo/recompute_safety.py                      | 131 +++++++++++++++++++++\n agent/ppo/source_migration.py                      | 109 +++++++++++++++++\n agent/ppo/telemetry.py                             |   3 +-\n agent/train/native_collector.py                    |  21 ++++\n .../A10_RECOMPUTE_TELEMETRY_RECOVERY.md            |  63 ++++++++++\n engine/examples/coverage_report.rs                 |   7 +-\n engine/src/battle.rs                               |  21 +++-\n engine/src/battle/public_type_tests.rs             | 113 ++++++++++++++++++\n engine/src/state.rs                                |  27 ++++-\n scripts/a10_recompute_recovery_probe.py            |  61 ++++++++++\n scripts/bench_pa3_end_to_end.py                    |  47 +++++++-\n scripts/run_ddp_ppo.py                             |  56 ++++++++-\n scripts/v2_audit_status.py                         |  67 +++++++++++\n scripts/v2_source_inventory.py                     |  79 +++++++++++++\n tests/agent/test_a10_2_league.py                   |  36 ++++++\n tests/agent/test_a10_recompute_safety.py           |  73 ++++++++++++\n tests/agent/test_a10_source_migration.py           |  29 +++++\n 19 files changed, 954 insertions(+), 13 deletions(-)\n",
+        "stderr": ""
+      },
+      "user_changes": {
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    }
+  },
+  "services": {
+    "returncode": 0,
+    "stdout": "MainPID=0\nId=a10-ppo-recovery-20261013.service\nActiveState=inactive\n\nMainPID=2464\nExecStart={ path=/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python ; argv[]=/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python /home/minidc/Desktop/PokeAgent3.0-A-evaluation-league/scripts/a10_evaluation_worker.py --run-root /home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2 --batch-size 16 --threads 2 --workers 2 ; ignore_errors=no ; start_time=[Tue 2026-10-13 21:54:35 KST] ; stop_time=[n/a] ; pid=2464 ; code=(null) ; status=0/0 }\nId=a10-evaluation-worker.service\nActiveState=active\n",
+    "stderr": ""
+  },
+  "gpu": {
+    "returncode": 0,
+    "stdout": "Tue Oct 13 22:22:49 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 580.178.04             Driver Version: 580.178.04     CUDA Version: 13.0     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  Tesla V100-PCIE-32GB           On  |   00000000:05:00.0 Off |                    0 |\n| N/A   31C    P0             23W /  175W |       0MiB /  32768MiB |      0%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n|   1  Tesla V100-PCIE-32GB           On  |   00000000:84:00.0 Off |                    0 |\n| N/A   31C    P0             24W /  175W |       0MiB /  32768MiB |      0%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|  No running processes found                                                             |\n+-----------------------------------------------------------------------------------------+\n",
+    "stderr": ""
+  },
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "torch": "2.14.0+cu126",
+  "rust": {
+    "returncode": 0,
+    "stdout": "rustc 1.90.0 (1159e78c4 2025-09-14)\n",
+    "stderr": ""
+  }
+}

@@ -1,0 +1,3 @@
+# Agent prompt — Phase 4
+
+Read root `AGENT_MASTER_PROMPT.md`, `06_PPO_DDP_ENGINE_VALIDATION.md`, `07_TEAM_STATISTICS_SPEC.md` and `09_TEST_MATRIX.csv`. Reference-verify terminal rewards, GAE, PPO, KL/Entropy, DDP rank weighting, AMP Actor/Learner and checkpoint resume. Implement per-team statistics for **all 1,220 teams**: W/L/D, seat, matchups, time windows, opponent policy, mean game length, rank-local receipts and generation-atomic idempotent global commits. Prove 2 team appearances per natural match and rollback/replay deduplication. Run real two-V100 smoke and separate Evaluation League V2 dry-run without modifying old league. All P0 gates mandatory. Produce detailed evidence and PHASE_4_EXIT_REPORT. Don't start production if blocked.

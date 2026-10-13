@@ -1,0 +1,31 @@
+﻿issue_id,priority,verdict,title,primary_sources,planned_phase,required_acceptance,test_id
+OBS-01,P0,CODE-CONFIRMED,Ragged information dropped,observation.rs;observation.py;embeddings.py;rollout_buffer.py,P2,All five groups model-consumed and roundtrip-verified,T-OBS-01
+OBS-02,P0,CODE-CONFIRMED,Known zero conflated with unknown,embeddings.py;observation.py,P2,"Known zero vs unknown distinct embedding, both fp32/fp16",T-OBS-02
+OBS-03,P0,CODE-CONFIRMED,Event-change FP16 underflow,observation.rs;precision.py,P2,±1 and ±6 survive production precision and learner roundtrip,T-OBS-03
+OBS-04,P1,SEMANTIC-REVIEW,Revealed move ordering not physical slot index,knowledge.rs;observation.rs,P2,Public history separate from known current slot without leaks,T-OBS-04
+OBS-05,P1,CODE-CONFIRMED,Weight and other float dynamic ranges,observation.rs;precision.py,P2,All 50 feature ranges audited and edge-tested,T-OBS-05
+ACT-01,P0,CODE-CONFIRMED,Active position confused with roster index,actions.rs;requests.py;native_collector.py,P3,Arbitrary leads and switches reference correct actor tokens,T-ACT-01
+ACT-02,P0,CODE-CONFIRMED,Signed target aliasing in typed/packed scorer,actions.py;scorer.py;python.rs;native_collector.py,P3,Every legal signed target uniquely and equally encoded,T-ACT-02
+ACT-03,P1,DESIGN,Target and switch destination representation,scorer.py;requests.py,P3,Explicitly decide and validate candidate context strategy,T-ACT-03
+ACT-04,P0,ACCEPTANCE-GATE,Full legality and conditional-prefix consistency,actions.rs;python.rs;native_collector.py,P3,Set equality across typed/packed; engine rejects no accepted action,T-ACT-04
+KNOW-01,P0,CODE-CONFIRMED,Dynamic type change not synchronized to public knowledge,battle.rs;knowledge.rs,P1,Observable type change visible to permitted views,T-KNOW-01
+KNOW-02,P0,RISK-REPRO,Temporary type/form reversion on switch,battle.rs;knowledge.rs,P1,Paired before/after public vs world fixture passes,T-KNOW-02
+KNOW-03,P0,RISK-REPRO,Imprison internal disabled leak,actions.rs;observation.rs;state.rs,P1,Paired hidden-state noninterference test passes,T-KNOW-03
+KNOW-04,P1,CODE-CONFIRMED,Stale benched disabled flag,battle.rs;observation.rs,P1,Unknown vs applicable disabled accurately encoded,T-KNOW-04
+KNOW-05,P1,RISK-REPRO,Illusion/Transform identity and type history,battle.rs;knowledge.rs,P1,Adversarial private/public identities correct,T-KNOW-05
+DATA-01,P0,CONFIG-BLOCKER,Legacy 1137 profile vs new 1220 manifest,validated_a94_runtime.yaml;run_ddp_ppo.py;manifest.json,P0,Both ranks load identical exact 1220 team pool and SHA,T-DATA-01
+DATA-02,P1,EVALUATION-GAP,No heldout generalization teams,a10-p0-proposed-20261013/manifest.json,P4,Independent novel-team evaluation panel scoped,T-EVAL-01
+ENG-01,P0,ACCEPTANCE-GATE,Full reachable engine mechanics not certified,scope.json;ENGINE_SCOPE.md;oracle fixtures,P1,Reachable mechanics supported or explicit blockers,T-ENG-01
+PPO-01,P0,ACCEPTANCE-GATE,Terminal GAE and reward verification,native_collector.py;gae.py;learner.py,P4,Independent reference and both-side invariants,T-PPO-01
+PPO-02,P0,ACCEPTANCE-GATE,Actor/learner semantic and numerical parity,native_collector.py;rollout_buffer.py;learner.py,P4,"Same semantic observation, actions and logprobs",T-PPO-02
+PPO-03,P0,ACCEPTANCE-GATE,"DDP and rank parity, FP16 gate",ddp.py;learner.py;run_ddp_ppo.py,P4,2-rank digests and optimizer state match,T-PPO-03
+PPO-04,P1,CODE-CONFIRMED OPTIONAL,Rolling slot assignment replaced on partial reset,native_collector.py,P3,Fixed or feature disabled with enforced fail-closed,T-PPO-04
+OPS-01,P0,MIGRATION-BLOCKER,V2 schema and checkpoint compatibility,observation.py;rollout_buffer.py;run_ddp_ppo.py,P2,Wrong schema/wire/dataset/architecture rejected,T-OPS-01
+OPS-02,P0,RELEASE-GATE,Scratch campaign cannot reuse old weights/optimizer,run_ddp_ppo.py;checkpoint storage,P5,"Fresh weights, step zero, distinct run and SHA receipts",T-OPS-02
+OPS-03,P0,RELEASE-GATE,Historical runs and independent league preserved,run dirs;processes;git,P0,Old archive unmodified and independent league untouched,T-OPS-03
+OPS-04,P2,RISK-REPRO,Rare evaluation CDF padding selection,batched_policy.py,P4,No padded action selected under CDF edges,T-EVAL-02
+STAT-01,P0,FEATURE-REQUIRED,Per-team training statistics missing,native_collector.py;run_ddp_ppo.py,P4,All 1220 WLD and seat counts tracked,T-STAT-01
+STAT-02,P0,FEATURE-REQUIRED,Crash-safe DDP aggregation and resumption,checkpoint receipt;rank summaries,P4,No double count across rollback replay retries,T-STAT-02
+STAT-03,P1,FEATURE-REQUIRED,User-readable leaderboard and matchup CLI,analysis/team_performance,P4,Top bottom seat trends reports reproducible,T-STAT-03
+OBS-06,P1,RISK-REPRO,Vocabulary ID range and silent clamp,embeddings.py;scorer.py;dex.json,P2,Range collisions proven absent or rejected,T-OBS-06
+KNOW-06,P1,NOT-A-BUG,Main effect duration and Mega/Mimicry updates,room.rs;weather.rs;terrain.rs;battle.rs,P1,Regression only; no speculative rewrite,T-KNOW-06

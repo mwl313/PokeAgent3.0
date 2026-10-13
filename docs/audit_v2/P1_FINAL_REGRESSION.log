@@ -1,0 +1,39 @@
+   Compiling pa3-engine v0.1.0 (/home/minidc/Desktop/PokeAgent3.0-V2/engine)
+    Finished `release` profile [optimized] target(s) in 25.92s
+     Running tests/contracts.rs (/home/minidc/Desktop/PokeAgent3.0-V2/.audit-target/release/deps/contracts-75d1cf49536b7304)
+
+running 16 tests
+test forced_replacement_can_fill_either_slot_with_last_reserve ... ok
+test joint_masks_prevent_duplicate_bench_and_mega_but_allow_ally_targets ... ok
+test knowledge_is_persistent_beyond_recent_events_and_four_move_slots ... ok
+test preview_has_all_360_distinct_ordered_selections ... ok
+test struggle_pass_and_invalid_prefixes_are_distinct ... ok
+test regulation_scope_includes_uncollected_species_and_mega_forms ... ok
+test champions_public_hp_includes_boundary_colours_and_flooring ... ok
+test isolated_damage_kernel_matches_reference_modifiers_and_rng ... ok
+test rng_matches_reference_4096_draws_and_restores ... ok
+test event_ordering_and_rng_consumption_match_reference ... ok
+test target_ordered_handlers_match_reference_without_speed_tie_randomization ... ok
+test champions_action_speed_and_trick_room_match_reference_boundaries ... ok
+test recoil_fraction_rounding_matches_reference_for_all_hp_damage_values ... ok
+test every_target_class_matches_reference_in_both_doubles_slots ... ok
+test all_training_sets_and_legal_species_stats_match_reference ... ok
+test pp_and_fixed_point_rounding_match_reference ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s
+
+     Running tests/observation_completeness.rs (/home/minidc/Desktop/PokeAgent3.0-V2/.audit-target/release/deps/observation_completeness-e4ab77193ed3ef60)
+
+running 2 tests
+test every_player_known_state_field_reaches_the_observation_tensor ... ok
+test revealed_lock_conditions_reach_the_observation_tensor ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.11s
+
+     Running tests/observation_leakage.rs (/home/minidc/Desktop/PokeAgent3.0-V2/.audit-target/release/deps/observation_leakage-06d690cf32f99caf)
+
+running 1 test
+test hidden_opponent_state_cannot_change_p1_observation_or_mask ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.75s
+

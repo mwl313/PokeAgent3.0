@@ -1,0 +1,10 @@
+   Compiling pa3-engine v0.1.0 (/home/minidc/Desktop/PokeAgent3.0-V2/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.65s
+     Running tests/turns.rs (/home/minidc/Desktop/PokeAgent3.0-V2/.audit-target/debug/deps/turns-e8c0e583635bd622)
+
+running 1 test
+test native_battles_match_reference_at_every_decision_boundary has been running for over 60 seconds
+error: test failed, to rerun pass `--test turns`
+
+Caused by:
+  process didn't exit successfully: `/home/minidc/Desktop/PokeAgent3.0-V2/.audit-target/debug/deps/turns-e8c0e583635bd622 native_battles_match_reference_at_every_decision_boundary` (signal: 15, SIGTERM: termination signal)

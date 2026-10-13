@@ -1,0 +1,17 @@
+   Compiling pa3-engine v0.1.0 (/home/minidc/Desktop/PokeAgent3.0-V2/engine)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 8.00s
+     Running `/home/minidc/Desktop/PokeAgent3.0-V2/.audit-target/debug/examples/coverage_report /home/minidc/Desktop/PokeAgent3.0-V2/engine/data /home/minidc/Desktop/PokeAgent3.0-A/engine/data/a10-training-teams.json`
+moves: allowed=515 executable=486 (special=98 generic=388) blocked=29
+blocked_moves=attract,aurawheel,belch,copycat,electrify,fairylock,flyingpress,forestscurse,futuresight,gastroacid,gravapple,instruct,lockon,magicroom,magnetrise,mistyexplosion,reflecttype,saltcure,shellsidearm,snipeshot,sparklingaria,stuffcheeks,syrupbomb,teatime,transform,trickortreat,uproar,wonderroom,worryseed
+moves_witnessed=481/486 (differential fixtures that actually ran the move)
+dynamic_closure: callers=33 blocked=11 [ability:harvest,ability:imposter,ability:klutz,ability:pickup,ability:receiver,move:copycat,move:gastroacid,move:instruct,move:magicroom,move:transform,move:worryseed]
+abilities: legal=223 executable=200 blocked=23
+blocked_abilities=anticipation,battlebond,berserk,cudchew,cutecharm,embodyaspectcornerstone,embodyaspecthearthflame,embodyaspectteal,embodyaspectwellspring,forewarn,gluttony,gulpmissile,harvest,hungerswitch,iceface,imposter,klutz,opportunist,pickup,quickdraw,receiver,runaway,shieldsdown
+items: legal=166 executable=166 blocked=0
+blocked_items=
+pool_path=/home/minidc/Desktop/PokeAgent3.0-A/engine/data/a10-training-teams.json
+pool_team_count=1220
+pool_blockers: distinct_moves=0 distinct_abilities=0 distinct_items=0
+pool_blocked_moves=
+pool_blocked_abilities=
+pool_blocked_items=
