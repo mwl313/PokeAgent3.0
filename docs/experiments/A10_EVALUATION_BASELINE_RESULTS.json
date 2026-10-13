@@ -1,1 +1,32 @@
-{"status":"SMOKE_ONLY","checkpoint_matches":102400,"opponent":"random","matches":8,"wins":5,"losses":3,"draws":0,"score_mean":0.625,"score_ci95":[0.5,0.875],"illegal_actions":0,"operational_errors":0,"strength_claim":"insufficient_games_for_strength_claim"}
+{
+  "checkpoint_matches": 102400,
+  "checkpoint_vs_checkpoint_smoke": {
+    "candidate": "a10-700416-b4cdf8ae9abfe106",
+    "dedup_receipt": true,
+    "fixture_manifest_hash": "b871d0ef1cdfc02febfbb0cdec899465ff108561c3ef25976eb8c9c51205ffcf",
+    "illegal_actions": 0,
+    "matches": 8,
+    "operational_errors": 0,
+    "opponent": "a10-602112-e76f06c02bf6d709",
+    "runtime_seconds": 6.505595898001047,
+    "score_ci95": [
+      0.125,
+      0.875
+    ],
+    "score_mean": 0.5
+  },
+  "draws": 0,
+  "illegal_actions": 0,
+  "losses": 3,
+  "matches": 8,
+  "operational_errors": 0,
+  "opponent": "random",
+  "score_ci95": [
+    0.5,
+    0.875
+  ],
+  "score_mean": 0.625,
+  "status": "SMOKE_ONLY",
+  "strength_claim": "insufficient_games_for_strength_claim",
+  "wins": 5
+}
