@@ -36,7 +36,8 @@ def find_processes(root: Path):
 def parse_logs(root: Path):
     ranks={}; last_ts=0.0; current_matches=0; last_complete=0
     for rank in (0,1):
-        path=root/f'report.json.rank{rank}.log'
+        candidates=sorted(root.glob(f'report*.rank{rank}.log'), key=lambda p:p.stat().st_mtime if p.exists() else 0)
+        path=candidates[-1] if candidates else root/f'report.json.rank{rank}.log'
         data={"rank":rank,"iteration":0,"complete_iteration":0,"matches":0,"last_progress":None,"last_update_s":None,"recompute_max_diff":None,"recompute_within":None,"error_lines":[]}
         if path.exists():
             st=path.stat(); last_ts=max(last_ts, st.st_mtime)
