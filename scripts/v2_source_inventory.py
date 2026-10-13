@@ -54,6 +54,7 @@ def main():
         worktrees[name] = {key: command('git', '-C', str(root), *argv) for key, argv in {
             'head': ['rev-parse', 'HEAD'], 'status': ['status', '--porcelain=v1'],
             'remote': ['remote', '-v'], 'audit_diff': ['diff', '--stat', 'd10ac69', 'HEAD'],
+            'user_changes': ['diff', '--binary'],
         }.items()}
     payload = {
         'legacy_policy_classification': 'V1 historical only; prohibited as V2 initialization',
@@ -67,6 +68,8 @@ def main():
         'services': command('systemctl', '--user', 'show', 'a10-ppo-recovery-20261013.service', 'a10-evaluation-worker.service', '-p', 'Id', '-p', 'ActiveState', '-p', 'MainPID', '-p', 'ExecStart'),
         'gpu': command('nvidia-smi'),
         'python': sys.version,
+        'torch': __import__('torch').__version__,
+        'rust': command('/home/minidc/Desktop/PokeAgent3.0-A/.tools/rustup/toolchains/1.90.0-x86_64-unknown-linux-gnu/bin/rustc', '--version'),
     }
     pathlib.Path(args.output).write_text(json.dumps(payload, indent=2) + '\n')
     print(json.dumps({k: payload[k] for k in ['latest_generation', 'team_file_sha256', 'dataset_manifest_sha256', 'native_loader_counts', 'engine_binary_sha256']}))
