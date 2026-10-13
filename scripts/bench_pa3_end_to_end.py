@@ -316,7 +316,8 @@ def run_repeat(args, repeat):
     return report
 
 
-def recompute_check(learner, buffer, device, limit=1024, amp=False, per_stratum=96, audit=False):
+def recompute_check(learner, buffer, device, limit=1024, amp=False, per_stratum=96, audit=False,
+                    secondary=False, evidence_path=None):
     """Stratified sampled/recomputed log-probability parity gate.
 
     A first-N-rows check cannot be extrapolated to the whole iteration, so rows
@@ -359,6 +360,7 @@ def recompute_check(learner, buffer, device, limit=1024, amp=False, per_stratum=
     # Isolate batch-shape sensitivity: the same preserved row is evaluated
     # alone, without changing its observation, mask, or selected prefix.
     isolated = []
+    isolated_logprobs = []
     isolated_wall = 0.0
     if audit:
         started = _time.perf_counter()
@@ -369,6 +371,7 @@ def recompute_check(learner, buffer, device, limit=1024, amp=False, per_stratum=
                     one_eval = learner.model.evaluate(one.observation, one.candidates,
                                                       selected=one.candidates.selected)[1]
                 isolated.append(float(abs(one_eval.request_logprob.float().item() - row.old_logprob)))
+                isolated_logprobs.append(float(one_eval.request_logprob.float().item()))
         if device.type == "cuda":
             torch.cuda.synchronize(device)
         isolated_wall = _time.perf_counter() - started
@@ -381,7 +384,7 @@ def recompute_check(learner, buffer, device, limit=1024, amp=False, per_stratum=
         entry["rows"] += 1
         entry["max_abs_diff"] = max(entry["max_abs_diff"], float(per_row[index]))
     tolerance = 1e-3 if amp else 1e-4
-    return {
+    result = {
         "rows": len(sampled),
         "total_rollout_rows": len(buffer.rows),
         "sampled_fraction": len(sampled) / max(len(buffer.rows), 1),
@@ -403,6 +406,46 @@ def recompute_check(learner, buffer, device, limit=1024, amp=False, per_stratum=
         "tolerance": tolerance,
         "within_gate": bool(float(difference.max().item()) <= tolerance) if len(sampled) else True,
     }
+    result["primary_within_gate"] = result["within_gate"]
+    if secondary and (audit or not result["within_gate"]):
+        from agent.ppo.recompute_safety import secondary_audit
+        secondary_started = _time.perf_counter()
+        result["secondary"] = secondary_audit(
+            learner.model, buffer, sampled, evaluation.request_logprob.float().cpu().tolist(),
+            device, tolerance, force=audit,
+        )
+        result["timing_seconds"]["secondary_audit"] = _time.perf_counter() - secondary_started
+        if not result["within_gate"]:
+            result["within_gate"] = result["secondary"]["accepted"]
+        if audit and isolated:
+            worst = sorted(range(len(isolated)), key=lambda i: isolated[i], reverse=True)[:4]
+            result["isolated_outlier_diagnosis"] = secondary_audit(
+                learner.model, buffer, [sampled[i] for i in worst],
+                [isolated_logprobs[i] for i in worst], device, tolerance, force=True)
+    # Persist detailed diagnostics immediately, including rejected results.
+    # Failure evidence contains immutable CPU copies of sampled rows and their
+    # original actor groups plus model weights, enough for offline replay.
+    if evidence_path and not result["primary_within_gate"]:
+        from agent.ppo.experimental_checkpoint import save_envelope
+        groups = getattr(buffer, "actor_groups", [])
+        flagged = [row for row, diff in zip(sampled, per_row) if not math_isfinite(diff) or diff > tolerance]
+        ids = {id(row): i for i, row in enumerate(buffer.rows)}
+        chosen_groups = [g for g in groups if any(g["start"] <= ids[id(row)] < g["stop"] for row in flagged)]
+        group_rows = [buffer.rows[g["start"]:g["stop"]] for g in chosen_groups[:8]]
+        payload = {"kind": "ppo_recompute_failure_evidence_v1", "result": result,
+                   "model": {k: v.detach().cpu().clone() for k, v in learner.model.state_dict().items()},
+                   "model_config": learner.model.config.to_dict(),
+                   "precision_mode": learner.model.precision_contract.mode,
+                   "sampled_rows": sampled, "actor_groups": chosen_groups[:8], "group_rows": group_rows,
+                   "sampled_observations": [buffer.observation_store.get(r.observation_ref) for r in sampled],
+                   "group_observations": [buffer.observation_store.stacked_indices([r.observation_ref for r in rows]) for rows in group_rows]}
+        save_envelope(evidence_path, payload)
+    return result
+
+
+def math_isfinite(value):
+    import math
+    return math.isfinite(value)
 
 
 def main():

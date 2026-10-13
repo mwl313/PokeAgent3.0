@@ -48,7 +48,16 @@ def capture_generation(rolling, name, archive):
     if Path(name).name!=name: raise ValueError('invalid generation name')
     generation=rolling/'generations'/name; m=read(generation/'manifest.json')
     if not m or m.get('complete') is not True or m.get('iteration_complete') is not True: raise ValueError('incomplete generation')
-    if m.get('world_size')!=2 or m.get('source_sha')!=SOURCE or m.get('dataset_manifest_hash')!=DATASET: raise ValueError('manifest contract mismatch')
+    training_source=m.get('source_sha')
+    migration=None
+    if training_source!=SOURCE:
+        # Trusted-local exact migration registration, consumed by the short
+        # discovery process. The already-running battle worker keeps its
+        # original inference contract and requires no reload or interruption.
+        if not isinstance(training_source,str) or len(training_source)!=40 or any(c not in '0123456789abcdef' for c in training_source): raise ValueError('invalid training source')
+        migration=read(rolling/'source_migrations'/f'{training_source}.json')
+        if not migration or migration.get('source_sha')!=SOURCE or migration.get('target_sha')!=training_source or migration.get('scope')!='telemetry-and-recompute-verification-only': raise ValueError('unregistered training source migration')
+    if m.get('world_size')!=2 or m.get('dataset_manifest_hash')!=DATASET: raise ValueError('manifest contract mismatch')
     files=[]
     try:
         for rank in ('0','1'):
@@ -60,13 +69,23 @@ def capture_generation(rolling, name, archive):
             row=m['ranks'][str(rank)]; h=hashlib.sha256()
             for b in iter(lambda:f.read(1<<20),b''): h.update(b)
             if f.tell()!=row['bytes'] or h.hexdigest()!=row['sha256']: raise ValueError('rank checksum mismatch')
-            f.seek(0); payloads.append(validate_payload(torch.load(f,map_location='cpu',weights_only=False),m,rank))
+            f.seek(0); payload=torch.load(f,map_location='cpu',weights_only=False)
+            if migration:
+                if payload.get('source_sha')!=training_source or payload.get('experiment',{}).get('source_migration')!=migration: raise ValueError('checkpoint migration receipt mismatch')
+                # Validate unchanged inference contract without relabeling the
+                # stored recovery envelope or its manifest/hashes.
+                validate_payload({**payload,'source_sha':SOURCE},m,rank)
+            else: validate_payload(payload,m,rank)
+            payloads.append(payload)
         if payloads[0]['rank_digests']!=payloads[1]['rank_digests']: raise ValueError('rank peer mismatch')
         for rank,payload in enumerate(payloads):
             if training_digests(payload)!=payload['rank_digests'][str(rank)]: raise ValueError('actual model/Adam digest mismatch')
         model=payloads[0]['learner']['model']; md=canonical_model_digest(model)
         if canonical_model_digest(payloads[1]['learner']['model'])!=md: raise ValueError('rank actual model mismatch')
         meta={'kind':'a10_inference_snapshot','source_sha':SOURCE,'model_config_hash':MODEL,'action_schema_hash':ACTION,'dataset_manifest_hash':DATASET,'experiment':payloads[0]['experiment'],'accounting':{'committed_matches':m['committed_matches']},'checkpoint_generation':name,'source_checkpoint_sha256':m['ranks']['0']['sha256'],'learner':{'model':model}}
+        if migration:
+            meta.update(training_source_sha=training_source,training_source_migration=migration,
+                        source_sha_semantics='frozen evaluation execution contract; training_source_sha is actual trainer revision')
         return store_snapshot(archive,meta,legacy=False)
     finally:
         for f in files: f.close()

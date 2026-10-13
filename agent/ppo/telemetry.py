@@ -20,7 +20,7 @@ def read_iteration(path):
 
 def append_training_update(path, *, iteration, committed_matches, rank,
                            update, collector, iteration_matches,
-                           iteration_wall_s, timing=None, recompute=None):
+                           iteration_wall_s, timing=None, recompute=None, verification=None):
     """Append one completed PPO iteration without changing learner state.
 
     This is called after the rank-digest and DDP iteration barrier succeed.
@@ -72,6 +72,7 @@ def append_training_update(path, *, iteration, committed_matches, rank,
         },
         "safety": {
             "recompute": dict(recompute or {}),
+            "rank_verification": dict(verification or {}),
             "skipped_optimizer_steps": int(data["optimizer_steps_skipped"]),
         },
         "semantics": {

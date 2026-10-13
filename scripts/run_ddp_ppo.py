@@ -147,6 +147,8 @@ def parse_args(argv=None):
                         help="opt-in multiplier for the absolute match-clock LR schedule")
     parser.add_argument("--experimental-allow-source-sha", action="store_true",
                         help="explicitly migrate a trusted A3 checkpoint from its recorded source SHA")
+    parser.add_argument("--experimental-source-migration", default="",
+                        help="trusted local, exact-source A10 recovery migration receipt")
     parser.add_argument("--experimental-allow-opponent-migration", action="store_true",
                         help="explicitly migrate a current-only A4 envelope to the declared historical pool")
     parser.add_argument("--historical-checkpoint", action="append", default=[],
@@ -205,6 +207,8 @@ def parse_args(argv=None):
                         help="opt-in numerical stability setting for precision experiments")
     parser.add_argument("--recompute-audit", action="store_true",
                         help="run isolated-row diagnostics in addition to the production gate")
+    parser.add_argument("--recompute-secondary", action="store_true",
+                        help="bounded original-actor-group and FP32 verification of AMP outliers")
     parser.add_argument(
         "--columnar-store",
         action="store_true",
@@ -549,6 +553,7 @@ def worker(args) -> None:
     learner = PPOLearner(model, ppo_config, device=device, lr_scale=lr_scale)
 
     source_sha = source_provenance().get("git_sha")
+    source_migration = resume_envelope.get("experiment", {}).get("source_migration") if resume_envelope else None
     dataset_manifest_hash = hash_file(args.dataset_manifest)
     action_schema_hash = hash_json({
         "observation": "pa3-entity-observation-v1",
@@ -616,7 +621,17 @@ def worker(args) -> None:
                 "0059b34179790610d0f39e832297be8645790a80",
                 "575a706e2fed072e30d9f0dda0f8a3327fcb48aa",
             }
-            if not args.experimental_allow_source_sha or recorded_source_sha not in trusted_migrations:
+            if args.experimental_source_migration:
+                from agent.ppo.source_migration import validate_recovery_migration
+                source_migration = validate_recovery_migration(
+                    args.experimental_source_migration, ROOT, recorded_source_sha, source_sha)
+                migration_receipt = json.loads(Path(args.experimental_source_migration).read_text())
+                if str(resume_root.resolve()) != migration_receipt.get("checkpoint"):
+                    raise RuntimeError("migration receipt checkpoint path mismatch")
+                for peer in (0, 1):
+                    if hash_file(resume_root / f"rank{peer}.pt") != migration_receipt["rank_artifact_hashes"][str(peer)]:
+                        raise RuntimeError("migration checkpoint artifact checksum mismatch")
+            elif not args.experimental_allow_source_sha or recorded_source_sha not in trusted_migrations:
                 raise RuntimeError("source SHA mismatch; pass --experimental-allow-source-sha only for the recorded A3 source")
             expected_source_sha = recorded_source_sha
             note(f"explicit checkpoint migration: {recorded_source_sha} -> {source_sha}")
@@ -658,6 +673,24 @@ def worker(args) -> None:
         from agent.ppo.experimental_checkpoint import restore_rng_state
         restore_rng_state(resume_envelope["rng"], [shuffle_generator])
     initial_model_digest, initial_optimizer_digest = state_digest(model, learner.optimizer)
+    if resume_envelope is not None:
+        expected_digests = resume_envelope["rank_digests"][str(rank)]
+        if {"model": initial_model_digest, "optimizer": initial_optimizer_digest} != expected_digests:
+            raise RuntimeError("restored actual model/optimizer digests disagree with checkpoint")
+        if learner.scheduler.state_dict() != resume_envelope["learner"]["scheduler"] or \
+                learner.scaler.state_dict() != resume_envelope["learner"]["scaler"] or \
+                learner.optimizer_steps != resume_envelope["learner"]["optimizer_steps"]:
+            raise RuntimeError("restored scheduler/GradScaler/optimizer clock mismatch")
+        if not torch.equal(shuffle_generator.get_state(), resume_envelope["rng"]["generators"][0]) or \
+                not torch.equal(torch.get_rng_state(), resume_envelope["rng"]["torch_cpu"]) or \
+                any(not torch.equal(actual, saved) for actual, saved in
+                    zip(torch.cuda.get_rng_state_all(), resume_envelope["rng"]["torch_cuda"])):
+            raise RuntimeError("restored owned/CPU/CUDA RNG mismatch")
+        note(f"resume state verified: matches={learner.scheduler.matches} "
+             f"optimizer_steps={learner.optimizer_steps} model={initial_model_digest} "
+             f"optimizer={initial_optimizer_digest}")
+    initial_scheduler_snapshot = dict(learner.scheduler.state_dict())
+    initial_scaler_snapshot = dict(learner.scaler.state_dict())
     initial_cpu_rng_digest = _compact_digest(torch.get_rng_state())
     initial_cuda_rng_digest = _compact_digest(torch.cuda.get_rng_state(device))
     initial_shuffle_rng_digest = _compact_digest(shuffle_generator.get_state())
@@ -689,6 +722,7 @@ def worker(args) -> None:
                 observation_mode="fixed", candidate_wire="packed",
                 amp=True, inference_mode=True,
                 precision_mode=args.precision_mode,
+                recompute_provenance=args.recompute_secondary,
                 columnar_observation_store=args.columnar_store,
                 rolling_slots=args.rolling_slots,
                 historical_probability=args.historical_probability,
@@ -715,13 +749,18 @@ def worker(args) -> None:
         recompute = None
         if recompute_check is not None:
             stage_started = time.perf_counter()
-            recompute = recompute_check(learner, buffer, device, amp=True, audit=args.recompute_audit)
+            evidence_path = (f"{os.path.abspath(args.report)}.rank{rank}."
+                             f"iteration{absolute_iteration + 1}.recompute.pt")
+            recompute = recompute_check(learner, buffer, device, amp=True, audit=args.recompute_audit,
+                                        secondary=args.recompute_secondary, evidence_path=evidence_path)
             finish_stage("recompute_wall_s", stage_started)
             note(
                 f"recompute gate: {recompute['rows']} rows max|diff|="
                 f"{recompute['max_abs_diff']:.3e} (tol {recompute['tolerance']:.1e}) "
                 f"within={recompute['within_gate']}"
             )
+            if recompute.get("secondary"):
+                note(f"recompute secondary audit: {json.dumps(recompute['secondary'], sort_keys=True)}")
             if not recompute["within_gate"]:
                 raise RuntimeError("sampled-vs-recomputed logprob gate failed; refusing PPO update")
 
@@ -799,6 +838,8 @@ def worker(args) -> None:
                     "parent_resume": bool(resume_envelope),
                     "lr_scale": lr_scale,
                     "source_migration_allowed": bool(args.experimental_allow_source_sha),
+                    "source_migration": source_migration,
+                    "recompute_secondary": bool(args.recompute_secondary),
                     "precision_mode": args.precision_mode,
                     "precision_stability": args.precision_stability,
                     "precision_contract_version": "pa3-execution-contract-v1",
@@ -877,9 +918,8 @@ def worker(args) -> None:
             "parity": {
                 "initial_model_digest": initial_model_digest,
                 "initial_optimizer_digest": initial_optimizer_digest,
-                "initial_scheduler": {"matches": int(learner.scheduler.matches),
-                                      "lr": learner.scheduler.learning_rate},
-                "initial_scaler": learner.scaler.state_dict(),
+                "initial_scheduler": initial_scheduler_snapshot,
+                "initial_scaler": initial_scaler_snapshot,
                 "cpu_rng_digest": initial_cpu_rng_digest,
                 "cuda_rng_digest": initial_cuda_rng_digest,
                 "shuffle_rng_digest": initial_shuffle_rng_digest,
@@ -916,6 +956,9 @@ def worker(args) -> None:
                 iteration_wall_s=metrics["iteration_wall_s"],
                 timing=timings,
                 recompute=recompute,
+                verification={"model_digest": model_digest, "optimizer_digest": optimizer_digest,
+                              "digests_equal": bool(digests_equal), "source_sha": source_sha,
+                              "source_migration": source_migration},
             )
         except (OSError, ValueError, TypeError) as exc:
             note(f"WARNING: nonfatal PPO telemetry write failure: {exc}")
@@ -977,6 +1020,7 @@ def parent(args) -> None:
                 "--executor", args.executor,
                 "--precision-mode", args.precision_mode,
                 "--precision-stability", args.precision_stability,
+                "--experimental-source-migration", args.experimental_source_migration,
             ]
             if args.experimental_allow_source_sha:
                 command.append("--experimental-allow-source-sha")
@@ -990,6 +1034,8 @@ def parent(args) -> None:
                 command.append("--no-recompute-gate")
             if args.recompute_audit:
                 command.append("--recompute-audit")
+            if args.recompute_secondary:
+                command.append("--recompute-secondary")
             command.append("--trim-observation-padding" if args.trim_observation_padding
                            else "--no-trim-observation-padding")
             command.append("--compact-candidates" if args.compact_candidates

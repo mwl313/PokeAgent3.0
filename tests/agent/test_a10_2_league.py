@@ -53,6 +53,14 @@ def test_incomplete_and_corrupt_generation_rejected(tmp_path):
  (g/'rank0.pt').write_bytes(b'x');(g/'rank1.pt').write_bytes(b'y')
  with pytest.raises(ValueError):capture_generation(r,'g',tmp_path/'archive')
 
+def test_new_trainer_source_requires_registered_exact_migration(tmp_path):
+ from agent.evaluation.a10_league import capture_generation
+ r=tmp_path/'rolling';g=r/'generations/g';g.mkdir(parents=True)
+ m={'complete':True,'iteration_complete':True,'world_size':2,'source_sha':'f'*40,'dataset_manifest_hash':DATASET}
+ atomic(g/'manifest.json',m)
+ with pytest.raises(ValueError,match='unregistered'):
+  capture_generation(r,'g',tmp_path/'archive')
+
 def test_evaluation_identity_separates_material_inputs():
  from agent.evaluation.league import evaluation_identity
  from agent.evaluation.fixed_policy import build_fixture_manifest

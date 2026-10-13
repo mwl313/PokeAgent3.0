@@ -70,6 +70,9 @@ class NativeCollectorConfig:
     # Actor-only inference flags (A/B measured; probabilities stay FP32).
     amp: bool = False
     precision_mode: str = "A"
+    # Diagnostic metadata only: preserve actor group identity for an outlier
+    # replay. No extra policy forward and no sampling/RNG changes.
+    recompute_provenance: bool = False
     inference_mode: bool = False
     # configs/train.yaml `collect_both_sides_when_current_self_play: true`: when
     # both seats run the frozen current policy, both sides' requests are
@@ -530,6 +533,11 @@ class NativeCollector:
         # for the packed rollout fast path.
         compact_batch = batch_observations.to_compact_numpy() if batch_observations is not None else None
         for (policy_id, branch_count), indices in sorted(groups.items()):
+            group_row_start = len(self.buffer.rows)
+            group_observation_hash = None
+            if self.config.recompute_provenance and policy_id == self.policy_id and compact_batch is not None:
+                from agent.ppo.recompute_safety import compact_hash
+                group_observation_hash = compact_hash({key: value[indices] for key, value in compact_batch.items()})
             policy_model = self.model if policy_id == self.policy_id else self.historical_models[policy_id]
             start = time.perf_counter()
             if batch_observations is not None:
@@ -725,6 +733,19 @@ class NativeCollector:
                     self.stats.opponent_requests += 1
                 submissions.setdefault(env, []).append((side, action))
                 self.stats.decisions += 1
+            if group_observation_hash is not None:
+                group_rows = self.buffer.rows[group_row_start:]
+                # Missing historical/non-recorded peers cannot be reconstructed;
+                # such groups deliberately remain ineligible for a secondary pass.
+                if len(group_rows) == len(indices):
+                    from agent.ppo.recompute_safety import row_contract_hash
+                    if not hasattr(self.buffer, "actor_groups"):
+                        self.buffer.actor_groups = []
+                    self.buffer.actor_groups.append({
+                        "start": group_row_start, "stop": len(self.buffer.rows),
+                        "observation_hash": group_observation_hash,
+                        "row_contract_hash": row_contract_hash(group_rows),
+                    })
         specs = []
         order = sorted(submissions)
         start_assemble = time.perf_counter()
