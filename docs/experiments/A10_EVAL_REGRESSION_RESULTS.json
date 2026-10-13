@@ -1,0 +1,1 @@
+{"status":"DEFERRED","reason":"No full A10 baseline comparison was run during live PPO training. CPU smoke validated execution and legality only; 8 games are insufficient for strength claims.","first_checkpoint_matches":102400,"evaluation_artifact":"runs/a10_production_20261013_v2/evaluation/cpu_smoke.json"}

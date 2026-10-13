@@ -1,0 +1,11 @@
+[Unit]
+Description=Queue A10 evaluations after complete checkpoints
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=10min
+Persistent=true
+Unit=a10-eval-scheduler.service
+
+[Install]
+WantedBy=timers.target

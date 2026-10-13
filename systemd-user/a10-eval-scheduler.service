@@ -1,0 +1,8 @@
+[Unit]
+Description=PokeAgent A10 CPU-only evaluation scheduler
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/minidc/Desktop/PokeAgent3.0-A-eval
+Nice=10
+ExecStart=/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python /home/minidc/Desktop/PokeAgent3.0-A-eval/scripts/a10_eval_scheduler.py --run-root /home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2
