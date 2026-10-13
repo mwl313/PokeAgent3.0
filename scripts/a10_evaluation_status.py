@@ -14,7 +14,7 @@ def main():
  latest='';
  try: latest=(run/'rolling/LATEST').read_text().strip()
  except OSError: pass
- out={'latest_generation':latest,'registered_policies':sorted(reg.get('policies',{})),'pending_jobs':[j for j in sched.get('jobs',{}).values() if j.get('status')=='pending'],'failed_jobs':[j for j in sched.get('jobs',{}).values() if j.get('status')=='failed'],'completed_jobs':[j for j in sched.get('jobs',{}).values() if j.get('status')=='completed'],'sidecar':state,'smoke_result':load('cpu_smoke.json',None)}
+ out={'latest_generation':latest,'registered_policies':sorted(reg.get('policies',{})),'pending_jobs':[j for j in sched.get('jobs',{}).values() if j.get('status')=='pending'],'failed_jobs':[j for j in sched.get('jobs',{}).values() if j.get('status')=='failed'],'completed_jobs':[j for j in sched.get('jobs',{}).values() if j.get('status')=='completed'],'sidecar':state,'smoke_result':load('cpu_smoke.json',None),'best_policy':load('best_policy.json',None)}
  if a.json: print(json.dumps(out,indent=2,sort_keys=True)); return
  print(f"latest={latest} policies={len(out['registered_policies'])} pending={len(out['pending_jobs'])} failed={len(out['failed_jobs'])} completed={len(out['completed_jobs'])}")
  print(json.dumps(out.get('sidecar',{}),sort_keys=True))
