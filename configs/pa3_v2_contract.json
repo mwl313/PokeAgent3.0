@@ -1,0 +1,101 @@
+{
+  "schema": "pa3-v2-contract-v1",
+  "observation_schema": "pa3-entity-observation-v2",
+  "wire_version": 2,
+  "fixed_tokens": 96,
+  "active_tokens": 88,
+  "fixed_fields": {
+    "categories": 32,
+    "floats": 50,
+    "flags": 40
+  },
+  "wire_header": "u16 version + 32 bytes semantic SHA256 + existing fixed/ragged sections",
+  "ragged": {
+    "effects": [
+      "id",
+      "present",
+      "duration",
+      "duration_known",
+      "stacks",
+      "stacks_known",
+      "source",
+      "source_known"
+    ],
+    "repertoire": [
+      "id"
+    ],
+    "types": [
+      "id"
+    ],
+    "base_moves": [
+      "id",
+      "pp",
+      "max_pp",
+      "disabled",
+      "used"
+    ],
+    "move_effects": [
+      "kind",
+      "chance",
+      "status",
+      "volatile",
+      "boost_0",
+      "boost_1",
+      "boost_2",
+      "boost_3",
+      "boost_4",
+      "boost_5",
+      "boost_6",
+      "heal",
+      "heal_known"
+    ]
+  },
+  "ragged_storage": "lossless per-token CSR, no cap/truncation; dynamic per-observation rows in compact/columnar storage",
+  "ragged_consumer": "family-specific categorical embeddings and numeric projections; ordered per-token segment sum plus count; all five families added before encoder",
+  "known_masks": "numeric/boolean values AND masks neural-visible; categorical known zero distinct from unknown; typeless ID 0 is known",
+  "numeric_changes": {
+    "EventChange": "asinh(value)/asinh(2147483648), preserving sign and small nonzero values without overflow",
+    "Weight": "weight_hg / 10000; inverse normalized * 10000"
+  },
+  "reserved_slots": {
+    "categories": [
+      30,
+      31
+    ],
+    "floats": [
+      49
+    ]
+  },
+  "precision": "pa3-precision-{A,B,C,D}-v2; Mode D FP16 roundtrip at actor and learner ingress, ragged categorical IDs remain exact",
+  "action_schema": "atomic-action-v2",
+  "action_fields": [
+    "kind",
+    "own_slot",
+    "move_slot",
+    "target_location",
+    "switch_destination",
+    "resource"
+  ],
+  "target_range": [
+    -2,
+    -1,
+    0,
+    1,
+    2
+  ],
+  "target_embedding": "target + 2",
+  "active_to_roster": "own Pokemon category slot 22: 0 inactive; active position + 1 otherwise",
+  "preview_actor": "PICK references switch_destination roster; normal MOVE/SWITCH/PASS references active-to-roster",
+  "optional_target_destination_context": "deferred; mandatory actor/move identity correction only",
+  "checkpoint_policy": "V1 incompatible; require exact observation/action/ragged/precision/model/dataset identities; scratch initializer cannot load V1",
+  "catalogue_sha256": "63ccf25496fe40aea4f041b053296287bf00765aa6eeb8a1d5a4c9dfd179f9dc",
+  "catalogue_max_ids": {
+    "species": 1518,
+    "moves": 954,
+    "items": 583,
+    "abilities": 321,
+    "natures": 25,
+    "types": 20,
+    "conditions": 168
+  }
+}
