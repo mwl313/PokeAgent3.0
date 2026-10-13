@@ -65,3 +65,10 @@ Current verdict: **BLOCKED for exact-pool engine PASS; storage integration bound
 - [x] Normal production mode documented as numerically bounded baseline variation.
 - [x] A10 profile pilot passes with 1,220-team simulator data.
 - [ ] Long-horizon launch process status recorded after final commit.
+
+## A10-P5 launch record
+
+- [x] Production process started only after profile manifest wiring was corrected.
+- [x] PID 45282 active with two V100 workers and 4,096 committed matches observed.
+- [x] First PPO update recompute/DDP gates passed.
+- [ ] First 100,000-match checkpoint: pending.

@@ -1,1 +1,44 @@
-{"schema":"a10-production-run-manifest-v1","status":"NOT_LAUNCHED","experiment_id":"a10-production-20261013-blocked-parity","source_sha":"a5ab6f049a50fa9e4fa1ec60be871a5e019b3678","dataset_id":"a10-p0-proposed-20261013","dataset_sha256":"1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb","engine_identity":{"oracle_commit":"14546894d86f9589ac11130c510bbe73b6968665","binary":"target/release/examples/team_probe"},"initialization":{"kind":"random","seed":20261009,"model_digest":"6cf741c2a78a861e54a5e1263668f7a9b87780ff924b5777eb872fdcc1c507cb"},"profile":"configs/a10_production.yaml","profile_semantic_hash":"1d57140e193c4f839bd896973c382f8010e25442b7f61133ffd383c20f1bafa2","ppo_epochs":2,"lr_scale":0.5,"precision":"D/fp16-reduction-off","checkpoint_interval_matches":100000,"retained_generations":3,"evaluation_schedule":{"lightweight":50000,"full":200000},"disk_guard":{"reserve_gib":15,"concurrent_allowance_gb":5},"launch_command":null,"process_supervision":null,"reason_blocked":"resume parity NOT_REPRODUCIBLE"}
+{
+  "schema": "a10-production-run-manifest-v1",
+  "status": "STARTED",
+  "experiment_id": "a10-production-20261013-v2",
+  "source_sha": "0b5d930",
+  "dataset_id": "a10-p0-proposed-20261013",
+  "dataset_sha256": "1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb",
+  "engine_identity": {
+    "oracle_commit": "14546894d86f9589ac11130c510bbe73b6968665",
+    "binary": "target/release/examples/team_probe"
+  },
+  "initialization": {
+    "kind": "random",
+    "seed": 20261009,
+    "model_digest": "6cf741c2a78a861e54a5e1263668f7a9b87780ff924b5777eb872fdcc1c507cb"
+  },
+  "profile": "configs/a10_production.yaml",
+  "profile_semantic_hash": "1d57140e193c4f839bd896973c382f8010e25442b7f61133ffd383c20f1bafa2",
+  "ppo_epochs": 2,
+  "lr_scale": 0.5,
+  "precision": "D/fp16-reduction-off",
+  "checkpoint_interval_matches": 100000,
+  "retained_generations": 3,
+  "evaluation_schedule": {
+    "lightweight": 50000,
+    "full": 200000
+  },
+  "disk_guard": {
+    "reserve_gib": 15,
+    "concurrent_allowance_gb": 5
+  },
+  "launch_command": "setsid env PYTHONPATH=/home/minidc/Desktop/PokeAgent3.0-A/engine/python:/home/minidc/Desktop/PokeAgent3.0-A <venv>/bin/python scripts/run_ddp_ppo.py --profile configs/a10_production.yaml --games 2048 --iterations 24415 --experimental-checkpoint runs/a10_production_20261013_v2/boundary --rolling-checkpoint-root runs/a10_production_20261013_v2/rolling --report runs/a10_production_20261013_v2/report.json",
+  "process_supervision": {
+    "pid": 45282,
+    "rank_logs": "runs/a10_production_20261013_v2/report.json.rank{0,1}.log",
+    "launcher_log": "runs/a10_production_20261013_v2/logs/launcher.log",
+    "checkpoint_root": "runs/a10_production_20261013_v2/rolling",
+    "initial_committed_matches": 0,
+    "observed_committed_matches": 4096,
+    "first_update": "PASS",
+    "first_checkpoint": "pending at 100000 matches"
+  },
+  "reason_blocked": "resume parity NOT_REPRODUCIBLE"
+}

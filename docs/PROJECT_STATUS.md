@@ -138,3 +138,7 @@ The A10 production profile is now versioned at `configs/a10_production.yaml` and
 ## A10-P5 status (2026-10-13)
 
 A10-P4 continuation divergence was localized to the first PPO update's V100 CUDA/AMP numerical result: independent continuous controls had identical rollout digests and differed only after forward/backward/update. Opt-in deterministic diagnostics produced bit-exact uninterrupted versus checkpoint/resumed state through 4,096 matches, including rollout, model, optimizer, scheduler, RNG, DDP, and recompute parity. Normal Mode D remains numerically bounded rather than bit-exact. A10 production profile and 100,000-match checkpoint schedule are verified; production launch is conditionally ready after commit/push.
+
+## A10-P5 production launch (2026-10-13)
+
+After fixing profile-to-worker manifest wiring, the authorized A10 production campaign started under PID 45282 in `runs/a10_production_20261013_v2`. The workers use the frozen `a10-p0-proposed-20261013` manifest, 1,220-team simulator data, PPO-2/LR-scale-0.5 Mode D, and a 100,000-match rolling checkpoint interval. The first 4,096 committed matches and first PPO update passed recompute and DDP rank-digest gates; the first scheduled recovery generation is pending at 100,000 matches.
