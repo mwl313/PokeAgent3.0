@@ -2,14 +2,17 @@
 
 ## Latest Imprison follow-up
 
-The original fixture discrepancy below is now repaired. The final native
-corpus and independent outbound-payload verifier pass all 1,152 fixtures /
-25,231 boundaries; 39 relevant Rust tests and 5 Node adapter tests pass.
-P1 nevertheless remains **BLOCKED**: an independently verified native
-hidden-Imprison selection rejection/re-request transaction is not implemented,
-and the path is quarantined as Unsupported. It is relevant to 48 frozen teams.
-See [the current resolution report](p1_imprison/RESOLUTION_REPORT.md) and
-`p1_imprison/RECEIPT.json` for current status, exact source and hashes.
+The original fixture discrepancy and native Imprison retry blocker are now
+repaired. Source `1f93685a224ebe21933c7a390c3e5b86b7e16435` implements request
+revision, model resampling, peer-pending preservation and Struggle substitution.
+41 relevant Rust tests, 8 Python tests and 5 Node adapter tests pass; the
+independent verifier passes 1,152 fixtures / 25,231 boundaries, plus two new
+reference-derived retry witnesses. In Gen 9 doubles the first rejection
+discloses all disabled moves for that Pokemon, not one move per retry.
+P1 remains **BLOCKED** by broader exact-pool dynamic reachability and public
+observation certification, not by the now-fixed Imprison retry transaction.
+See [the current implementation report](p1_imprison/RETRY_IMPLEMENTATION_REPORT.md)
+and `p1_imprison/RETRY_RECEIPT.json` for source, tests and scope limits.
 The remaining sections preserve the earlier investigation and failure history.
 During the follow-up the user explicitly authorized stopping legacy evaluation;
 its worker/timer are now stopped and disabled, with old evidence preserved.

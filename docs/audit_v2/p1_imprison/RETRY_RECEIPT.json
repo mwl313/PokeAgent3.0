@@ -1,0 +1,74 @@
+{
+  "source_sha": "1f93685a224ebe21933c7a390c3e5b86b7e16435",
+  "branch": "codex/pa3-v2-correctness",
+  "recorded_at": "2026-10-13T23:55:08.401814+09:00",
+  "worktree": "/home/minidc/Desktop/PokeAgent3.0-V2",
+  "reference_sha": "14546894d86f9589ac11130c510bbe73b6968665",
+  "reference_clean": true,
+  "format": "gen9championsvgc2026regmc",
+  "imprison_retry_gate": "PASS",
+  "overall_P1": "BLOCKED",
+  "PPO_started": false,
+  "environment": {
+    "node": "v22.23.3",
+    "python": "Python 3.12.3",
+    "torch": "2.14.0+cu126",
+    "test_device": "CPU",
+    "workers": 2
+  },
+  "commands": [
+    "node engine/tests/p1_generate_retry_fixtures.mjs (two regenerations, byte-identical)",
+    "CARGO_HOME=/home/minidc/Desktop/PokeAgent3.0-A/.tools/cargo RUSTUP_HOME=/home/minidc/Desktop/PokeAgent3.0-A/.tools/rustup CARGO_TARGET_DIR=/home/minidc/Desktop/PokeAgent3.0-V2/.audit-target /home/minidc/Desktop/PokeAgent3.0-A/.tools/cargo/bin/cargo test --manifest-path engine/Cargo.toml --locked --release --lib --test observation_leakage --test observation_completeness --test contracts --test turns",
+    "CARGO_HOME=/home/minidc/Desktop/PokeAgent3.0-A/.tools/cargo RUSTUP_HOME=/home/minidc/Desktop/PokeAgent3.0-A/.tools/rustup CARGO_TARGET_DIR=/home/minidc/Desktop/PokeAgent3.0-V2/.audit-target /home/minidc/Desktop/PokeAgent3.0-A/.tools/cargo/bin/cargo test --manifest-path engine/Cargo.toml --locked --release --lib imprison",
+    "CARGO_HOME=/home/minidc/Desktop/PokeAgent3.0-A/.tools/cargo RUSTUP_HOME=/home/minidc/Desktop/PokeAgent3.0-A/.tools/rustup CARGO_TARGET_DIR=/home/minidc/Desktop/PokeAgent3.0-V2/.audit-target /home/minidc/Desktop/PokeAgent3.0-A/.tools/cargo/bin/cargo build --manifest-path engine/Cargo.toml --locked --release --features python",
+    "cp .audit-target/release/libpa3_engine.so engine/python/pa3_engine/pa3_engine.so",
+    "PYTHONPATH=engine/python:. /home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python -m pytest -q tests/integration/test_imprison_retry.py tests/agent/test_fixed_policy_eval.py",
+    "node --test engine/tests/public_request_moves.test.mjs",
+    "node --max-old-space-size=8192 engine/tests/verify_turn_fixtures.mjs"
+  ],
+  "tests": {
+    "relevant_Rust": 41,
+    "additional_targeted_Rust": 3,
+    "Python": 8,
+    "Node_adapter": 5,
+    "existing_reference_fixtures": 1152,
+    "existing_decision_boundaries": 25231,
+    "new_reference_retry_fixtures": 2
+  },
+  "provenance_note": "Tests executed in the source worktree before the code commit. Full native suite preceded only expanded HP/PP/status test assertions, new fixture evidence and comment corrections; targeted witnesses verified the expanded assertions. No production behavior changed after the full suite.",
+  "source_files_sha256": {
+    "agent/evaluation/batched_policy.py": "de8d6bc314677723963b2de4b0e20a1ee636aaafa0a56f5b3a4b504014e57cc7",
+    "agent/evaluation/fixed_policy.py": "2fba602a0146de139534c01c46d0b261d599119c0d9d40141e66b92619215627",
+    "agent/train/native_collector.py": "484d314f4e3add46a3dce8255905da11bb6e282094d08c75cf5df5ff21fae431",
+    "engine/data/imprison-retry-fixtures.json": "81da1f4db41eebc5fa2f1c20d919e852b508b571e4bf803c406e34f9e6150f63",
+    "engine/python/pa3_actor.py": "963cd3f4c66d71de8eafb64f7fd25a5cb29d9b47bd642b2db323adf00dd256a7",
+    "engine/src/actions.rs": "fe396c19946b11872fe57a8e437905e50cd977a3dcc5e5215cbd3cda0f02b241",
+    "engine/src/batch.rs": "cfe2427e6e56b268e65dbbaf86eda15a82eeecf29a09dc9074e2967b00dffc6a",
+    "engine/src/battle.rs": "65f310e7a3cfd7032b95609c320f31c73cc5c81212ef54b1d8f3d633ca516325",
+    "engine/src/battle/public_type_tests.rs": "40659f5f615d0077c6f42869fe7b47e706e860daa3d0e21b0a4e51d1a6f53b75",
+    "engine/src/python.rs": "c641beda72634a378367bcdadfd3ae022d3325cc8493b40a056fa7359f378a71",
+    "engine/src/state.rs": "a1af58246b6791d3ce826f3a9314b1a39d25e67a26ddced9d42eca62f6fb687c",
+    "engine/tests/p1_generate_retry_fixtures.mjs": "b0e3f035f5c936ad18c74ceb591fbba3de83ded09457d0effd918dc3dc39e10d",
+    "tests/integration/test_imprison_retry.py": "6552388dc3e0581f28ec8be65fbb9e73d56264108a2cc2a5f80fcfb263f44b26"
+  },
+  "new_fixture_sha256": "81da1f4db41eebc5fa2f1c20d919e852b508b571e4bf803c406e34f9e6150f63",
+  "existing_corpus_sha256": {
+    "turn-fixtures.json": "167b30e09b6a2b5e6f59a0ebc40b64957e15611a047ec47a9c2993df149beffb",
+    "turn-fixtures-2.json": "bd10e253a763e539fc55dd8252e548bf3ad0c0624c072b34b6c571a3dcd326e6"
+  },
+  "artifact_sha256": {
+    "retry_witness.log": "68aacb0a7896cbc07f252fb818623af4af72024fba111e3289306b5ac06dc34c",
+    "retry_adapter.log": "3be92c8cb86b3166bd0d0daf25c59e3ef7c4cfc4a70c6dd6b6ebf645e9b041b4",
+    "retry_independent.log": "4a72f9b8f167bc31e614db1e6385216527f369294d10eff6b945f58ff5684660",
+    "retry_services.log": "e80b119839d9022308b6819b3577060966dd20f5b29161931a248ed85673e205",
+    "retry_native.log": "09c75794193e39aeeccf14f8c589ef875d5203a58be15fe9a08fbb3f4773edab",
+    "retry_binding_build.log": "6fd5670adc8de704d79c23e95d0309383647a88a55e052dc33dbd59291b97493",
+    "retry_python.log": "b80bc7b6fe715f53343ead5bf390bee71fe55e1d58e891bb496ce837c8c52be7"
+  },
+  "implementation_report_sha256": "040837038baf9e712d80e1c3dd937a0532729f7374a2a40c35b34d0a6cae37b6",
+  "remaining_gates": [
+    "Exact-pool dynamic closure certification",
+    "Broader public type/identity oracle certification"
+  ],
+  "old_evaluation_stop": "User authorized. Worker/timer remain inactive and disabled. Discovery oneshot SIGTERM from authorized stop; MainPID 0. Historical results/checkpoints retained."
+}
