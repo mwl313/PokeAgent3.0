@@ -34,6 +34,10 @@ def test_native_python_retry_roundtrip(tmp_path, fixture_index):
         assert engine.snapshot(*handle) == saved
         if not result[0]:
             assert result[5:] == (3, 1)  # committed peer waits, chooser retries
+            assert engine.request_kind(*handle, 0) == 3
+            assert list(engine.request_branches(*handle, 0)) == []
+            info=engine.request_info_batch([(*handle, 0), (*handle, 1)])
+            assert [(kind,list(slots)) for kind,slots in info] == [(3, []), (1, [0, 1])]
             first = action(step["actions"][0])
             candidates = engine.candidates(*handle, side, [first])
             # Both Protect and Rest were disclosed by the first rejection.

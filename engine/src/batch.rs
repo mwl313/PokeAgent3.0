@@ -11,6 +11,7 @@ use crate::{
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
+use std::borrow::Cow;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Handle {
@@ -181,8 +182,19 @@ impl BattleBatch {
 
     /// Read-only access to one side's current request for action-mask and
     /// candidate generation. Unknown/stale handles are rejected.
-    pub fn request(&self, handle: Handle, side: SideId) -> Result<&crate::actions::Request> {
-        Ok(&self.state(handle)?.requests[side.index()])
+    pub fn request(&self, handle: Handle, side: SideId) -> Result<Cow<'_, crate::actions::Request>> {
+        let state=self.state(handle)?;
+        let request=&state.requests[side.index()];
+        if state.pending[side.index()].is_some() {
+            // Internal requests retain their phase until commit. Actor-facing
+            // introspection must agree with observe/StepResult after a peer
+            // rejection, otherwise the collector resubmits this committed side.
+            let mut waiting=request.clone();
+            waiting.kind=crate::actions::RequestKind::Wait;
+            Ok(Cow::Owned(waiting))
+        } else {
+            Ok(Cow::Borrowed(request))
+        }
     }
 
     fn state(&self, handle: Handle) -> Result<&BattleState> {

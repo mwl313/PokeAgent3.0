@@ -214,6 +214,9 @@ fn batch_retry_is_reported_in_both_submission_orders_and_preserves_peer() {
         let result=batch.step_batch(&[StepSpec{handle,choices:order.into_iter().map(choice).collect()}]).unwrap();
         assert!(!result[0].accepted);
         assert_eq!(result[0].request_kinds,[RequestKind::Wait,RequestKind::Normal]);
+        assert_eq!(batch.request(handle,SideId::P1).unwrap().kind,RequestKind::Wait);
+        assert!(batch.request(handle,SideId::P1).unwrap().branch_slots().is_empty());
+        assert_eq!(batch.request(handle,SideId::P2).unwrap().kind,RequestKind::Normal);
         let saved=batch.snapshot(handle).unwrap();batch.restore(handle,&saved).unwrap();
         let result=batch.step_batch(&[StepSpec{handle,choices:vec![choice(6)]}]).unwrap();
         assert!(result[0].accepted);assert!(result[0].outcome.operational_error.is_none());
