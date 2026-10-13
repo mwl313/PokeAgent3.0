@@ -1,0 +1,33 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________________ test_native_python_retry_roundtrip[0] _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-minidc/pytest-2/test_native_python_retry_round0')
+fixture_index = 0
+
+    @pytest.mark.parametrize("fixture_index", [0, 1])
+    def test_native_python_retry_roundtrip(tmp_path, fixture_index):
+        fixture = json.loads((DATA / "imprison-retry-fixtures.json").read_text())["fixtures"][fixture_index]
+        teams = tmp_path / "teams.json"
+        teams.write_text(json.dumps(fixture["teams"]))
+        engine = pa3_engine.NativeEngine(str(DATA), str(teams), workers=2)
+        handle = engine.reset_batch([0], [1], [tuple(fixture["seed"])], [(0, 1)])[0]
+        for step in fixture["steps"]:
+            side = 0 if step["side"] == "P1" else 1
+            result = engine.step_batch([(*handle, [(side, [action(a) for a in step["actions"]])])])[0]
+            assert result[0] == step["accepted"]
+            assert result[4] is None
+            saved = engine.snapshot(*handle)
+            engine.restore(*handle, saved)
+            assert engine.snapshot(*handle) == saved
+            if not result[0]:
+                assert result[5:] == (3, 1)  # committed peer waits, chooser retries
+>               assert engine.request_kind(*handle, 0) == 3
+E               assert 1 == 3
+E                +  where 1 = <built-in method request_kind of builtins.NativeEngine object at 0x7628282e6f30>(*(0, 1), 0)
+E                +    where <built-in method request_kind of builtins.NativeEngine object at 0x7628282e6f30> = <builtins.NativeEngine object at 0x7628282e6f30>.request_kind
+
+tests/integration/test_imprison_retry.py:37: AssertionError
+=========================== short test summary info ============================
+FAILED tests/integration/test_imprison_retry.py::test_native_python_retry_roundtrip[0]
+1 failed in 0.16s

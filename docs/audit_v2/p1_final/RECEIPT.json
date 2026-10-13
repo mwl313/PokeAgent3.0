@@ -1,0 +1,76 @@
+{
+  "source_sha": "548902547a5d5235f532193a47a77a89abfb1cdd",
+  "phase": "P1",
+  "status": "PASS_FOR_EXACT_POOL",
+  "reference_sha": "14546894d86f9589ac11130c510bbe73b6968665",
+  "dataset_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f",
+  "team_count": 1220,
+  "Rust_tests": 44,
+  "Python_tests": 5,
+  "Node_closure_tests": 3,
+  "public_type_fixtures": 28,
+  "public_type_boundaries": 765,
+  "pool_smoke": {
+    "schema": "pa3-exact-pool-smoke-v1",
+    "dataset_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f",
+    "team_count": 1220,
+    "envs": 2440,
+    "natural_completed": 2440,
+    "retries": 6,
+    "errors": [],
+    "unfinished": 0,
+    "seconds": 1.1178588889997627,
+    "games_per_second": 2182.744194290267,
+    "model_or_optimizer_used": false,
+    "limitation": "Finite model-free execution smoke, not Showdown parity or exhaustive mechanics proof."
+  },
+  "closure_counts": {
+    "moves": 347,
+    "abilities": 153,
+    "items": 137,
+    "species": 273
+  },
+  "limits": [
+    "Conservative identity closure for this exact dataset and pinned reference, not all Regulation M-C.",
+    "Does not establish every executable handler is mechanically correct; differential fixtures and native guards remain required.",
+    "Does not include effects introduced by external opponents or future dataset changes."
+  ],
+  "artifacts": {
+    "binding_build.log": "c2da2ed0c40949f9beed14744db0ffb011d07059553a838bd3d09e2e719e55ec",
+    "introspection_after.log": "0ab9d187af09db89493f66bdfd2ee190d6558305baaa48895445601373137c1d",
+    "closure_node.log": "b423b09bdfa0083b14addaaef800e7cdc45ef946af14c9282a23d172d30c1dcf",
+    "closure_native.log": "0689d9c32d0b3b2eedc52a921e20e9aa29b5389c6102b861085efb6e3f8bddbc",
+    "introspection_before.log": "674d77e4e669a4c294f2ce531a3ca1f5a70244d6bcbcb864b62a563ed5002fcd",
+    "pool_smoke.json": "c5126ee22fc909dc5a6464cff3da1b98e0dc3156f6e4ec749a25d6f7b5dbf371",
+    "gate.log": "cae84575a417b404df6dbfffefb4cdfd1b1f3bc6ad0530423cacc962d118cf26",
+    "pool_smoke.log": "df8549cbaf92d1600bdf398fd38726ba2495ef4300e63b60a1c0bce29476a03a",
+    "public_types.log": "202d78244c2f76fa8070d406e6d45f9094d4a0b7174ad53cf026f0888828ac9b"
+  },
+  "source_files": [
+    "engine/data/exact-pool-closure-audit.json",
+    "engine/data/public-type-oracle.json",
+    "engine/src/batch.rs",
+    "engine/src/battle/public_type_tests.rs",
+    "engine/tests/exact_pool_closure.rs",
+    "engine/tests/generate_public_type_oracle.mjs",
+    "engine/tests/public_type_oracle.rs",
+    "scripts/audit_exact_pool_closure.mjs",
+    "scripts/audit_exact_pool_closure.test.mjs",
+    "scripts/validate_exact_pool_native.py",
+    "tests/integration/test_imprison_retry.py"
+  ],
+  "new_assets_sha256": {
+    "engine/data/public-type-oracle.json": "a6f3d27ae44d3280196a510677c779441d6d8af861b76cb01ba9d12bedede2d7",
+    "engine/data/exact-pool-closure-audit.json": "7e3a1d265a7c7e535abc1f4c838da3cd35bc3aa8f08ad6b74dd81374895046b6"
+  },
+  "test_commands": [
+    "node scripts/audit_exact_pool_closure.mjs",
+    "node --test scripts/audit_exact_pool_closure.test.mjs",
+    "node engine/tests/generate_public_type_oracle.mjs",
+    "CARGO_HOME=/home/minidc/Desktop/PokeAgent3.0-A/.tools/cargo RUSTUP_HOME=/home/minidc/Desktop/PokeAgent3.0-A/.tools/rustup CARGO_TARGET_DIR=/home/minidc/Desktop/PokeAgent3.0-V2/.audit-target /home/minidc/Desktop/PokeAgent3.0-A/.tools/cargo/bin/cargo test --manifest-path engine/Cargo.toml --locked --release --lib --test contracts --test turns --test observation_leakage --test observation_completeness --test public_type_oracle --test exact_pool_closure --test illusion",
+    "PYTHONPATH=engine/python:. /home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python -m pytest -q tests/integration/test_imprison_retry.py",
+    "PYTHONPATH=engine/python:. /home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python scripts/validate_exact_pool_native.py --output /tmp/p1-exact-pool-smoke.json"
+  ],
+  "PPO_started": false,
+  "legacy_evaluation": "Retired by explicit user authorization; historical evidence retained."
+}

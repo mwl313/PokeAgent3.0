@@ -1,0 +1,10 @@
+   Compiling pa3-engine v0.1.0 (/home/minidc/Desktop/PokeAgent3.0-V2/engine)
+    Finished `release` profile [optimized] target(s) in 15.50s
+     Running tests/public_type_oracle.rs (.audit-target/release/deps/public_type_oracle-355e23dd2d7f811b)
+
+running 1 test
+public type oracle: 28 fixtures / 765 boundaries
+test dynamic_types_and_identity_match_public_showdown_messages ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+

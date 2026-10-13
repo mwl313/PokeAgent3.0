@@ -1,0 +1,17 @@
+   Compiling pa3-engine v0.1.0 (/home/minidc/Desktop/PokeAgent3.0-V2/engine)
+    Finished `release` profile [optimized] target(s) in 7.76s
+     Running tests/exact_pool_closure.rs (.audit-target/release/deps/exact_pool_closure-29c7c7a0e356cd88)
+
+running 1 test
+exact pool closure: 1220 teams; 347 moves, 153 abilities, 137 items, 273 species/forms; no declared native blocker
+test exact_frozen_pool_dynamic_identity_closure_has_no_native_blockers ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/illusion.rs (.audit-target/release/deps/illusion-bd1b290cb003758a)
+
+running 1 test
+test illusion_masks_the_observed_identity_until_reveal ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+

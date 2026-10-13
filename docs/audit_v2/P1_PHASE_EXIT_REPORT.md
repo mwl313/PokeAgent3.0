@@ -1,4 +1,8 @@
-# P1 — partial engine correction; V2 release BLOCKED
+# P1 — historical investigation; see final exit report
+
+Latest status: [P1 final exit](P1_FINAL_EXIT_REPORT.md) passes the frozen-pool
+engine/public-information gate at `548902547a5d5235f532193a47a77a89abfb1cdd`.
+The earlier blocked states below are retained as historical evidence.
 
 ## Latest Imprison follow-up
 
