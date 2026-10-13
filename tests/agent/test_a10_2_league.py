@@ -68,3 +68,31 @@ def test_evaluation_identity_separates_material_inputs():
  key=lambda seed,env:evaluation_identity(e,e,f,seed=seed,max_rounds=2000,environment=env)[0]
  assert key(1,{'backend':'batched','batch_size':16})!=key(2,{'backend':'batched','batch_size':16})
  assert key(1,{'backend':'batched','batch_size':16})!=key(1,{'backend':'batched','batch_size':32})
+
+def test_migrated_capture_preserves_inference_and_training_provenance(tmp_path, monkeypatch):
+ import torch
+ import agent.evaluation.a10_league as league
+ from agent.evaluation.identity import sha256_file
+ rolling=tmp_path/'rolling';generation=rolling/'generations/new';generation.mkdir(parents=True)
+ target='f'*40
+ migration={'source_sha':SOURCE,'target_sha':target,'receipt_sha256':'a'*64,'scope':'telemetry-and-recompute-verification-only'}
+ atomic(rolling/'source_migrations'/f'{target}.json',migration)
+ manifest={'complete':True,'iteration_complete':True,'iteration':5,'committed_matches':20480,
+           'world_size':2,'source_sha':target,'dataset_manifest_hash':DATASET,'ranks':{}}
+ for rank in (0,1):
+  p=payload();p['source_sha']=target;p['ddp']['rank']=rank
+  p['experiment']['source_migration']=migration;p['learner']={'model':{'weight':torch.ones(2)}}
+  path=generation/f'rank{rank}.pt';torch.save(p,path)
+  manifest['ranks'][str(rank)]={'path':path.name,'bytes':path.stat().st_size,'sha256':sha256_file(path)}
+ atomic(generation/'manifest.json',manifest)
+ monkeypatch.setattr(league,'training_digests',lambda p:p['rank_digests']['0'])
+ entry=league.capture_generation(rolling,'new',tmp_path/'archive')
+ saved=league.verify_entry(entry)
+ assert saved['source_sha']==SOURCE  # frozen worker's execution contract
+ assert saved['training_source_sha']==target  # real recovery source, never hidden
+ assert saved['training_source_migration']==migration
+ assert entry['committed_matches']==20480
+ assert league.read(generation/'manifest.json')['source_sha']==target
+ atomic(rolling/'source_migrations'/f'{target}.json',{**migration,'receipt_sha256':'b'*64})
+ with pytest.raises(ValueError,match='receipt mismatch'):
+  league.capture_generation(rolling,'new',tmp_path/'another-archive')
