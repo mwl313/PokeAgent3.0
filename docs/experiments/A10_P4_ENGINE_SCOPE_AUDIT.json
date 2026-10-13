@@ -1,0 +1,408 @@
+{
+  "dataset_teams": 1220,
+  "dynamic_seed_moves": [
+    "bugbite",
+    "entrainment",
+    "fling",
+    "knockoff",
+    "roleplay",
+    "skillswap",
+    "sleeptalk",
+    "switcheroo",
+    "trick"
+  ],
+  "format": "gen9championsvgc2026regmc",
+  "global_readiness": "NOT_READY",
+  "limitation": "This proves the frozen pool scope, not full Regulation M-C completeness.",
+  "oracle_commit": "14546894d86f9589ac11130c510bbe73b6968665",
+  "pool_blockers": {
+    "abilities": 0,
+    "items": 0,
+    "moves": 0
+  },
+  "pool_scoped_verdict": "PASS_WITH_BOUNDED_DYNAMIC_UNIVERSE_EVIDENCE",
+  "schema": "a10-p4-engine-scope-audit-v1",
+  "team_ability_count": 139,
+  "team_item_count": 137,
+  "team_move_count": 346,
+  "unsupported_effects": {
+    "ability:anticipation": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "ability:battlebond": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "ability:berserk": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "ability:cudchew": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "ability:cutecharm": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "ability:embodyaspectcornerstone": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "ability:embodyaspecthearthflame": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "ability:embodyaspectteal": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "ability:embodyaspectwellspring": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "ability:forewarn": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "ability:gluttony": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "ability:gulpmissile": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "ability:harvest": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "ability:hungerswitch": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "ability:iceface": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "ability:imposter": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "ability:klutz": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "ability:opportunist": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "ability:pickup": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "ability:quickdraw": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "ability:receiver": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "ability:runaway": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "ability:shieldsdown": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen ability set; roleplay/skillswap/entrainment can only copy abilities present on pool teams"
+    },
+    "dynamic:ability:harvest": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; preserve global diagnostic",
+      "witness_or_proof": "dynamic caller universe is limited to the frozen team ability set; no such ability occurs in 1,220 teams"
+    },
+    "dynamic:ability:imposter": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; preserve global diagnostic",
+      "witness_or_proof": "dynamic caller universe is limited to the frozen team ability set; no such ability occurs in 1,220 teams"
+    },
+    "dynamic:ability:klutz": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; preserve global diagnostic",
+      "witness_or_proof": "dynamic caller universe is limited to the frozen team ability set; no such ability occurs in 1,220 teams"
+    },
+    "dynamic:ability:pickup": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; preserve global diagnostic",
+      "witness_or_proof": "dynamic caller universe is limited to the frozen team ability set; no such ability occurs in 1,220 teams"
+    },
+    "dynamic:ability:receiver": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; preserve global diagnostic",
+      "witness_or_proof": "dynamic caller universe is limited to the frozen team ability set; no such ability occurs in 1,220 teams"
+    },
+    "dynamic:move:copycat": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; preserve global diagnostic",
+      "witness_or_proof": "caller and seed move absent from all frozen team move sets; Sleep Talk/roleplay/etc. targets are bounded by pool move/ability sets"
+    },
+    "dynamic:move:gastroacid": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; preserve global diagnostic",
+      "witness_or_proof": "caller and seed move absent from all frozen team move sets; Sleep Talk/roleplay/etc. targets are bounded by pool move/ability sets"
+    },
+    "dynamic:move:instruct": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; preserve global diagnostic",
+      "witness_or_proof": "caller and seed move absent from all frozen team move sets; Sleep Talk/roleplay/etc. targets are bounded by pool move/ability sets"
+    },
+    "dynamic:move:magicroom": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; preserve global diagnostic",
+      "witness_or_proof": "caller and seed move absent from all frozen team move sets; Sleep Talk/roleplay/etc. targets are bounded by pool move/ability sets"
+    },
+    "dynamic:move:transform": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; preserve global diagnostic",
+      "witness_or_proof": "caller and seed move absent from all frozen team move sets; Sleep Talk/roleplay/etc. targets are bounded by pool move/ability sets"
+    },
+    "dynamic:move:worryseed": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; preserve global diagnostic",
+      "witness_or_proof": "caller and seed move absent from all frozen team move sets; Sleep Talk/roleplay/etc. targets are bounded by pool move/ability sets"
+    },
+    "move:attract": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:aurawheel": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:belch": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:copycat": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "caller absent from all 1,220 team move sets; no transformation/copying seed reaches it"
+    },
+    "move:electrify": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:fairylock": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:flyingpress": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:forestscurse": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:futuresight": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:gastroacid": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "caller absent from all 1,220 team move sets; no transformation/copying seed reaches it"
+    },
+    "move:gravapple": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:instruct": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "caller absent from all 1,220 team move sets; no transformation/copying seed reaches it"
+    },
+    "move:lockon": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:magicroom": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "caller absent from all 1,220 team move sets; no transformation/copying seed reaches it"
+    },
+    "move:magnetrise": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:mistyexplosion": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:reflecttype": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:saltcure": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:shellsidearm": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:snipeshot": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:sparklingaria": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:stuffcheeks": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:syrupbomb": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:teatime": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:transform": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "caller absent from all 1,220 team move sets; no transformation/copying seed reaches it"
+    },
+    "move:trickortreat": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:uproar": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:wonderroom": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "not present in frozen move set and no reachable caller seed"
+    },
+    "move:worryseed": {
+      "affected_teams": [],
+      "reachability": "PROVEN UNREACHABLE WITHIN FROZEN POOL",
+      "required_action": "none; retain global coverage blocker",
+      "witness_or_proof": "caller absent from all 1,220 team move sets; no transformation/copying seed reaches it"
+    }
+  }
+}

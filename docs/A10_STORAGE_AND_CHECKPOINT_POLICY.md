@@ -13,3 +13,7 @@ Filesystem free capacity is the primary guard. `project_quota_bytes` is optional
 ## A10-P3 publication rule
 
 When enabled with `--rolling-checkpoint-root`, the launcher parent polls the atomically replaced rank envelopes while workers remain active. A generation is published only when both ranks report the same iteration, committed-match clock, optimizer-step boundary, source/dataset/opponent provenance, complete collector drain, and identical model/optimizer digests. DDP communicators are recreated on restore. Three complete generations are retained; the filesystem reserve and concurrent-write allowance remain enforced.
+
+## A10-P4 final scheduling rule
+
+Production full envelopes are scheduled from the absolute global committed-match clock at the first safe iteration boundary after each 100,000-match threshold. The scheduler state is reconstructed from the saved clock on resume. `--resume-latest-from` selects the latest complete verified generation and falls back on corruption. Capacity refusals propagate as fatal errors; the launcher stops workers and preserves the last verified generation.

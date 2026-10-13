@@ -14,7 +14,7 @@ def load_profile(path: str) -> dict:
     with open(path) as f: data = json.load(f)
     if set(data) - ALLOWED or data.get("schema") != SCHEMA:
         raise ValueError("unsupported or unknown runtime profile schema/keys")
-    if data.get("version") != "a9.4-validated-v1":
+    if data.get("version") not in {"a9.4-validated-v1", "a10-production-v1"}:
         raise ValueError("stale runtime profile version")
     for section in ("training", "precision", "dataset", "collector", "evaluation"):
         if not isinstance(data.get(section), dict): raise ValueError(f"profile section missing: {section}")
@@ -42,9 +42,17 @@ def resolve_profile(path: str) -> dict:
             "artifact_hash": artifact_hash}
 
 def launcher_values(resolved: dict) -> dict:
-    t, p, c = resolved["profile"]["training"], resolved["profile"]["precision"], resolved["profile"]["collector"]
-    return {"epochs": t["ppo_epochs"], "experimental_lr_scale": t["lr_scale"], "minibatch": t["global_minibatch"],
+    t, p, c, d = (resolved["profile"]["training"], resolved["profile"]["precision"],
+                   resolved["profile"]["collector"], resolved["profile"]["dataset"])
+    values = {"epochs": t["ppo_epochs"], "experimental_lr_scale": t["lr_scale"], "minibatch": t["global_minibatch"],
             "microbatch": t["microbatch"], "envs": t["envs"], "workers": t["workers"],
             "historical_probability": t["historical_probability"], "precision_mode": p["mode"],
             "precision_stability": p["stability"], "recompute_gate": p["recompute_gate"],
             "batch_cache": c["batch_cache"], "compact_candidates": c["compact_candidates"]}
+    if "teams" in d:
+        values["teams"] = d["teams"]
+    if "data" in d:
+        values["data"] = d["data"]
+    if "checkpoint_interval_matches" in t:
+        values["checkpoint_interval_matches"] = t["checkpoint_interval_matches"]
+    return values

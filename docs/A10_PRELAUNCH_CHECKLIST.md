@@ -47,3 +47,12 @@ Current verdict: **BLOCKED for exact-pool engine PASS; storage integration bound
 - [x] Bounded 4,096-match two-V100 PPO smoke passed recompute and rank digest gates.
 - [ ] Global full move/ability/dynamic closure gate: blocked (29 moves, 23 abilities, 11 callers).
 - [ ] Production launch: requires coverage closure and explicit authorization.
+
+## A10-P4 final blocker status (2026-10-13)
+
+- [x] Pool-scoped 1,220-team reachability audit with bounded dynamic closure evidence.
+- [x] A10 production profile resolves the frozen dataset and numerical contract.
+- [x] 100,000 committed-match checkpoint scheduler and latest-generation resume path implemented.
+- [x] Storage-capacity errors fail closed; three-generation retention and corruption fallback tested.
+- [ ] Interrupted-versus-uninterrupted final-state parity: **BLOCKED** (model/optimizer digest divergence).
+- [ ] A10 production launch: blocked until continuity discrepancy is explained and corrected.

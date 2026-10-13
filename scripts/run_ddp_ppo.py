@@ -115,9 +115,14 @@ def _publish_completed_rolling_boundary(args, store, published_keys):
         )
         published_keys.add(key)
         return manifest
-    except (OSError, RuntimeError, ValueError, KeyError, TypeError):
+    except Exception as exc:
+        from agent.ppo.storage_manager import StorageBudgetError
+        if isinstance(exc, StorageBudgetError):
+            raise
         # A worker may be replacing the file or still completing its peer.
-        return None
+        if isinstance(exc, (OSError, ValueError, KeyError, TypeError, EOFError)):
+            return None
+        raise
 
 
 def parse_args(argv=None):
@@ -169,6 +174,14 @@ def parse_args(argv=None):
         help="opt-in iteration-boundary envelope prefix (one file per rank)",
     )
     parser.add_argument(
+        "--checkpoint-interval-matches", type=int, default=100000,
+        help="full experimental checkpoint interval in global committed matches",
+    )
+    parser.add_argument(
+        "--resume-latest-from", default="",
+        help="resume from the newest verified generation under this checkpoint root",
+    )
+    parser.add_argument(
         "--experimental-resume", default="",
         help="opt-in envelope prefix to restore (one file per rank)",
     )
@@ -216,7 +229,10 @@ def parse_args(argv=None):
                       "microbatch": str(resolved["profile"]["training"]["microbatch"]),
                       "minibatch": str(resolved["profile"]["training"]["global_minibatch"]),
                       "envs": str(resolved["profile"]["training"]["envs"]),
-                      "workers": str(resolved["profile"]["training"]["workers"])}
+                      "workers": str(resolved["profile"]["training"]["workers"]),
+                      "checkpoint-interval-matches": str(resolved["profile"]["training"].get("checkpoint_interval_matches", 100000)),
+                      "teams": str(resolved["profile"]["dataset"].get("teams", args.teams)),
+                      "data": str(resolved["profile"]["dataset"].get("data", args.data))}
         for index, token in enumerate(raw_argv):
             if not token.startswith("--") or token in {"--profile", "--print-effective-config"}: continue
             name, _, value = token[2:].partition("=")
@@ -236,6 +252,8 @@ def parse_args(argv=None):
         parser.error("--print-effective-config requires --profile")
     if args.iterations < 1:
         parser.error("--iterations must be at least 1")
+    if args.checkpoint_interval_matches < 1:
+        parser.error("--checkpoint-interval-matches must be positive")
     if args.experimental_resume and args.rolling_slots:
         parser.error("experimental resume requires static collector slots")
     if args.experimental_lr_scale <= 0.0:
@@ -246,6 +264,14 @@ def parse_args(argv=None):
         parser.error("--historical-probability must be between 0 and 1")
     if args.historical_probability and not args.historical_checkpoint:
         parser.error("historical probability requires --historical-checkpoint")
+    if args.resume_latest_from:
+        if args.experimental_resume:
+            parser.error("--resume-latest-from and --experimental-resume are mutually exclusive")
+        from agent.ppo.storage_manager import CheckpointGenerationStore
+        latest = CheckpointGenerationStore(args.resume_latest_from).latest()
+        if latest is None:
+            parser.error("--resume-latest-from has no complete verified generation")
+        args.experimental_resume = str(latest)
     return args
 
 
@@ -436,7 +462,8 @@ def worker(args) -> None:
 
     resume_envelope = None
     if args.experimental_resume:
-        resume_path = f"{os.path.abspath(args.experimental_resume)}.rank{rank}"
+        resume_root = Path(os.path.abspath(args.experimental_resume))
+        resume_path = (resume_root / f"rank{rank}.pt") if resume_root.is_dir() else Path(f"{resume_root}.rank{rank}")
         if not os.path.isfile(resume_path):
             raise RuntimeError(f"experimental resume artifact is missing: {resume_path}")
         resume_envelope = load_envelope(resume_path)
@@ -602,6 +629,9 @@ def worker(args) -> None:
         restore_rng_state(resume_envelope["rng"], [shuffle_generator])
     global_games = int(resume_envelope["accounting"]["committed_matches"]) if resume_envelope else 0
     iteration_offset = int(resume_envelope["accounting"]["iteration"]) if resume_envelope else 0
+    from agent.ppo.checkpoint_schedule import CommittedMatchCheckpointSchedule
+    checkpoint_schedule = CommittedMatchCheckpointSchedule.from_clock(
+        global_games, args.checkpoint_interval_matches)
     iterations = []
     torch.cuda.synchronize(device)
     startup_wall = time.perf_counter() - worker_started
@@ -714,7 +744,8 @@ def worker(args) -> None:
                 },
                 digests_equal=digests_equal,
             )
-        if args.experimental_checkpoint:
+        checkpoint_due = bool(args.experimental_checkpoint and checkpoint_schedule.due(global_games))
+        if checkpoint_due:
             if args.rolling_slots:
                 raise RuntimeError("experimental envelope requires static collector restart")
             if not collector.drain_complete or collector.in_flight_battles != 0:
@@ -764,6 +795,7 @@ def worker(args) -> None:
                 f"{os.path.abspath(args.experimental_checkpoint)}.rank{rank}",
                 envelope,
             )
+            checkpoint_schedule.consume(global_games)
         finish_stage("checkpoint_wall_s", stage_started)
 
         stats = collector.stats.as_dict()
@@ -871,6 +903,7 @@ def parent(args) -> None:
                 "--report", args.report, "--checkpoint", args.checkpoint,
                 "--experimental-checkpoint", args.experimental_checkpoint,
                 "--experimental-resume", args.experimental_resume,
+                "--checkpoint-interval-matches", str(args.checkpoint_interval_matches),
                 "--rolling-checkpoint-root", args.rolling_checkpoint_root,
                 "--dataset-manifest", args.dataset_manifest,
                 "--executor", args.executor,
