@@ -17,3 +17,7 @@ When enabled with `--rolling-checkpoint-root`, the launcher parent polls the ato
 ## A10-P4 final scheduling rule
 
 Production full envelopes are scheduled from the absolute global committed-match clock at the first safe iteration boundary after each 100,000-match threshold. The scheduler state is reconstructed from the saved clock on resume. `--resume-latest-from` selects the latest complete verified generation and falls back on corruption. Capacity refusals propagate as fatal errors; the launcher stops workers and preserves the last verified generation.
+
+## A10-P5 continuity evidence
+
+The 100,000-match scheduler and latest-generation resume path passed bounded regression tests. A full rank envelope is approximately 105,266,129 bytes; observed publication stage cost was 0.69–0.85 seconds per rank in bounded runs. The deterministic diagnostic continuation matched uninterrupted state exactly; normal Mode D variation is baseline CUDA/AMP numerical nondeterminism and is recorded separately.

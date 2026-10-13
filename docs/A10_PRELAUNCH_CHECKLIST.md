@@ -56,3 +56,12 @@ Current verdict: **BLOCKED for exact-pool engine PASS; storage integration bound
 - [x] Storage-capacity errors fail closed; three-generation retention and corruption fallback tested.
 - [ ] Interrupted-versus-uninterrupted final-state parity: **BLOCKED** (model/optimizer digest divergence).
 - [ ] A10 production launch: blocked until continuity discrepancy is explained and corrected.
+
+## A10-P5 continuity closure (2026-10-13)
+
+- [x] Independent continuous controls isolate baseline CUDA/AMP update nondeterminism.
+- [x] Deterministic diagnostic mode proves bit-exact checkpoint continuation through 4,096 matches.
+- [x] Independent seed deterministic DDP/recompute check passes.
+- [x] Normal production mode documented as numerically bounded baseline variation.
+- [x] A10 profile pilot passes with 1,220-team simulator data.
+- [ ] Long-horizon launch process status recorded after final commit.

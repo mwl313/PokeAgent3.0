@@ -1,0 +1,7 @@
+# A10-P5 parity root cause
+
+The A10-P4 normal-mode controls already isolated the first divergence. Arm A and the independent continuous control had identical initial model/RNG state and identical first-iteration rollout evidence: rank-local row counts, decisions, team IDs, wins/losses, rewards, and recompute gates matched. The first mismatch appeared inside the PPO forward/backward/update result: policy loss differed by approximately 4.7e-06 and the post-update model/optimizer digests diverged. Therefore the original final mismatch was not evidence of lost checkpoint state or a different resumed rollout.
+
+The cause is CUDA/PyTorch numerical nondeterminism in the Mode D AMP update path on V100. An opt-in `--deterministic-diagnostic` mode was added using PyTorch deterministic algorithms and deterministic cuDNN settings. Two independent continuous diagnostic runs then produced identical model and optimizer digests. A deterministic uninterrupted arm and a deterministic checkpoint/resume arm also matched bit-for-bit through 4,096 committed matches.
+
+The diagnostic mode is not enabled by the production profile. Production mode is classified as numerically bounded baseline nondeterminism: its rollout and DDP parity are stable, while small update-level floating-point variation is reproducible across independent uninterrupted controls. The checkpoint restore path itself is verified by the deterministic continuation test.

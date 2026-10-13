@@ -191,6 +191,8 @@ def parse_args(argv=None):
     )
     parser.add_argument("--timeout", type=float, default=900.0, help="process-group/task timeout seconds")
     parser.add_argument("--debug", action="store_true", help="enable TORCH_DISTRIBUTED_DEBUG=DETAIL")
+    parser.add_argument("--deterministic-diagnostic", action="store_true",
+                        help="opt-in deterministic PyTorch kernels for diagnosis only")
     parser.add_argument(
         "--recompute-gate",
         action=argparse.BooleanOptionalAction,
@@ -303,6 +305,29 @@ def state_digest(model, optimizer) -> tuple[str, str]:
             optimizer_hash.update(key.encode())
             optimizer_hash.update(tensor.to(torch.float64).numpy().tobytes())
     return model_hash.hexdigest(), optimizer_hash.hexdigest()
+
+
+def _compact_digest(value) -> str:
+    """Stable compact digest for parity evidence without dumping rollout data."""
+    digest = hashlib.sha256()
+    if isinstance(value, torch.Tensor):
+        tensor = value.detach().cpu().contiguous()
+        digest.update(str(tensor.dtype).encode()); digest.update(str(tuple(tensor.shape)).encode())
+        digest.update(tensor.numpy().tobytes())
+    else:
+        digest.update(repr(value).encode("utf-8"))
+    return digest.hexdigest()
+
+
+def rollout_digest(buffer) -> str:
+    digest = hashlib.sha256()
+    for row in buffer.rows:
+        digest.update(repr((row.match_id, row.side, row.team_ids, row.request_index,
+                           row.turn, int(row.request_kind), row.branch_slots,
+                           row.action_ids, row.candidate_mask, row.selected,
+                           row.selected_actions, row.old_logprob, row.value,
+                           row.reward, row.done, row.actor_active, row.seed_ref)).encode())
+    return digest.hexdigest()
 
 
 def publish_verified_checkpoint(learner, path, metadata, *, digests_equal: bool) -> None:
@@ -434,6 +459,10 @@ def worker(args) -> None:
     world_size = int(os.environ["WORLD_SIZE"])
     local_rank = int(os.environ["LOCAL_RANK"])
     torch.cuda.set_device(local_rank)
+    if args.deterministic_diagnostic:
+        torch.use_deterministic_algorithms(True)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
     device = torch.device(f"cuda:{local_rank}")
     dist.init_process_group(
         "nccl",
@@ -455,7 +484,7 @@ def worker(args) -> None:
     from agent.ppo import PPOConfig, PPOLearner
     from agent.ppo.ddp import DDPCommunication
     from agent.ppo.experimental_checkpoint import (
-        build_envelope, hash_file, hash_json, load_envelope, restore_envelope,
+        build_envelope, capture_rng_state, hash_file, hash_json, load_envelope, restore_envelope,
         save_envelope, validate_epoch_override,
     )
     from agent.train.native_collector import NativeCollector, NativeCollectorConfig
@@ -627,6 +656,10 @@ def worker(args) -> None:
         # been recreated. The envelope has one generator per rank process.
         from agent.ppo.experimental_checkpoint import restore_rng_state
         restore_rng_state(resume_envelope["rng"], [shuffle_generator])
+    initial_model_digest, initial_optimizer_digest = state_digest(model, learner.optimizer)
+    initial_cpu_rng_digest = _compact_digest(torch.get_rng_state())
+    initial_cuda_rng_digest = _compact_digest(torch.cuda.get_rng_state(device))
+    initial_shuffle_rng_digest = _compact_digest(shuffle_generator.get_state())
     global_games = int(resume_envelope["accounting"]["committed_matches"]) if resume_envelope else 0
     iteration_offset = int(resume_envelope["accounting"]["iteration"]) if resume_envelope else 0
     from agent.ppo.checkpoint_schedule import CommittedMatchCheckpointSchedule
@@ -670,6 +703,7 @@ def worker(args) -> None:
         stage_started = time.perf_counter()
         buffer = collector.collect(args.games)
         finish_stage("collect_wall_s", stage_started)
+        collected_rollout_digest = rollout_digest(buffer)
         if not buffer.rows:
             raise SystemExit(f"rank {rank} collected zero rows; refusing to run the DDP update")
         note(
@@ -839,6 +873,20 @@ def worker(args) -> None:
             "profile": dict(learner.profile),
             "prepare_profile": dict(learner.prepare_profile),
             "collector_stats": stats,
+            "parity": {
+                "initial_model_digest": initial_model_digest,
+                "initial_optimizer_digest": initial_optimizer_digest,
+                "initial_scheduler": {"matches": int(learner.scheduler.matches),
+                                      "lr": learner.scheduler.learning_rate},
+                "initial_scaler": learner.scaler.state_dict(),
+                "cpu_rng_digest": initial_cpu_rng_digest,
+                "cuda_rng_digest": initial_cuda_rng_digest,
+                "shuffle_rng_digest": initial_shuffle_rng_digest,
+                "collector_seed": iteration_seed,
+                "absolute_iteration": absolute_iteration,
+                "rollout_digest": collected_rollout_digest,
+                "optimizer_steps": learner.optimizer_steps,
+            },
         }
         stage_started = time.perf_counter()
         del plan, buffer, collector
@@ -912,6 +960,8 @@ def parent(args) -> None:
             ]
             if args.experimental_allow_source_sha:
                 command.append("--experimental-allow-source-sha")
+            if args.deterministic_diagnostic:
+                command.append("--deterministic-diagnostic")
             if args.experimental_allow_opponent_migration:
                 command.append("--experimental-allow-opponent-migration")
             for historical_path in args.historical_checkpoint:

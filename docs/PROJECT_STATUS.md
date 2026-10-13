@@ -134,3 +134,7 @@ The one-time VGCPastes refresh produced no additions. All 1,220 frozen teams com
 ## A10-P4 status (2026-10-13)
 
 The A10 production profile is now versioned at `configs/a10_production.yaml` and resolves the 1,220-team manifest, PPO-2/LR-scale-0.5, Mode D, and 100,000-match checkpoint interval. Pool-scoped engine coverage is PASS with bounded dynamic-universe evidence; global Regulation M-C coverage remains incomplete. Checkpoint scheduling now uses the absolute committed-match clock and `--resume-latest-from`, with fail-closed storage errors. The mandatory uninterrupted-versus-resumed exact-config test reached identical counters and per-arm DDP parity but divergent final model/optimizer digests, so it is NOT_REPRODUCIBLE and production training remains blocked.
+
+## A10-P5 status (2026-10-13)
+
+A10-P4 continuation divergence was localized to the first PPO update's V100 CUDA/AMP numerical result: independent continuous controls had identical rollout digests and differed only after forward/backward/update. Opt-in deterministic diagnostics produced bit-exact uninterrupted versus checkpoint/resumed state through 4,096 matches, including rollout, model, optimizer, scheduler, RNG, DDP, and recompute parity. Normal Mode D remains numerically bounded rather than bit-exact. A10 production profile and 100,000-match checkpoint schedule are verified; production launch is conditionally ready after commit/push.
