@@ -900,6 +900,25 @@ def worker(args) -> None:
         metrics["unaccounted_wall_s"] = max(
             metrics["iteration_wall_s"] - sum(timings.values()), 0.0,
         )
+        # Best-effort observability only. Rank-specific JSONL lives beside
+        # the existing report and never participates in PPO/DDP collectives.
+        # Persist only after model/optimizer parity and the barrier have passed.
+        try:
+            from agent.ppo.telemetry import append_training_update
+            append_training_update(
+                f"{os.path.abspath(args.report)}.rank{rank}.ppo.jsonl",
+                iteration=absolute_iteration + 1,
+                committed_matches=global_games,
+                rank=rank,
+                update=report,
+                collector=stats,
+                iteration_matches=iteration_games,
+                iteration_wall_s=metrics["iteration_wall_s"],
+                timing=timings,
+                recompute=recompute,
+            )
+        except (OSError, ValueError, TypeError) as exc:
+            note(f"WARNING: nonfatal PPO telemetry write failure: {exc}")
         iterations.append(metrics)
         note(f"iteration {index + 1} complete in {metrics['iteration_wall_s']:.1f}s, digests equal")
 
