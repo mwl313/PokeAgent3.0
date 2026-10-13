@@ -120,6 +120,7 @@ class BatchedPolicyEvaluator:
                 step_start=time.perf_counter(); result_rows=self.engine.step_batch([(handles[e][0], handles[e][1], submissions[e]) for e in sorted(submissions)]); self.timing["step"] += time.perf_counter()-step_start
                 for env, result in zip(sorted(submissions), result_rows):
                     accepted, terminated, truncated, winner, error, *_ = result
+                    if not accepted and error is None and not truncated and not terminated: continue  # revised public request
                     if not accepted: totals["illegal_actions"] += 1; illegal[env]=True; errors[env]=error or "engine rejected action"; finished[env]=True
                     elif truncated or error is not None: totals["operational_errors"] += 1; errors[env]=error or "truncated"; finished[env]=True
                     elif terminated: winners[env]=winner; finished[env]=True

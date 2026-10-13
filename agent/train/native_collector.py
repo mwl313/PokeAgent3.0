@@ -759,7 +759,10 @@ class NativeCollector:
         self.stats.rounds += 1
         for env, result in zip(order, results):
             accepted, terminated, truncated, winner, error, _, _ = result
-            if not accepted or truncated:
+            # A false acceptance with no error is the engine's public-request
+            # retry transaction. Retain the sampled decision in the trajectory:
+            # its next observation is the newly disclosed mask, at the same turn.
+            if truncated:
                 raise RuntimeError(f"invalid batch result for env {env}: {result}")
             if error is not None:
                 self.stats.operational_errors += 1
@@ -811,7 +814,8 @@ class NativeCollector:
                 turn[env] = 0
             else:
                 request_index[env] += 1
-                turn[env] += 1
+                if accepted:
+                    turn[env] += 1
         if self.config.telemetry:
             # Number of environments that produced at least one decision this
             # round (read-only; the training path is untouched when disabled).

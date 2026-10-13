@@ -1,0 +1,3573 @@
+{
+  "oracle_commit": "14546894d86f9589ac11130c510bbe73b6968665",
+  "format": "gen9championsvgc2026regmc",
+  "fixtures": [
+    {
+      "name": "imprison_retry_multiple_shared",
+      "teams": [
+        {
+          "id": "imprison_shared_pool_0",
+          "members": [
+            {
+              "species": 16,
+              "ability": 120,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                433,
+                635,
+                675
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            },
+            {
+              "species": 519,
+              "ability": 235,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                193,
+                635
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            },
+            {
+              "species": 1351,
+              "ability": 235,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                720,
+                635
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            },
+            {
+              "species": 934,
+              "ability": 19,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                443,
+                635
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            },
+            {
+              "species": 1105,
+              "ability": 235,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                24,
+                635
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            },
+            {
+              "species": 602,
+              "ability": 130,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                193,
+                635
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            }
+          ]
+        },
+        {
+          "id": "imprison_shared_pool_1",
+          "members": [
+            {
+              "species": 16,
+              "ability": 120,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                433,
+                635
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            },
+            {
+              "species": 519,
+              "ability": 235,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                193,
+                635,
+                675
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            },
+            {
+              "species": 1351,
+              "ability": 235,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                720,
+                635
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            },
+            {
+              "species": 934,
+              "ability": 19,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                443,
+                635
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            },
+            {
+              "species": 1105,
+              "ability": 235,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                24,
+                635
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            },
+            {
+              "species": 602,
+              "ability": 130,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                193,
+                635
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            }
+          ]
+        }
+      ],
+      "seed": [
+        2026,
+        10,
+        8,
+        4201
+      ],
+      "steps": [
+        {
+          "side": "P1",
+          "command": "team 1256",
+          "actions": [
+            {
+              "kind": "Pick",
+              "own_slot": 0,
+              "move_slot": 255,
+              "target_location": 0,
+              "switch_destination": 0,
+              "resource": "None"
+            },
+            {
+              "kind": "Pick",
+              "own_slot": 1,
+              "move_slot": 255,
+              "target_location": 0,
+              "switch_destination": 1,
+              "resource": "None"
+            },
+            {
+              "kind": "Pick",
+              "own_slot": 2,
+              "move_slot": 255,
+              "target_location": 0,
+              "switch_destination": 4,
+              "resource": "None"
+            },
+            {
+              "kind": "Pick",
+              "own_slot": 3,
+              "move_slot": 255,
+              "target_location": 0,
+              "switch_destination": 5,
+              "resource": "None"
+            }
+          ],
+          "accepted": true,
+          "turn": 0,
+          "rng": [
+            2026,
+            10,
+            8,
+            4201
+          ],
+          "masks": [
+            null,
+            null
+          ],
+          "world": [
+            [
+              {
+                "roster": 0,
+                "hp": 154,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 179,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 2,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 720,
+                    "pp": 16
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 3,
+                "hp": 169,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 443,
+                    "pp": 16
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "roster": 0,
+                "hp": 154,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 179,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 2,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 720,
+                    "pp": 16
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 3,
+                "hp": 169,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 443,
+                    "pp": 16
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "side": "P2",
+          "command": "team 1256",
+          "actions": [
+            {
+              "kind": "Pick",
+              "own_slot": 0,
+              "move_slot": 255,
+              "target_location": 0,
+              "switch_destination": 0,
+              "resource": "None"
+            },
+            {
+              "kind": "Pick",
+              "own_slot": 1,
+              "move_slot": 255,
+              "target_location": 0,
+              "switch_destination": 1,
+              "resource": "None"
+            },
+            {
+              "kind": "Pick",
+              "own_slot": 2,
+              "move_slot": 255,
+              "target_location": 0,
+              "switch_destination": 4,
+              "resource": "None"
+            },
+            {
+              "kind": "Pick",
+              "own_slot": 3,
+              "move_slot": 255,
+              "target_location": 0,
+              "switch_destination": 5,
+              "resource": "None"
+            }
+          ],
+          "accepted": true,
+          "turn": 1,
+          "rng": [
+            11048,
+            48628,
+            16564,
+            63803
+          ],
+          "masks": [
+            [
+              [
+                {
+                  "id": 433,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                },
+                {
+                  "id": 675,
+                  "disabled": false
+                }
+              ],
+              [
+                {
+                  "id": 193,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                }
+              ]
+            ],
+            [
+              [
+                {
+                  "id": 433,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                }
+              ],
+              [
+                {
+                  "id": 193,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                },
+                {
+                  "id": 675,
+                  "disabled": false
+                }
+              ]
+            ]
+          ],
+          "world": [
+            [
+              {
+                "roster": 0,
+                "hp": 154,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 179,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "roster": 0,
+                "hp": 154,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 179,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "side": "P1",
+          "command": "move 1, move 1 2",
+          "actions": [
+            {
+              "kind": "Move",
+              "own_slot": 0,
+              "move_slot": 0,
+              "target_location": 0,
+              "switch_destination": 255,
+              "resource": "None"
+            },
+            {
+              "kind": "Move",
+              "own_slot": 1,
+              "move_slot": 0,
+              "target_location": 2,
+              "switch_destination": 255,
+              "resource": "None"
+            }
+          ],
+          "accepted": true,
+          "turn": 1,
+          "rng": [
+            11048,
+            48628,
+            16564,
+            63803
+          ],
+          "masks": [
+            [
+              [
+                {
+                  "id": 433,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                },
+                {
+                  "id": 675,
+                  "disabled": false
+                }
+              ],
+              [
+                {
+                  "id": 193,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                }
+              ]
+            ],
+            [
+              [
+                {
+                  "id": 433,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                }
+              ],
+              [
+                {
+                  "id": 193,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                },
+                {
+                  "id": 675,
+                  "disabled": false
+                }
+              ]
+            ]
+          ],
+          "world": [
+            [
+              {
+                "roster": 0,
+                "hp": 154,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 179,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "roster": 0,
+                "hp": 154,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 179,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "side": "P2",
+          "command": "move 1, move 1 -1",
+          "actions": [
+            {
+              "kind": "Move",
+              "own_slot": 0,
+              "move_slot": 0,
+              "target_location": 0,
+              "switch_destination": 255,
+              "resource": "None"
+            },
+            {
+              "kind": "Move",
+              "own_slot": 1,
+              "move_slot": 0,
+              "target_location": -1,
+              "switch_destination": 255,
+              "resource": "None"
+            }
+          ],
+          "accepted": true,
+          "turn": 2,
+          "rng": [
+            27024,
+            52884,
+            33909,
+            23577
+          ],
+          "masks": [
+            [
+              [
+                {
+                  "id": 433,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                },
+                {
+                  "id": 675,
+                  "disabled": false
+                }
+              ],
+              [
+                {
+                  "id": 193,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                }
+              ]
+            ],
+            [
+              [
+                {
+                  "id": 822,
+                  "disabled": false
+                }
+              ],
+              [
+                {
+                  "id": 193,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                },
+                {
+                  "id": 675,
+                  "disabled": false
+                }
+              ]
+            ]
+          ],
+          "world": [
+            [
+              {
+                "roster": 0,
+                "hp": 154,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 11
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 179,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 11
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "roster": 0,
+                "hp": 100,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 140,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 11
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "side": "P1",
+          "command": "move 3, move 1 2",
+          "actions": [
+            {
+              "kind": "Move",
+              "own_slot": 0,
+              "move_slot": 2,
+              "target_location": 0,
+              "switch_destination": 255,
+              "resource": "None"
+            },
+            {
+              "kind": "Move",
+              "own_slot": 1,
+              "move_slot": 0,
+              "target_location": 2,
+              "switch_destination": 255,
+              "resource": "None"
+            }
+          ],
+          "accepted": true,
+          "turn": 2,
+          "rng": [
+            27024,
+            52884,
+            33909,
+            23577
+          ],
+          "masks": [
+            [
+              [
+                {
+                  "id": 433,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                },
+                {
+                  "id": 675,
+                  "disabled": false
+                }
+              ],
+              [
+                {
+                  "id": 193,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                }
+              ]
+            ],
+            [
+              [
+                {
+                  "id": 822,
+                  "disabled": false
+                }
+              ],
+              [
+                {
+                  "id": 193,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                },
+                {
+                  "id": 675,
+                  "disabled": false
+                }
+              ]
+            ]
+          ],
+          "world": [
+            [
+              {
+                "roster": 0,
+                "hp": 154,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 11
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 179,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 11
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "roster": 0,
+                "hp": 100,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 140,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 11
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "side": "P2",
+          "command": "move 1, move 2",
+          "actions": [
+            {
+              "kind": "Move",
+              "own_slot": 0,
+              "move_slot": 255,
+              "target_location": 0,
+              "switch_destination": 255,
+              "resource": "None"
+            },
+            {
+              "kind": "Move",
+              "own_slot": 1,
+              "move_slot": 1,
+              "target_location": 0,
+              "switch_destination": 255,
+              "resource": "None"
+            }
+          ],
+          "accepted": false,
+          "turn": 2,
+          "rng": [
+            27024,
+            52884,
+            33909,
+            23577
+          ],
+          "masks": [
+            [
+              [
+                {
+                  "id": 433,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                },
+                {
+                  "id": 675,
+                  "disabled": false
+                }
+              ],
+              [
+                {
+                  "id": 193,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                }
+              ]
+            ],
+            [
+              [
+                {
+                  "id": 822,
+                  "disabled": false
+                }
+              ],
+              [
+                {
+                  "id": 193,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": true
+                },
+                {
+                  "id": 675,
+                  "disabled": true
+                }
+              ]
+            ]
+          ],
+          "world": [
+            [
+              {
+                "roster": 0,
+                "hp": 154,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 11
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 179,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 11
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "roster": 0,
+                "hp": 100,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 140,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 11
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "side": "P2",
+          "command": "move 1, move 1 2",
+          "actions": [
+            {
+              "kind": "Move",
+              "own_slot": 0,
+              "move_slot": 255,
+              "target_location": 0,
+              "switch_destination": 255,
+              "resource": "None"
+            },
+            {
+              "kind": "Move",
+              "own_slot": 1,
+              "move_slot": 0,
+              "target_location": 2,
+              "switch_destination": 255,
+              "resource": "None"
+            }
+          ],
+          "accepted": true,
+          "turn": 3,
+          "rng": [
+            10830,
+            7730,
+            27212,
+            30780
+          ],
+          "masks": [
+            [
+              [
+                {
+                  "id": 433,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                },
+                {
+                  "id": 675,
+                  "disabled": false
+                }
+              ],
+              [
+                {
+                  "id": 193,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                }
+              ]
+            ],
+            [
+              [
+                {
+                  "id": 822,
+                  "disabled": false
+                }
+              ],
+              [
+                {
+                  "id": 193,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                },
+                {
+                  "id": 675,
+                  "disabled": false
+                }
+              ]
+            ]
+          ],
+          "world": [
+            [
+              {
+                "roster": 0,
+                "hp": 154,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 11
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 7
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 130,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 10
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "roster": 0,
+                "hp": 61,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 103,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 10
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "imprison_all_hidden_struggle",
+      "teams": [
+        {
+          "id": "imprison_shared_pool_0",
+          "members": [
+            {
+              "species": 16,
+              "ability": 120,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                433,
+                635,
+                675
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            },
+            {
+              "species": 519,
+              "ability": 235,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                193,
+                635
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            },
+            {
+              "species": 1351,
+              "ability": 235,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                720,
+                635
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            },
+            {
+              "species": 934,
+              "ability": 19,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                443,
+                635
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            },
+            {
+              "species": 1105,
+              "ability": 235,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                24,
+                635
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            },
+            {
+              "species": 602,
+              "ability": 130,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                193,
+                635
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            }
+          ]
+        },
+        {
+          "id": "imprison_shared_pool_1",
+          "members": [
+            {
+              "species": 16,
+              "ability": 120,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                433,
+                635
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            },
+            {
+              "species": 519,
+              "ability": 235,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                635,
+                675
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            },
+            {
+              "species": 1351,
+              "ability": 235,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                720,
+                635
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            },
+            {
+              "species": 934,
+              "ability": 19,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                443,
+                635
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            },
+            {
+              "species": 1105,
+              "ability": 235,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                24,
+                635
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            },
+            {
+              "species": 602,
+              "ability": 130,
+              "item": 0,
+              "nature": 24,
+              "gender": "M",
+              "level": 50,
+              "moves": [
+                193,
+                635
+              ],
+              "points": [
+                24,
+                8,
+                8,
+                8,
+                8,
+                4
+              ],
+              "ivs": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+              ]
+            }
+          ]
+        }
+      ],
+      "seed": [
+        2026,
+        10,
+        8,
+        4201
+      ],
+      "steps": [
+        {
+          "side": "P1",
+          "command": "team 1256",
+          "actions": [
+            {
+              "kind": "Pick",
+              "own_slot": 0,
+              "move_slot": 255,
+              "target_location": 0,
+              "switch_destination": 0,
+              "resource": "None"
+            },
+            {
+              "kind": "Pick",
+              "own_slot": 1,
+              "move_slot": 255,
+              "target_location": 0,
+              "switch_destination": 1,
+              "resource": "None"
+            },
+            {
+              "kind": "Pick",
+              "own_slot": 2,
+              "move_slot": 255,
+              "target_location": 0,
+              "switch_destination": 4,
+              "resource": "None"
+            },
+            {
+              "kind": "Pick",
+              "own_slot": 3,
+              "move_slot": 255,
+              "target_location": 0,
+              "switch_destination": 5,
+              "resource": "None"
+            }
+          ],
+          "accepted": true,
+          "turn": 0,
+          "rng": [
+            2026,
+            10,
+            8,
+            4201
+          ],
+          "masks": [
+            null,
+            null
+          ],
+          "world": [
+            [
+              {
+                "roster": 0,
+                "hp": 154,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 179,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 2,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 720,
+                    "pp": 16
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 3,
+                "hp": 169,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 443,
+                    "pp": 16
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "roster": 0,
+                "hp": 154,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 179,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 2,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 720,
+                    "pp": 16
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 3,
+                "hp": 169,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 443,
+                    "pp": 16
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "side": "P2",
+          "command": "team 1256",
+          "actions": [
+            {
+              "kind": "Pick",
+              "own_slot": 0,
+              "move_slot": 255,
+              "target_location": 0,
+              "switch_destination": 0,
+              "resource": "None"
+            },
+            {
+              "kind": "Pick",
+              "own_slot": 1,
+              "move_slot": 255,
+              "target_location": 0,
+              "switch_destination": 1,
+              "resource": "None"
+            },
+            {
+              "kind": "Pick",
+              "own_slot": 2,
+              "move_slot": 255,
+              "target_location": 0,
+              "switch_destination": 4,
+              "resource": "None"
+            },
+            {
+              "kind": "Pick",
+              "own_slot": 3,
+              "move_slot": 255,
+              "target_location": 0,
+              "switch_destination": 5,
+              "resource": "None"
+            }
+          ],
+          "accepted": true,
+          "turn": 1,
+          "rng": [
+            11048,
+            48628,
+            16564,
+            63803
+          ],
+          "masks": [
+            [
+              [
+                {
+                  "id": 433,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                },
+                {
+                  "id": 675,
+                  "disabled": false
+                }
+              ],
+              [
+                {
+                  "id": 193,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                }
+              ]
+            ],
+            [
+              [
+                {
+                  "id": 433,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                }
+              ],
+              [
+                {
+                  "id": 635,
+                  "disabled": false
+                },
+                {
+                  "id": 675,
+                  "disabled": false
+                }
+              ]
+            ]
+          ],
+          "world": [
+            [
+              {
+                "roster": 0,
+                "hp": 154,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 179,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "roster": 0,
+                "hp": 154,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 179,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "side": "P1",
+          "command": "move 1, move 1 2",
+          "actions": [
+            {
+              "kind": "Move",
+              "own_slot": 0,
+              "move_slot": 0,
+              "target_location": 0,
+              "switch_destination": 255,
+              "resource": "None"
+            },
+            {
+              "kind": "Move",
+              "own_slot": 1,
+              "move_slot": 0,
+              "target_location": 2,
+              "switch_destination": 255,
+              "resource": "None"
+            }
+          ],
+          "accepted": true,
+          "turn": 1,
+          "rng": [
+            11048,
+            48628,
+            16564,
+            63803
+          ],
+          "masks": [
+            [
+              [
+                {
+                  "id": 433,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                },
+                {
+                  "id": 675,
+                  "disabled": false
+                }
+              ],
+              [
+                {
+                  "id": 193,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                }
+              ]
+            ],
+            [
+              [
+                {
+                  "id": 433,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                }
+              ],
+              [
+                {
+                  "id": 635,
+                  "disabled": false
+                },
+                {
+                  "id": 675,
+                  "disabled": false
+                }
+              ]
+            ]
+          ],
+          "world": [
+            [
+              {
+                "roster": 0,
+                "hp": 154,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 179,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "roster": 0,
+                "hp": 154,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 179,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "side": "P2",
+          "command": "move 1, move 1",
+          "actions": [
+            {
+              "kind": "Move",
+              "own_slot": 0,
+              "move_slot": 0,
+              "target_location": 0,
+              "switch_destination": 255,
+              "resource": "None"
+            },
+            {
+              "kind": "Move",
+              "own_slot": 1,
+              "move_slot": 0,
+              "target_location": 0,
+              "switch_destination": 255,
+              "resource": "None"
+            }
+          ],
+          "accepted": true,
+          "turn": 2,
+          "rng": [
+            15704,
+            55669,
+            10079,
+            29837
+          ],
+          "masks": [
+            [
+              [
+                {
+                  "id": 433,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                },
+                {
+                  "id": 675,
+                  "disabled": false
+                }
+              ],
+              [
+                {
+                  "id": 193,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                }
+              ]
+            ],
+            [
+              [
+                {
+                  "id": 822,
+                  "disabled": false
+                }
+              ],
+              [
+                {
+                  "id": 635,
+                  "disabled": false
+                },
+                {
+                  "id": 675,
+                  "disabled": false
+                }
+              ]
+            ]
+          ],
+          "world": [
+            [
+              {
+                "roster": 0,
+                "hp": 154,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 11
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 179,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 11
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "roster": 0,
+                "hp": 154,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 179,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 635,
+                    "pp": 7
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "side": "P2",
+          "command": "move 1, move 1",
+          "actions": [
+            {
+              "kind": "Move",
+              "own_slot": 0,
+              "move_slot": 255,
+              "target_location": 0,
+              "switch_destination": 255,
+              "resource": "None"
+            },
+            {
+              "kind": "Move",
+              "own_slot": 1,
+              "move_slot": 0,
+              "target_location": 0,
+              "switch_destination": 255,
+              "resource": "None"
+            }
+          ],
+          "accepted": true,
+          "turn": 2,
+          "rng": [
+            15704,
+            55669,
+            10079,
+            29837
+          ],
+          "masks": [
+            [
+              [
+                {
+                  "id": 433,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                },
+                {
+                  "id": 675,
+                  "disabled": false
+                }
+              ],
+              [
+                {
+                  "id": 193,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                }
+              ]
+            ],
+            [
+              [
+                {
+                  "id": 822,
+                  "disabled": false
+                }
+              ],
+              [
+                {
+                  "id": 635,
+                  "disabled": false
+                },
+                {
+                  "id": 675,
+                  "disabled": false
+                }
+              ]
+            ]
+          ],
+          "world": [
+            [
+              {
+                "roster": 0,
+                "hp": 154,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 11
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 179,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 11
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "roster": 0,
+                "hp": 154,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 179,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 635,
+                    "pp": 7
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "side": "P1",
+          "command": "move 3, move 1 2",
+          "actions": [
+            {
+              "kind": "Move",
+              "own_slot": 0,
+              "move_slot": 2,
+              "target_location": 0,
+              "switch_destination": 255,
+              "resource": "None"
+            },
+            {
+              "kind": "Move",
+              "own_slot": 1,
+              "move_slot": 0,
+              "target_location": 2,
+              "switch_destination": 255,
+              "resource": "None"
+            }
+          ],
+          "accepted": true,
+          "turn": 3,
+          "rng": [
+            4304,
+            22104,
+            26835,
+            55194
+          ],
+          "masks": [
+            [
+              [
+                {
+                  "id": 433,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                },
+                {
+                  "id": 675,
+                  "disabled": false
+                }
+              ],
+              [
+                {
+                  "id": 193,
+                  "disabled": false
+                },
+                {
+                  "id": 635,
+                  "disabled": false
+                }
+              ]
+            ],
+            [
+              [
+                {
+                  "id": 822,
+                  "disabled": false
+                }
+              ],
+              [
+                {
+                  "id": 635,
+                  "disabled": false
+                },
+                {
+                  "id": 675,
+                  "disabled": false
+                }
+              ]
+            ]
+          ],
+          "world": [
+            [
+              {
+                "roster": 0,
+                "hp": 119,
+                "status": 131,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 11
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  },
+                  {
+                    "id": 675,
+                    "pp": 7
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 179,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 10
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "roster": 0,
+                "hp": 115,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 433,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 1,
+                "hp": 91,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 635,
+                    "pp": 7
+                  },
+                  {
+                    "id": 675,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 4,
+                "hp": 194,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 24,
+                    "pp": 20
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              },
+              {
+                "roster": 5,
+                "hp": 191,
+                "status": 0,
+                "moves": [
+                  {
+                    "id": 193,
+                    "pp": 12
+                  },
+                  {
+                    "id": 635,
+                    "pp": 8
+                  }
+                ]
+              }
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

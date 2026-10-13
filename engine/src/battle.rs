@@ -48,6 +48,8 @@ use hooks::{BoostCause, ModifierEvent, MoveContext};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct StepResult {
+    /// False without an operational error means a revised public request:
+    /// resample that side, without advancing the battle or discarding its peer.
     pub accepted: bool,
     pub outcome: Outcome,
     pub request_kinds: [RequestKind; 2],
@@ -150,12 +152,15 @@ impl BattleState {
         actions: &[AtomicAction],
     ) -> Result<StepResult> {
         self.validate_choice(side, actions)?;
-        // A hidden Imprison move can be advertised to the last active slot,
-        // but Side.chooseMove rejects it and emits a revised request before
-        // committing either choice or consuming RNG. The native batch/actor
-        // protocol does not yet implement that retry transaction. Fail closed
-        // instead of accepting it and substituting an execution-time failure.
-        for action in actions {
+        if let Some(trace) = &mut self.trace {
+            trace.actions.push(TraceEntry {
+                side, actions: actions.to_vec(), rng_before: self.rng.seed(), turn: self.turn,
+            });
+        }
+        let mut resolved = actions.to_vec();
+        // Match Side.chooseMove/getMoves (unrestricted) before committing. The
+        // cached request, not the underlying world flags, remembers disclosure.
+        for action in &mut resolved {
             if action.kind != ActionKind::Move || action.move_slot == NO_SLOT {
                 continue;
             }
@@ -164,23 +169,33 @@ impl BattleState {
                 continue;
             }
             let roster = self.sides[side.index()].active[action.own_slot as usize].unwrap();
-            let mv = &self.sides[side.index()].pokemon[roster as usize].moves[action.move_slot as usize];
+            let pokemon = &self.sides[side.index()].pokemon[roster as usize];
+            // Showdown substitutes Struggle immediately if getMoves() is empty,
+            // even when the submitted hidden move appeared enabled to the user.
+            if pokemon.moves.iter().all(|mv| mv.disabled || mv.pp == 0) {
+                action.move_slot = NO_SLOT;
+                action.target_location = 0;
+                action.resource = Resource::None;
+                continue;
+            }
+            let mv = &pokemon.moves[action.move_slot as usize];
             if mv.disabled && mv.hidden && request.last_active {
-                return Err(EngineError::Unsupported(
-                    "Imprison hidden-choice rejection requires player re-request transaction".into(),
-                ));
+                // Gen 9 doubles updateDisabledRequest reveals ALL restrictions
+                // for this Pokemon on the first rejection (maybeDisabled).
+                // Leave other slots and the other player's pending choice alone.
+                for choice in &mut self.requests[side.index()].slots[action.own_slot as usize].moves {
+                    choice.hidden = false;
+                }
+                return Ok(StepResult {
+                    accepted: false, outcome: self.outcome.clone(),
+                    request_kinds: std::array::from_fn(|s| if self.pending[s].is_some() {
+                        RequestKind::Wait
+                    } else { self.requests[s].kind }),
+                });
             }
         }
         let i = side.index();
-        if let Some(trace) = &mut self.trace {
-            trace.actions.push(TraceEntry {
-                side,
-                actions: actions.to_vec(),
-                rng_before: self.rng.seed(),
-                turn: self.turn,
-            });
-        }
-        self.pending[i] = Some(actions.to_vec());
+        self.pending[i] = Some(resolved);
         let ready =
             (0..2).all(|s| self.requests[s].kind == RequestKind::Wait || self.pending[s].is_some());
         if ready && let Err(error) = self.commit(dex) {
@@ -11122,10 +11137,10 @@ impl BattleState {
                     let hidden = imprisoned_moves.contains(&mv.id);
                     if hidden {
                         // `onFoeDisableMove` marks the move `'hidden'`. The
-                        // served request only turns that into `disabled` for
-                        // the side's last active Pokemon (`getMoves(lockedMove,
-                        // restrictData = isLastActive())`), so the world flag and
-                        // the served flag are tracked separately.
+                        // last-active served request hides this restriction
+                        // (`getMoves(..., restrictData = isLastActive())`).
+                        // Keep world flags separate from the cached request's
+                        // disclosure state; selection can revise that request.
                         disabled = true;
                     }
                     mv.disabled = disabled;

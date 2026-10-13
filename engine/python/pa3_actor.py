@@ -295,7 +295,8 @@ class ActorRunner:
         self.metrics["transitions"] += len(specs)
         for index, result in zip(order, results):
             accepted, terminated, truncated, winner, error, kind0, kind1 = result
-            if not accepted or truncated:
+            # Non-error rejection revises the request; next round resamples it.
+            if truncated:
                 raise RuntimeError(f"invalid batch result for env {index}: {result}")
             if error is not None:
                 self.metrics["operational_errors"] += 1

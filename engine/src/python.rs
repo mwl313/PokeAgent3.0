@@ -42,8 +42,9 @@ pub type ActionTuple = (u8, u8, u8, i8, u8, u8);
 pub type Branch = Vec<ActionTuple>;
 /// One environment submission: league/step ids plus the branches for both sides.
 pub type EnvSpec = (u32, u32, Vec<(u8, Branch)>);
-/// One stepped environment result: terminated, truncated, request pending,
-/// winner side, operational error, packed observation length, branch count.
+/// accepted, terminated, truncated, winner, operational error, request kinds.
+/// accepted=false with no error means resample a revised public request;
+/// the peer may already be committed (Wait). Invalid input raises an exception.
 pub type StepResult = (bool, bool, bool, Option<i8>, Option<String>, u8, u8);
 /// One request move row: move id, remaining PP, slot, disabled, already used.
 pub type MoveRow = (u16, u8, u8, bool, bool);

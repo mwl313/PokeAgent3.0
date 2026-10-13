@@ -120,7 +120,7 @@ pub struct MoveState {
     pub max_pp: u8,
     pub disabled: bool,
     /// `disabled` came from Imprison's `'hidden'` disable, which the served
-    /// request only applies to the side's last active Pokemon.
+    /// request hides initially for the side's last active Pokemon.
     #[serde(default)]
     pub hidden: bool,
     pub used: bool,
@@ -1770,7 +1770,7 @@ impl BattleState {
                                 side.active[later]
                                     .is_none_or(|r| side.pokemon[r as usize].fainted)
                             });
-                            let moves = if locked_recharge {
+                            let mut moves = if locked_recharge {
                                 Vec::new()
                             } else if let Some(id) = locked_move {
                                 p.moves
@@ -1807,6 +1807,13 @@ impl BattleState {
                                     })
                                     .collect()
                             };
+                            // A rejected selection reveals every hidden disable
+                            // for this last-active slot in the cached request.
+                            // Permit that monotone disclosure on restore, while
+                            // still checking every id/PP/disabled/target below.
+                            if last_active && !locked && request.slots[slot].moves.iter().all(|m| !m.hidden) {
+                                for m in &mut moves { m.hidden = false; }
+                            }
                             let (trap_state, trap_maybe) = state.trap_flags(
                                 dex,
                                 crate::effects::Entity {
@@ -1953,7 +1960,17 @@ impl BattleState {
                 return Err(EngineError::InvalidInput("snapshot request move".into()));
             }
             if let Some(actions) = &state.pending[i] {
-                request.validate_joint(actions)?;
+                // Accepted hidden choices may already have been substituted
+                // with Struggle by chooseMove's unrestricted empty-moves check.
+                let mut executable = request.clone();
+                for (slot, req) in executable.slots.iter_mut().enumerate() {
+                    if req.locked_move.is_none() && !req.locked_recharge
+                        && state.sides[i].active[slot].is_some_and(|r|
+                            state.sides[i].pokemon[r as usize].moves.iter().all(|m|m.disabled||m.pp==0)) {
+                        for m in &mut req.moves { m.hidden = false; }
+                    }
+                }
+                executable.validate_joint(actions)?;
             }
         }
         Ok(state)

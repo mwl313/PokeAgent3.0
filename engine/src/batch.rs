@@ -283,9 +283,13 @@ impl BattleBatch {
                 .try_for_each(|((state, result), work)| -> Result<()> {
                     if let Some(index) = *work {
                         let mut last = None;
+                        let mut accepted = true;
                         for choice in &specs[index].choices {
-                            last = Some(state.step(dex, choice.side, &choice.actions)?);
+                            let step = state.step(dex, choice.side, &choice.actions)?;
+                            accepted &= step.accepted;
+                            last = Some(step);
                         }
+                        if let Some(step) = &mut last { step.accepted = accepted; }
                         *result = last;
                     }
                     Ok(())

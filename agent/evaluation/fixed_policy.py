@@ -202,6 +202,9 @@ class FixedPolicyEvaluator:
                     break
                 result = self.engine.step_batch([(handle[0], handle[1], submissions)])[0]
                 accepted, terminated, truncated, winner, error, *_ = result
+                if not accepted and error is None and not truncated and not terminated:
+                    # Hidden restriction disclosure: resample the revised mask.
+                    continue
                 if not accepted:
                     totals["illegal_actions"] += 1
                     illegal = True

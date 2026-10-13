@@ -68,7 +68,8 @@ pub struct MoveChoice {
     pub disabled: bool,
     /// The world flag came from Imprison's `'hidden'` disable. The served
     /// request turns it into `!restrictData` (`Pokemon#getMoves`), so only the
-    /// side's last active slot actually loses the move.
+    /// side's last active slot initially sees it enabled. Cleared in the cached
+    /// request when selection rejection discloses the disabled moves.
     #[serde(default)]
     pub hidden: bool,
     pub pp: u8,
@@ -95,8 +96,8 @@ pub struct SlotRequest {
     /// Reference `getMoves(..., restrictData = isLastActive())`: true when this
     /// slot is the side's last non-fainted active Pokemon. Only that slot has
     /// Imprison's `'hidden'` disables served as enabled (`disabled =
-    /// !restrictData`); the execution-time `onFoeBeforeMove` gate then refuses
-    /// the move.
+    /// !restrictData`). Selection can reject it and revise the request; newly
+    /// activated Imprison can also refuse an already accepted move at execution.
     #[serde(default)]
     pub last_active: bool,
     /// Reference `getSwitchRequestData().reviving`: this slot holds the
