@@ -1,0 +1,552 @@
+{
+  "source_sha": "86ffebc09f9c91e765314c79f04d2b8004fc7ac9",
+  "baseline": "ec5912736440d5f5456f678c4d76f8fd26fd20aa",
+  "P1_status": "BLOCKED",
+  "oracle_discrepancy": "FIXED",
+  "remaining_blocker": "native hidden Imprison choice re-request transaction unsupported; fail-closed quarantine, not a complete engine fix",
+  "rust_tests": 39,
+  "node_adapter_tests": 5,
+  "full_oracle_fixtures": 1152,
+  "full_oracle_boundaries": 25231,
+  "all_changed_data_outside_request_details_identical": true,
+  "verified_data_files": [
+    "engine/data/more_ability_tail.json",
+    "engine/data/more_ability_tail_2.json",
+    "engine/data/more_ability_transfer.json",
+    "engine/data/more_allyswitch.json",
+    "engine/data/more_angerripen.json",
+    "engine/data/more_aromaveil.json",
+    "engine/data/more_aura_guard.json",
+    "engine/data/more_aurora_veil.json",
+    "engine/data/more_batonpass.json",
+    "engine/data/more_beatup.json",
+    "engine/data/more_berrysteal.json",
+    "engine/data/more_boost_reset.json",
+    "engine/data/more_charge.json",
+    "engine/data/more_charge_family.json",
+    "engine/data/more_chillyreception.json",
+    "engine/data/more_curse.json",
+    "engine/data/more_delayed_status.json",
+    "engine/data/more_destinybond.json",
+    "engine/data/more_disable_family.json",
+    "engine/data/more_disguise.json",
+    "engine/data/more_dragondarts.json",
+    "engine/data/more_emergency_exit.json",
+    "engine/data/more_expanding_force.json",
+    "engine/data/more_fling.json",
+    "engine/data/more_force_switch.json",
+    "engine/data/more_forecast.json",
+    "engine/data/more_frisk_pressure.json",
+    "engine/data/more_gravity.json",
+    "engine/data/more_hazards.json",
+    "engine/data/more_hazardsetters.json",
+    "engine/data/more_heal_block.json",
+    "engine/data/more_healer_curious.json",
+    "engine/data/more_hplink.json",
+    "engine/data/more_illusion.json",
+    "engine/data/more_infiltrator.json",
+    "engine/data/more_innardsout.json",
+    "engine/data/more_interactions.json",
+    "engine/data/more_item_interactions.json",
+    "engine/data/more_itemmoves.json",
+    "engine/data/more_longreach.json",
+    "engine/data/more_magicbounce.json",
+    "engine/data/more_magician.json",
+    "engine/data/more_mega_abilities.json",
+    "engine/data/more_megasol.json",
+    "engine/data/more_metronome_item.json",
+    "engine/data/more_mimicry.json",
+    "engine/data/more_minimize.json",
+    "engine/data/more_moldbreaker.json",
+    "engine/data/more_move_coverage.json",
+    "engine/data/more_mummy.json",
+    "engine/data/more_overlord_leafguard.json",
+    "engine/data/more_passives2.json",
+    "engine/data/more_passives3.json",
+    "engine/data/more_passives4.json",
+    "engine/data/more_passives5.json",
+    "engine/data/more_payback_avalanche.json",
+    "engine/data/more_pollenpuff.json",
+    "engine/data/more_poltergeist.json",
+    "engine/data/more_powder_eerie.json",
+    "engine/data/more_protectbypass.json",
+    "engine/data/more_queue.json",
+    "engine/data/more_ragingbull.json",
+    "engine/data/more_rampage.json",
+    "engine/data/more_refusals.json",
+    "engine/data/more_retaliation.json",
+    "engine/data/more_revival.json",
+    "engine/data/more_roost_yawn.json",
+    "engine/data/more_sandrush_thickfat.json",
+    "engine/data/more_seed_analytic_tangled.json",
+    "engine/data/more_shedtail.json",
+    "engine/data/more_skillswap.json",
+    "engine/data/more_sleep.json",
+    "engine/data/more_sleep_talk.json",
+    "engine/data/more_small_abilities.json",
+    "engine/data/more_smallcontrol.json",
+    "engine/data/more_smallcrit.json",
+    "engine/data/more_smallmoves.json",
+    "engine/data/more_smalltail.json",
+    "engine/data/more_spinfamily.json",
+    "engine/data/more_splits.json",
+    "engine/data/more_stance_change.json",
+    "engine/data/more_statswap.json",
+    "engine/data/more_steelbeam.json",
+    "engine/data/more_steelroller.json",
+    "engine/data/more_stickyhold.json",
+    "engine/data/more_stockpile.json",
+    "engine/data/more_strengthsap.json",
+    "engine/data/more_substitute.json",
+    "engine/data/more_symbiosis.json",
+    "engine/data/more_syrup.json",
+    "engine/data/more_throat_chop.json",
+    "engine/data/more_tiecheck.json",
+    "engine/data/more_toxic_debris.json",
+    "engine/data/more_trap.json",
+    "engine/data/more_traps.json",
+    "engine/data/more_turn_history.json",
+    "engine/data/more_wanderingspirit.json",
+    "engine/data/more_watershuriken.json",
+    "engine/data/more_weights.json",
+    "engine/data/more_wishes.json",
+    "engine/data/more_witness_tail.json",
+    "engine/data/turn-fixtures-2.json",
+    "engine/data/turn-fixtures.json"
+  ],
+  "fresh_reference_matches_before_probe_except_transport_clock": true,
+  "reference_commit": "14546894d86f9589ac11130c510bbe73b6968665",
+  "reference_clean": true,
+  "fresh_built_battle_js_sha256": "3ee5c2d9e190e4f5324934e6b01c685473d215ddd08881ef24d6f276ec93020f",
+  "fresh_built_pokemon_js_sha256": "348c06d4e20dd21a682d4b2f2c611f9f885928059655b3bf21dd64e70d5593fa",
+  "actual_pool_imprison_holders": [
+    {
+      "team_index": 14,
+      "canonical_id": "pa3-02f6c6fb35113663dff8e18aaad70f14f2f6f1e53bcf3b02c1f2f065e6c48596",
+      "roster": 1
+    },
+    {
+      "team_index": 32,
+      "canonical_id": "pa3-07d6fcb682debdf8b4c8d57585d56fbc10653b6ea367cb99816b415d39d8210d",
+      "roster": 3
+    },
+    {
+      "team_index": 41,
+      "canonical_id": "pa3-09420b3f78533e164e190213deae29e0803840f18bf4ce80536b99ed71b59edf",
+      "roster": 3
+    },
+    {
+      "team_index": 49,
+      "canonical_id": "pa3-0ac049561df7390890d216bd4edb6851208789123a2bc19193d624fc57596f19",
+      "roster": 0
+    },
+    {
+      "team_index": 69,
+      "canonical_id": "pa3-0d756247953dcee158c1f2dba2842cd34b5cde32fec8437be9d9a10d74d857e8",
+      "roster": 3
+    },
+    {
+      "team_index": 78,
+      "canonical_id": "pa3-0f87fb74ffaf8ed7478de329bc2f31571eeb363e22068dd2eca11d67efca02a2",
+      "roster": 4
+    },
+    {
+      "team_index": 121,
+      "canonical_id": "pa3-175102cf01b363ba2527d86be1eb02edc4858df5f4ead26506d5ffc8be64016d",
+      "roster": 0
+    },
+    {
+      "team_index": 146,
+      "canonical_id": "pa3-1c0c71d9f809bc303d1c4377400243177b2ca63e714bd30f60c9a37cd575ccbe",
+      "roster": 3
+    },
+    {
+      "team_index": 208,
+      "canonical_id": "pa3-275bd663b12846f06ea514aa508b2a03d5637749690ffe8c0ffe0f5839c818c1",
+      "roster": 1
+    },
+    {
+      "team_index": 211,
+      "canonical_id": "pa3-27d1e0d7c4182ce071957880c4f645437367f34724fd73319f37e14f95133d6c",
+      "roster": 0
+    },
+    {
+      "team_index": 220,
+      "canonical_id": "pa3-29457651b039b239078fed950e26849bb88d4be28606754d40c77e6674a8b94c",
+      "roster": 0
+    },
+    {
+      "team_index": 239,
+      "canonical_id": "pa3-2e5b01e81b0af4e21ffe310d8992fcbb49b297a7b6b0c9cbc61cc9b88a1b82d6",
+      "roster": 0
+    },
+    {
+      "team_index": 260,
+      "canonical_id": "pa3-32a84e79883656de7bec0eab45e1d35422922b52532089ad69e153f08b2729be",
+      "roster": 3
+    },
+    {
+      "team_index": 308,
+      "canonical_id": "pa3-3fcfbc1e4230845be16f4156305fd6e7ed44154c2a204a411cfbbf97111386ae",
+      "roster": 3
+    },
+    {
+      "team_index": 386,
+      "canonical_id": "pa3-4ee9cf0381b429b3c64d53028c4728c20ad4f63a6b2d25b0b93a30b0ba0f2dbc",
+      "roster": 2
+    },
+    {
+      "team_index": 401,
+      "canonical_id": "pa3-52971fd7592f0eea16443d7df082d427a30e799facd42dc60190130e8c1b6161",
+      "roster": 3
+    },
+    {
+      "team_index": 403,
+      "canonical_id": "pa3-5342d16af9756deb0b631a20f2c5d252b85a017f3b3373435fa0726f8f2ac778",
+      "roster": 0
+    },
+    {
+      "team_index": 465,
+      "canonical_id": "pa3-5dfd00d0ac6f7991677a4c212aaac459658e6bf406e583578b684f5577e0b4b3",
+      "roster": 2
+    },
+    {
+      "team_index": 478,
+      "canonical_id": "pa3-6043003e4d7e25dbe11bfae3e5355584975742df75cabd2c93f9b5032e366f78",
+      "roster": 0
+    },
+    {
+      "team_index": 484,
+      "canonical_id": "pa3-61295ee091ce7c230cf9679cd46db917df52f51d73d516ec08dbf2d3226a9db9",
+      "roster": 2
+    },
+    {
+      "team_index": 547,
+      "canonical_id": "pa3-70633c311e8d8b00b74d40665bd8670c351f671205d7c1c716d40667ef40434d",
+      "roster": 3
+    },
+    {
+      "team_index": 563,
+      "canonical_id": "pa3-73ab98de15db06980fbb44b33832d6acf4ed33f2492cba3df7fe6be818cc23c7",
+      "roster": 1
+    },
+    {
+      "team_index": 615,
+      "canonical_id": "pa3-7e9386e3f0425b8594953ae286255f0805f307aef623b3af369b8b64f0ed2a70",
+      "roster": 4
+    },
+    {
+      "team_index": 632,
+      "canonical_id": "pa3-812c342ca4fca40e2cba4db6d7b4caf72797b30843b3a42955a6d0b66a9e94c4",
+      "roster": 3
+    },
+    {
+      "team_index": 639,
+      "canonical_id": "pa3-836ff24fab9cf917618a38a73057d6f95ad6d25c51baab67f3dccba2d03d0bc2",
+      "roster": 4
+    },
+    {
+      "team_index": 650,
+      "canonical_id": "pa3-8696f0dff03e1f050ce7120c25752a2ee14a83f86f7876e559265a50e6a12cc9",
+      "roster": 4
+    },
+    {
+      "team_index": 688,
+      "canonical_id": "pa3-8e2ff56ac9948f961280cdffc26b61d707a2946540cbc504c14bf502b88dcc86",
+      "roster": 5
+    },
+    {
+      "team_index": 703,
+      "canonical_id": "pa3-908f3a27ce9836028d8c79a870c1a6ff914510d874fe20f232e5e5debd470761",
+      "roster": 0
+    },
+    {
+      "team_index": 766,
+      "canonical_id": "pa3-9dfa041ae07970e21f940c901b23c360fdf793f0a7ee53b2c39dd2eaac864d8c",
+      "roster": 4
+    },
+    {
+      "team_index": 803,
+      "canonical_id": "pa3-a4e22bbc7709bf73d6c8ff49fae7bc87cb1b302786096fe1ff939248c567bf70",
+      "roster": 1
+    },
+    {
+      "team_index": 827,
+      "canonical_id": "pa3-aafce7677ba407cfa6337f8836479c36b509069517866972317469c243453a4c",
+      "roster": 0
+    },
+    {
+      "team_index": 843,
+      "canonical_id": "pa3-adc15c01381fe46b617888f03d71157fd5650688da6aad743717525734befb6e",
+      "roster": 2
+    },
+    {
+      "team_index": 880,
+      "canonical_id": "pa3-b6643b2e11d171a0fa9fe6f38c1d8223e5d663609903699c38799d9bdb33ca78",
+      "roster": 3
+    },
+    {
+      "team_index": 889,
+      "canonical_id": "pa3-b801c7e02b9ed84787f9dc749c7aafa60332768e3e678958ce5171021ea76b17",
+      "roster": 3
+    },
+    {
+      "team_index": 899,
+      "canonical_id": "pa3-baab9aa6b77192db4a9de7ae174a66affe98324d525dcb9275330500d127e9ad",
+      "roster": 0
+    },
+    {
+      "team_index": 904,
+      "canonical_id": "pa3-bb6017a614fccd72a4d531adff9ce1d90ef953316ff67a23b633b4bd6ae5884a",
+      "roster": 0
+    },
+    {
+      "team_index": 927,
+      "canonical_id": "pa3-c28864223ca1019b4ba2442921c2e32568b5f95e20cf063808c52837148170b6",
+      "roster": 1
+    },
+    {
+      "team_index": 942,
+      "canonical_id": "pa3-c54f19cb9fe8a862e1676e13f8712efd23da3382fe4c5d5fd1485870ddf6b8f7",
+      "roster": 2
+    },
+    {
+      "team_index": 962,
+      "canonical_id": "pa3-c962541d3bed2c98695394f11977aa27f0ea50bdd3feed8f51e12899d6a5fb34",
+      "roster": 2
+    },
+    {
+      "team_index": 1000,
+      "canonical_id": "pa3-d3e4a419602ec14c9127d9969e0c070a677e65516234ee659c062ad9a4b5b470",
+      "roster": 2
+    },
+    {
+      "team_index": 1056,
+      "canonical_id": "pa3-e04e47654f9fce9f1c2a32e2e5fc1406e7fe0dc6bb4c8bb5424c55bf407904c2",
+      "roster": 0
+    },
+    {
+      "team_index": 1058,
+      "canonical_id": "pa3-e06f6fdfc7d1657067bc846c248e8b657197dffb31e1dc23351106e88abacede",
+      "roster": 3
+    },
+    {
+      "team_index": 1075,
+      "canonical_id": "pa3-e55531862dccd478c1fb8d914cb0e15ab29370e43c221364e5a47f2e72bd5d3c",
+      "roster": 0
+    },
+    {
+      "team_index": 1078,
+      "canonical_id": "pa3-e5c0f80587ad0cdf806fae492f261bd6b5e8d1f983fcc120b3ee7ce263c0ac12",
+      "roster": 0
+    },
+    {
+      "team_index": 1110,
+      "canonical_id": "pa3-eca39b7d0a31644237325faf07333250732f8d9ddbbfe5b2b8bd5b4603e2e618",
+      "roster": 0
+    },
+    {
+      "team_index": 1125,
+      "canonical_id": "pa3-ef41ce349b7d5e08b86bcdc213c4b387b25ee1f2347d8c16c7f5f44be1800954",
+      "roster": 3
+    },
+    {
+      "team_index": 1142,
+      "canonical_id": "pa3-f2aa7cc24fe9d879ba0c006c0ec5899fa2f4a6f77b55fc14ce843d55a41bf3b5",
+      "roster": 1
+    },
+    {
+      "team_index": 1193,
+      "canonical_id": "pa3-fc9e104b7d361370a602f719e0b54c0a98cf3c7d9eaf4d48971145dac3bf38f0",
+      "roster": 0
+    }
+  ],
+  "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f",
+  "changed_source_and_fixture_files": [
+    "engine/data/manifest.json",
+    "engine/data/more_ability_tail.json",
+    "engine/data/more_ability_tail_2.json",
+    "engine/data/more_ability_transfer.json",
+    "engine/data/more_allyswitch.json",
+    "engine/data/more_angerripen.json",
+    "engine/data/more_aromaveil.json",
+    "engine/data/more_aura_guard.json",
+    "engine/data/more_aurora_veil.json",
+    "engine/data/more_batonpass.json",
+    "engine/data/more_beatup.json",
+    "engine/data/more_berrysteal.json",
+    "engine/data/more_boost_reset.json",
+    "engine/data/more_charge.json",
+    "engine/data/more_charge_family.json",
+    "engine/data/more_chillyreception.json",
+    "engine/data/more_curse.json",
+    "engine/data/more_delayed_status.json",
+    "engine/data/more_destinybond.json",
+    "engine/data/more_disable_family.json",
+    "engine/data/more_disguise.json",
+    "engine/data/more_dragondarts.json",
+    "engine/data/more_emergency_exit.json",
+    "engine/data/more_expanding_force.json",
+    "engine/data/more_fling.json",
+    "engine/data/more_force_switch.json",
+    "engine/data/more_forecast.json",
+    "engine/data/more_frisk_pressure.json",
+    "engine/data/more_gravity.json",
+    "engine/data/more_hazards.json",
+    "engine/data/more_hazardsetters.json",
+    "engine/data/more_heal_block.json",
+    "engine/data/more_healer_curious.json",
+    "engine/data/more_hplink.json",
+    "engine/data/more_illusion.json",
+    "engine/data/more_infiltrator.json",
+    "engine/data/more_innardsout.json",
+    "engine/data/more_interactions.json",
+    "engine/data/more_item_interactions.json",
+    "engine/data/more_itemmoves.json",
+    "engine/data/more_longreach.json",
+    "engine/data/more_magicbounce.json",
+    "engine/data/more_magician.json",
+    "engine/data/more_mega_abilities.json",
+    "engine/data/more_megasol.json",
+    "engine/data/more_metronome_item.json",
+    "engine/data/more_mimicry.json",
+    "engine/data/more_minimize.json",
+    "engine/data/more_moldbreaker.json",
+    "engine/data/more_move_coverage.json",
+    "engine/data/more_mummy.json",
+    "engine/data/more_overlord_leafguard.json",
+    "engine/data/more_passives2.json",
+    "engine/data/more_passives3.json",
+    "engine/data/more_passives4.json",
+    "engine/data/more_passives5.json",
+    "engine/data/more_payback_avalanche.json",
+    "engine/data/more_pollenpuff.json",
+    "engine/data/more_poltergeist.json",
+    "engine/data/more_powder_eerie.json",
+    "engine/data/more_protectbypass.json",
+    "engine/data/more_queue.json",
+    "engine/data/more_ragingbull.json",
+    "engine/data/more_rampage.json",
+    "engine/data/more_refusals.json",
+    "engine/data/more_retaliation.json",
+    "engine/data/more_revival.json",
+    "engine/data/more_roost_yawn.json",
+    "engine/data/more_sandrush_thickfat.json",
+    "engine/data/more_seed_analytic_tangled.json",
+    "engine/data/more_shedtail.json",
+    "engine/data/more_skillswap.json",
+    "engine/data/more_sleep.json",
+    "engine/data/more_sleep_talk.json",
+    "engine/data/more_small_abilities.json",
+    "engine/data/more_smallcontrol.json",
+    "engine/data/more_smallcrit.json",
+    "engine/data/more_smallmoves.json",
+    "engine/data/more_smalltail.json",
+    "engine/data/more_spinfamily.json",
+    "engine/data/more_splits.json",
+    "engine/data/more_stance_change.json",
+    "engine/data/more_statswap.json",
+    "engine/data/more_steelbeam.json",
+    "engine/data/more_steelroller.json",
+    "engine/data/more_stickyhold.json",
+    "engine/data/more_stockpile.json",
+    "engine/data/more_strengthsap.json",
+    "engine/data/more_substitute.json",
+    "engine/data/more_symbiosis.json",
+    "engine/data/more_syrup.json",
+    "engine/data/more_throat_chop.json",
+    "engine/data/more_tiecheck.json",
+    "engine/data/more_toxic_debris.json",
+    "engine/data/more_trap.json",
+    "engine/data/more_traps.json",
+    "engine/data/more_turn_history.json",
+    "engine/data/more_wanderingspirit.json",
+    "engine/data/more_watershuriken.json",
+    "engine/data/more_weights.json",
+    "engine/data/more_wishes.json",
+    "engine/data/more_witness_tail.json",
+    "engine/data/turn-fixtures-2.json",
+    "engine/data/turn-fixtures.json",
+    "engine/examples/p1_native_probe.rs",
+    "engine/src/battle.rs",
+    "engine/src/battle/public_type_tests.rs",
+    "engine/src/state.rs",
+    "engine/tests/fixture_scaffold.mjs",
+    "engine/tests/generate_ability_fixtures.mjs",
+    "engine/tests/generate_ability_interactions.mjs",
+    "engine/tests/generate_more_ability_tail.mjs",
+    "engine/tests/generate_more_aura_guard.mjs",
+    "engine/tests/generate_more_aurora_veil.mjs",
+    "engine/tests/generate_more_beatup.mjs",
+    "engine/tests/generate_more_boost_reset.mjs",
+    "engine/tests/generate_more_charge_family.mjs",
+    "engine/tests/generate_more_delayed_status.mjs",
+    "engine/tests/generate_more_disable_family.mjs",
+    "engine/tests/generate_more_disguise.mjs",
+    "engine/tests/generate_more_emergency_exit.mjs",
+    "engine/tests/generate_more_expanding_force.mjs",
+    "engine/tests/generate_more_force_switch.mjs",
+    "engine/tests/generate_more_frisk_pressure.mjs",
+    "engine/tests/generate_more_heal_block.mjs",
+    "engine/tests/generate_more_interactions.mjs",
+    "engine/tests/generate_more_item_interactions.mjs",
+    "engine/tests/generate_more_magicbounce.mjs",
+    "engine/tests/generate_more_mega_abilities.mjs",
+    "engine/tests/generate_more_metronome_item.mjs",
+    "engine/tests/generate_more_minimize.mjs",
+    "engine/tests/generate_more_moldbreaker.mjs",
+    "engine/tests/generate_more_move_coverage.mjs",
+    "engine/tests/generate_more_overlord_leafguard.mjs",
+    "engine/tests/generate_more_poltergeist.mjs",
+    "engine/tests/generate_more_rampage.mjs",
+    "engine/tests/generate_more_retaliation.mjs",
+    "engine/tests/generate_more_roost_yawn.mjs",
+    "engine/tests/generate_more_sleep_talk.mjs",
+    "engine/tests/generate_more_small_abilities.mjs",
+    "engine/tests/generate_more_stance_change.mjs",
+    "engine/tests/generate_more_steelbeam.mjs",
+    "engine/tests/generate_more_strengthsap.mjs",
+    "engine/tests/generate_more_substitute.mjs",
+    "engine/tests/generate_more_throat_chop.mjs",
+    "engine/tests/generate_more_toxic_debris.mjs",
+    "engine/tests/generate_move_hook_fixtures.mjs",
+    "engine/tests/generate_turn_fixtures.mjs",
+    "engine/tests/p1_reference_probe.mjs",
+    "engine/tests/p1_reference_scenarios.mjs",
+    "engine/tests/p1_regenerate_public_requests.mjs",
+    "engine/tests/public_request_moves.mjs",
+    "engine/tests/public_request_moves.test.mjs",
+    "engine/tests/staged_delayed_status.mjs",
+    "engine/tests/staged_roost_yawn.mjs",
+    "engine/tests/tmp_force_probe.mjs",
+    "engine/tests/verify_turn_fixtures.mjs"
+  ],
+  "old_evaluation_stop_authorized_by_user": true,
+  "old_evaluation_units": "MainPID=0\nId=a10-evaluation-worker.service\nActiveState=inactive\nUnitFileState=disabled\n\nId=a10-evaluation.timer\nActiveState=inactive\nUnitFileState=disabled\n\nMainPID=0\nId=a10-evaluation.service\nActiveState=failed\nUnitFileState=static\n",
+  "stop_commands": [
+    "systemctl --user disable --now a10-evaluation.timer a10-evaluation-worker.service",
+    "systemctl --user stop a10-evaluation.service"
+  ],
+  "old_evaluation_note": "Worker and discovery timer inactive/disabled. Discovery oneshot retains failed state, MainPID=0; failure not erased. No old results/checkpoints deleted.",
+  "production_started": false,
+  "artifact_sha256": {
+    "original_failure.log": "ddb23be8df87af8e015e6ae9ce66f1aa9aa5eca4893351aa35ebc61d7d00b6bb",
+    "native_regression.log": "6baff7d32682c76a150058ab1f0dbaf87db1acec3c3bf84c9fbdeac6f090387e",
+    "emergency_reference.json": "2d1993996d454b07694835f8566ff91536df3596be220f41d9c04f0143b6d59f",
+    "reference_fresh_build.json": "a8521705a628102b48ee898972361299a883e6f98b42d14a5ce27d4fc9b2d5e1",
+    "regeneration.json": "33bb71640152b7c2788312cf2f867ddca8dd92c39911dbcebe4e57b703ffbd80",
+    "additional_reference_scenarios.json": "08c9c091d6f317426e9998437083a0615073daa5e88702ba008da58b1f2d60a5",
+    "independent_final.log": "4a72f9b8f167bc31e614db1e6385216527f369294d10eff6b945f58ff5684660",
+    "emergency_native.json": "3c0182b87d7b9a2705650c064d95116e2fd0e258c9d27077521489276e373044",
+    "adapter_tests.log": "3300b043e2de9a9bfbe847d14ee4cf27405b733a4e1c5c8f98c24c90e2fb0738",
+    "native_build.log": "9ee1de351810fd6b47607901fa622baa4e04e3c1e155ab7d595e3f35becf30aa",
+    "emergency_native_build.log": "af861fd02b00efc993a9a8f2016cb3d5ae2a7cef2e1313445d235f7e525a4cab",
+    "reference_before.json": "588034f127b7087db17e3f521ebc02912a67b2ddf895c16d9baa58a856a44841",
+    "native_retry_after.log": "9298ea9e2a3d651473639214912b0fed6d3888ceff673c2a340985ed0c86b91f",
+    "native_final.log": "74b649854cef81ec04d4036d912090e0c62a13e94ce4270549f795915f25b13e",
+    "independent_verifier.log": "4a72f9b8f167bc31e614db1e6385216527f369294d10eff6b945f58ff5684660",
+    "native_before.json": "c61ab26daaac29a275fa7e40332fca8fc28f53298c2d051dbda53e7ece532325",
+    "regeneration.log": "cb19f55fb7c057d0b69973ce8656e4ff0faa4eac83ce32e043c2b71eaf323ad4",
+    "native_retry_before.log": "83ca3eaa3ed6cfb8f1e78f3098f07b8e86049a43c4e8b45093041f345d921b75"
+  }
+}

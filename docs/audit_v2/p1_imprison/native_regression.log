@@ -1,0 +1,86 @@
+   Compiling pa3-engine v0.1.0 (/home/minidc/Desktop/PokeAgent3.0-V2/engine)
+    Finished `release` profile [optimized] target(s) in 1m 04s
+     Running unittests src/lib.rs (.audit-target/release/deps/pa3_engine-4278f28771b6b564)
+
+running 11 tests
+test items::tests::mega_stones_classify_only_with_the_exact_declaration ... ok
+test observation::tests::batch_high_water_pool_hides_inactive_rows_and_retains_ragged_storage ... ok
+test battle::public_type_tests::public_set_type_updates_both_viewers_without_revealing_identity ... ok
+test battle::type_conversion_tests::cold_move_metadata_preserves_canonical_exclusions ... ok
+test battle::public_type_tests::imprison_hidden_disable_cannot_change_served_last_active_observation ... ok
+test battle::public_type_tests::public_type_reversion_is_visible_on_reentry ... ok
+test battle::public_type_tests::hidden_imprison_choice_cannot_commit_without_reference_rerequest_protocol ... ok
+test battle::public_type_tests::unsupported_empty_type_change_is_atomic ... ok
+test battle::public_type_tests::stale_bench_disabled_does_not_become_a_current_public_restriction ... ok
+test battle::type_conversion_tests::synchronize_failed_reflection_keeps_activation_but_allocates_no_source_status ... ok
+test battle::type_conversion_tests::all_seven_type_callbacks_match_pinned_primary_primitives ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.14s
+
+     Running tests/contracts.rs (.audit-target/release/deps/contracts-75d1cf49536b7304)
+
+running 16 tests
+test forced_replacement_can_fill_either_slot_with_last_reserve ... ok
+test knowledge_is_persistent_beyond_recent_events_and_four_move_slots ... ok
+test joint_masks_prevent_duplicate_bench_and_mega_but_allow_ally_targets ... ok
+test preview_has_all_360_distinct_ordered_selections ... ok
+test struggle_pass_and_invalid_prefixes_are_distinct ... ok
+test regulation_scope_includes_uncollected_species_and_mega_forms ... ok
+test event_ordering_and_rng_consumption_match_reference ... ok
+test champions_action_speed_and_trick_room_match_reference_boundaries ... ok
+test target_ordered_handlers_match_reference_without_speed_tie_randomization ... ok
+test rng_matches_reference_4096_draws_and_restores ... ok
+test recoil_fraction_rounding_matches_reference_for_all_hp_damage_values ... ok
+test isolated_damage_kernel_matches_reference_modifiers_and_rng ... ok
+test champions_public_hp_includes_boundary_colours_and_flooring ... ok
+test every_target_class_matches_reference_in_both_doubles_slots ... ok
+test all_training_sets_and_legal_species_stats_match_reference ... ok
+test pp_and_fixed_point_rounding_match_reference ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+
+     Running tests/observation_completeness.rs (.audit-target/release/deps/observation_completeness-e4ab77193ed3ef60)
+
+running 2 tests
+test every_player_known_state_field_reaches_the_observation_tensor ... ok
+test revealed_lock_conditions_reach_the_observation_tensor ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 14.01s
+
+     Running tests/observation_leakage.rs (.audit-target/release/deps/observation_leakage-06d690cf32f99caf)
+
+running 1 test
+test hidden_opponent_state_cannot_change_p1_observation_or_mask ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.70s
+
+     Running tests/turns.rs (.audit-target/release/deps/turns-104c1ade49de7a85)
+
+running 8 tests
+test unsupported_effects_are_replayable_operational_failures ... ok
+test snapshot_suppression_lifecycle_is_private_and_rejects_impossible_end_state ... ok
+test static_is_revealed_before_status_and_lum_cure ... ok
+test reused_buffers_preserve_sparse_order_and_preflight_atomicity ... ok
+test batch_preflight_is_atomic_and_pending_choices_are_private ... ok
+test active_views_and_masks_exclude_hidden_opponent_world_fields ... ok
+test two_16_worker_batches_match_serial_for_2048_complete_battles ... ok
+test native_battles_match_reference_at_every_decision_boundary has been running for over 60 seconds
+test native_battles_match_reference_at_every_decision_boundary ... FAILED
+
+failures:
+
+---- native_battles_match_reference_at_every_decision_boundary stdout ----
+
+thread 'native_battles_match_reference_at_every_decision_boundary' panicked at engine/tests/turns.rs:343:29:
+assertion `left == right` failed: witness_emergencyexit_switches_at_half_hp_8500 decision 7 P2 move 1 1, move 1 1 slot 0 legal move mask
+  left: [(635, 6, "self")]
+ right: [(635, 6, "self"), (256, 11, "normal")]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    native_battles_match_reference_at_every_decision_boundary
+
+test result: FAILED. 7 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 115.35s
+
+error: test failed, to rerun pass `--test turns`

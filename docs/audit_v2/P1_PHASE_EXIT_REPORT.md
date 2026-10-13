@@ -1,5 +1,19 @@
 # P1 — partial engine correction; V2 release BLOCKED
 
+## Latest Imprison follow-up
+
+The original fixture discrepancy below is now repaired. The final native
+corpus and independent outbound-payload verifier pass all 1,152 fixtures /
+25,231 boundaries; 39 relevant Rust tests and 5 Node adapter tests pass.
+P1 nevertheless remains **BLOCKED**: an independently verified native
+hidden-Imprison selection rejection/re-request transaction is not implemented,
+and the path is quarantined as Unsupported. It is relevant to 48 frozen teams.
+See [the current resolution report](p1_imprison/RESOLUTION_REPORT.md) and
+`p1_imprison/RECEIPT.json` for current status, exact source and hashes.
+The remaining sections preserve the earlier investigation and failure history.
+During the follow-up the user explicitly authorized stopping legacy evaluation;
+its worker/timer are now stopped and disabled, with old evidence preserved.
+
 This is not a claim that the master task or P1 gate is complete. No V2 model,
 optimizer, checkpoint, training campaign or mixed V1/V2 league was launched.
 

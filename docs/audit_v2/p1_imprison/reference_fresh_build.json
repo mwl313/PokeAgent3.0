@@ -1,0 +1,5345 @@
+{
+  "oracle_commit": "14546894d86f9589ac11130c510bbe73b6968665",
+  "format": "gen9championsvgc2026regmc",
+  "fixture": "imprison_shared_pool",
+  "seed": [
+    2026,
+    10,
+    8,
+    4201
+  ],
+  "teams": [
+    [
+      {
+        "name": "s0m0",
+        "species": "Alakazam",
+        "ability": "Inner Focus",
+        "item": "",
+        "nature": "Serious",
+        "level": 50,
+        "gender": "M",
+        "moves": [
+          "Imprison",
+          "Protect"
+        ],
+        "evs": {
+          "hp": 24,
+          "atk": 8,
+          "def": 8,
+          "spa": 8,
+          "spd": 8,
+          "spe": 4
+        },
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 31,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        }
+      },
+      {
+        "name": "s0m1",
+        "species": "Goodra-Hisui",
+        "ability": "Shell Armor",
+        "item": "",
+        "nature": "Serious",
+        "level": 50,
+        "gender": "M",
+        "moves": [
+          "Dragon Pulse",
+          "Protect"
+        ],
+        "evs": {
+          "hp": 24,
+          "atk": 8,
+          "def": 8,
+          "spa": 8,
+          "spd": 8,
+          "spe": 4
+        },
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 31,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        }
+      },
+      {
+        "name": "s0m2",
+        "species": "Torterra",
+        "ability": "Shell Armor",
+        "item": "",
+        "nature": "Serious",
+        "level": 50,
+        "gender": "M",
+        "moves": [
+          "Seed Bomb",
+          "Protect"
+        ],
+        "evs": {
+          "hp": 24,
+          "atk": 8,
+          "def": 8,
+          "spa": 8,
+          "spd": 8,
+          "spe": 4
+        },
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 31,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        }
+      },
+      {
+        "name": "s0m3",
+        "species": "Perrserker",
+        "ability": "Battle Armor",
+        "item": "",
+        "nature": "Serious",
+        "level": 50,
+        "gender": "M",
+        "moves": [
+          "Iron Head",
+          "Protect"
+        ],
+        "evs": {
+          "hp": 24,
+          "atk": 8,
+          "def": 8,
+          "spa": 8,
+          "spd": 8,
+          "spe": 4
+        },
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 31,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        }
+      },
+      {
+        "name": "s0m4",
+        "species": "Samurott",
+        "ability": "Shell Armor",
+        "item": "",
+        "nature": "Serious",
+        "level": 50,
+        "gender": "M",
+        "moves": [
+          "Aqua Jet",
+          "Protect"
+        ],
+        "evs": {
+          "hp": 24,
+          "atk": 8,
+          "def": 8,
+          "spa": 8,
+          "spd": 8,
+          "spe": 4
+        },
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 31,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        }
+      },
+      {
+        "name": "s0m5",
+        "species": "Hydreigon",
+        "ability": "Levitate",
+        "item": "",
+        "nature": "Serious",
+        "level": 50,
+        "gender": "M",
+        "moves": [
+          "Dragon Pulse",
+          "Protect"
+        ],
+        "evs": {
+          "hp": 24,
+          "atk": 8,
+          "def": 8,
+          "spa": 8,
+          "spd": 8,
+          "spe": 4
+        },
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 31,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        }
+      }
+    ],
+    [
+      {
+        "name": "s1m0",
+        "species": "Alakazam",
+        "ability": "Inner Focus",
+        "item": "",
+        "nature": "Serious",
+        "level": 50,
+        "gender": "M",
+        "moves": [
+          "Imprison",
+          "Protect"
+        ],
+        "evs": {
+          "hp": 24,
+          "atk": 8,
+          "def": 8,
+          "spa": 8,
+          "spd": 8,
+          "spe": 4
+        },
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 31,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        }
+      },
+      {
+        "name": "s1m1",
+        "species": "Goodra-Hisui",
+        "ability": "Shell Armor",
+        "item": "",
+        "nature": "Serious",
+        "level": 50,
+        "gender": "M",
+        "moves": [
+          "Dragon Pulse",
+          "Protect"
+        ],
+        "evs": {
+          "hp": 24,
+          "atk": 8,
+          "def": 8,
+          "spa": 8,
+          "spd": 8,
+          "spe": 4
+        },
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 31,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        }
+      },
+      {
+        "name": "s1m2",
+        "species": "Torterra",
+        "ability": "Shell Armor",
+        "item": "",
+        "nature": "Serious",
+        "level": 50,
+        "gender": "M",
+        "moves": [
+          "Seed Bomb",
+          "Protect"
+        ],
+        "evs": {
+          "hp": 24,
+          "atk": 8,
+          "def": 8,
+          "spa": 8,
+          "spd": 8,
+          "spe": 4
+        },
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 31,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        }
+      },
+      {
+        "name": "s1m3",
+        "species": "Perrserker",
+        "ability": "Battle Armor",
+        "item": "",
+        "nature": "Serious",
+        "level": 50,
+        "gender": "M",
+        "moves": [
+          "Iron Head",
+          "Protect"
+        ],
+        "evs": {
+          "hp": 24,
+          "atk": 8,
+          "def": 8,
+          "spa": 8,
+          "spd": 8,
+          "spe": 4
+        },
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 31,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        }
+      },
+      {
+        "name": "s1m4",
+        "species": "Samurott",
+        "ability": "Shell Armor",
+        "item": "",
+        "nature": "Serious",
+        "level": 50,
+        "gender": "M",
+        "moves": [
+          "Aqua Jet",
+          "Protect"
+        ],
+        "evs": {
+          "hp": 24,
+          "atk": 8,
+          "def": 8,
+          "spa": 8,
+          "spd": 8,
+          "spe": 4
+        },
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 31,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        }
+      },
+      {
+        "name": "s1m5",
+        "species": "Hydreigon",
+        "ability": "Levitate",
+        "item": "",
+        "nature": "Serious",
+        "level": 50,
+        "gender": "M",
+        "moves": [
+          "Dragon Pulse",
+          "Protect"
+        ],
+        "evs": {
+          "hp": 24,
+          "atk": 8,
+          "def": 8,
+          "spa": 8,
+          "spd": 8,
+          "spe": 4
+        },
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 31,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        }
+      }
+    ]
+  ],
+  "previous_actions": [
+    {
+      "side": "P1",
+      "actions": [
+        {
+          "kind": "Pick",
+          "own_slot": 0,
+          "move_slot": 255,
+          "target_location": 0,
+          "switch_destination": 0,
+          "resource": "None"
+        },
+        {
+          "kind": "Pick",
+          "own_slot": 1,
+          "move_slot": 255,
+          "target_location": 0,
+          "switch_destination": 1,
+          "resource": "None"
+        },
+        {
+          "kind": "Pick",
+          "own_slot": 2,
+          "move_slot": 255,
+          "target_location": 0,
+          "switch_destination": 4,
+          "resource": "None"
+        },
+        {
+          "kind": "Pick",
+          "own_slot": 3,
+          "move_slot": 255,
+          "target_location": 0,
+          "switch_destination": 5,
+          "resource": "None"
+        }
+      ],
+      "command": "team 1256",
+      "expected": {
+        "turn": 0,
+        "rng_seed": "2026,10,8,4201",
+        "climate": {
+          "raw": "",
+          "effective": "",
+          "suppressed": false
+        },
+        "field": [],
+        "terminated": false,
+        "winner": null,
+        "sides": [
+          {
+            "request": "Wait",
+            "conditions": [],
+            "pokemon": [
+              {
+                "roster": 0,
+                "species": 16,
+                "hp": 154,
+                "max_hp": 154,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 144,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  154,
+                  78,
+                  73,
+                  163,
+                  123,
+                  144
+                ],
+                "ability": 120,
+                "item": 0,
+                "types": [
+                  16
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  12,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 1,
+                "species": 519,
+                "hp": 179,
+                "max_hp": 179,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 84,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  179,
+                  128,
+                  128,
+                  138,
+                  178,
+                  84
+                ],
+                "ability": 235,
+                "item": 0,
+                "types": [
+                  18,
+                  4
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  12,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 2,
+                "species": 1351,
+                "hp": 194,
+                "max_hp": 194,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 80,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  194,
+                  137,
+                  133,
+                  103,
+                  113,
+                  80
+                ],
+                "ability": 235,
+                "item": 0,
+                "types": [
+                  11,
+                  12
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  16,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 3,
+                "species": 934,
+                "hp": 169,
+                "max_hp": 169,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 74,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  169,
+                  138,
+                  128,
+                  78,
+                  88,
+                  74
+                ],
+                "ability": 19,
+                "item": 0,
+                "types": [
+                  18
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  16,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 4,
+                "species": 1105,
+                "hp": 194,
+                "max_hp": 194,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 94,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  194,
+                  128,
+                  113,
+                  136,
+                  98,
+                  94
+                ],
+                "ability": 235,
+                "item": 0,
+                "types": [
+                  20
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  20,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 5,
+                "species": 602,
+                "hp": 191,
+                "max_hp": 191,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 122,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  191,
+                  133,
+                  118,
+                  153,
+                  118,
+                  122
+                ],
+                "ability": 130,
+                "item": 0,
+                "types": [
+                  3,
+                  4
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  12,
+                  8
+                ],
+                "volatiles": []
+              }
+            ],
+            "request_detail": {
+              "kind": "Wait",
+              "slots": [],
+              "bench": [],
+              "preview": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5
+              ]
+            }
+          },
+          {
+            "request": "Preview",
+            "conditions": [],
+            "pokemon": [
+              {
+                "roster": 0,
+                "species": 16,
+                "hp": 154,
+                "max_hp": 154,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 144,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  154,
+                  78,
+                  73,
+                  163,
+                  123,
+                  144
+                ],
+                "ability": 120,
+                "item": 0,
+                "types": [
+                  16
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  12,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 1,
+                "species": 519,
+                "hp": 179,
+                "max_hp": 179,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 84,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  179,
+                  128,
+                  128,
+                  138,
+                  178,
+                  84
+                ],
+                "ability": 235,
+                "item": 0,
+                "types": [
+                  18,
+                  4
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  12,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 2,
+                "species": 1351,
+                "hp": 194,
+                "max_hp": 194,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 80,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  194,
+                  137,
+                  133,
+                  103,
+                  113,
+                  80
+                ],
+                "ability": 235,
+                "item": 0,
+                "types": [
+                  11,
+                  12
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  16,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 3,
+                "species": 934,
+                "hp": 169,
+                "max_hp": 169,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 74,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  169,
+                  138,
+                  128,
+                  78,
+                  88,
+                  74
+                ],
+                "ability": 19,
+                "item": 0,
+                "types": [
+                  18
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  16,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 4,
+                "species": 1105,
+                "hp": 194,
+                "max_hp": 194,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 94,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  194,
+                  128,
+                  113,
+                  136,
+                  98,
+                  94
+                ],
+                "ability": 235,
+                "item": 0,
+                "types": [
+                  20
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  20,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 5,
+                "species": 602,
+                "hp": 191,
+                "max_hp": 191,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 122,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  191,
+                  133,
+                  118,
+                  153,
+                  118,
+                  122
+                ],
+                "ability": 130,
+                "item": 0,
+                "types": [
+                  3,
+                  4
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  12,
+                  8
+                ],
+                "volatiles": []
+              }
+            ],
+            "request_detail": {
+              "kind": "Preview",
+              "slots": [],
+              "bench": [],
+              "preview": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "side": "P2",
+      "actions": [
+        {
+          "kind": "Pick",
+          "own_slot": 0,
+          "move_slot": 255,
+          "target_location": 0,
+          "switch_destination": 0,
+          "resource": "None"
+        },
+        {
+          "kind": "Pick",
+          "own_slot": 1,
+          "move_slot": 255,
+          "target_location": 0,
+          "switch_destination": 1,
+          "resource": "None"
+        },
+        {
+          "kind": "Pick",
+          "own_slot": 2,
+          "move_slot": 255,
+          "target_location": 0,
+          "switch_destination": 4,
+          "resource": "None"
+        },
+        {
+          "kind": "Pick",
+          "own_slot": 3,
+          "move_slot": 255,
+          "target_location": 0,
+          "switch_destination": 5,
+          "resource": "None"
+        }
+      ],
+      "command": "team 1256",
+      "expected": {
+        "turn": 1,
+        "rng_seed": "11048,48628,16564,63803",
+        "climate": {
+          "raw": "",
+          "effective": "",
+          "suppressed": false
+        },
+        "field": [],
+        "terminated": false,
+        "winner": null,
+        "sides": [
+          {
+            "request": "Normal",
+            "conditions": [],
+            "pokemon": [
+              {
+                "roster": 0,
+                "species": 16,
+                "hp": 154,
+                "max_hp": 154,
+                "fainted": false,
+                "active_slot": 0,
+                "ability_ending": false,
+                "cached_speed": 144,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  154,
+                  78,
+                  73,
+                  163,
+                  123,
+                  144
+                ],
+                "ability": 120,
+                "item": 0,
+                "types": [
+                  16
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  12,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 1,
+                "species": 519,
+                "hp": 179,
+                "max_hp": 179,
+                "fainted": false,
+                "active_slot": 1,
+                "ability_ending": false,
+                "cached_speed": 84,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  179,
+                  128,
+                  128,
+                  138,
+                  178,
+                  84
+                ],
+                "ability": 235,
+                "item": 0,
+                "types": [
+                  18,
+                  4
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  12,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 4,
+                "species": 1105,
+                "hp": 194,
+                "max_hp": 194,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 94,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  194,
+                  128,
+                  113,
+                  136,
+                  98,
+                  94
+                ],
+                "ability": 235,
+                "item": 0,
+                "types": [
+                  20
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  20,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 5,
+                "species": 602,
+                "hp": 191,
+                "max_hp": 191,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 122,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  191,
+                  133,
+                  118,
+                  153,
+                  118,
+                  122
+                ],
+                "ability": 130,
+                "item": 0,
+                "types": [
+                  3,
+                  4
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  12,
+                  8
+                ],
+                "volatiles": []
+              }
+            ],
+            "request_detail": {
+              "kind": "Normal",
+              "slots": [
+                {
+                  "present": true,
+                  "requires_replacement": false,
+                  "can_mega": false,
+                  "trapped": false,
+                  "maybe_trapped": false,
+                  "moves": [
+                    {
+                      "id": 433,
+                      "pp": 12,
+                      "disabled": false,
+                      "target": "self"
+                    },
+                    {
+                      "id": 635,
+                      "pp": 8,
+                      "disabled": false,
+                      "target": "self"
+                    }
+                  ]
+                },
+                {
+                  "present": true,
+                  "requires_replacement": false,
+                  "can_mega": false,
+                  "trapped": false,
+                  "maybe_trapped": false,
+                  "moves": [
+                    {
+                      "id": 193,
+                      "pp": 12,
+                      "disabled": false,
+                      "target": "any"
+                    },
+                    {
+                      "id": 635,
+                      "pp": 8,
+                      "disabled": false,
+                      "target": "self"
+                    }
+                  ]
+                }
+              ],
+              "bench": [
+                4,
+                5
+              ],
+              "preview": []
+            }
+          },
+          {
+            "request": "Normal",
+            "conditions": [],
+            "pokemon": [
+              {
+                "roster": 0,
+                "species": 16,
+                "hp": 154,
+                "max_hp": 154,
+                "fainted": false,
+                "active_slot": 0,
+                "ability_ending": false,
+                "cached_speed": 144,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  154,
+                  78,
+                  73,
+                  163,
+                  123,
+                  144
+                ],
+                "ability": 120,
+                "item": 0,
+                "types": [
+                  16
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  12,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 1,
+                "species": 519,
+                "hp": 179,
+                "max_hp": 179,
+                "fainted": false,
+                "active_slot": 1,
+                "ability_ending": false,
+                "cached_speed": 84,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  179,
+                  128,
+                  128,
+                  138,
+                  178,
+                  84
+                ],
+                "ability": 235,
+                "item": 0,
+                "types": [
+                  18,
+                  4
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  12,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 4,
+                "species": 1105,
+                "hp": 194,
+                "max_hp": 194,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 94,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  194,
+                  128,
+                  113,
+                  136,
+                  98,
+                  94
+                ],
+                "ability": 235,
+                "item": 0,
+                "types": [
+                  20
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  20,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 5,
+                "species": 602,
+                "hp": 191,
+                "max_hp": 191,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 122,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  191,
+                  133,
+                  118,
+                  153,
+                  118,
+                  122
+                ],
+                "ability": 130,
+                "item": 0,
+                "types": [
+                  3,
+                  4
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  12,
+                  8
+                ],
+                "volatiles": []
+              }
+            ],
+            "request_detail": {
+              "kind": "Normal",
+              "slots": [
+                {
+                  "present": true,
+                  "requires_replacement": false,
+                  "can_mega": false,
+                  "trapped": false,
+                  "maybe_trapped": false,
+                  "moves": [
+                    {
+                      "id": 433,
+                      "pp": 12,
+                      "disabled": false,
+                      "target": "self"
+                    },
+                    {
+                      "id": 635,
+                      "pp": 8,
+                      "disabled": false,
+                      "target": "self"
+                    }
+                  ]
+                },
+                {
+                  "present": true,
+                  "requires_replacement": false,
+                  "can_mega": false,
+                  "trapped": false,
+                  "maybe_trapped": false,
+                  "moves": [
+                    {
+                      "id": 193,
+                      "pp": 12,
+                      "disabled": false,
+                      "target": "any"
+                    },
+                    {
+                      "id": 635,
+                      "pp": 8,
+                      "disabled": false,
+                      "target": "self"
+                    }
+                  ]
+                }
+              ],
+              "bench": [
+                4,
+                5
+              ],
+              "preview": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "side": "P1",
+      "actions": [
+        {
+          "kind": "Move",
+          "own_slot": 0,
+          "move_slot": 0,
+          "target_location": 0,
+          "switch_destination": 255,
+          "resource": "None"
+        },
+        {
+          "kind": "Move",
+          "own_slot": 1,
+          "move_slot": 0,
+          "target_location": 2,
+          "switch_destination": 255,
+          "resource": "None"
+        }
+      ],
+      "command": "move 1, move 1 2",
+      "expected": {
+        "turn": 1,
+        "rng_seed": "11048,48628,16564,63803",
+        "climate": {
+          "raw": "",
+          "effective": "",
+          "suppressed": false
+        },
+        "field": [],
+        "terminated": false,
+        "winner": null,
+        "sides": [
+          {
+            "request": "Wait",
+            "conditions": [],
+            "pokemon": [
+              {
+                "roster": 0,
+                "species": 16,
+                "hp": 154,
+                "max_hp": 154,
+                "fainted": false,
+                "active_slot": 0,
+                "ability_ending": false,
+                "cached_speed": 144,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  154,
+                  78,
+                  73,
+                  163,
+                  123,
+                  144
+                ],
+                "ability": 120,
+                "item": 0,
+                "types": [
+                  16
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  12,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 1,
+                "species": 519,
+                "hp": 179,
+                "max_hp": 179,
+                "fainted": false,
+                "active_slot": 1,
+                "ability_ending": false,
+                "cached_speed": 84,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  179,
+                  128,
+                  128,
+                  138,
+                  178,
+                  84
+                ],
+                "ability": 235,
+                "item": 0,
+                "types": [
+                  18,
+                  4
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  12,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 4,
+                "species": 1105,
+                "hp": 194,
+                "max_hp": 194,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 94,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  194,
+                  128,
+                  113,
+                  136,
+                  98,
+                  94
+                ],
+                "ability": 235,
+                "item": 0,
+                "types": [
+                  20
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  20,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 5,
+                "species": 602,
+                "hp": 191,
+                "max_hp": 191,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 122,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  191,
+                  133,
+                  118,
+                  153,
+                  118,
+                  122
+                ],
+                "ability": 130,
+                "item": 0,
+                "types": [
+                  3,
+                  4
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  12,
+                  8
+                ],
+                "volatiles": []
+              }
+            ],
+            "request_detail": {
+              "kind": "Wait",
+              "slots": [
+                {
+                  "present": true,
+                  "requires_replacement": false,
+                  "can_mega": false,
+                  "trapped": false,
+                  "maybe_trapped": false,
+                  "moves": [
+                    {
+                      "id": 433,
+                      "pp": 12,
+                      "disabled": false,
+                      "target": "self"
+                    },
+                    {
+                      "id": 635,
+                      "pp": 8,
+                      "disabled": false,
+                      "target": "self"
+                    }
+                  ]
+                },
+                {
+                  "present": true,
+                  "requires_replacement": false,
+                  "can_mega": false,
+                  "trapped": false,
+                  "maybe_trapped": false,
+                  "moves": [
+                    {
+                      "id": 193,
+                      "pp": 12,
+                      "disabled": false,
+                      "target": "any"
+                    },
+                    {
+                      "id": 635,
+                      "pp": 8,
+                      "disabled": false,
+                      "target": "self"
+                    }
+                  ]
+                }
+              ],
+              "bench": [
+                4,
+                5
+              ],
+              "preview": []
+            }
+          },
+          {
+            "request": "Normal",
+            "conditions": [],
+            "pokemon": [
+              {
+                "roster": 0,
+                "species": 16,
+                "hp": 154,
+                "max_hp": 154,
+                "fainted": false,
+                "active_slot": 0,
+                "ability_ending": false,
+                "cached_speed": 144,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  154,
+                  78,
+                  73,
+                  163,
+                  123,
+                  144
+                ],
+                "ability": 120,
+                "item": 0,
+                "types": [
+                  16
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  12,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 1,
+                "species": 519,
+                "hp": 179,
+                "max_hp": 179,
+                "fainted": false,
+                "active_slot": 1,
+                "ability_ending": false,
+                "cached_speed": 84,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  179,
+                  128,
+                  128,
+                  138,
+                  178,
+                  84
+                ],
+                "ability": 235,
+                "item": 0,
+                "types": [
+                  18,
+                  4
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  12,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 4,
+                "species": 1105,
+                "hp": 194,
+                "max_hp": 194,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 94,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  194,
+                  128,
+                  113,
+                  136,
+                  98,
+                  94
+                ],
+                "ability": 235,
+                "item": 0,
+                "types": [
+                  20
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  20,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 5,
+                "species": 602,
+                "hp": 191,
+                "max_hp": 191,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 122,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  191,
+                  133,
+                  118,
+                  153,
+                  118,
+                  122
+                ],
+                "ability": 130,
+                "item": 0,
+                "types": [
+                  3,
+                  4
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  12,
+                  8
+                ],
+                "volatiles": []
+              }
+            ],
+            "request_detail": {
+              "kind": "Normal",
+              "slots": [
+                {
+                  "present": true,
+                  "requires_replacement": false,
+                  "can_mega": false,
+                  "trapped": false,
+                  "maybe_trapped": false,
+                  "moves": [
+                    {
+                      "id": 433,
+                      "pp": 12,
+                      "disabled": false,
+                      "target": "self"
+                    },
+                    {
+                      "id": 635,
+                      "pp": 8,
+                      "disabled": false,
+                      "target": "self"
+                    }
+                  ]
+                },
+                {
+                  "present": true,
+                  "requires_replacement": false,
+                  "can_mega": false,
+                  "trapped": false,
+                  "maybe_trapped": false,
+                  "moves": [
+                    {
+                      "id": 193,
+                      "pp": 12,
+                      "disabled": false,
+                      "target": "any"
+                    },
+                    {
+                      "id": 635,
+                      "pp": 8,
+                      "disabled": false,
+                      "target": "self"
+                    }
+                  ]
+                }
+              ],
+              "bench": [
+                4,
+                5
+              ],
+              "preview": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "side": "P2",
+      "actions": [
+        {
+          "kind": "Move",
+          "own_slot": 0,
+          "move_slot": 0,
+          "target_location": 0,
+          "switch_destination": 255,
+          "resource": "None"
+        },
+        {
+          "kind": "Move",
+          "own_slot": 1,
+          "move_slot": 0,
+          "target_location": -1,
+          "switch_destination": 255,
+          "resource": "None"
+        }
+      ],
+      "command": "move 1, move 1 -1",
+      "expected": {
+        "turn": 2,
+        "rng_seed": "27024,52884,33909,23577",
+        "climate": {
+          "raw": "",
+          "effective": "",
+          "suppressed": false
+        },
+        "field": [],
+        "terminated": false,
+        "winner": null,
+        "sides": [
+          {
+            "request": "Normal",
+            "conditions": [],
+            "pokemon": [
+              {
+                "roster": 0,
+                "species": 16,
+                "hp": 154,
+                "max_hp": 154,
+                "fainted": false,
+                "active_slot": 0,
+                "ability_ending": false,
+                "cached_speed": 144,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  154,
+                  78,
+                  73,
+                  163,
+                  123,
+                  144
+                ],
+                "ability": 120,
+                "item": 0,
+                "types": [
+                  16
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  11,
+                  8
+                ],
+                "volatiles": [
+                  "imprison"
+                ]
+              },
+              {
+                "roster": 1,
+                "species": 519,
+                "hp": 179,
+                "max_hp": 179,
+                "fainted": false,
+                "active_slot": 1,
+                "ability_ending": false,
+                "cached_speed": 84,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  179,
+                  128,
+                  128,
+                  138,
+                  178,
+                  84
+                ],
+                "ability": 235,
+                "item": 0,
+                "types": [
+                  18,
+                  4
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  11,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 4,
+                "species": 1105,
+                "hp": 194,
+                "max_hp": 194,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 94,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  194,
+                  128,
+                  113,
+                  136,
+                  98,
+                  94
+                ],
+                "ability": 235,
+                "item": 0,
+                "types": [
+                  20
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  20,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 5,
+                "species": 602,
+                "hp": 191,
+                "max_hp": 191,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 122,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  191,
+                  133,
+                  118,
+                  153,
+                  118,
+                  122
+                ],
+                "ability": 130,
+                "item": 0,
+                "types": [
+                  3,
+                  4
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  12,
+                  8
+                ],
+                "volatiles": []
+              }
+            ],
+            "request_detail": {
+              "kind": "Normal",
+              "slots": [
+                {
+                  "present": true,
+                  "requires_replacement": false,
+                  "can_mega": false,
+                  "trapped": false,
+                  "maybe_trapped": false,
+                  "moves": [
+                    {
+                      "id": 433,
+                      "pp": 11,
+                      "disabled": false,
+                      "target": "self"
+                    },
+                    {
+                      "id": 635,
+                      "pp": 8,
+                      "disabled": false,
+                      "target": "self"
+                    }
+                  ]
+                },
+                {
+                  "present": true,
+                  "requires_replacement": false,
+                  "can_mega": false,
+                  "trapped": false,
+                  "maybe_trapped": false,
+                  "moves": [
+                    {
+                      "id": 193,
+                      "pp": 11,
+                      "disabled": false,
+                      "target": "any"
+                    },
+                    {
+                      "id": 635,
+                      "pp": 8,
+                      "disabled": false,
+                      "target": "self"
+                    }
+                  ]
+                }
+              ],
+              "bench": [
+                4,
+                5
+              ],
+              "preview": []
+            }
+          },
+          {
+            "request": "Normal",
+            "conditions": [],
+            "pokemon": [
+              {
+                "roster": 0,
+                "species": 16,
+                "hp": 100,
+                "max_hp": 154,
+                "fainted": false,
+                "active_slot": 0,
+                "ability_ending": false,
+                "cached_speed": 144,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  154,
+                  78,
+                  73,
+                  163,
+                  123,
+                  144
+                ],
+                "ability": 120,
+                "item": 0,
+                "types": [
+                  16
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  12,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 1,
+                "species": 519,
+                "hp": 140,
+                "max_hp": 179,
+                "fainted": false,
+                "active_slot": 1,
+                "ability_ending": false,
+                "cached_speed": 84,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  179,
+                  128,
+                  128,
+                  138,
+                  178,
+                  84
+                ],
+                "ability": 235,
+                "item": 0,
+                "types": [
+                  18,
+                  4
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  11,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 4,
+                "species": 1105,
+                "hp": 194,
+                "max_hp": 194,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 94,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  194,
+                  128,
+                  113,
+                  136,
+                  98,
+                  94
+                ],
+                "ability": 235,
+                "item": 0,
+                "types": [
+                  20
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  20,
+                  8
+                ],
+                "volatiles": []
+              },
+              {
+                "roster": 5,
+                "species": 602,
+                "hp": 191,
+                "max_hp": 191,
+                "fainted": false,
+                "active_slot": null,
+                "ability_ending": false,
+                "cached_speed": 122,
+                "status": 0,
+                "boosts": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "stats": [
+                  191,
+                  133,
+                  118,
+                  153,
+                  118,
+                  122
+                ],
+                "ability": 130,
+                "item": 0,
+                "types": [
+                  3,
+                  4
+                ],
+                "previous_item": 0,
+                "can_mega": false,
+                "pp": [
+                  12,
+                  8
+                ],
+                "volatiles": []
+              }
+            ],
+            "request_detail": {
+              "kind": "Normal",
+              "slots": [
+                {
+                  "present": true,
+                  "requires_replacement": false,
+                  "can_mega": false,
+                  "trapped": false,
+                  "maybe_trapped": false,
+                  "moves": [
+                    {
+                      "id": 433,
+                      "pp": 12,
+                      "disabled": true,
+                      "target": "self"
+                    },
+                    {
+                      "id": 635,
+                      "pp": 8,
+                      "disabled": true,
+                      "target": "self"
+                    }
+                  ]
+                },
+                {
+                  "present": true,
+                  "requires_replacement": false,
+                  "can_mega": false,
+                  "trapped": false,
+                  "maybe_trapped": false,
+                  "moves": [
+                    {
+                      "id": 193,
+                      "pp": 11,
+                      "disabled": false,
+                      "target": "any"
+                    },
+                    {
+                      "id": 635,
+                      "pp": 8,
+                      "disabled": false,
+                      "target": "self"
+                    }
+                  ]
+                }
+              ],
+              "bench": [
+                4,
+                5
+              ],
+              "preview": []
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "boundaries": [
+    {
+      "turn": 0,
+      "rng": "2026,10,8,4201",
+      "outbound": {
+        "p1": {
+          "teamPreview": true,
+          "maxChosenTeamSize": 4,
+          "side": {
+            "name": "p1",
+            "id": "p1",
+            "pokemon": [
+              {
+                "ident": "p1: s0m0",
+                "details": "Alakazam, L50, M",
+                "condition": "154/154",
+                "active": true,
+                "stats": {
+                  "atk": 78,
+                  "def": 73,
+                  "spa": 163,
+                  "spd": 123,
+                  "spe": 144
+                },
+                "moves": [
+                  "imprison",
+                  "protect"
+                ],
+                "baseAbility": "innerfocus",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "innerfocus",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m1",
+                "details": "Goodra-Hisui, L50, M",
+                "condition": "179/179",
+                "active": true,
+                "stats": {
+                  "atk": 128,
+                  "def": 128,
+                  "spa": 138,
+                  "spd": 178,
+                  "spe": 84
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m2",
+                "details": "Torterra, L50, M",
+                "condition": "194/194",
+                "active": false,
+                "stats": {
+                  "atk": 137,
+                  "def": 133,
+                  "spa": 103,
+                  "spd": 113,
+                  "spe": 80
+                },
+                "moves": [
+                  "seedbomb",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m3",
+                "details": "Perrserker, L50, M",
+                "condition": "169/169",
+                "active": false,
+                "stats": {
+                  "atk": 138,
+                  "def": 128,
+                  "spa": 78,
+                  "spd": 88,
+                  "spe": 74
+                },
+                "moves": [
+                  "ironhead",
+                  "protect"
+                ],
+                "baseAbility": "battlearmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "battlearmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m4",
+                "details": "Samurott, L50, M",
+                "condition": "194/194",
+                "active": false,
+                "stats": {
+                  "atk": 128,
+                  "def": 113,
+                  "spa": 136,
+                  "spd": 98,
+                  "spe": 94
+                },
+                "moves": [
+                  "aquajet",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m5",
+                "details": "Hydreigon, L50, M",
+                "condition": "191/191",
+                "active": false,
+                "stats": {
+                  "atk": 133,
+                  "def": 118,
+                  "spa": 153,
+                  "spd": 118,
+                  "spe": 122
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "levitate",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "levitate",
+                "commanding": false,
+                "reviving": false
+              }
+            ]
+          }
+        },
+        "p2": {
+          "teamPreview": true,
+          "maxChosenTeamSize": 4,
+          "side": {
+            "name": "p2",
+            "id": "p2",
+            "pokemon": [
+              {
+                "ident": "p2: s1m0",
+                "details": "Alakazam, L50, M",
+                "condition": "154/154",
+                "active": true,
+                "stats": {
+                  "atk": 78,
+                  "def": 73,
+                  "spa": 163,
+                  "spd": 123,
+                  "spe": 144
+                },
+                "moves": [
+                  "imprison",
+                  "protect"
+                ],
+                "baseAbility": "innerfocus",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "innerfocus",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m1",
+                "details": "Goodra-Hisui, L50, M",
+                "condition": "179/179",
+                "active": true,
+                "stats": {
+                  "atk": 128,
+                  "def": 128,
+                  "spa": 138,
+                  "spd": 178,
+                  "spe": 84
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m2",
+                "details": "Torterra, L50, M",
+                "condition": "194/194",
+                "active": false,
+                "stats": {
+                  "atk": 137,
+                  "def": 133,
+                  "spa": 103,
+                  "spd": 113,
+                  "spe": 80
+                },
+                "moves": [
+                  "seedbomb",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m3",
+                "details": "Perrserker, L50, M",
+                "condition": "169/169",
+                "active": false,
+                "stats": {
+                  "atk": 138,
+                  "def": 128,
+                  "spa": 78,
+                  "spd": 88,
+                  "spe": 74
+                },
+                "moves": [
+                  "ironhead",
+                  "protect"
+                ],
+                "baseAbility": "battlearmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "battlearmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m4",
+                "details": "Samurott, L50, M",
+                "condition": "194/194",
+                "active": false,
+                "stats": {
+                  "atk": 128,
+                  "def": 113,
+                  "spa": 136,
+                  "spd": 98,
+                  "spe": 94
+                },
+                "moves": [
+                  "aquajet",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m5",
+                "details": "Hydreigon, L50, M",
+                "condition": "191/191",
+                "active": false,
+                "stats": {
+                  "atk": 133,
+                  "def": 118,
+                  "spa": 153,
+                  "spd": 118,
+                  "spe": 122
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "levitate",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "levitate",
+                "commanding": false,
+                "reviving": false
+              }
+            ]
+          }
+        }
+      },
+      "internal": [
+        {
+          "id": "p1",
+          "choiceDone": false,
+          "active": [
+            null,
+            null
+          ]
+        },
+        {
+          "id": "p2",
+          "choiceDone": false,
+          "active": [
+            null,
+            null
+          ]
+        }
+      ],
+      "log": [
+        "|t:|1791900559",
+        "|gametype|doubles",
+        "|player|p1|p1||",
+        "|player|p2|p2||",
+        "|gen|9",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-C",
+        "|rule|Species Clause: Limit one of each Pokémon",
+        "|rule|Item Clause: Limit 1 of each item",
+        "|clearpoke",
+        "|poke|p1|Alakazam, L50, M|",
+        "|poke|p1|Goodra-Hisui, L50, M|",
+        "|poke|p1|Torterra, L50, M|",
+        "|poke|p1|Perrserker, L50, M|",
+        "|poke|p1|Samurott, L50, M|",
+        "|poke|p1|Hydreigon, L50, M|",
+        "|poke|p2|Alakazam, L50, M|",
+        "|poke|p2|Goodra-Hisui, L50, M|",
+        "|poke|p2|Torterra, L50, M|",
+        "|poke|p2|Perrserker, L50, M|",
+        "|poke|p2|Samurott, L50, M|",
+        "|poke|p2|Hydreigon, L50, M|",
+        "|teampreview|4",
+        "|split|p1",
+        "|uhtml|otsrequest|<button name=\"send\" value=\"/acceptopenteamsheets\" class=\"button\" style=\"margin-right: 10px;\"><strong>Accept Open Team Sheets</strong></button><button name=\"send\" value=\"/rejectopenteamsheets\" class=\"button\" style=\"margin-top: 10px\"><strong>Deny Open Team Sheets</strong></button>",
+        "",
+        "|split|p2",
+        "|uhtml|otsrequest|<button name=\"send\" value=\"/acceptopenteamsheets\" class=\"button\" style=\"margin-right: 10px;\"><strong>Accept Open Team Sheets</strong></button><button name=\"send\" value=\"/rejectopenteamsheets\" class=\"button\" style=\"margin-top: 10px\"><strong>Deny Open Team Sheets</strong></button>",
+        ""
+      ]
+    },
+    {
+      "turn": 0,
+      "rng": "2026,10,8,4201",
+      "outbound": {
+        "p1": {
+          "teamPreview": true,
+          "maxChosenTeamSize": 4,
+          "side": {
+            "name": "p1",
+            "id": "p1",
+            "pokemon": [
+              {
+                "ident": "p1: s0m0",
+                "details": "Alakazam, L50, M",
+                "condition": "154/154",
+                "active": true,
+                "stats": {
+                  "atk": 78,
+                  "def": 73,
+                  "spa": 163,
+                  "spd": 123,
+                  "spe": 144
+                },
+                "moves": [
+                  "imprison",
+                  "protect"
+                ],
+                "baseAbility": "innerfocus",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "innerfocus",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m1",
+                "details": "Goodra-Hisui, L50, M",
+                "condition": "179/179",
+                "active": true,
+                "stats": {
+                  "atk": 128,
+                  "def": 128,
+                  "spa": 138,
+                  "spd": 178,
+                  "spe": 84
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m2",
+                "details": "Torterra, L50, M",
+                "condition": "194/194",
+                "active": false,
+                "stats": {
+                  "atk": 137,
+                  "def": 133,
+                  "spa": 103,
+                  "spd": 113,
+                  "spe": 80
+                },
+                "moves": [
+                  "seedbomb",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m3",
+                "details": "Perrserker, L50, M",
+                "condition": "169/169",
+                "active": false,
+                "stats": {
+                  "atk": 138,
+                  "def": 128,
+                  "spa": 78,
+                  "spd": 88,
+                  "spe": 74
+                },
+                "moves": [
+                  "ironhead",
+                  "protect"
+                ],
+                "baseAbility": "battlearmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "battlearmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m4",
+                "details": "Samurott, L50, M",
+                "condition": "194/194",
+                "active": false,
+                "stats": {
+                  "atk": 128,
+                  "def": 113,
+                  "spa": 136,
+                  "spd": 98,
+                  "spe": 94
+                },
+                "moves": [
+                  "aquajet",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m5",
+                "details": "Hydreigon, L50, M",
+                "condition": "191/191",
+                "active": false,
+                "stats": {
+                  "atk": 133,
+                  "def": 118,
+                  "spa": 153,
+                  "spd": 118,
+                  "spe": 122
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "levitate",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "levitate",
+                "commanding": false,
+                "reviving": false
+              }
+            ]
+          }
+        },
+        "p2": {
+          "teamPreview": true,
+          "maxChosenTeamSize": 4,
+          "side": {
+            "name": "p2",
+            "id": "p2",
+            "pokemon": [
+              {
+                "ident": "p2: s1m0",
+                "details": "Alakazam, L50, M",
+                "condition": "154/154",
+                "active": true,
+                "stats": {
+                  "atk": 78,
+                  "def": 73,
+                  "spa": 163,
+                  "spd": 123,
+                  "spe": 144
+                },
+                "moves": [
+                  "imprison",
+                  "protect"
+                ],
+                "baseAbility": "innerfocus",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "innerfocus",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m1",
+                "details": "Goodra-Hisui, L50, M",
+                "condition": "179/179",
+                "active": true,
+                "stats": {
+                  "atk": 128,
+                  "def": 128,
+                  "spa": 138,
+                  "spd": 178,
+                  "spe": 84
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m2",
+                "details": "Torterra, L50, M",
+                "condition": "194/194",
+                "active": false,
+                "stats": {
+                  "atk": 137,
+                  "def": 133,
+                  "spa": 103,
+                  "spd": 113,
+                  "spe": 80
+                },
+                "moves": [
+                  "seedbomb",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m3",
+                "details": "Perrserker, L50, M",
+                "condition": "169/169",
+                "active": false,
+                "stats": {
+                  "atk": 138,
+                  "def": 128,
+                  "spa": 78,
+                  "spd": 88,
+                  "spe": 74
+                },
+                "moves": [
+                  "ironhead",
+                  "protect"
+                ],
+                "baseAbility": "battlearmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "battlearmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m4",
+                "details": "Samurott, L50, M",
+                "condition": "194/194",
+                "active": false,
+                "stats": {
+                  "atk": 128,
+                  "def": 113,
+                  "spa": 136,
+                  "spd": 98,
+                  "spe": 94
+                },
+                "moves": [
+                  "aquajet",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m5",
+                "details": "Hydreigon, L50, M",
+                "condition": "191/191",
+                "active": false,
+                "stats": {
+                  "atk": 133,
+                  "def": 118,
+                  "spa": 153,
+                  "spd": 118,
+                  "spe": 122
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "levitate",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "levitate",
+                "commanding": false,
+                "reviving": false
+              }
+            ]
+          }
+        }
+      },
+      "internal": [
+        {
+          "id": "p1",
+          "choiceDone": true,
+          "active": [
+            null,
+            null
+          ]
+        },
+        {
+          "id": "p2",
+          "choiceDone": false,
+          "active": [
+            null,
+            null
+          ]
+        }
+      ],
+      "log": [
+        "|t:|1791900559",
+        "|gametype|doubles",
+        "|player|p1|p1||",
+        "|player|p2|p2||",
+        "|gen|9",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-C",
+        "|rule|Species Clause: Limit one of each Pokémon",
+        "|rule|Item Clause: Limit 1 of each item",
+        "|clearpoke",
+        "|poke|p1|Alakazam, L50, M|",
+        "|poke|p1|Goodra-Hisui, L50, M|",
+        "|poke|p1|Torterra, L50, M|",
+        "|poke|p1|Perrserker, L50, M|",
+        "|poke|p1|Samurott, L50, M|",
+        "|poke|p1|Hydreigon, L50, M|",
+        "|poke|p2|Alakazam, L50, M|",
+        "|poke|p2|Goodra-Hisui, L50, M|",
+        "|poke|p2|Torterra, L50, M|",
+        "|poke|p2|Perrserker, L50, M|",
+        "|poke|p2|Samurott, L50, M|",
+        "|poke|p2|Hydreigon, L50, M|",
+        "|teampreview|4",
+        "|split|p1",
+        "|uhtml|otsrequest|<button name=\"send\" value=\"/acceptopenteamsheets\" class=\"button\" style=\"margin-right: 10px;\"><strong>Accept Open Team Sheets</strong></button><button name=\"send\" value=\"/rejectopenteamsheets\" class=\"button\" style=\"margin-top: 10px\"><strong>Deny Open Team Sheets</strong></button>",
+        "",
+        "|split|p2",
+        "|uhtml|otsrequest|<button name=\"send\" value=\"/acceptopenteamsheets\" class=\"button\" style=\"margin-right: 10px;\"><strong>Accept Open Team Sheets</strong></button><button name=\"send\" value=\"/rejectopenteamsheets\" class=\"button\" style=\"margin-top: 10px\"><strong>Deny Open Team Sheets</strong></button>",
+        ""
+      ]
+    },
+    {
+      "turn": 1,
+      "rng": "11048,48628,16564,63803",
+      "outbound": {
+        "p1": {
+          "active": [
+            {
+              "moves": [
+                {
+                  "move": "Imprison",
+                  "id": "imprison",
+                  "pp": 12,
+                  "maxpp": 12,
+                  "target": "self",
+                  "disabled": false
+                },
+                {
+                  "move": "Protect",
+                  "id": "protect",
+                  "pp": 8,
+                  "maxpp": 8,
+                  "target": "self",
+                  "disabled": false
+                }
+              ]
+            },
+            {
+              "moves": [
+                {
+                  "move": "Dragon Pulse",
+                  "id": "dragonpulse",
+                  "pp": 12,
+                  "maxpp": 12,
+                  "target": "any",
+                  "disabled": false
+                },
+                {
+                  "move": "Protect",
+                  "id": "protect",
+                  "pp": 8,
+                  "maxpp": 8,
+                  "target": "self",
+                  "disabled": false
+                }
+              ]
+            }
+          ],
+          "side": {
+            "name": "p1",
+            "id": "p1",
+            "pokemon": [
+              {
+                "ident": "p1: s0m0",
+                "details": "Alakazam, L50, M",
+                "condition": "154/154",
+                "active": true,
+                "stats": {
+                  "atk": 78,
+                  "def": 73,
+                  "spa": 163,
+                  "spd": 123,
+                  "spe": 144
+                },
+                "moves": [
+                  "imprison",
+                  "protect"
+                ],
+                "baseAbility": "innerfocus",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "innerfocus",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m1",
+                "details": "Goodra-Hisui, L50, M",
+                "condition": "179/179",
+                "active": true,
+                "stats": {
+                  "atk": 128,
+                  "def": 128,
+                  "spa": 138,
+                  "spd": 178,
+                  "spe": 84
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m4",
+                "details": "Samurott, L50, M",
+                "condition": "194/194",
+                "active": false,
+                "stats": {
+                  "atk": 128,
+                  "def": 113,
+                  "spa": 136,
+                  "spd": 98,
+                  "spe": 94
+                },
+                "moves": [
+                  "aquajet",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m5",
+                "details": "Hydreigon, L50, M",
+                "condition": "191/191",
+                "active": false,
+                "stats": {
+                  "atk": 133,
+                  "def": 118,
+                  "spa": 153,
+                  "spd": 118,
+                  "spe": 122
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "levitate",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "levitate",
+                "commanding": false,
+                "reviving": false
+              }
+            ]
+          }
+        },
+        "p2": {
+          "active": [
+            {
+              "moves": [
+                {
+                  "move": "Imprison",
+                  "id": "imprison",
+                  "pp": 12,
+                  "maxpp": 12,
+                  "target": "self",
+                  "disabled": false
+                },
+                {
+                  "move": "Protect",
+                  "id": "protect",
+                  "pp": 8,
+                  "maxpp": 8,
+                  "target": "self",
+                  "disabled": false
+                }
+              ]
+            },
+            {
+              "moves": [
+                {
+                  "move": "Dragon Pulse",
+                  "id": "dragonpulse",
+                  "pp": 12,
+                  "maxpp": 12,
+                  "target": "any",
+                  "disabled": false
+                },
+                {
+                  "move": "Protect",
+                  "id": "protect",
+                  "pp": 8,
+                  "maxpp": 8,
+                  "target": "self",
+                  "disabled": false
+                }
+              ]
+            }
+          ],
+          "side": {
+            "name": "p2",
+            "id": "p2",
+            "pokemon": [
+              {
+                "ident": "p2: s1m0",
+                "details": "Alakazam, L50, M",
+                "condition": "154/154",
+                "active": true,
+                "stats": {
+                  "atk": 78,
+                  "def": 73,
+                  "spa": 163,
+                  "spd": 123,
+                  "spe": 144
+                },
+                "moves": [
+                  "imprison",
+                  "protect"
+                ],
+                "baseAbility": "innerfocus",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "innerfocus",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m1",
+                "details": "Goodra-Hisui, L50, M",
+                "condition": "179/179",
+                "active": true,
+                "stats": {
+                  "atk": 128,
+                  "def": 128,
+                  "spa": 138,
+                  "spd": 178,
+                  "spe": 84
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m4",
+                "details": "Samurott, L50, M",
+                "condition": "194/194",
+                "active": false,
+                "stats": {
+                  "atk": 128,
+                  "def": 113,
+                  "spa": 136,
+                  "spd": 98,
+                  "spe": 94
+                },
+                "moves": [
+                  "aquajet",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m5",
+                "details": "Hydreigon, L50, M",
+                "condition": "191/191",
+                "active": false,
+                "stats": {
+                  "atk": 133,
+                  "def": 118,
+                  "spa": 153,
+                  "spd": 118,
+                  "spe": 122
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "levitate",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "levitate",
+                "commanding": false,
+                "reviving": false
+              }
+            ]
+          }
+        }
+      },
+      "internal": [
+        {
+          "id": "p1",
+          "choiceDone": false,
+          "active": [
+            {
+              "name": "s0m0",
+              "lastActive": false,
+              "moves": [
+                {
+                  "id": "imprison",
+                  "pp": 12,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "self"
+                },
+                {
+                  "id": "protect",
+                  "pp": 8,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "self"
+                }
+              ],
+              "volatiles": []
+            },
+            {
+              "name": "s0m1",
+              "lastActive": true,
+              "moves": [
+                {
+                  "id": "dragonpulse",
+                  "pp": 12,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "any"
+                },
+                {
+                  "id": "protect",
+                  "pp": 8,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "self"
+                }
+              ],
+              "volatiles": []
+            }
+          ]
+        },
+        {
+          "id": "p2",
+          "choiceDone": false,
+          "active": [
+            {
+              "name": "s1m0",
+              "lastActive": false,
+              "moves": [
+                {
+                  "id": "imprison",
+                  "pp": 12,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "self"
+                },
+                {
+                  "id": "protect",
+                  "pp": 8,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "self"
+                }
+              ],
+              "volatiles": []
+            },
+            {
+              "name": "s1m1",
+              "lastActive": true,
+              "moves": [
+                {
+                  "id": "dragonpulse",
+                  "pp": 12,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "any"
+                },
+                {
+                  "id": "protect",
+                  "pp": 8,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "self"
+                }
+              ],
+              "volatiles": []
+            }
+          ]
+        }
+      ],
+      "log": [
+        "|t:|1791900559",
+        "|gametype|doubles",
+        "|player|p1|p1||",
+        "|player|p2|p2||",
+        "|gen|9",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-C",
+        "|rule|Species Clause: Limit one of each Pokémon",
+        "|rule|Item Clause: Limit 1 of each item",
+        "|clearpoke",
+        "|poke|p1|Alakazam, L50, M|",
+        "|poke|p1|Goodra-Hisui, L50, M|",
+        "|poke|p1|Torterra, L50, M|",
+        "|poke|p1|Perrserker, L50, M|",
+        "|poke|p1|Samurott, L50, M|",
+        "|poke|p1|Hydreigon, L50, M|",
+        "|poke|p2|Alakazam, L50, M|",
+        "|poke|p2|Goodra-Hisui, L50, M|",
+        "|poke|p2|Torterra, L50, M|",
+        "|poke|p2|Perrserker, L50, M|",
+        "|poke|p2|Samurott, L50, M|",
+        "|poke|p2|Hydreigon, L50, M|",
+        "|teampreview|4",
+        "|split|p1",
+        "|uhtml|otsrequest|<button name=\"send\" value=\"/acceptopenteamsheets\" class=\"button\" style=\"margin-right: 10px;\"><strong>Accept Open Team Sheets</strong></button><button name=\"send\" value=\"/rejectopenteamsheets\" class=\"button\" style=\"margin-top: 10px\"><strong>Deny Open Team Sheets</strong></button>",
+        "",
+        "|split|p2",
+        "|uhtml|otsrequest|<button name=\"send\" value=\"/acceptopenteamsheets\" class=\"button\" style=\"margin-right: 10px;\"><strong>Accept Open Team Sheets</strong></button><button name=\"send\" value=\"/rejectopenteamsheets\" class=\"button\" style=\"margin-top: 10px\"><strong>Deny Open Team Sheets</strong></button>",
+        "",
+        "|",
+        "|t:|1791900559",
+        "|teamsize|p1|4",
+        "|teamsize|p2|4",
+        "|start",
+        "|split|p1",
+        "|uhtmlchange|otsrequest|",
+        "",
+        "|split|p2",
+        "|uhtmlchange|otsrequest|",
+        "",
+        "|split|p1",
+        "|switch|p1a: s0m0|Alakazam, L50, M|154/154",
+        "|switch|p1a: s0m0|Alakazam, L50, M|100/100",
+        "|split|p1",
+        "|switch|p1b: s0m1|Goodra-Hisui, L50, M|179/179",
+        "|switch|p1b: s0m1|Goodra-Hisui, L50, M|100/100",
+        "|split|p2",
+        "|switch|p2a: s1m0|Alakazam, L50, M|154/154",
+        "|switch|p2a: s1m0|Alakazam, L50, M|100/100",
+        "|split|p2",
+        "|switch|p2b: s1m1|Goodra-Hisui, L50, M|179/179",
+        "|switch|p2b: s1m1|Goodra-Hisui, L50, M|100/100",
+        "|turn|1"
+      ]
+    },
+    {
+      "turn": 1,
+      "rng": "11048,48628,16564,63803",
+      "outbound": {
+        "p1": {
+          "active": [
+            {
+              "moves": [
+                {
+                  "move": "Imprison",
+                  "id": "imprison",
+                  "pp": 12,
+                  "maxpp": 12,
+                  "target": "self",
+                  "disabled": false
+                },
+                {
+                  "move": "Protect",
+                  "id": "protect",
+                  "pp": 8,
+                  "maxpp": 8,
+                  "target": "self",
+                  "disabled": false
+                }
+              ]
+            },
+            {
+              "moves": [
+                {
+                  "move": "Dragon Pulse",
+                  "id": "dragonpulse",
+                  "pp": 12,
+                  "maxpp": 12,
+                  "target": "any",
+                  "disabled": false
+                },
+                {
+                  "move": "Protect",
+                  "id": "protect",
+                  "pp": 8,
+                  "maxpp": 8,
+                  "target": "self",
+                  "disabled": false
+                }
+              ]
+            }
+          ],
+          "side": {
+            "name": "p1",
+            "id": "p1",
+            "pokemon": [
+              {
+                "ident": "p1: s0m0",
+                "details": "Alakazam, L50, M",
+                "condition": "154/154",
+                "active": true,
+                "stats": {
+                  "atk": 78,
+                  "def": 73,
+                  "spa": 163,
+                  "spd": 123,
+                  "spe": 144
+                },
+                "moves": [
+                  "imprison",
+                  "protect"
+                ],
+                "baseAbility": "innerfocus",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "innerfocus",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m1",
+                "details": "Goodra-Hisui, L50, M",
+                "condition": "179/179",
+                "active": true,
+                "stats": {
+                  "atk": 128,
+                  "def": 128,
+                  "spa": 138,
+                  "spd": 178,
+                  "spe": 84
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m4",
+                "details": "Samurott, L50, M",
+                "condition": "194/194",
+                "active": false,
+                "stats": {
+                  "atk": 128,
+                  "def": 113,
+                  "spa": 136,
+                  "spd": 98,
+                  "spe": 94
+                },
+                "moves": [
+                  "aquajet",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m5",
+                "details": "Hydreigon, L50, M",
+                "condition": "191/191",
+                "active": false,
+                "stats": {
+                  "atk": 133,
+                  "def": 118,
+                  "spa": 153,
+                  "spd": 118,
+                  "spe": 122
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "levitate",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "levitate",
+                "commanding": false,
+                "reviving": false
+              }
+            ]
+          }
+        },
+        "p2": {
+          "active": [
+            {
+              "moves": [
+                {
+                  "move": "Imprison",
+                  "id": "imprison",
+                  "pp": 12,
+                  "maxpp": 12,
+                  "target": "self",
+                  "disabled": false
+                },
+                {
+                  "move": "Protect",
+                  "id": "protect",
+                  "pp": 8,
+                  "maxpp": 8,
+                  "target": "self",
+                  "disabled": false
+                }
+              ]
+            },
+            {
+              "moves": [
+                {
+                  "move": "Dragon Pulse",
+                  "id": "dragonpulse",
+                  "pp": 12,
+                  "maxpp": 12,
+                  "target": "any",
+                  "disabled": false
+                },
+                {
+                  "move": "Protect",
+                  "id": "protect",
+                  "pp": 8,
+                  "maxpp": 8,
+                  "target": "self",
+                  "disabled": false
+                }
+              ]
+            }
+          ],
+          "side": {
+            "name": "p2",
+            "id": "p2",
+            "pokemon": [
+              {
+                "ident": "p2: s1m0",
+                "details": "Alakazam, L50, M",
+                "condition": "154/154",
+                "active": true,
+                "stats": {
+                  "atk": 78,
+                  "def": 73,
+                  "spa": 163,
+                  "spd": 123,
+                  "spe": 144
+                },
+                "moves": [
+                  "imprison",
+                  "protect"
+                ],
+                "baseAbility": "innerfocus",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "innerfocus",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m1",
+                "details": "Goodra-Hisui, L50, M",
+                "condition": "179/179",
+                "active": true,
+                "stats": {
+                  "atk": 128,
+                  "def": 128,
+                  "spa": 138,
+                  "spd": 178,
+                  "spe": 84
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m4",
+                "details": "Samurott, L50, M",
+                "condition": "194/194",
+                "active": false,
+                "stats": {
+                  "atk": 128,
+                  "def": 113,
+                  "spa": 136,
+                  "spd": 98,
+                  "spe": 94
+                },
+                "moves": [
+                  "aquajet",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m5",
+                "details": "Hydreigon, L50, M",
+                "condition": "191/191",
+                "active": false,
+                "stats": {
+                  "atk": 133,
+                  "def": 118,
+                  "spa": 153,
+                  "spd": 118,
+                  "spe": 122
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "levitate",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "levitate",
+                "commanding": false,
+                "reviving": false
+              }
+            ]
+          }
+        }
+      },
+      "internal": [
+        {
+          "id": "p1",
+          "choiceDone": true,
+          "active": [
+            {
+              "name": "s0m0",
+              "lastActive": false,
+              "moves": [
+                {
+                  "id": "imprison",
+                  "pp": 12,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "self"
+                },
+                {
+                  "id": "protect",
+                  "pp": 8,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "self"
+                }
+              ],
+              "volatiles": []
+            },
+            {
+              "name": "s0m1",
+              "lastActive": true,
+              "moves": [
+                {
+                  "id": "dragonpulse",
+                  "pp": 12,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "any"
+                },
+                {
+                  "id": "protect",
+                  "pp": 8,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "self"
+                }
+              ],
+              "volatiles": []
+            }
+          ]
+        },
+        {
+          "id": "p2",
+          "choiceDone": false,
+          "active": [
+            {
+              "name": "s1m0",
+              "lastActive": false,
+              "moves": [
+                {
+                  "id": "imprison",
+                  "pp": 12,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "self"
+                },
+                {
+                  "id": "protect",
+                  "pp": 8,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "self"
+                }
+              ],
+              "volatiles": []
+            },
+            {
+              "name": "s1m1",
+              "lastActive": true,
+              "moves": [
+                {
+                  "id": "dragonpulse",
+                  "pp": 12,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "any"
+                },
+                {
+                  "id": "protect",
+                  "pp": 8,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "self"
+                }
+              ],
+              "volatiles": []
+            }
+          ]
+        }
+      ],
+      "log": [
+        "|t:|1791900559",
+        "|gametype|doubles",
+        "|player|p1|p1||",
+        "|player|p2|p2||",
+        "|gen|9",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-C",
+        "|rule|Species Clause: Limit one of each Pokémon",
+        "|rule|Item Clause: Limit 1 of each item",
+        "|clearpoke",
+        "|poke|p1|Alakazam, L50, M|",
+        "|poke|p1|Goodra-Hisui, L50, M|",
+        "|poke|p1|Torterra, L50, M|",
+        "|poke|p1|Perrserker, L50, M|",
+        "|poke|p1|Samurott, L50, M|",
+        "|poke|p1|Hydreigon, L50, M|",
+        "|poke|p2|Alakazam, L50, M|",
+        "|poke|p2|Goodra-Hisui, L50, M|",
+        "|poke|p2|Torterra, L50, M|",
+        "|poke|p2|Perrserker, L50, M|",
+        "|poke|p2|Samurott, L50, M|",
+        "|poke|p2|Hydreigon, L50, M|",
+        "|teampreview|4",
+        "|split|p1",
+        "|uhtml|otsrequest|<button name=\"send\" value=\"/acceptopenteamsheets\" class=\"button\" style=\"margin-right: 10px;\"><strong>Accept Open Team Sheets</strong></button><button name=\"send\" value=\"/rejectopenteamsheets\" class=\"button\" style=\"margin-top: 10px\"><strong>Deny Open Team Sheets</strong></button>",
+        "",
+        "|split|p2",
+        "|uhtml|otsrequest|<button name=\"send\" value=\"/acceptopenteamsheets\" class=\"button\" style=\"margin-right: 10px;\"><strong>Accept Open Team Sheets</strong></button><button name=\"send\" value=\"/rejectopenteamsheets\" class=\"button\" style=\"margin-top: 10px\"><strong>Deny Open Team Sheets</strong></button>",
+        "",
+        "|",
+        "|t:|1791900559",
+        "|teamsize|p1|4",
+        "|teamsize|p2|4",
+        "|start",
+        "|split|p1",
+        "|uhtmlchange|otsrequest|",
+        "",
+        "|split|p2",
+        "|uhtmlchange|otsrequest|",
+        "",
+        "|split|p1",
+        "|switch|p1a: s0m0|Alakazam, L50, M|154/154",
+        "|switch|p1a: s0m0|Alakazam, L50, M|100/100",
+        "|split|p1",
+        "|switch|p1b: s0m1|Goodra-Hisui, L50, M|179/179",
+        "|switch|p1b: s0m1|Goodra-Hisui, L50, M|100/100",
+        "|split|p2",
+        "|switch|p2a: s1m0|Alakazam, L50, M|154/154",
+        "|switch|p2a: s1m0|Alakazam, L50, M|100/100",
+        "|split|p2",
+        "|switch|p2b: s1m1|Goodra-Hisui, L50, M|179/179",
+        "|switch|p2b: s1m1|Goodra-Hisui, L50, M|100/100",
+        "|turn|1"
+      ]
+    },
+    {
+      "turn": 2,
+      "rng": "27024,52884,33909,23577",
+      "outbound": {
+        "p1": {
+          "active": [
+            {
+              "moves": [
+                {
+                  "move": "Imprison",
+                  "id": "imprison",
+                  "pp": 11,
+                  "maxpp": 12,
+                  "target": "self",
+                  "disabled": false
+                },
+                {
+                  "move": "Protect",
+                  "id": "protect",
+                  "pp": 8,
+                  "maxpp": 8,
+                  "target": "self",
+                  "disabled": false
+                }
+              ]
+            },
+            {
+              "moves": [
+                {
+                  "move": "Dragon Pulse",
+                  "id": "dragonpulse",
+                  "pp": 11,
+                  "maxpp": 12,
+                  "target": "any",
+                  "disabled": false
+                },
+                {
+                  "move": "Protect",
+                  "id": "protect",
+                  "pp": 8,
+                  "maxpp": 8,
+                  "target": "self",
+                  "disabled": false
+                }
+              ]
+            }
+          ],
+          "side": {
+            "name": "p1",
+            "id": "p1",
+            "pokemon": [
+              {
+                "ident": "p1: s0m0",
+                "details": "Alakazam, L50, M",
+                "condition": "154/154",
+                "active": true,
+                "stats": {
+                  "atk": 78,
+                  "def": 73,
+                  "spa": 163,
+                  "spd": 123,
+                  "spe": 144
+                },
+                "moves": [
+                  "imprison",
+                  "protect"
+                ],
+                "baseAbility": "innerfocus",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "innerfocus",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m1",
+                "details": "Goodra-Hisui, L50, M",
+                "condition": "179/179",
+                "active": true,
+                "stats": {
+                  "atk": 128,
+                  "def": 128,
+                  "spa": 138,
+                  "spd": 178,
+                  "spe": 84
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m4",
+                "details": "Samurott, L50, M",
+                "condition": "194/194",
+                "active": false,
+                "stats": {
+                  "atk": 128,
+                  "def": 113,
+                  "spa": 136,
+                  "spd": 98,
+                  "spe": 94
+                },
+                "moves": [
+                  "aquajet",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m5",
+                "details": "Hydreigon, L50, M",
+                "condition": "191/191",
+                "active": false,
+                "stats": {
+                  "atk": 133,
+                  "def": 118,
+                  "spa": 153,
+                  "spd": 118,
+                  "spe": 122
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "levitate",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "levitate",
+                "commanding": false,
+                "reviving": false
+              }
+            ]
+          }
+        },
+        "p2": {
+          "active": [
+            {
+              "moves": [
+                {
+                  "move": "Struggle",
+                  "id": "struggle",
+                  "target": "randomNormal",
+                  "disabled": false
+                }
+              ]
+            },
+            {
+              "moves": [
+                {
+                  "move": "Dragon Pulse",
+                  "id": "dragonpulse",
+                  "pp": 11,
+                  "maxpp": 12,
+                  "target": "any",
+                  "disabled": false
+                },
+                {
+                  "move": "Protect",
+                  "id": "protect",
+                  "pp": 8,
+                  "maxpp": 8,
+                  "target": "self",
+                  "disabled": false
+                }
+              ],
+              "maybeDisabled": true,
+              "maybeLocked": true
+            }
+          ],
+          "side": {
+            "name": "p2",
+            "id": "p2",
+            "pokemon": [
+              {
+                "ident": "p2: s1m0",
+                "details": "Alakazam, L50, M",
+                "condition": "100/154",
+                "active": true,
+                "stats": {
+                  "atk": 78,
+                  "def": 73,
+                  "spa": 163,
+                  "spd": 123,
+                  "spe": 144
+                },
+                "moves": [
+                  "imprison",
+                  "protect"
+                ],
+                "baseAbility": "innerfocus",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "innerfocus",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m1",
+                "details": "Goodra-Hisui, L50, M",
+                "condition": "140/179",
+                "active": true,
+                "stats": {
+                  "atk": 128,
+                  "def": 128,
+                  "spa": 138,
+                  "spd": 178,
+                  "spe": 84
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m4",
+                "details": "Samurott, L50, M",
+                "condition": "194/194",
+                "active": false,
+                "stats": {
+                  "atk": 128,
+                  "def": 113,
+                  "spa": 136,
+                  "spd": 98,
+                  "spe": 94
+                },
+                "moves": [
+                  "aquajet",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m5",
+                "details": "Hydreigon, L50, M",
+                "condition": "191/191",
+                "active": false,
+                "stats": {
+                  "atk": 133,
+                  "def": 118,
+                  "spa": 153,
+                  "spd": 118,
+                  "spe": 122
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "levitate",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "levitate",
+                "commanding": false,
+                "reviving": false
+              }
+            ]
+          }
+        }
+      },
+      "internal": [
+        {
+          "id": "p1",
+          "choiceDone": false,
+          "active": [
+            {
+              "name": "s0m0",
+              "lastActive": false,
+              "moves": [
+                {
+                  "id": "imprison",
+                  "pp": 11,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "self"
+                },
+                {
+                  "id": "protect",
+                  "pp": 8,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "self"
+                }
+              ],
+              "volatiles": [
+                "imprison"
+              ]
+            },
+            {
+              "name": "s0m1",
+              "lastActive": true,
+              "moves": [
+                {
+                  "id": "dragonpulse",
+                  "pp": 11,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "any"
+                },
+                {
+                  "id": "protect",
+                  "pp": 8,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "self"
+                }
+              ],
+              "volatiles": []
+            }
+          ]
+        },
+        {
+          "id": "p2",
+          "choiceDone": false,
+          "active": [
+            {
+              "name": "s1m0",
+              "lastActive": false,
+              "moves": [
+                {
+                  "id": "imprison",
+                  "pp": 12,
+                  "disabled": "hidden",
+                  "disabledSource": "Imprison",
+                  "target": "self"
+                },
+                {
+                  "id": "protect",
+                  "pp": 8,
+                  "disabled": "hidden",
+                  "disabledSource": "Imprison",
+                  "target": "self"
+                }
+              ],
+              "volatiles": []
+            },
+            {
+              "name": "s1m1",
+              "lastActive": true,
+              "moves": [
+                {
+                  "id": "dragonpulse",
+                  "pp": 11,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "any"
+                },
+                {
+                  "id": "protect",
+                  "pp": 8,
+                  "disabled": "hidden",
+                  "disabledSource": "Imprison",
+                  "target": "self"
+                }
+              ],
+              "volatiles": []
+            }
+          ]
+        }
+      ],
+      "log": [
+        "|t:|1791900559",
+        "|gametype|doubles",
+        "|player|p1|p1||",
+        "|player|p2|p2||",
+        "|gen|9",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-C",
+        "|rule|Species Clause: Limit one of each Pokémon",
+        "|rule|Item Clause: Limit 1 of each item",
+        "|clearpoke",
+        "|poke|p1|Alakazam, L50, M|",
+        "|poke|p1|Goodra-Hisui, L50, M|",
+        "|poke|p1|Torterra, L50, M|",
+        "|poke|p1|Perrserker, L50, M|",
+        "|poke|p1|Samurott, L50, M|",
+        "|poke|p1|Hydreigon, L50, M|",
+        "|poke|p2|Alakazam, L50, M|",
+        "|poke|p2|Goodra-Hisui, L50, M|",
+        "|poke|p2|Torterra, L50, M|",
+        "|poke|p2|Perrserker, L50, M|",
+        "|poke|p2|Samurott, L50, M|",
+        "|poke|p2|Hydreigon, L50, M|",
+        "|teampreview|4",
+        "|split|p1",
+        "|uhtml|otsrequest|<button name=\"send\" value=\"/acceptopenteamsheets\" class=\"button\" style=\"margin-right: 10px;\"><strong>Accept Open Team Sheets</strong></button><button name=\"send\" value=\"/rejectopenteamsheets\" class=\"button\" style=\"margin-top: 10px\"><strong>Deny Open Team Sheets</strong></button>",
+        "",
+        "|split|p2",
+        "|uhtml|otsrequest|<button name=\"send\" value=\"/acceptopenteamsheets\" class=\"button\" style=\"margin-right: 10px;\"><strong>Accept Open Team Sheets</strong></button><button name=\"send\" value=\"/rejectopenteamsheets\" class=\"button\" style=\"margin-top: 10px\"><strong>Deny Open Team Sheets</strong></button>",
+        "",
+        "|",
+        "|t:|1791900559",
+        "|teamsize|p1|4",
+        "|teamsize|p2|4",
+        "|start",
+        "|split|p1",
+        "|uhtmlchange|otsrequest|",
+        "",
+        "|split|p2",
+        "|uhtmlchange|otsrequest|",
+        "",
+        "|split|p1",
+        "|switch|p1a: s0m0|Alakazam, L50, M|154/154",
+        "|switch|p1a: s0m0|Alakazam, L50, M|100/100",
+        "|split|p1",
+        "|switch|p1b: s0m1|Goodra-Hisui, L50, M|179/179",
+        "|switch|p1b: s0m1|Goodra-Hisui, L50, M|100/100",
+        "|split|p2",
+        "|switch|p2a: s1m0|Alakazam, L50, M|154/154",
+        "|switch|p2a: s1m0|Alakazam, L50, M|100/100",
+        "|split|p2",
+        "|switch|p2b: s1m1|Goodra-Hisui, L50, M|179/179",
+        "|switch|p2b: s1m1|Goodra-Hisui, L50, M|100/100",
+        "|turn|1",
+        "|",
+        "|t:|1791900559",
+        "|move|p1a: s0m0|Imprison|p1a: s0m0",
+        "|-start|p1a: s0m0|move: Imprison",
+        "|cant|p2a: s1m0|move: Imprison|Imprison",
+        "|move|p1b: s0m1|Dragon Pulse|p2b: s1m1",
+        "|split|p2",
+        "|-damage|p2b: s1m1|140/179",
+        "|-damage|p2b: s1m1|78/100",
+        "|move|p2b: s1m1|Dragon Pulse|p2a: s1m0",
+        "|split|p2",
+        "|-damage|p2a: s1m0|100/154",
+        "|-damage|p2a: s1m0|64/100",
+        "|",
+        "|upkeep",
+        "|turn|2"
+      ]
+    }
+  ],
+  "hidden_choice": {
+    "command": "move 1, move 2",
+    "accepted": false,
+    "before": {
+      "turn": 2,
+      "rng": "27024,52884,33909,23577",
+      "outbound": {
+        "p1": {
+          "active": [
+            {
+              "moves": [
+                {
+                  "move": "Imprison",
+                  "id": "imprison",
+                  "pp": 11,
+                  "maxpp": 12,
+                  "target": "self",
+                  "disabled": false
+                },
+                {
+                  "move": "Protect",
+                  "id": "protect",
+                  "pp": 8,
+                  "maxpp": 8,
+                  "target": "self",
+                  "disabled": false
+                }
+              ]
+            },
+            {
+              "moves": [
+                {
+                  "move": "Dragon Pulse",
+                  "id": "dragonpulse",
+                  "pp": 11,
+                  "maxpp": 12,
+                  "target": "any",
+                  "disabled": false
+                },
+                {
+                  "move": "Protect",
+                  "id": "protect",
+                  "pp": 8,
+                  "maxpp": 8,
+                  "target": "self",
+                  "disabled": false
+                }
+              ]
+            }
+          ],
+          "side": {
+            "name": "p1",
+            "id": "p1",
+            "pokemon": [
+              {
+                "ident": "p1: s0m0",
+                "details": "Alakazam, L50, M",
+                "condition": "154/154",
+                "active": true,
+                "stats": {
+                  "atk": 78,
+                  "def": 73,
+                  "spa": 163,
+                  "spd": 123,
+                  "spe": 144
+                },
+                "moves": [
+                  "imprison",
+                  "protect"
+                ],
+                "baseAbility": "innerfocus",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "innerfocus",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m1",
+                "details": "Goodra-Hisui, L50, M",
+                "condition": "179/179",
+                "active": true,
+                "stats": {
+                  "atk": 128,
+                  "def": 128,
+                  "spa": 138,
+                  "spd": 178,
+                  "spe": 84
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m4",
+                "details": "Samurott, L50, M",
+                "condition": "194/194",
+                "active": false,
+                "stats": {
+                  "atk": 128,
+                  "def": 113,
+                  "spa": 136,
+                  "spd": 98,
+                  "spe": 94
+                },
+                "moves": [
+                  "aquajet",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m5",
+                "details": "Hydreigon, L50, M",
+                "condition": "191/191",
+                "active": false,
+                "stats": {
+                  "atk": 133,
+                  "def": 118,
+                  "spa": 153,
+                  "spd": 118,
+                  "spe": 122
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "levitate",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "levitate",
+                "commanding": false,
+                "reviving": false
+              }
+            ]
+          }
+        },
+        "p2": {
+          "active": [
+            {
+              "moves": [
+                {
+                  "move": "Struggle",
+                  "id": "struggle",
+                  "target": "randomNormal",
+                  "disabled": false
+                }
+              ]
+            },
+            {
+              "moves": [
+                {
+                  "move": "Dragon Pulse",
+                  "id": "dragonpulse",
+                  "pp": 11,
+                  "maxpp": 12,
+                  "target": "any",
+                  "disabled": false
+                },
+                {
+                  "move": "Protect",
+                  "id": "protect",
+                  "pp": 8,
+                  "maxpp": 8,
+                  "target": "self",
+                  "disabled": false
+                }
+              ],
+              "maybeDisabled": true,
+              "maybeLocked": true
+            }
+          ],
+          "side": {
+            "name": "p2",
+            "id": "p2",
+            "pokemon": [
+              {
+                "ident": "p2: s1m0",
+                "details": "Alakazam, L50, M",
+                "condition": "100/154",
+                "active": true,
+                "stats": {
+                  "atk": 78,
+                  "def": 73,
+                  "spa": 163,
+                  "spd": 123,
+                  "spe": 144
+                },
+                "moves": [
+                  "imprison",
+                  "protect"
+                ],
+                "baseAbility": "innerfocus",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "innerfocus",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m1",
+                "details": "Goodra-Hisui, L50, M",
+                "condition": "140/179",
+                "active": true,
+                "stats": {
+                  "atk": 128,
+                  "def": 128,
+                  "spa": 138,
+                  "spd": 178,
+                  "spe": 84
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m4",
+                "details": "Samurott, L50, M",
+                "condition": "194/194",
+                "active": false,
+                "stats": {
+                  "atk": 128,
+                  "def": 113,
+                  "spa": 136,
+                  "spd": 98,
+                  "spe": 94
+                },
+                "moves": [
+                  "aquajet",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m5",
+                "details": "Hydreigon, L50, M",
+                "condition": "191/191",
+                "active": false,
+                "stats": {
+                  "atk": 133,
+                  "def": 118,
+                  "spa": 153,
+                  "spd": 118,
+                  "spe": 122
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "levitate",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "levitate",
+                "commanding": false,
+                "reviving": false
+              }
+            ]
+          }
+        }
+      },
+      "internal": [
+        {
+          "id": "p1",
+          "choiceDone": false,
+          "active": [
+            {
+              "name": "s0m0",
+              "lastActive": false,
+              "moves": [
+                {
+                  "id": "imprison",
+                  "pp": 11,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "self"
+                },
+                {
+                  "id": "protect",
+                  "pp": 8,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "self"
+                }
+              ],
+              "volatiles": [
+                "imprison"
+              ]
+            },
+            {
+              "name": "s0m1",
+              "lastActive": true,
+              "moves": [
+                {
+                  "id": "dragonpulse",
+                  "pp": 11,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "any"
+                },
+                {
+                  "id": "protect",
+                  "pp": 8,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "self"
+                }
+              ],
+              "volatiles": []
+            }
+          ]
+        },
+        {
+          "id": "p2",
+          "choiceDone": false,
+          "active": [
+            {
+              "name": "s1m0",
+              "lastActive": false,
+              "moves": [
+                {
+                  "id": "imprison",
+                  "pp": 12,
+                  "disabled": "hidden",
+                  "disabledSource": "Imprison",
+                  "target": "self"
+                },
+                {
+                  "id": "protect",
+                  "pp": 8,
+                  "disabled": "hidden",
+                  "disabledSource": "Imprison",
+                  "target": "self"
+                }
+              ],
+              "volatiles": []
+            },
+            {
+              "name": "s1m1",
+              "lastActive": true,
+              "moves": [
+                {
+                  "id": "dragonpulse",
+                  "pp": 11,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "any"
+                },
+                {
+                  "id": "protect",
+                  "pp": 8,
+                  "disabled": "hidden",
+                  "disabledSource": "Imprison",
+                  "target": "self"
+                }
+              ],
+              "volatiles": []
+            }
+          ]
+        }
+      ],
+      "log": [
+        "|t:|1791900559",
+        "|gametype|doubles",
+        "|player|p1|p1||",
+        "|player|p2|p2||",
+        "|gen|9",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-C",
+        "|rule|Species Clause: Limit one of each Pokémon",
+        "|rule|Item Clause: Limit 1 of each item",
+        "|clearpoke",
+        "|poke|p1|Alakazam, L50, M|",
+        "|poke|p1|Goodra-Hisui, L50, M|",
+        "|poke|p1|Torterra, L50, M|",
+        "|poke|p1|Perrserker, L50, M|",
+        "|poke|p1|Samurott, L50, M|",
+        "|poke|p1|Hydreigon, L50, M|",
+        "|poke|p2|Alakazam, L50, M|",
+        "|poke|p2|Goodra-Hisui, L50, M|",
+        "|poke|p2|Torterra, L50, M|",
+        "|poke|p2|Perrserker, L50, M|",
+        "|poke|p2|Samurott, L50, M|",
+        "|poke|p2|Hydreigon, L50, M|",
+        "|teampreview|4",
+        "|split|p1",
+        "|uhtml|otsrequest|<button name=\"send\" value=\"/acceptopenteamsheets\" class=\"button\" style=\"margin-right: 10px;\"><strong>Accept Open Team Sheets</strong></button><button name=\"send\" value=\"/rejectopenteamsheets\" class=\"button\" style=\"margin-top: 10px\"><strong>Deny Open Team Sheets</strong></button>",
+        "",
+        "|split|p2",
+        "|uhtml|otsrequest|<button name=\"send\" value=\"/acceptopenteamsheets\" class=\"button\" style=\"margin-right: 10px;\"><strong>Accept Open Team Sheets</strong></button><button name=\"send\" value=\"/rejectopenteamsheets\" class=\"button\" style=\"margin-top: 10px\"><strong>Deny Open Team Sheets</strong></button>",
+        "",
+        "|",
+        "|t:|1791900559",
+        "|teamsize|p1|4",
+        "|teamsize|p2|4",
+        "|start",
+        "|split|p1",
+        "|uhtmlchange|otsrequest|",
+        "",
+        "|split|p2",
+        "|uhtmlchange|otsrequest|",
+        "",
+        "|split|p1",
+        "|switch|p1a: s0m0|Alakazam, L50, M|154/154",
+        "|switch|p1a: s0m0|Alakazam, L50, M|100/100",
+        "|split|p1",
+        "|switch|p1b: s0m1|Goodra-Hisui, L50, M|179/179",
+        "|switch|p1b: s0m1|Goodra-Hisui, L50, M|100/100",
+        "|split|p2",
+        "|switch|p2a: s1m0|Alakazam, L50, M|154/154",
+        "|switch|p2a: s1m0|Alakazam, L50, M|100/100",
+        "|split|p2",
+        "|switch|p2b: s1m1|Goodra-Hisui, L50, M|179/179",
+        "|switch|p2b: s1m1|Goodra-Hisui, L50, M|100/100",
+        "|turn|1",
+        "|",
+        "|t:|1791900559",
+        "|move|p1a: s0m0|Imprison|p1a: s0m0",
+        "|-start|p1a: s0m0|move: Imprison",
+        "|cant|p2a: s1m0|move: Imprison|Imprison",
+        "|move|p1b: s0m1|Dragon Pulse|p2b: s1m1",
+        "|split|p2",
+        "|-damage|p2b: s1m1|140/179",
+        "|-damage|p2b: s1m1|78/100",
+        "|move|p2b: s1m1|Dragon Pulse|p2a: s1m0",
+        "|split|p2",
+        "|-damage|p2a: s1m0|100/154",
+        "|-damage|p2a: s1m0|64/100",
+        "|",
+        "|upkeep",
+        "|turn|2"
+      ]
+    },
+    "after": {
+      "turn": 2,
+      "rng": "27024,52884,33909,23577",
+      "outbound": {
+        "p1": {
+          "active": [
+            {
+              "moves": [
+                {
+                  "move": "Imprison",
+                  "id": "imprison",
+                  "pp": 11,
+                  "maxpp": 12,
+                  "target": "self",
+                  "disabled": false
+                },
+                {
+                  "move": "Protect",
+                  "id": "protect",
+                  "pp": 8,
+                  "maxpp": 8,
+                  "target": "self",
+                  "disabled": false
+                }
+              ]
+            },
+            {
+              "moves": [
+                {
+                  "move": "Dragon Pulse",
+                  "id": "dragonpulse",
+                  "pp": 11,
+                  "maxpp": 12,
+                  "target": "any",
+                  "disabled": false
+                },
+                {
+                  "move": "Protect",
+                  "id": "protect",
+                  "pp": 8,
+                  "maxpp": 8,
+                  "target": "self",
+                  "disabled": false
+                }
+              ]
+            }
+          ],
+          "side": {
+            "name": "p1",
+            "id": "p1",
+            "pokemon": [
+              {
+                "ident": "p1: s0m0",
+                "details": "Alakazam, L50, M",
+                "condition": "154/154",
+                "active": true,
+                "stats": {
+                  "atk": 78,
+                  "def": 73,
+                  "spa": 163,
+                  "spd": 123,
+                  "spe": 144
+                },
+                "moves": [
+                  "imprison",
+                  "protect"
+                ],
+                "baseAbility": "innerfocus",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "innerfocus",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m1",
+                "details": "Goodra-Hisui, L50, M",
+                "condition": "179/179",
+                "active": true,
+                "stats": {
+                  "atk": 128,
+                  "def": 128,
+                  "spa": 138,
+                  "spd": 178,
+                  "spe": 84
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m4",
+                "details": "Samurott, L50, M",
+                "condition": "194/194",
+                "active": false,
+                "stats": {
+                  "atk": 128,
+                  "def": 113,
+                  "spa": 136,
+                  "spd": 98,
+                  "spe": 94
+                },
+                "moves": [
+                  "aquajet",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p1: s0m5",
+                "details": "Hydreigon, L50, M",
+                "condition": "191/191",
+                "active": false,
+                "stats": {
+                  "atk": 133,
+                  "def": 118,
+                  "spa": 153,
+                  "spd": 118,
+                  "spe": 122
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "levitate",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "levitate",
+                "commanding": false,
+                "reviving": false
+              }
+            ]
+          }
+        },
+        "p2": {
+          "active": [
+            {
+              "moves": [
+                {
+                  "move": "Struggle",
+                  "id": "struggle",
+                  "target": "randomNormal",
+                  "disabled": false
+                }
+              ]
+            },
+            {
+              "moves": [
+                {
+                  "move": "Dragon Pulse",
+                  "id": "dragonpulse",
+                  "pp": 11,
+                  "maxpp": 12,
+                  "target": "any",
+                  "disabled": false
+                },
+                {
+                  "move": "Protect",
+                  "id": "protect",
+                  "pp": 8,
+                  "maxpp": 8,
+                  "target": "self",
+                  "disabled": true,
+                  "disabledSource": ""
+                }
+              ]
+            }
+          ],
+          "side": {
+            "name": "p2",
+            "id": "p2",
+            "pokemon": [
+              {
+                "ident": "p2: s1m0",
+                "details": "Alakazam, L50, M",
+                "condition": "100/154",
+                "active": true,
+                "stats": {
+                  "atk": 78,
+                  "def": 73,
+                  "spa": 163,
+                  "spd": 123,
+                  "spe": 144
+                },
+                "moves": [
+                  "imprison",
+                  "protect"
+                ],
+                "baseAbility": "innerfocus",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "innerfocus",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m1",
+                "details": "Goodra-Hisui, L50, M",
+                "condition": "140/179",
+                "active": true,
+                "stats": {
+                  "atk": 128,
+                  "def": 128,
+                  "spa": 138,
+                  "spd": 178,
+                  "spe": 84
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m4",
+                "details": "Samurott, L50, M",
+                "condition": "194/194",
+                "active": false,
+                "stats": {
+                  "atk": 128,
+                  "def": 113,
+                  "spa": 136,
+                  "spd": 98,
+                  "spe": 94
+                },
+                "moves": [
+                  "aquajet",
+                  "protect"
+                ],
+                "baseAbility": "shellarmor",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "shellarmor",
+                "commanding": false,
+                "reviving": false
+              },
+              {
+                "ident": "p2: s1m5",
+                "details": "Hydreigon, L50, M",
+                "condition": "191/191",
+                "active": false,
+                "stats": {
+                  "atk": 133,
+                  "def": 118,
+                  "spa": 153,
+                  "spd": 118,
+                  "spe": 122
+                },
+                "moves": [
+                  "dragonpulse",
+                  "protect"
+                ],
+                "baseAbility": "levitate",
+                "item": "",
+                "pokeball": "pokeball",
+                "ability": "levitate",
+                "commanding": false,
+                "reviving": false
+              }
+            ]
+          },
+          "update": true
+        }
+      },
+      "internal": [
+        {
+          "id": "p1",
+          "choiceDone": false,
+          "active": [
+            {
+              "name": "s0m0",
+              "lastActive": false,
+              "moves": [
+                {
+                  "id": "imprison",
+                  "pp": 11,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "self"
+                },
+                {
+                  "id": "protect",
+                  "pp": 8,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "self"
+                }
+              ],
+              "volatiles": [
+                "imprison"
+              ]
+            },
+            {
+              "name": "s0m1",
+              "lastActive": true,
+              "moves": [
+                {
+                  "id": "dragonpulse",
+                  "pp": 11,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "any"
+                },
+                {
+                  "id": "protect",
+                  "pp": 8,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "self"
+                }
+              ],
+              "volatiles": []
+            }
+          ]
+        },
+        {
+          "id": "p2",
+          "choiceDone": false,
+          "active": [
+            {
+              "name": "s1m0",
+              "lastActive": false,
+              "moves": [
+                {
+                  "id": "imprison",
+                  "pp": 12,
+                  "disabled": "hidden",
+                  "disabledSource": "Imprison",
+                  "target": "self"
+                },
+                {
+                  "id": "protect",
+                  "pp": 8,
+                  "disabled": "hidden",
+                  "disabledSource": "Imprison",
+                  "target": "self"
+                }
+              ],
+              "volatiles": []
+            },
+            {
+              "name": "s1m1",
+              "lastActive": true,
+              "moves": [
+                {
+                  "id": "dragonpulse",
+                  "pp": 11,
+                  "disabled": false,
+                  "disabledSource": "",
+                  "target": "any"
+                },
+                {
+                  "id": "protect",
+                  "pp": 8,
+                  "disabled": "hidden",
+                  "disabledSource": "Imprison",
+                  "target": "self"
+                }
+              ],
+              "volatiles": []
+            }
+          ]
+        }
+      ],
+      "log": [
+        "|t:|1791900559",
+        "|gametype|doubles",
+        "|player|p1|p1||",
+        "|player|p2|p2||",
+        "|gen|9",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-C",
+        "|rule|Species Clause: Limit one of each Pokémon",
+        "|rule|Item Clause: Limit 1 of each item",
+        "|clearpoke",
+        "|poke|p1|Alakazam, L50, M|",
+        "|poke|p1|Goodra-Hisui, L50, M|",
+        "|poke|p1|Torterra, L50, M|",
+        "|poke|p1|Perrserker, L50, M|",
+        "|poke|p1|Samurott, L50, M|",
+        "|poke|p1|Hydreigon, L50, M|",
+        "|poke|p2|Alakazam, L50, M|",
+        "|poke|p2|Goodra-Hisui, L50, M|",
+        "|poke|p2|Torterra, L50, M|",
+        "|poke|p2|Perrserker, L50, M|",
+        "|poke|p2|Samurott, L50, M|",
+        "|poke|p2|Hydreigon, L50, M|",
+        "|teampreview|4",
+        "|split|p1",
+        "|uhtml|otsrequest|<button name=\"send\" value=\"/acceptopenteamsheets\" class=\"button\" style=\"margin-right: 10px;\"><strong>Accept Open Team Sheets</strong></button><button name=\"send\" value=\"/rejectopenteamsheets\" class=\"button\" style=\"margin-top: 10px\"><strong>Deny Open Team Sheets</strong></button>",
+        "",
+        "|split|p2",
+        "|uhtml|otsrequest|<button name=\"send\" value=\"/acceptopenteamsheets\" class=\"button\" style=\"margin-right: 10px;\"><strong>Accept Open Team Sheets</strong></button><button name=\"send\" value=\"/rejectopenteamsheets\" class=\"button\" style=\"margin-top: 10px\"><strong>Deny Open Team Sheets</strong></button>",
+        "",
+        "|",
+        "|t:|1791900559",
+        "|teamsize|p1|4",
+        "|teamsize|p2|4",
+        "|start",
+        "|split|p1",
+        "|uhtmlchange|otsrequest|",
+        "",
+        "|split|p2",
+        "|uhtmlchange|otsrequest|",
+        "",
+        "|split|p1",
+        "|switch|p1a: s0m0|Alakazam, L50, M|154/154",
+        "|switch|p1a: s0m0|Alakazam, L50, M|100/100",
+        "|split|p1",
+        "|switch|p1b: s0m1|Goodra-Hisui, L50, M|179/179",
+        "|switch|p1b: s0m1|Goodra-Hisui, L50, M|100/100",
+        "|split|p2",
+        "|switch|p2a: s1m0|Alakazam, L50, M|154/154",
+        "|switch|p2a: s1m0|Alakazam, L50, M|100/100",
+        "|split|p2",
+        "|switch|p2b: s1m1|Goodra-Hisui, L50, M|179/179",
+        "|switch|p2b: s1m1|Goodra-Hisui, L50, M|100/100",
+        "|turn|1",
+        "|",
+        "|t:|1791900559",
+        "|move|p1a: s0m0|Imprison|p1a: s0m0",
+        "|-start|p1a: s0m0|move: Imprison",
+        "|cant|p2a: s1m0|move: Imprison|Imprison",
+        "|move|p1b: s0m1|Dragon Pulse|p2b: s1m1",
+        "|split|p2",
+        "|-damage|p2b: s1m1|140/179",
+        "|-damage|p2b: s1m1|78/100",
+        "|move|p2b: s1m1|Dragon Pulse|p2a: s1m0",
+        "|split|p2",
+        "|-damage|p2a: s1m0|100/154",
+        "|-damage|p2a: s1m0|64/100",
+        "|",
+        "|upkeep",
+        "|turn|2"
+      ]
+    },
+    "messages": [
+      {
+        "type": "sideupdate",
+        "payload": "p2\n|error|[Unavailable choice] Can't move: s1m1's Protect is disabled"
+      },
+      {
+        "type": "sideupdate",
+        "payload": "p2\n|request|{\"active\":[{\"moves\":[{\"move\":\"Struggle\",\"id\":\"struggle\",\"target\":\"randomNormal\",\"disabled\":false}]},{\"moves\":[{\"move\":\"Dragon Pulse\",\"id\":\"dragonpulse\",\"pp\":11,\"maxpp\":12,\"target\":\"any\",\"disabled\":false},{\"move\":\"Protect\",\"id\":\"protect\",\"pp\":8,\"maxpp\":8,\"target\":\"self\",\"disabled\":true,\"disabledSource\":\"\"}]}],\"side\":{\"name\":\"p2\",\"id\":\"p2\",\"pokemon\":[{\"ident\":\"p2: s1m0\",\"details\":\"Alakazam, L50, M\",\"condition\":\"100/154\",\"active\":true,\"stats\":{\"atk\":78,\"def\":73,\"spa\":163,\"spd\":123,\"spe\":144},\"moves\":[\"imprison\",\"protect\"],\"baseAbility\":\"innerfocus\",\"item\":\"\",\"pokeball\":\"pokeball\",\"ability\":\"innerfocus\",\"commanding\":false,\"reviving\":false},{\"ident\":\"p2: s1m1\",\"details\":\"Goodra-Hisui, L50, M\",\"condition\":\"140/179\",\"active\":true,\"stats\":{\"atk\":128,\"def\":128,\"spa\":138,\"spd\":178,\"spe\":84},\"moves\":[\"dragonpulse\",\"protect\"],\"baseAbility\":\"shellarmor\",\"item\":\"\",\"pokeball\":\"pokeball\",\"ability\":\"shellarmor\",\"commanding\":false,\"reviving\":false},{\"ident\":\"p2: s1m4\",\"details\":\"Samurott, L50, M\",\"condition\":\"194/194\",\"active\":false,\"stats\":{\"atk\":128,\"def\":113,\"spa\":136,\"spd\":98,\"spe\":94},\"moves\":[\"aquajet\",\"protect\"],\"baseAbility\":\"shellarmor\",\"item\":\"\",\"pokeball\":\"pokeball\",\"ability\":\"shellarmor\",\"commanding\":false,\"reviving\":false},{\"ident\":\"p2: s1m5\",\"details\":\"Hydreigon, L50, M\",\"condition\":\"191/191\",\"active\":false,\"stats\":{\"atk\":133,\"def\":118,\"spa\":153,\"spd\":118,\"spe\":122},\"moves\":[\"dragonpulse\",\"protect\"],\"baseAbility\":\"levitate\",\"item\":\"\",\"pokeball\":\"pokeball\",\"ability\":\"levitate\",\"commanding\":false,\"reviving\":false}]},\"update\":true}"
+      }
+    ]
+  }
+}

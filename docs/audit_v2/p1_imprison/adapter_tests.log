@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: hidden internal flag does not override the transmitted boolean
+ok 1 - hidden internal flag does not override the transmitted boolean
+  ---
+  duration_ms: 1.172325
+  type: 'test'
+  ...
+# Subtest: identity uses IDs, not stale roster slot order
+ok 2 - identity uses IDs, not stale roster slot order
+  ---
+  duration_ms: 0.307156
+  type: 'test'
+  ...
+# Subtest: Struggle substitution never enables private original moves
+ok 3 - Struggle substitution never enables private original moves
+  ---
+  duration_ms: 0.261597
+  type: 'test'
+  ...
+# Subtest: locked singleton and recharge lists have exact identity
+ok 4 - locked singleton and recharge lists have exact identity
+  ---
+  duration_ms: 0.259672
+  type: 'test'
+  ...
+# Subtest: hidden is not a valid transmitted disabled value
+ok 5 - hidden is not a valid transmitted disabled value
+  ---
+  duration_ms: 1.751561
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 96.436799

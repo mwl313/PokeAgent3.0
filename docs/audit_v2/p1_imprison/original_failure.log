@@ -1,0 +1,23 @@
+    Finished `release` profile [optimized] target(s) in 0.03s
+     Running tests/turns.rs (.audit-target/release/deps/turns-104c1ade49de7a85)
+
+running 1 test
+test native_battles_match_reference_at_every_decision_boundary ... FAILED
+
+failures:
+
+---- native_battles_match_reference_at_every_decision_boundary stdout ----
+
+thread 'native_battles_match_reference_at_every_decision_boundary' panicked at engine/tests/turns.rs:343:29:
+assertion `left == right` failed: imprison_shared_pool decision 3 P2 move 1, move 1 -1 slot 1 legal move mask
+  left: [(193, 11, "any"), (635, 8, "self")]
+ right: [(193, 11, "any")]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    native_battles_match_reference_at_every_decision_boundary
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 7 filtered out; finished in 50.34s
+
+error: test failed, to rerun pass `--test turns`

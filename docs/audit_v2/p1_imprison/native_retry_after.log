@@ -1,0 +1,9 @@
+   Compiling pa3-engine v0.1.0 (/home/minidc/Desktop/PokeAgent3.0-V2/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.29s
+     Running unittests src/lib.rs (.audit-target/debug/deps/pa3_engine-82c9718762a72ec4)
+
+running 1 test
+test battle::public_type_tests::hidden_imprison_choice_cannot_commit_without_reference_rerequest_protocol ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 0.70s
+
