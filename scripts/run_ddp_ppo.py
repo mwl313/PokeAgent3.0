@@ -234,7 +234,8 @@ def parse_args(argv=None):
                       "workers": str(resolved["profile"]["training"]["workers"]),
                       "checkpoint-interval-matches": str(resolved["profile"]["training"].get("checkpoint_interval_matches", 100000)),
                       "teams": str(resolved["profile"]["dataset"].get("teams", args.teams)),
-                      "data": str(resolved["profile"]["dataset"].get("data", args.data))}
+                      "data": str(resolved["profile"]["dataset"].get("data", args.data)),
+                      "dataset-manifest": str(resolved["profile"]["dataset"].get("manifest", args.dataset_manifest))}
         for index, token in enumerate(raw_argv):
             if not token.startswith("--") or token in {"--profile", "--print-effective-config"}: continue
             name, _, value = token[2:].partition("=")

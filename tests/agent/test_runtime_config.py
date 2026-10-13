@@ -2,12 +2,19 @@ import json
 from agent.runtime.config import resolve_profile
 
 PROFILE = "configs/validated_a94_runtime.yaml"
+A10_PROFILE = "configs/a10_production.yaml"
 
 def test_validated_profile_resolves_with_hash():
     result = resolve_profile(PROFILE)
     assert result["profile"]["training"]["ppo_epochs"] == 2
     assert result["profile"]["precision"]["stability"] == "fp16-reduction-off"
     assert len(result["config_hash"]) == 64
+
+def test_a10_profile_wires_frozen_manifest_and_simulator_pool():
+    result = resolve_profile(A10_PROFILE)
+    dataset = result["profile"]["dataset"]
+    assert dataset["train_teams"] == 1220
+    assert dataset["manifest"].endswith("a10-p0-proposed-20261013/manifest.json")
 
 def test_profile_rejects_epoch_drift(tmp_path):
     data = json.load(open(PROFILE)); data["training"]["ppo_epochs"] = 4

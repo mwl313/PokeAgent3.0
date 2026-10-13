@@ -53,6 +53,8 @@ def launcher_values(resolved: dict) -> dict:
         values["teams"] = d["teams"]
     if "data" in d:
         values["data"] = d["data"]
+    if "manifest" in d:
+        values["dataset_manifest"] = d["manifest"]
     if "checkpoint_interval_matches" in t:
         values["checkpoint_interval_matches"] = t["checkpoint_interval_matches"]
     return values
