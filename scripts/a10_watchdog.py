@@ -36,7 +36,10 @@ def evaluate(s, state):
     # A checkpoint is expected at each absolute 100k boundary. Only flag after crossing it;
     # before then, absence of LATEST is normal for a fresh run.
     interval=100000
-    if s['committed_matches'] >= interval and s.get('latest_checkpoint') is None:
+    checkpoint=s.get('latest_checkpoint')
+    # Allow 20 minutes after a crossed boundary for generation publication.
+    crossed=(s['committed_matches'] >= interval and (s['committed_matches'] // interval) > ((checkpoint or {}).get('committed_matches',0) // interval))
+    if crossed and checkpoint is None and s.get('last_progress_epoch') and time.time()-s['last_progress_epoch'] > 20*60:
         issues.append(('critical','checkpoint_overdue'))
     return issues
 

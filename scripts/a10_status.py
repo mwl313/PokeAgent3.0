@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Read-only, low-overhead A10 production status inspection."""
 from __future__ import annotations
-import argparse, json, os, re, subprocess, time
+import argparse, json, os, re, shlex, subprocess, time
 from pathlib import Path
 
 DEFAULT_ROOT = Path(__file__).resolve().parents[1] / 'runs/a10_production_20261013_v2'
@@ -15,14 +15,22 @@ def _proc_cmd(pid: int):
     except OSError: return ''
 
 def find_processes(root: Path):
-    token = str(root)
+    # Match the canonical report artifact after resolving relative --report paths
+    # against each process cwd; this avoids both stale-PID and broad-name matches.
+    target = (root / "report.json").resolve()
     launchers=[]; workers=[]
     for p in Path('/proc').glob('[0-9]*'):
         try: pid=int(p.name)
         except ValueError: continue
         cmd=_proc_cmd(pid)
-        if token not in cmd or 'run_ddp_ppo.py' not in cmd: continue
-        (workers if '--worker' in cmd else launchers).append({'pid':pid,'cmd':cmd})
+        if 'run_ddp_ppo.py' not in cmd: continue
+        try: args=shlex.split(cmd); report_arg=args[args.index('--report')+1]
+        except (ValueError, IndexError): continue
+        try: cwd=Path(os.readlink(f'/proc/{pid}/cwd')); report=(cwd/report_arg).resolve() if not os.path.isabs(report_arg) else Path(report_arg).resolve()
+        except OSError: continue
+        if report != target: continue
+        rec={'pid':pid,'cmd':cmd}
+        (workers if '--worker' in args else launchers).append(rec)
     return launchers, workers
 
 def parse_logs(root: Path):
@@ -47,9 +55,13 @@ def parse_logs(root: Path):
         current_matches=max(current_matches,data['matches']); last_complete=max(last_complete,data['complete_iteration']); ranks[rank]=data
     checkpoint=None; latest=root/'rolling/LATEST'
     if latest.exists():
-        name=latest.read_text(errors='replace').strip(); p=root/'rolling'/name
+        name=latest.read_text(errors='replace').strip(); p=root/'rolling'/'generations'/name
         if name and (p/'manifest.json').exists():
-            checkpoint={'generation':name,'manifest':str(p/'manifest.json'),'mtime':p.stat().st_mtime}
+            try: manifest=json.loads((p/'manifest.json').read_text())
+            except Exception: manifest={}
+            checkpoint_ranks=manifest.get('ranks',{}); files_ok=all((p/r.get('path','')).is_file() and (p/r.get('path','')).stat().st_size==r.get('bytes') for r in checkpoint_ranks.values())
+            if manifest.get('complete') is True and files_ok:
+                checkpoint={'generation':name,'manifest':str(p/'manifest.json'),'mtime':p.stat().st_mtime,'committed_matches':manifest.get('committed_matches'),'iteration':manifest.get('iteration'),'complete':True,'files_ok':True,'dataset_manifest_hash':manifest.get('dataset_manifest_hash')}
     return {'ranks':ranks,'committed_matches':current_matches,'last_complete_iteration':last_complete,'last_progress_epoch':last_ts,'latest_checkpoint':checkpoint}
 
 def disk(root: Path):
