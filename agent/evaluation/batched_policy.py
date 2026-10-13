@@ -55,7 +55,7 @@ class BatchedPolicyEvaluator:
         pick_tensor = torch.as_tensor(picks, device=self.device, dtype=torch.long)
         return picks, model.scorer.advance_keys(keys[torch.arange(len(picks), device=self.device), pick_tensor], hidden)
 
-    def run(self, fixtures, *, policy="checkpoint", model=None, opponent="checkpoint", opponent_model=None, max_rounds=2000):
+    def run(self, fixtures, *, policy="checkpoint", model=None, opponent="checkpoint", opponent_model=None, max_rounds=2000, progress_callback=None):
         if policy == "heuristic": policy = "lexicographic_legal"
         if opponent == "heuristic": opponent = "lexicographic_legal"
         if policy == "checkpoint" and model is None or opponent == "checkpoint" and opponent_model is None:
@@ -130,6 +130,7 @@ class BatchedPolicyEvaluator:
                 elif int(winners[env]) == fixture.policy_side: outcome="win"; totals["wins"] += 1
                 else: outcome="loss"; totals["losses"] += 1
                 outcomes.append({"fixture_id":fixture.fixture_id,"pair_id":fixture.pair_id,"policy_side":fixture.policy_side,"outcome":outcome,"team_a":fixture.team_a,"team_b":fixture.team_b,"winner":winners[env],"error":errors[env],"illegal_action":illegal[env]})
+            if progress_callback is not None: progress_callback(len(outcomes), len(fixtures))
         scores=[1 if x["outcome"]=="win" else .5 if x["outcome"]=="draw" else 0 for x in outcomes if x["outcome"] != "error"]
         pairs=FixedPolicyEvaluator._paired_scores(outcomes); low, high=FixedPolicyEvaluator._bootstrap_ci(pairs, self.seed)
         wall=time.perf_counter()-started

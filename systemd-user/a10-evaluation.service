@@ -1,9 +1,16 @@
 [Unit]
-Description=PokeAgent A10 independent evaluation sidecar (queue-only)
+Description=A10 complete checkpoint discovery and immutable archive
 
 [Service]
 Type=oneshot
 WorkingDirectory=/home/minidc/Desktop/PokeAgent3.0-A-evaluation-league
-Nice=10
-CPUQuota=25%
+Environment=CUDA_VISIBLE_DEVICES=
+Environment=OMP_NUM_THREADS=1
+Environment=MKL_NUM_THREADS=1
+Environment=OPENBLAS_NUM_THREADS=1
+Nice=15
+IOSchedulingClass=idle
+CPUAffinity=16 17 18 19
+CPUQuota=100%
+MemoryMax=2G
 ExecStart=/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python /home/minidc/Desktop/PokeAgent3.0-A-evaluation-league/scripts/a10_evaluation_sidecar.py --run-root /home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2

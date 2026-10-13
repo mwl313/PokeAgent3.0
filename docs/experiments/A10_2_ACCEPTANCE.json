@@ -1,0 +1,125 @@
+{
+  "active": {
+    "candidate": "a10-901120-db7ba3058b7a4c78",
+    "completed_games": 432,
+    "games": 768,
+    "identity": "04e1aff019457bfbffe4b0cf617c3475e12523c489c80faff0b3cab90f7fef4d",
+    "opponent": "a10-1003520-4f420bacc4e96a4e",
+    "pid": 87050,
+    "status": "running",
+    "updated_at": 1791877417.8235166
+  },
+  "best": {
+    "committed_matches": 1003520,
+    "file_sha256": "04df558b2b9fa0d46ec79f628868da202b50fb7c16fe42001f81decad7bb09c5",
+    "model_digest": "d922465dbacd1e75dbf10ee412ebe13e22bfc4c1affd3269ce382b282717c176",
+    "path": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/evaluation/league_v2/policies/4f420bacc4e96a4ee67092b8d70a5beed993bd6a2551005ef1879aab91a850c6.pt",
+    "policy_id": "a10-1003520-4f420bacc4e96a4e",
+    "promotions": [
+      {
+        "at": 1791877099.550606,
+        "decision": {
+          "alpha": 7.575757575757576e-05,
+          "decision": "promote",
+          "lower": 0.6902965498838629,
+          "method": "pair-cluster-Hoeffding-global-alpha-spending-v1",
+          "pairs": 128,
+          "score": 0.8828125,
+          "upper": 1
+        },
+        "new_policy": "a10-1003520-4f420bacc4e96a4e",
+        "previous_policy": "a10-102400-4bac091e4281059e",
+        "receipts": [
+          "8b7c6e9ff52f668f059d0fc3a4ba33ec746ca9b971c5f0eaf1696d184472b9a1"
+        ]
+      }
+    ],
+    "schema": "a10-best-policy-v2",
+    "scope": "tested A10 league only, not ladder Elo",
+    "status": "validated_direct_superiority"
+  },
+  "discovery_timer": "a10-evaluation.timer",
+  "gpu_evaluation": false,
+  "job_counts": {
+    "completed": 1,
+    "failed": 0,
+    "pending": 8,
+    "retry": 0,
+    "running": 1,
+    "superseded": 0
+  },
+  "known_limits": [
+    "historical tournament ongoing",
+    "rotated legacy inference artifacts lack original snapshot-file hashes; current hashes baselined",
+    "sustained contention is observed and throttled; short-window measurements are not causal certification"
+  ],
+  "policies": [
+    {
+      "committed_matches": 1003520,
+      "id": "a10-1003520-4f420bacc4e96a4e",
+      "integrity_level": "both-rank-manifest-SHA-and-actual-model-Adam-digests",
+      "model_digest": "d922465dbacd1e75dbf10ee412ebe13e22bfc4c1affd3269ce382b282717c176"
+    },
+    {
+      "committed_matches": 102400,
+      "id": "a10-102400-4bac091e4281059e",
+      "model_digest": "e7e6153230657dd618088576e21e8f8eaafe7be4a2c7541cb323076896a0fb2a"
+    },
+    {
+      "committed_matches": 200704,
+      "id": "a10-200704-a73fff2d0b46bfdb",
+      "model_digest": "96a296efc4b50dab36dfcc67efad43bd207cb1387480dea76120eabf39fd3d4b"
+    },
+    {
+      "committed_matches": 303104,
+      "id": "a10-303104-434b4f08d03d58a4",
+      "model_digest": "739b89cb4a644415f63ab05e5eb4e4f02fcc956dc865dcd11323ccea3d097e15"
+    },
+    {
+      "committed_matches": 401408,
+      "id": "a10-401408-5c9ac5eb450e1310",
+      "model_digest": "0720f24e8129d5f1579b9f3cb18559466ec80dbff134675935b4f2e565446e76"
+    },
+    {
+      "committed_matches": 503808,
+      "id": "a10-503808-45cc1841c2cac615",
+      "model_digest": "423304d97b56ad44e0c2d97a0656ef2436fc6e89ee64c5b4ae65bcac1dc20bfb"
+    },
+    {
+      "committed_matches": 602112,
+      "id": "a10-602112-f019865b1a3fc4bd",
+      "model_digest": "547711f118d029ef86adfcac320e69e8eb51462ca9289d4e768eacf4e3ebe4bd"
+    },
+    {
+      "committed_matches": 700416,
+      "id": "a10-700416-6a701101a27a4f93",
+      "model_digest": "c8c488d651bb5037cb24b3775dc1cfc119f911c7e6f2ea1324a0fdcf1459c6aa"
+    },
+    {
+      "committed_matches": 802816,
+      "id": "a10-802816-f6ca2a8bdc6d1706",
+      "model_digest": "bcc517c10361b772d48b16d83c2afe4fd18c1d8d35c78dfc9a40ea752da77aaa"
+    },
+    {
+      "committed_matches": 901120,
+      "id": "a10-901120-db7ba3058b7a4c78",
+      "model_digest": "252344b7e5f9a85b865e190a5df6ef4b7b4e90f8f146b702349daa43d4e6781d"
+    }
+  ],
+  "selected_cpu_config": {
+    "adaptive_native_workers": 1,
+    "adaptive_threads": 1,
+    "affinity": [
+      16,
+      17,
+      18,
+      19
+    ],
+    "batch_size": 16,
+    "native_workers": 2,
+    "threads": 2
+  },
+  "status": "DEPLOYED",
+  "training_interruption": false,
+  "worker_service": "a10-evaluation-worker.service"
+}

@@ -1,0 +1,342 @@
+{
+  "baseline_gps": 90.39448275862068,
+  "baseline_iterations": [
+    [
+      62,
+      41.5
+    ],
+    [
+      63,
+      45.0
+    ],
+    [
+      64,
+      46.2
+    ],
+    [
+      65,
+      48.5
+    ],
+    [
+      66,
+      46.0
+    ],
+    [
+      67,
+      45.9
+    ],
+    [
+      68,
+      45.0
+    ],
+    [
+      69,
+      44.4
+    ]
+  ],
+  "broad_tuning_window": {
+    "change_pct": -3.1488549618320483,
+    "ppo_gps": 87.54809160305344,
+    "ppo_iterations": [
+      71,
+      77
+    ]
+  },
+  "causal_limit": "short observational comparison; not proof of sustained <=5% effect",
+  "observed_at": 1791877423.224607,
+  "resource_samples": "/home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2/evaluation/league_v2/resource_samples.json",
+  "selected_256": {
+    "cached": false,
+    "candidate_clock": 700416,
+    "cpu_max_rss_kib": 658268,
+    "draws": 0,
+    "games_per_second": 3.2681853332412247,
+    "identity": "eca20ba896ffc380789304cb036bd09a783dbb9fddc7dadb18f096554d6383ce",
+    "losses": 134,
+    "matches": 256,
+    "opponent_clock": 602112,
+    "runtime_seconds": 78.3309310509976,
+    "score_ci95": [
+      0.421875,
+      0.5234375
+    ],
+    "score_mean": 0.4765625,
+    "status": "success",
+    "wins": 122
+  },
+  "sweep": [
+    {
+      "baseline_gps": 90.39448275862068,
+      "batch_size": 8,
+      "cpu_affinity": [
+        16,
+        17,
+        18,
+        19
+      ],
+      "games": 16,
+      "native_workers": 2,
+      "result": {
+        "cached": false,
+        "candidate_clock": 700416,
+        "cpu_max_rss_kib": 639556,
+        "draws": 0,
+        "games_per_second": 2.606572476637272,
+        "identity": "77a5a84adc6f11913694b266b578f67faa0f304d95b39ddcc83fc26580c10f84",
+        "losses": 10,
+        "matches": 16,
+        "opponent_clock": 602112,
+        "runtime_seconds": 6.138329221001186,
+        "score_ci95": [
+          0.125,
+          0.625
+        ],
+        "score_mean": 0.375,
+        "status": "success",
+        "wins": 6
+      },
+      "returncode": 0,
+      "threads": 2,
+      "training_gps": null,
+      "training_iterations_fully_inside_window": [],
+      "training_pct_change": null,
+      "wall_s": 12.00682806968689
+    },
+    {
+      "baseline_gps": 90.39448275862068,
+      "batch_size": 8,
+      "cpu_affinity": [
+        16,
+        17,
+        18,
+        19
+      ],
+      "games": 64,
+      "native_workers": 2,
+      "result": {
+        "cached": false,
+        "candidate_clock": 700416,
+        "cpu_max_rss_kib": 631244,
+        "draws": 0,
+        "games_per_second": 3.108126691509443,
+        "identity": "3594ccd92c1a039db32e42350a07dc8123c10ca6e918c1936763d7a08fae953b",
+        "losses": 33,
+        "matches": 64,
+        "opponent_clock": 602112,
+        "runtime_seconds": 20.591181233001407,
+        "score_ci95": [
+          0.390625,
+          0.59375
+        ],
+        "score_mean": 0.484375,
+        "status": "success",
+        "wins": 31
+      },
+      "returncode": 0,
+      "threads": 2,
+      "training_gps": null,
+      "training_iterations_fully_inside_window": [],
+      "training_pct_change": null,
+      "wall_s": 26.009137868881226
+    },
+    {
+      "baseline_gps": 90.39448275862068,
+      "batch_size": 16,
+      "cpu_affinity": [
+        16,
+        17,
+        18,
+        19
+      ],
+      "games": 64,
+      "native_workers": 2,
+      "result": {
+        "cached": false,
+        "candidate_clock": 700416,
+        "cpu_max_rss_kib": 656544,
+        "draws": 0,
+        "games_per_second": 3.3979890028597897,
+        "identity": "6996d543fea92f2c26090a37d986128f93a78065f444a4a03454e5dc2cf890e4",
+        "losses": 33,
+        "matches": 64,
+        "opponent_clock": 602112,
+        "runtime_seconds": 18.834669548999955,
+        "score_ci95": [
+          0.390625,
+          0.59375
+        ],
+        "score_mean": 0.484375,
+        "status": "success",
+        "wins": 31
+      },
+      "returncode": 0,
+      "threads": 2,
+      "training_gps": null,
+      "training_iterations_fully_inside_window": [],
+      "training_pct_change": null,
+      "wall_s": 24.00979447364807
+    },
+    {
+      "baseline_gps": 90.39448275862068,
+      "batch_size": 32,
+      "cpu_affinity": [
+        16,
+        17,
+        18,
+        19
+      ],
+      "games": 64,
+      "native_workers": 2,
+      "result": {
+        "cached": false,
+        "candidate_clock": 700416,
+        "cpu_max_rss_kib": 687164,
+        "draws": 0,
+        "games_per_second": 3.317119131318493,
+        "identity": "2450c9f05cfb0d9fea36abc1c25b91534098b77de67a34acb0beb24f69743192",
+        "losses": 33,
+        "matches": 64,
+        "opponent_clock": 602112,
+        "runtime_seconds": 19.293850316000317,
+        "score_ci95": [
+          0.390625,
+          0.59375
+        ],
+        "score_mean": 0.484375,
+        "status": "success",
+        "wins": 31
+      },
+      "returncode": 0,
+      "threads": 2,
+      "training_gps": null,
+      "training_iterations_fully_inside_window": [],
+      "training_pct_change": null,
+      "wall_s": 24.00975751876831
+    },
+    {
+      "baseline_gps": 90.39448275862068,
+      "batch_size": 64,
+      "cpu_affinity": [
+        16,
+        17,
+        18,
+        19
+      ],
+      "games": 128,
+      "native_workers": 2,
+      "result": {
+        "cached": false,
+        "candidate_clock": 700416,
+        "cpu_max_rss_kib": 791764,
+        "draws": 0,
+        "games_per_second": 2.9112840138768554,
+        "identity": "d8252652905467f10263b4a2a03bf36fe7690962d398d21b9d7e2a2ce1907512",
+        "losses": 68,
+        "matches": 128,
+        "opponent_clock": 602112,
+        "runtime_seconds": 43.96685427800185,
+        "score_ci95": [
+          0.3984375,
+          0.5390625
+        ],
+        "score_mean": 0.46875,
+        "status": "success",
+        "wins": 60
+      },
+      "returncode": 0,
+      "threads": 2,
+      "training_gps": null,
+      "training_iterations_fully_inside_window": [],
+      "training_pct_change": null,
+      "wall_s": 50.020774126052856
+    },
+    {
+      "baseline_gps": 90.39448275862068,
+      "batch_size": 128,
+      "cpu_affinity": [
+        16,
+        17,
+        18,
+        19
+      ],
+      "games": 256,
+      "native_workers": 2,
+      "result": {
+        "cached": false,
+        "candidate_clock": 700416,
+        "cpu_max_rss_kib": 952716,
+        "draws": 0,
+        "games_per_second": 3.2868151728318726,
+        "identity": "ae542fa1c4be715a791079651ae5c8745a859bdfc401b2839d2d7028fef03999",
+        "losses": 134,
+        "matches": 256,
+        "opponent_clock": 602112,
+        "runtime_seconds": 77.8869472539991,
+        "score_ci95": [
+          0.421875,
+          0.5234375
+        ],
+        "score_mean": 0.4765625,
+        "status": "success",
+        "wins": 122
+      },
+      "returncode": 0,
+      "threads": 2,
+      "training_gps": 87.14893617021276,
+      "training_iterations_fully_inside_window": [
+        [
+          74,
+          47.0
+        ]
+      ],
+      "training_pct_change": -3.590425531914887,
+      "wall_s": 84.0271053314209
+    },
+    {
+      "baseline_gps": 90.39448275862068,
+      "batch_size": 32,
+      "cpu_affinity": [
+        16,
+        17,
+        18,
+        19
+      ],
+      "games": 256,
+      "native_workers": 2,
+      "result": {
+        "cached": false,
+        "candidate_clock": 700416,
+        "cpu_max_rss_kib": 704500,
+        "draws": 0,
+        "games_per_second": 1.8628252256092883,
+        "identity": "1ad416fbdf483ef2b839f554bdeb30bc11ad11b7566f66db14da68437eaf4187",
+        "losses": 134,
+        "matches": 256,
+        "opponent_clock": 602112,
+        "runtime_seconds": 137.42566746500233,
+        "score_ci95": [
+          0.421875,
+          0.5234375
+        ],
+        "score_mean": 0.4765625,
+        "status": "success",
+        "wins": 122
+      },
+      "returncode": 0,
+      "threads": 1,
+      "training_gps": 91.32664437012262,
+      "training_iterations_fully_inside_window": [
+        [
+          76,
+          45.6
+        ],
+        [
+          77,
+          44.1
+        ]
+      ],
+      "training_pct_change": 1.0312151616499454,
+      "wall_s": 142.04136562347412
+    }
+  ]
+}
