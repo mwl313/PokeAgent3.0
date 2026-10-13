@@ -60,8 +60,15 @@ for path in sorted(OUT.glob('*')):
     if path.is_file() and path.name != 'EVIDENCE_MANIFEST.json':
         artifacts[path.name] = hashlib.sha256(path.read_bytes()).hexdigest()
 (OUT / 'EVIDENCE_MANIFEST.json').write_text(json.dumps({
-    'tested_runtime_source_sha': SHA,
+    'inventory_and_dossier_source_sha': SHA,
+    'tested_runtime_source_sha': '0492577d2ae611b3720f52f57939422b0148e103',
+    'runtime_note': 'Later source commit changes only inventory/status scripts; Rust runtime unchanged.',
     'production_started': False,
     'phase_status': {'P0': 'inventory/archive complete', 'P1': 'partial; release blocked', 'P2-P5': 'not started'},
+    'test_runs': {
+        'P1_ALL_UNIT.log': {'passed': 10, 'failed': 0},
+        'P1_FINAL_REGRESSION.log': {'passed': 19, 'failed': 0},
+        'P1_ORACLE_RELEASE.log': {'passed': 0, 'failed': 1, 'counterexample': 'imprison_shared_pool decision 3 P2 slot 1'},
+    },
     'artifacts_sha256': artifacts,
 }, indent=2) + '\n')
