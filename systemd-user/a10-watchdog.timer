@@ -1,0 +1,11 @@
+[Unit]
+Description=Run PokeAgent A10 watchdog every three minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=3min
+Persistent=true
+Unit=a10-watchdog.service
+
+[Install]
+WantedBy=timers.target

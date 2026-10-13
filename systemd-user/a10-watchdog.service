@@ -1,0 +1,7 @@
+[Unit]
+Description=PokeAgent A10 exception-only watchdog
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/minidc/Desktop/PokeAgent3.0-A
+ExecStart=/usr/bin/env python3 /home/minidc/Desktop/PokeAgent3.0-A/scripts/a10_watchdog.py --once
