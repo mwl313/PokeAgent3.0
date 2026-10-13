@@ -1,0 +1,9 @@
+[Unit]
+Description=PokeAgent A10 independent evaluation sidecar (queue-only)
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/minidc/Desktop/PokeAgent3.0-A-evaluation-league
+Nice=10
+CPUQuota=25%
+ExecStart=/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python /home/minidc/Desktop/PokeAgent3.0-A-evaluation-league/scripts/a10_evaluation_sidecar.py --run-root /home/minidc/Desktop/PokeAgent3.0-A/runs/a10_production_20261013_v2

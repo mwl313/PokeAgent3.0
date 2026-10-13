@@ -1,0 +1,11 @@
+[Unit]
+Description=Discover A10 checkpoints and queue independent evaluations
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=10min
+Persistent=true
+Unit=a10-evaluation.service
+
+[Install]
+WantedBy=timers.target
