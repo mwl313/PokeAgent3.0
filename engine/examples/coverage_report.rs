@@ -158,10 +158,15 @@ fn main() {
     println!("blocked_items={}", item_blocked.join(","));
 
     // Training-pool blockers: what stops the frozen 1,136 teams from running.
+    let pool_path = std::env::args().nth(2)
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| Path::new(&dir).join("training-teams.json"));
+    println!("pool_path={}", pool_path.display());
     let pool: serde_json::Value = serde_json::from_slice(
-        &std::fs::read(Path::new(&dir).join("training-teams.json")).expect("training teams"),
+        &std::fs::read(&pool_path).expect("training teams"),
     )
     .expect("training json");
+    println!("pool_team_count={}", pool.as_array().expect("teams").len());
     let mut pool_moves: BTreeMap<String, usize> = BTreeMap::new();
     let mut pool_abilities: BTreeMap<String, usize> = BTreeMap::new();
     let mut pool_items: BTreeMap<String, usize> = BTreeMap::new();

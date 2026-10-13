@@ -653,13 +653,38 @@ impl BattleState {
 
     pub fn observe(&self, side: SideId) -> PlayerView {
         let own = &self.sides[side.index()];
-        let own = OwnSideView {
+        let mut own = OwnSideView {
             pokemon: std::array::from_fn(|i| OwnPokemonView::from(&own.pokemon[i])),
             selected_order: own.selected_order,
             active: own.active,
             mega_used: own.mega_used,
         };
         let mut request = self.requests[side.index()].clone();
+        // `hidden` is server metadata (notably Imprison), not a player fact.
+        // Expose exactly the disabled status served by getMoves/restrictData.
+        // Physical state and execution-time restriction checks stay untouched.
+        for slot in &mut request.slots {
+            for choice in &mut slot.moves {
+                choice.disabled = choice.disabled && !(choice.hidden && slot.last_active);
+                choice.hidden = false;
+            }
+        }
+        for (roster, mon) in own.pokemon.iter_mut().enumerate() {
+            let served = own.active.iter().position(|entry| *entry == Some(roster as u8))
+                .map(|slot| &request.slots[slot]);
+            for (index, mv) in mon.moves.iter_mut().enumerate() {
+                mv.disabled = served.and_then(|slot| slot.moves.iter()
+                    .find(|choice| usize::from(choice.slot) == index))
+                    .is_some_and(|choice| choice.disabled);
+                mv.hidden = false;
+            }
+            // Original moves describe repertoire/PP, never a current request
+            // restriction (and can differ after Transform).
+            for mv in &mut mon.base_moves {
+                mv.disabled = false;
+                mv.hidden = false;
+            }
+        }
         if self.pending[side.index()].is_some() {
             request.kind = crate::actions::RequestKind::Wait;
         }

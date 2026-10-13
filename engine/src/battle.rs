@@ -40,6 +40,8 @@ mod terrain;
 mod type_conversion;
 #[cfg(test)]
 mod type_conversion_tests;
+#[cfg(test)]
+mod public_type_tests;
 use type_conversion::ActiveMove;
 mod weather;
 use hooks::{BoostCause, ModifierEvent, MoveContext};
@@ -586,7 +588,8 @@ impl BattleState {
     /// The pinned regulation reaches this only through Soak and Double Shock,
     /// whose results are always representable; a typeless result (a pure
     /// Electric Double Shock user) stays an explicit operational error.
-    /// `knownType`/`apparentType` bookkeeping has no native counterpart.
+    /// Callers announce the change publicly. Only update public types here;
+    /// copying the full identity would reveal a concealed Illusion species.
     pub(super) fn set_type(&mut self, dex: &Dex, e: Entity, types: &[Id]) -> Result<bool> {
         let _ = dex;
         if types.is_empty() {
@@ -597,6 +600,10 @@ impl BattleState {
             return Ok(false);
         }
         self.mon_mut(e).types = types.to_vec();
+        for viewer in 0..2 {
+            let index = e.roster as usize + if e.side as usize == viewer { 0 } else { 6 };
+            self.knowledge[viewer].pokemon[index].types = types.to_vec();
+        }
         Ok(true)
     }
 
@@ -900,6 +907,18 @@ impl BattleState {
         // partner's identity (species, types, gender) while the real Pokémon's
         // dynamic state (health, status, boosts, effects) is what the events
         // keep updating. The owner keeps the true identity.
+        // A fresh entry publicly resets temporary type changes. Apply the
+        // apparent identity for Illusion without publishing the true types.
+        let apparent = self.mon(incoming).illusion.map_or(incoming, |roster| Entity {
+            side: incoming.side, roster,
+        });
+        let visible_types = self.mon(apparent).types.clone();
+        let own_types = self.mon(incoming).types.clone();
+        for viewer in 0..2 {
+            let own = incoming.side as usize == viewer;
+            let index = incoming.roster as usize + if own { 0 } else { 6 };
+            self.knowledge[viewer].pokemon[index].types = if own { own_types.clone() } else { visible_types.clone() };
+        }
         self.mask_illusion_knowledge(dex, incoming)?;
         // Reference insertChoice refreshes the entering Pokémon's cached speed.
         self.mon_mut(incoming).cached_speed = self.speed(dex, incoming);

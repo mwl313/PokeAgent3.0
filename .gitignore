@@ -66,3 +66,4 @@ tmp/
 /.tools/
 /target/
 /engine/python/pa3_engine/*.so
+/.audit-target/
