@@ -42,7 +42,7 @@ def parse_logs(root: Path):
                 m=UPDATE_RE.search(line)
                 if m: data['last_update_s']=float(m.group(3)); data['matches']=max(data['matches'],int(m.group(4)))
                 m=RECOMP_RE.search(line)
-                if m: data['recompute_max_diff']=float(m.group(2)); data['recompute_within']=(m.group(4)=='True')
+                if m: data['recompute_max_diff']=float(m.group(3)); data['recompute_within']=(m.group(4)=='True')
                 if re.search(r'\b(?:Traceback|RuntimeError|FloatingPointError|NCCL error|NaN|Inf|failed|ERROR)\b',line,re.I): data['error_lines'].append(line[-300:])
         current_matches=max(current_matches,data['matches']); last_complete=max(last_complete,data['complete_iteration']); ranks[rank]=data
     checkpoint=None; latest=root/'rolling/LATEST'
