@@ -28,7 +28,7 @@ def find_processes(root: Path):
         except (ValueError, IndexError): continue
         try: cwd=Path(os.readlink(f'/proc/{pid}/cwd')); report=(cwd/report_arg).resolve() if not os.path.isabs(report_arg) else Path(report_arg).resolve()
         except OSError: continue
-        if report != target: continue
+        if report != target and not (report.parent == target.parent and report.name.startswith('report_resume_') and report.name.endswith('.json')): continue
         rec={'pid':pid,'cmd':cmd}
         (workers if '--worker' in args else launchers).append(rec)
     return launchers, workers
