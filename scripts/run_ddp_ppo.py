@@ -660,6 +660,9 @@ def worker(args) -> None:
                 source_migration = validate_recovery_migration(
                     args.experimental_source_migration, ROOT, recorded_source_sha, source_sha)
                 migration_receipt = json.loads(Path(args.experimental_source_migration).read_text())
+                if source_migration.get('scope')=='v2-bounded-data-path-validation-only':
+                    if args.iterations>5 or args.profile and args.effective_profile['profile']['version']=='pa3-v2-production-v1':
+                        raise RuntimeError('V2 data-path migration is bounded validation only; production cutover is not approved')
                 if str(resume_root.resolve()) != migration_receipt.get("checkpoint"):
                     raise RuntimeError("migration receipt checkpoint path mismatch")
                 for peer in (0, 1):
