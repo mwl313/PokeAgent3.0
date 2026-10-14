@@ -25,7 +25,7 @@ use pyo3::types::PyBytes;
 use std::path::Path;
 use std::sync::Arc;
 
-const OBSERVATION_FIXED_BYTES: usize = 2
+const OBSERVATION_FIXED_BYTES: usize = 2 + 32
     + OBSERVATION_TOKENS
     + OBSERVATION_TOKENS * CATEGORY_COUNT * 2
     + OBSERVATION_TOKENS * CATEGORY_COUNT
@@ -138,24 +138,25 @@ pub fn pack_fixed_into(view: &ObservationBuffers, out: &mut Vec<u8>) {
     debug_assert_eq!(view.tokens.len(), OBSERVATION_TOKENS);
     out.reserve(OBSERVATION_FIXED_BYTES);
     put_u16(out, view.schema_version);
+    out.extend_from_slice(&crate::observation::CONTRACT_BYTES);
     for present in view.token_mask {
         out.push(u8::from(present));
     }
     pack_tokens(out, &view.tokens);
     for range in view.effect_ranges {
-        put_u16(out, u16::try_from(range.len).unwrap_or(u16::MAX));
+        put_u16(out, u16::try_from(range.len).expect("Encoder validated ragged wire count"));
     }
     for range in view.repertoire_ranges {
-        put_u16(out, u16::try_from(range.len).unwrap_or(u16::MAX));
+        put_u16(out, u16::try_from(range.len).expect("Encoder validated ragged wire count"));
     }
     for range in view.type_ranges {
-        put_u16(out, u16::try_from(range.len).unwrap_or(u16::MAX));
+        put_u16(out, u16::try_from(range.len).expect("Encoder validated ragged wire count"));
     }
     for range in view.base_move_ranges {
-        put_u16(out, u16::try_from(range.len).unwrap_or(u16::MAX));
+        put_u16(out, u16::try_from(range.len).expect("Encoder validated ragged wire count"));
     }
     for range in view.move_effect_ranges {
-        put_u16(out, u16::try_from(range.len).unwrap_or(u16::MAX));
+        put_u16(out, u16::try_from(range.len).expect("Encoder validated ragged wire count"));
     }
 }
 
@@ -834,6 +835,7 @@ fn to_py(error: EngineError) -> PyErr {
 fn pa3_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<NativeEngine>()?;
     m.add("SCHEMA_VERSION", SCHEMA_VERSION)?;
+    m.add("CONTRACT_HASH", crate::observation::CONTRACT_HASH)?;
     m.add("OBSERVATION_TOKENS", OBSERVATION_TOKENS)?;
     m.add("CATEGORY_COUNT", CATEGORY_COUNT)?;
     m.add("FLOAT_COUNT", FLOAT_COUNT)?;

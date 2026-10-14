@@ -11,10 +11,13 @@ TOKENS = 96
 CATEGORY_COUNT = 32
 FLOAT_COUNT = 50
 FLAG_COUNT = 40
+SCHEMA_VERSION = 2
+CONTRACT_HASH = "dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35"
 
 # Fixed header: version, token mask, six token blocks, five ragged length rows.
 FIXED = np.dtype([
     ("schema_version", "<u2"),
+    ("contract_hash", "u1", (32,)),
     ("token_mask", "u1", (TOKENS,)),
     ("categories", "<u2", (TOKENS, CATEGORY_COUNT)),
     ("category_known", "u1", (TOKENS, CATEGORY_COUNT)),
@@ -62,6 +65,17 @@ MOVE_EFFECT = np.dtype([
 ], align=False)
 
 
+def _validate_header(header):
+    if np.any(header["schema_version"] != SCHEMA_VERSION):
+        raise ValueError("unsupported native observation schema; V1 is incompatible with V2")
+    expected = np.frombuffer(bytes.fromhex(CONTRACT_HASH), dtype=np.uint8)
+    if np.any(header["contract_hash"] != expected):
+        raise ValueError("native observation semantic contract hash mismatch")
+    for field in ('token_mask','category_known','float_known','flags','flag_known'):
+        if np.any(header[field]>1):
+            raise ValueError(f'invalid native boolean field {field}')
+
+
 def _read(blob: bytes, offset: int, counts, dtype: np.dtype) -> np.ndarray:
     total = int(counts.sum())
     size = total * dtype.itemsize
@@ -75,6 +89,7 @@ def parse_view(blob: bytes) -> dict:
     if len(blob) < FIXED.itemsize:
         raise ValueError(f"observation blob truncated: {len(blob)} < {FIXED.itemsize}")
     header = np.frombuffer(blob, dtype=FIXED, count=1)[0]
+    _validate_header(header)
     offset = FIXED.itemsize
     effect_rows = _read(blob, offset, header["effect_counts"], EFFECT)
     offset += effect_rows.nbytes
@@ -90,6 +105,7 @@ def parse_view(blob: bytes) -> dict:
         raise ValueError(f"observation blob has {len(blob) - offset} trailing bytes")
     return {
         "schema_version": int(header["schema_version"]),
+        "contract_hash": header["contract_hash"],
         "token_mask": header["token_mask"].astype(bool),
         "categories": header["categories"],
         "category_known": header["category_known"].astype(bool),
@@ -133,9 +149,11 @@ def parse_batch(fixed: bytes, ragged: bytes, count: int) -> dict:
             f"fixed batch size {len(fixed)} != {count} * {FIXED.itemsize}"
         )
     header = np.frombuffer(fixed, dtype=FIXED, count=count)
+    _validate_header(header)
     view = {
         "header": header,
         "schema_version": header["schema_version"],
+        "contract_hash": header["contract_hash"],
         "token_mask": header["token_mask"].astype(bool),
         "categories": header["categories"],
         "category_known": header["category_known"].astype(bool),

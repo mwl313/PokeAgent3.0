@@ -1139,7 +1139,9 @@ class PPOLearner:
 
     # -- checkpointing --------------------------------------------------------
     def state_dict(self) -> dict:
+        from agent.contracts import execution_identity
         return {
+            "contracts":execution_identity(self.model.precision_contract.mode),
             "model": self.model.state_dict(),
             "optimizer": self.optimizer.state_dict(),
             "scheduler": self.scheduler.state_dict(),
@@ -1152,6 +1154,10 @@ class PPOLearner:
         }
 
     def load_state_dict(self, state: dict) -> None:
+        from agent.contracts import require_checkpoint_identity
+        require_checkpoint_identity(state,self.model.precision_contract.mode)
+        if state.get('config',{}).get('model')!=self.model.config.to_dict():
+            raise ValueError('checkpoint model architecture/config mismatch')
         self.model.load_state_dict(state["model"])
         self.optimizer.load_state_dict(state["optimizer"])
         self.scheduler.load_state_dict(state.get("scheduler", {}))

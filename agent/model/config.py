@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 
 from agent.types.actions import BRANCH_CAPACITY
 from agent.types.observation import ObservationLayout
+from agent.contracts import CONTRACT_HASH
 
 
 @dataclass(frozen=True)
@@ -20,6 +21,7 @@ class PA3Config:
 
     name: str = "PA3-8M"
     initialization: str = "random"
+    observation_contract_hash: str = CONTRACT_HASH
 
     # Transformer encoder
     encoder_layers: int = 6
@@ -64,6 +66,8 @@ class PA3Config:
     extras: dict = field(default_factory=dict)
 
     def validate(self) -> None:
+        if self.observation_contract_hash != CONTRACT_HASH:
+            raise ValueError("model observation contract is incompatible with V2")
         if self.attention_heads * self.head_dim != self.d_model:
             raise ValueError(
                 "attention_heads * head_dim must equal d_model "

@@ -12,11 +12,13 @@ class PrecisionContract:
     gru_amp: bool
     @property
     def identity(self) -> str:
-        return f"pa3-precision-{self.mode}-v1"
+        return f"pa3-precision-{self.mode}-v2"
     def prepare_observation(self, observation: ObservationBatch) -> ObservationBatch:
         if not self.quantize_observation:
             return observation
         floats = observation.floats.half().float()
+        if bool((~torch.isfinite(floats)&observation.float_known).any()):
+            raise ValueError("known observation overflows V2 FP16 contract")
         return ObservationBatch(
             token_mask=observation.token_mask, categories=observation.categories,
             category_known=observation.category_known, floats=floats,
@@ -24,6 +26,8 @@ class PrecisionContract:
             flag_known=observation.flag_known, role_ids=observation.role_ids,
             side_ids=observation.side_ids, layout=observation.layout,
             schema_version=observation.schema_version,
+            contract_hash=observation.contract_hash,
+            ragged={name:section.quantized(name) for name,section in observation.ragged.items()},
         )._remember_token_limit(observation.validated_token_limit)
 
 _CONTRACTS = {

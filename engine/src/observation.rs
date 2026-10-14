@@ -1,4 +1,4 @@
-//! Player-safe numeric observation schema `pa3-observation-v1`.
+//! Player-safe numeric observation schema `pa3-observation-v2`.
 //!
 //! Inputs are exclusively a PlayerView and a borrowed immutable Dex. Outcomes,
 //! team provenance, hidden sets, RNG and pending opponent actions are not read.
@@ -9,7 +9,8 @@
 //!
 //! Species stats/actual stats/HP/levels use /65535, allocations /32, IVs /31,
 //! boosts /6, PP /255, power /65535, accuracy /100, priority /128, turn /65535,
-//! event changes /2147483648. Exact battle state is never modified or quantized.
+//! event changes asinh(value)/asinh(2147483648), weight_hg /10000.
+//! Exact battle state is never modified or quantized.
 //! All effect entries, type IDs, and persistent revealed moves use uncapped
 //! ragged buffers with row ranges; they are not truncated to the token count.
 //! Caller-owned buffers retain capacity between calls. Catalogue names are
@@ -30,7 +31,9 @@ use crate::{
 };
 use std::collections::BTreeMap;
 
-pub const SCHEMA_VERSION: u16 = 1;
+pub const SCHEMA_VERSION: u16 = 2;
+pub const CONTRACT_HASH: &str = "dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35";
+pub const CONTRACT_BYTES: [u8;32] = [0xdd,0x72,0x3d,0xc6,0x87,0xa6,0x0b,0x05,0x68,0x30,0x2f,0xa0,0xb0,0x9c,0xfb,0x11,0x0c,0xbe,0x67,0xea,0xc2,0xc7,0x02,0x2f,0x2b,0x4f,0xfe,0x4d,0xff,0x37,0x3e,0x35];
 pub const CATEGORY_COUNT: usize = 32;
 pub const FLOAT_COUNT: usize = 50;
 pub const FLAG_COUNT: usize = 40;
@@ -716,7 +719,7 @@ impl<'a> Encoder<'a> {
                 }
                 row.number(
                     FloatFeature::Weight,
-                    metadata.weight_hg as f32 / u32::MAX as f32,
+                    metadata.weight_hg as f32 / 10000.0,
                 );
                 row.flag(FlagFeature::MegaForm, metadata.is_mega);
             }
@@ -833,7 +836,9 @@ impl<'a> Encoder<'a> {
                 let move_index = 16 + entity * 4 + slot;
                 let row = out.row(move_index, 5);
                 row.cat(CategoryFeature::Entity, entity as u16 + 1);
-                row.cat(CategoryFeature::Slot, slot as u16 + 1);
+                // Opponent entries are public reveal order, not private move
+                // slot identities. Only the owner knows the physical slot.
+                if entity < 6 { row.cat(CategoryFeature::Slot, slot as u16 + 1); }
                 let id = if entity < 6 {
                     view.own.pokemon[entity].moves.get(slot).map(|m| {
                         row.number(FloatFeature::Pp, f32::from(m.pp) / 255.0);
@@ -876,10 +881,16 @@ impl<'a> Encoder<'a> {
                         | EventKind::FieldEffectStart
                 );
             if !filtered {
-                row.number(FloatFeature::EventChange, event.value as f32 / 2147483648.0);
+                row.number(FloatFeature::EventChange,
+                    ((event.value as f64).asinh() / 2147483648.0_f64.asinh()) as f32);
             }
             if let Some(health) = event.health {
                 put_health(row, health);
+            }
+        }
+        for ranges in [&out.effect_ranges,&out.repertoire_ranges,&out.type_ranges,&out.base_move_ranges,&out.move_effect_ranges] {
+            if ranges.iter().any(|r|r.len>u16::MAX as usize) {
+                return Err(EngineError::InvalidInput("ragged row exceeds u16 wire count; no truncation allowed".into()));
             }
         }
         Ok(())

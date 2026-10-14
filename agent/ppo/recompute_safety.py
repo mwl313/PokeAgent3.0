@@ -19,7 +19,14 @@ def compact_hash(fields):
     for key, value in sorted(fields.items()):
         digest.update(key.encode())
         digest.update(str((value.shape, value.dtype)).encode())
-        digest.update(value.tobytes())
+        if value.dtype.hasobject:
+            # Object arrays contain dynamic ragged rows; pointer bytes are not
+            # a content identity and change across process/restoration.
+            for row in value:
+                digest.update(str((row.shape,row.dtype)).encode())
+                digest.update(row.tobytes())
+        else:
+            digest.update(value.tobytes())
     return digest.hexdigest()
 
 

@@ -515,7 +515,10 @@ def worker(args) -> None:
         payload = torch.load(hist_path, map_location="cpu", weights_only=False)
         if not isinstance(payload, dict) or "learner" not in payload:
             raise RuntimeError(f"historical checkpoint is not an experimental envelope: {hist_path}")
+        from agent.contracts import require_checkpoint_identity
+        require_checkpoint_identity(payload['learner'], args.precision_mode)
         historical = build_model(PA3Config(), device=device)
+        historical.configure_precision(args.precision_mode)
         historical.load_state_dict(payload["learner"]["model"], strict=True)
         historical.eval()
         for parameter in historical.parameters():
@@ -555,10 +558,12 @@ def worker(args) -> None:
     source_sha = source_provenance().get("git_sha")
     source_migration = resume_envelope.get("experiment", {}).get("source_migration") if resume_envelope else None
     dataset_manifest_hash = hash_file(args.dataset_manifest)
+    from agent.contracts import OBSERVATION_SCHEMA,ACTION_SCHEMA,CONTRACT_HASH
     action_schema_hash = hash_json({
-        "observation": "pa3-entity-observation-v1",
-        "actions": "atomic-action-v1",
-        "candidates": "branch-candidates-v1",
+        "observation": OBSERVATION_SCHEMA,
+        "actions": ACTION_SCHEMA,
+        "candidates": "branch-candidates-v2",
+        "semantic_hash": CONTRACT_HASH,
     })
     opponent_manifest = {"current": "current", "historical": historical_manifest,
                          "historical_probability": float(args.historical_probability)}

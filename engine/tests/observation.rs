@@ -46,6 +46,42 @@ fn encoded(view: &pa3_engine::state::PlayerView) -> ObservationBuffers {
 }
 
 #[test]
+fn v2_numeric_units_preserve_small_signed_events_and_catalogue_weight() {
+    let mut v=view();
+    v.knowledge.events.clear();
+    for value in [-6,-1,0,1,6,i32::MIN,i32::MAX] {
+        v.knowledge.events.push(SemanticEvent{kind:EventKind::Boost,subject:0,target:None,
+            effect:1,effect_kind:EffectKind::Stat,value,health:None});
+    }
+    let out=encoded(&v);
+    let values:Vec<f32>=(0..7).map(|i|out.tokens[64+i].floats[F::EventChange as usize]).collect();
+    assert!(values[..5].windows(2).all(|w|w[0]<w[1]));
+    assert!(values[1] < -0.01 && values[3] > 0.01);
+    assert!(values.iter().all(|x|x.is_finite()&&x.abs()<=1.000001));
+    let dex=dex();
+    for roster in 0..6 {
+        let species=v.own.pokemon[roster].species as usize;
+        assert_eq!(out.tokens[4+roster].floats[F::Weight as usize],dex.species[species].weight_hg as f32/10000.0);
+    }
+}
+
+#[test]
+fn opponent_reveal_order_never_claims_a_private_move_slot() {
+    let mut v=view();let dex=dex();
+    let protect=dex.id("moves","protect").unwrap();let tackle=dex.id("moves","tackle").unwrap();
+    v.knowledge.reveal_move(6,protect).unwrap();v.knowledge.reveal_move(6,tackle).unwrap();
+    let out=encoded(&v);
+    for (slot,id) in [protect,tackle].into_iter().enumerate() {
+        let row=&out.tokens[16+6*4+slot];
+        assert_eq!(row.categories[C::Move as usize],id);
+        assert!(!row.category_known[C::Slot as usize]);
+        assert_eq!(row.categories[C::Slot as usize],0);
+    }
+    let range=out.repertoire_ranges[4+6];
+    assert_eq!(&out.repertoire[range.start..range.start+range.len],&[protect,tackle]);
+}
+
+#[test]
 fn fixed_roles_and_unknown_fields_are_masked_zero() {
     let view = view();
     let out = encoded(&view);
@@ -332,7 +368,7 @@ fn public_health_boundary_and_event_order_are_preserved_without_exact_hp() {
     assert_eq!(out.tokens[65].categories[C::EventKind as usize], 3);
     assert_eq!(
         out.tokens[65].floats[F::EventChange as usize],
-        -7.0 / 2147483648.0
+        (-7.0_f64.asinh() / 2147483648.0_f64.asinh()) as f32
     );
     assert!(!out.token_mask[66]);
 }
@@ -539,7 +575,7 @@ fn audience_filtered_event_integers_remain_unknown_while_hp_and_public_boosts_st
         let own = &out.tokens[64 + i * 2];
         let opponent = &out.tokens[65 + i * 2];
         assert!(own.float_known[F::EventChange as usize]);
-        assert_eq!(own.floats[F::EventChange as usize], 7.0 / 2147483648.0);
+        assert_eq!(own.floats[F::EventChange as usize], (7.0_f64.asinh() / 2147483648.0_f64.asinh()) as f32);
         assert!(!opponent.float_known[F::EventChange as usize]);
         assert_eq!(opponent.floats[F::EventChange as usize], 0.0);
         assert!(opponent.float_known[F::HpFraction as usize]);
@@ -549,6 +585,6 @@ fn audience_filtered_event_integers_remain_unknown_while_hp_and_public_boosts_st
     assert!(out.tokens[72].float_known[F::EventChange as usize]);
     assert_eq!(
         out.tokens[72].floats[F::EventChange as usize],
-        1.0 / 2147483648.0
+        (1.0_f64.asinh() / 2147483648.0_f64.asinh()) as f32
     );
 }

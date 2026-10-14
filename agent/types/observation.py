@@ -32,6 +32,8 @@ from dataclasses import dataclass, field
 from typing import Any, Mapping, Sequence
 
 import torch
+from agent.contracts import SCHEMA_VERSION, CONTRACT_HASH, SPEC
+from agent.types import ragged as ragged_contract
 
 try:  # numpy is only needed for the native-payload adapter
     import numpy as np
@@ -166,7 +168,53 @@ class ObservationBatch:
     role_ids: torch.Tensor  # long   [B, T]
     side_ids: torch.Tensor  # long   [B, T]
     layout: ObservationLayout = field(default_factory=ObservationLayout)
-    schema_version: int = 1
+    schema_version: int = SCHEMA_VERSION
+    contract_hash: str = CONTRACT_HASH
+    ragged: dict = field(default_factory=dict)
+
+    def __post_init__(self):
+        if self.schema_version!=SCHEMA_VERSION or self.contract_hash!=CONTRACT_HASH:
+            raise ValueError("incompatible V2 observation schema/semantic hash")
+        if not self.ragged:  # explicit synthetic batches; native adapters require all families
+            self.ragged={name:ragged_contract.RaggedBatch.empty(len(self),len(fields),self.device)
+                         for name,fields in ragged_contract.FIELDS.items()}
+        if set(self.ragged)!=set(ragged_contract.FIELDS):
+            raise ValueError("incomplete V2 ragged observation")
+        b=len(self); t=self.layout.TOKENS
+        for name,shape in {'token_mask':(b,t),'categories':(b,t,32),'category_known':(b,t,32),
+                           'floats':(b,t,50),'float_known':(b,t,50),'flags':(b,t,40),
+                           'flag_known':(b,t,40),'role_ids':(b,t),'side_ids':(b,t)}.items():
+            if tuple(getattr(self,name).shape)!=shape:
+                raise ValueError(f'invalid observation shape {name}: expected {shape}')
+        for name,section in self.ragged.items():
+            if tuple(section.counts.shape)!=(b,t) or section.values.ndim!=2 or section.values.shape[1]!=len(ragged_contract.FIELDS[name]):
+                raise ValueError(f'invalid ragged shape {name}')
+
+    def validate_semantics(self):
+        """Fail closed before embedding; unknown numeric payloads stay masked."""
+        maximum=torch.tensor([r['max_id'] for r in SPEC['category_features']],device=self.device)
+        categories=torch.where(self.category_known,self.categories,0)
+        if bool(((categories<0)|(categories>maximum)).any()):
+            raise ValueError('known category outside its catalogue/enum namespace')
+        for column in SPEC['reserved_slots']['categories']:
+            if bool(self.category_known[:,:,column].any()):
+                raise ValueError('reserved category marked known')
+        if bool(self.float_known[:,:,49].any()):
+            raise ValueError('reserved float marked known')
+        namespace_max=torch.tensor([0,SPEC['catalogue_max_ids']['moves'],SPEC['catalogue_max_ids']['abilities'],
+            SPEC['catalogue_max_ids']['items'],SPEC['catalogue_max_ids']['conditions'],SPEC['catalogue_max_ids']['species'],7],device=self.device)
+        kinds=categories[:,:,16].long()
+        if bool((self.category_known[:,:,17]&(~self.category_known[:,:,16]|(categories[:,:,17]>namespace_max[kinds]))).any()):
+            raise ValueError('event effect ID/namespace mismatch')
+        if bool((~torch.isfinite(self.floats)&self.float_known).any()):
+            raise ValueError('nonfinite known numeric feature')
+        mask=self.token_mask.detach().cpu().numpy()
+        for name,section in self.ragged.items():
+            counts=section.counts.detach().cpu().numpy()
+            if not np.array_equal(counts,section.host_counts) or np.any(counts[~mask]) or int(counts.sum())!=len(section.values):
+                raise ValueError(f'invalid CSR counts/token mask for {name}')
+            if not bool(torch.isfinite(section.values).all()):
+                raise ValueError(f'nonfinite ragged feature {name}')
 
     @property
     def validated_token_limit(self) -> int | None:
@@ -224,6 +272,7 @@ class ObservationBatch:
         fall back to the fixed layout.
         """
         layout = layout or ObservationLayout()
+        _validate_identity(payload)
         tokens = int(_as_numpy(payload["token_mask"]).shape[-1])
         if tokens != layout.TOKENS:
             raise ValueError(
@@ -232,6 +281,10 @@ class ObservationBatch:
 
         def _tensor(name: str, dims: int, kind: str) -> torch.Tensor:
             value = _as_numpy(payload[name])
+            if kind=='bool' and not np.all((value==0)|(value==1)):
+                raise ValueError(f'invalid boolean payload {name}')
+            if kind=='long' and not np.issubdtype(value.dtype,np.integer):
+                raise ValueError(f'noninteger category payload {name}')
             if value.ndim == dims:
                 value = value[None, ...]
             if value.ndim != dims + 1:
@@ -242,7 +295,7 @@ class ObservationBatch:
             # dimension is irrelevant to it) while torch rejects it, so test the
             # stride condition torch actually enforces and copy once per field.
             itemsize = value.itemsize
-            if itemsize and any(stride % itemsize for stride in value.strides):
+            if not value.flags.writeable or itemsize and any(stride % itemsize for stride in value.strides):
                 value = np.array(value, dtype=value.dtype, order="C", copy=True)
             tensor = torch.as_tensor(value)
             if kind == "bool":
@@ -287,7 +340,8 @@ class ObservationBatch:
             role_ids=role_ids,
             side_ids=side_ids,
             layout=layout,
-            schema_version=int(_as_numpy(payload.get("schema_version", 1)).reshape(-1)[0]),
+            schema_version=SCHEMA_VERSION,
+            ragged={name:section.to(token_mask.device) for name,section in ragged_contract.from_native(payload,batch).items()},
         )
         # The native payload is a host array even when its tensors are adapted
         # directly to CUDA. Validate before transfer semantics can hide it.
@@ -311,6 +365,9 @@ class ObservationBatch:
         categories = torch.randint(
             0, 64, (batch_size, layout.TOKENS, layout.CATEGORY_SLOTS), generator=generator
         )
+        for row in SPEC['category_features']:
+            categories[:,:,row['index']] %= row['max_id']+1
+        categories[:,:,17]=0  # synthetic IDs must match their synthetic namespace
         floats = torch.randn(
             (batch_size, layout.TOKENS, layout.FLOAT_SLOTS), generator=generator
         )
@@ -330,6 +387,11 @@ class ObservationBatch:
             layout=layout,
         )
         batch._remember_token_limit(batch._cpu_token_limit())
+        batch.category_known[:,layout.ACTIVE_TOKENS:]=False
+        batch.float_known[:,layout.ACTIVE_TOKENS:]=False
+        batch.flag_known[:,layout.ACTIVE_TOKENS:]=False
+        batch.category_known[:,:,[30,31]]=False
+        batch.float_known[:,:,49]=False
         if device is not None:
             batch = batch.to(device)
         return batch
@@ -359,6 +421,8 @@ class ObservationBatch:
             side_ids=self.side_ids.to(device),
             layout=self.layout,
             schema_version=self.schema_version,
+            contract_hash=self.contract_hash,
+            ragged={name:section.to(device) for name,section in self.ragged.items()},
         )._remember_token_limit(limit)
 
     def select(self, index: torch.Tensor | Sequence[int]) -> "ObservationBatch":
@@ -377,6 +441,8 @@ class ObservationBatch:
             side_ids=self.side_ids.index_select(0, idx),
             layout=self.layout,
             schema_version=self.schema_version,
+            contract_hash=self.contract_hash,
+            ragged={name:section.select(idx) for name,section in self.ragged.items()},
         )._remember_token_limit(self.validated_token_limit)
 
     def narrow(self, begin: int, end: int) -> "ObservationBatch":
@@ -394,6 +460,8 @@ class ObservationBatch:
             side_ids=self.side_ids.narrow(0, begin, count),
             layout=self.layout,
             schema_version=self.schema_version,
+            contract_hash=self.contract_hash,
+            ragged={name:section.narrow(begin,end) for name,section in self.ragged.items()},
         )._remember_token_limit(self.validated_token_limit)
 
     def cat(self, others: Sequence["ObservationBatch"]) -> "ObservationBatch":
@@ -412,6 +480,8 @@ class ObservationBatch:
             side_ids=torch.cat([p.side_ids for p in parts], dim=0),
             layout=self.layout,
             schema_version=self.schema_version,
+            contract_hash=self.contract_hash,
+            ragged={name:ragged_contract.RaggedBatch.cat([p.ragged[name] for p in parts]) for name in self.ragged},
         )._remember_token_limit(limit)
 
     def clone(self) -> "ObservationBatch":
@@ -452,6 +522,9 @@ class ObservationBatch:
             # rollout copy makes recomputation evaluate a different policy,
             # which was the source of the A5 FP16 branch-2 discrepancy.
             out[name] = value
+        out["schema_version"]=np.full((len(self),1),self.schema_version,dtype=np.uint16)
+        out["contract_hash"]=np.tile(np.frombuffer(bytes.fromhex(self.contract_hash),dtype=np.uint8),(len(self),1))
+        out.update(ragged_contract.to_compact(self.ragged))
         return out
 
     @classmethod
@@ -467,6 +540,7 @@ class ObservationBatch:
         are validated so a corrupted row cannot silently reshape into the model.
         """
         layout = layout or ObservationLayout()
+        _validate_identity(payload)
         arrays = {name: _as_numpy(value) for name, value in payload.items()}
 
         expected_rank = {
@@ -483,6 +557,10 @@ class ObservationBatch:
 
         def _tensor(name: str) -> torch.Tensor:
             value = arrays[name]
+            if name in ('token_mask','category_known','float_known','flags','flag_known') and not np.all((value==0)|(value==1)):
+                raise ValueError(f'invalid compact boolean {name}')
+            if name in ('categories','role_ids','side_ids') and not np.issubdtype(value.dtype,np.integer):
+                raise ValueError(f'noninteger compact category {name}')
             if value.ndim != expected_rank[name]:
                 raise ValueError(
                     f"compact observation {name!r} has rank {value.ndim}, "
@@ -501,8 +579,20 @@ class ObservationBatch:
             role_ids=_tensor("role_ids").to(torch.long),
             side_ids=_tensor("side_ids").to(torch.long),
             layout=layout,
+            ragged=ragged_contract.from_compact(payload),
         )
         return result._remember_token_limit(result._cpu_token_limit())
+
+
+def _validate_identity(payload):
+    if "schema_version" not in payload or "contract_hash" not in payload:
+        raise ValueError("missing observation schema/semantic hash (V1 is incompatible)")
+    if np.any(np.asarray(payload["schema_version"])!=SCHEMA_VERSION):
+        raise ValueError("unsupported observation schema version")
+    expected=np.frombuffer(bytes.fromhex(CONTRACT_HASH),dtype=np.uint8)
+    actual=np.asarray(payload["contract_hash"])
+    if actual.shape[-1:]!=(32,) or np.any(actual!=expected):
+        raise ValueError("observation semantic contract hash mismatch")
 
 
 def observation_shape(layout: ObservationLayout | None = None) -> dict[str, tuple[int, ...]]:

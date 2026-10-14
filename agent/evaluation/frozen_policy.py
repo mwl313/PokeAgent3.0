@@ -15,9 +15,8 @@ from agent.train.native_collector import NativeCollector, NativeCollectorConfig
 from agent.types.observation import ObservationLayout
 
 
-INTERFACE_VERSION = "pa3-frozen-policy-v1"
-OBSERVATION_SCHEMA = "pa3-entity-observation-v1"
-ACTION_SCHEMA = "atomic-action-v1"
+from agent.contracts import OBSERVATION_SCHEMA,ACTION_SCHEMA,require_checkpoint_identity
+INTERFACE_VERSION = "pa3-frozen-policy-v2"
 
 
 @dataclass(frozen=True)
@@ -27,7 +26,7 @@ class PolicyIdentity:
     checkpoint_sha256: str | None
     observation_schema: str
     action_schema: str
-    precision_contract: str = "pa3-precision-A-v1"
+    precision_contract: str = "pa3-precision-A-v2"
     precision_stability: str = "default"
 
 
@@ -54,12 +53,20 @@ class FrozenPPOPolicy:
         if "://" in path or not os.path.isfile(path):
             raise ValueError("frozen PPO checkpoints must be trusted local files")
         payload = torch.load(path, map_location="cpu", weights_only=False)
+        restored_mode=require_checkpoint_identity(payload.get('learner',{}) if isinstance(payload,dict) else payload)
         state = payload.get("learner", {}).get("model") if isinstance(payload, dict) else None
         if state is None:
             raise ValueError("checkpoint does not contain an experimental learner model")
-        model = build_model(config or PA3Config(), device=device)
+        saved_config=payload['learner'].get('config',{}).get('model')
+        if not isinstance(saved_config,dict):
+            raise ValueError('V2 checkpoint is missing model architecture identity')
+        resolved=config or PA3Config.from_dict(saved_config)
+        if resolved.to_dict()!=saved_config:
+            raise ValueError('frozen checkpoint model configuration mismatch')
+        model = build_model(resolved, device=device)
         experiment = payload.get("experiment", {}) if isinstance(payload, dict) else {}
-        precision_mode = experiment.get("precision_mode", "A")
+        precision_mode = experiment.get("precision_mode", restored_mode)
+        require_checkpoint_identity(payload['learner'],precision_mode)
         precision_stability = experiment.get("precision_stability", "default")
         if precision_stability not in ("default", "fp16-reduction-off"):
             raise ValueError(f"unsupported precision stability contract: {precision_stability!r}")

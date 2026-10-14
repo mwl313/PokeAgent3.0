@@ -97,5 +97,891 @@
     "natures": 25,
     "types": 20,
     "conditions": 168
+  },
+  "category_features": [
+    {
+      "index": 0,
+      "name": "Role",
+      "domain": "enum",
+      "max_id": 6,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 1,
+      "name": "Entity",
+      "domain": "enum",
+      "max_id": 12,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 2,
+      "name": "Slot",
+      "domain": "enum",
+      "max_id": 24,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 3,
+      "name": "Species",
+      "domain": "species",
+      "max_id": 1518,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 4,
+      "name": "BaseSpecies",
+      "domain": "species",
+      "max_id": 1518,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 5,
+      "name": "Gender",
+      "domain": "enum",
+      "max_id": 2,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 6,
+      "name": "Status",
+      "domain": "conditions",
+      "max_id": 168,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 7,
+      "name": "Ability",
+      "domain": "abilities",
+      "max_id": 321,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 8,
+      "name": "Item",
+      "domain": "items",
+      "max_id": 583,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 9,
+      "name": "PreviousItem",
+      "domain": "items",
+      "max_id": 583,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 10,
+      "name": "Nature",
+      "domain": "natures",
+      "max_id": 25,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 11,
+      "name": "Move",
+      "domain": "moves",
+      "max_id": 954,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 12,
+      "name": "MoveType",
+      "domain": "types",
+      "max_id": 20,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 13,
+      "name": "MoveCategory",
+      "domain": "enum",
+      "max_id": 3,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 14,
+      "name": "MoveTarget",
+      "domain": "enum",
+      "max_id": 15,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 15,
+      "name": "EventKind",
+      "domain": "enum",
+      "max_id": 19,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 16,
+      "name": "EffectKind",
+      "domain": "enum",
+      "max_id": 6,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 17,
+      "name": "EffectId",
+      "domain": "enum",
+      "max_id": 1518,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 18,
+      "name": "EventTarget",
+      "domain": "enum",
+      "max_id": 12,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 19,
+      "name": "RequestKind",
+      "domain": "enum",
+      "max_id": 5,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 20,
+      "name": "Side",
+      "domain": "enum",
+      "max_id": 2,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 21,
+      "name": "Regulation",
+      "domain": "enum",
+      "max_id": 1,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 22,
+      "name": "ActiveSlot",
+      "domain": "enum",
+      "max_id": 2,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 23,
+      "name": "BoundaryColor",
+      "domain": "enum",
+      "max_id": 3,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 24,
+      "name": "PrimaryStatus",
+      "domain": "conditions",
+      "max_id": 168,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 25,
+      "name": "PrimaryVolatile",
+      "domain": "conditions",
+      "max_id": 168,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 26,
+      "name": "SideCondition",
+      "domain": "conditions",
+      "max_id": 168,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 27,
+      "name": "Weather",
+      "domain": "conditions",
+      "max_id": 168,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 28,
+      "name": "Terrain",
+      "domain": "conditions",
+      "max_id": 168,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 29,
+      "name": "SelectionOrder",
+      "domain": "enum",
+      "max_id": 4,
+      "known_zero": "explicit special value; unknown has known=false"
+    },
+    {
+      "index": 30,
+      "name": "Reserved",
+      "domain": "reserved",
+      "max_id": 0
+    },
+    {
+      "index": 31,
+      "name": "Reserved",
+      "domain": "reserved",
+      "max_id": 0
+    }
+  ],
+  "effect_id_namespace": "category slot 16: None=0,Move=1,Ability=2,Item=3,Condition=4,Species=5,Stat=6; slot 17 uses corresponding catalogue",
+  "flag_features": [
+    {
+      "index": 0,
+      "name": "Selected"
+    },
+    {
+      "index": 1,
+      "name": "Active"
+    },
+    {
+      "index": 2,
+      "name": "Fainted"
+    },
+    {
+      "index": 3,
+      "name": "Transformed"
+    },
+    {
+      "index": 4,
+      "name": "Own"
+    },
+    {
+      "index": 5,
+      "name": "HpExact"
+    },
+    {
+      "index": 6,
+      "name": "AlwaysHit"
+    },
+    {
+      "index": 7,
+      "name": "MoveDisabled"
+    },
+    {
+      "index": 8,
+      "name": "MoveUsed"
+    },
+    {
+      "index": 9,
+      "name": "Contact"
+    },
+    {
+      "index": 10,
+      "name": "Protect"
+    },
+    {
+      "index": 11,
+      "name": "Sound"
+    },
+    {
+      "index": 12,
+      "name": "Powder"
+    },
+    {
+      "index": 13,
+      "name": "Pulse"
+    },
+    {
+      "index": 14,
+      "name": "Punch"
+    },
+    {
+      "index": 15,
+      "name": "Slicing"
+    },
+    {
+      "index": 16,
+      "name": "Bite"
+    },
+    {
+      "index": 17,
+      "name": "NoPpBoosts"
+    },
+    {
+      "index": 18,
+      "name": "IgnoreImmunity"
+    },
+    {
+      "index": 19,
+      "name": "Defrost"
+    },
+    {
+      "index": 20,
+      "name": "ThawsTarget"
+    },
+    {
+      "index": 21,
+      "name": "MegaUsed"
+    },
+    {
+      "index": 22,
+      "name": "Slot0Present"
+    },
+    {
+      "index": 23,
+      "name": "Slot1Present"
+    },
+    {
+      "index": 24,
+      "name": "Slot0Replacement"
+    },
+    {
+      "index": 25,
+      "name": "Slot1Replacement"
+    },
+    {
+      "index": 26,
+      "name": "Slot0CanMega"
+    },
+    {
+      "index": 27,
+      "name": "Slot1CanMega"
+    },
+    {
+      "index": 28,
+      "name": "Slot0Trapped"
+    },
+    {
+      "index": 29,
+      "name": "Slot1Trapped"
+    },
+    {
+      "index": 30,
+      "name": "Slot0MaybeTrapped"
+    },
+    {
+      "index": 31,
+      "name": "Slot1MaybeTrapped"
+    },
+    {
+      "index": 32,
+      "name": "BenchEligible"
+    },
+    {
+      "index": 33,
+      "name": "PreviewEligible"
+    },
+    {
+      "index": 34,
+      "name": "MegaForm"
+    },
+    {
+      "index": 35,
+      "name": "PrivateEffectsAvailable"
+    },
+    {
+      "index": 36,
+      "name": "ItemEffectMetadataAvailable"
+    },
+    {
+      "index": 37,
+      "name": "AbilityEffectMetadataAvailable"
+    },
+    {
+      "index": 38,
+      "name": "HasRecoil"
+    },
+    {
+      "index": 39,
+      "name": "HasDrain"
+    }
+  ],
+  "float_features": [
+    {
+      "index": 0,
+      "name": "Stats0",
+      "units": "stat points",
+      "raw_min": 0,
+      "raw_max": 65535,
+      "normalization": "x/65535",
+      "inverse": "y*65535"
+    },
+    {
+      "index": 1,
+      "name": "Stats1",
+      "units": "stat points",
+      "raw_min": 0,
+      "raw_max": 65535,
+      "normalization": "x/65535",
+      "inverse": "y*65535"
+    },
+    {
+      "index": 2,
+      "name": "Stats2",
+      "units": "stat points",
+      "raw_min": 0,
+      "raw_max": 65535,
+      "normalization": "x/65535",
+      "inverse": "y*65535"
+    },
+    {
+      "index": 3,
+      "name": "Stats3",
+      "units": "stat points",
+      "raw_min": 0,
+      "raw_max": 65535,
+      "normalization": "x/65535",
+      "inverse": "y*65535"
+    },
+    {
+      "index": 4,
+      "name": "Stats4",
+      "units": "stat points",
+      "raw_min": 0,
+      "raw_max": 65535,
+      "normalization": "x/65535",
+      "inverse": "y*65535"
+    },
+    {
+      "index": 5,
+      "name": "Stats5",
+      "units": "stat points",
+      "raw_min": 0,
+      "raw_max": 65535,
+      "normalization": "x/65535",
+      "inverse": "y*65535"
+    },
+    {
+      "index": 6,
+      "name": "Points0",
+      "units": "allocation points",
+      "raw_min": 0,
+      "raw_max": 32,
+      "normalization": "x/32",
+      "inverse": "y*32"
+    },
+    {
+      "index": 7,
+      "name": "Points1",
+      "units": "allocation points",
+      "raw_min": 0,
+      "raw_max": 32,
+      "normalization": "x/32",
+      "inverse": "y*32"
+    },
+    {
+      "index": 8,
+      "name": "Points2",
+      "units": "allocation points",
+      "raw_min": 0,
+      "raw_max": 32,
+      "normalization": "x/32",
+      "inverse": "y*32"
+    },
+    {
+      "index": 9,
+      "name": "Points3",
+      "units": "allocation points",
+      "raw_min": 0,
+      "raw_max": 32,
+      "normalization": "x/32",
+      "inverse": "y*32"
+    },
+    {
+      "index": 10,
+      "name": "Points4",
+      "units": "allocation points",
+      "raw_min": 0,
+      "raw_max": 32,
+      "normalization": "x/32",
+      "inverse": "y*32"
+    },
+    {
+      "index": 11,
+      "name": "Points5",
+      "units": "allocation points",
+      "raw_min": 0,
+      "raw_max": 32,
+      "normalization": "x/32",
+      "inverse": "y*32"
+    },
+    {
+      "index": 12,
+      "name": "Ivs0",
+      "units": "IV",
+      "raw_min": 0,
+      "raw_max": 31,
+      "normalization": "x/31",
+      "inverse": "y*31"
+    },
+    {
+      "index": 13,
+      "name": "Ivs1",
+      "units": "IV",
+      "raw_min": 0,
+      "raw_max": 31,
+      "normalization": "x/31",
+      "inverse": "y*31"
+    },
+    {
+      "index": 14,
+      "name": "Ivs2",
+      "units": "IV",
+      "raw_min": 0,
+      "raw_max": 31,
+      "normalization": "x/31",
+      "inverse": "y*31"
+    },
+    {
+      "index": 15,
+      "name": "Ivs3",
+      "units": "IV",
+      "raw_min": 0,
+      "raw_max": 31,
+      "normalization": "x/31",
+      "inverse": "y*31"
+    },
+    {
+      "index": 16,
+      "name": "Ivs4",
+      "units": "IV",
+      "raw_min": 0,
+      "raw_max": 31,
+      "normalization": "x/31",
+      "inverse": "y*31"
+    },
+    {
+      "index": 17,
+      "name": "Ivs5",
+      "units": "IV",
+      "raw_min": 0,
+      "raw_max": 31,
+      "normalization": "x/31",
+      "inverse": "y*31"
+    },
+    {
+      "index": 18,
+      "name": "Boosts0",
+      "units": "stage",
+      "raw_min": -6,
+      "raw_max": 6,
+      "normalization": "x/6",
+      "inverse": "y*6"
+    },
+    {
+      "index": 19,
+      "name": "Boosts1",
+      "units": "stage",
+      "raw_min": -6,
+      "raw_max": 6,
+      "normalization": "x/6",
+      "inverse": "y*6"
+    },
+    {
+      "index": 20,
+      "name": "Boosts2",
+      "units": "stage",
+      "raw_min": -6,
+      "raw_max": 6,
+      "normalization": "x/6",
+      "inverse": "y*6"
+    },
+    {
+      "index": 21,
+      "name": "Boosts3",
+      "units": "stage",
+      "raw_min": -6,
+      "raw_max": 6,
+      "normalization": "x/6",
+      "inverse": "y*6"
+    },
+    {
+      "index": 22,
+      "name": "Boosts4",
+      "units": "stage",
+      "raw_min": -6,
+      "raw_max": 6,
+      "normalization": "x/6",
+      "inverse": "y*6"
+    },
+    {
+      "index": 23,
+      "name": "Boosts5",
+      "units": "stage",
+      "raw_min": -6,
+      "raw_max": 6,
+      "normalization": "x/6",
+      "inverse": "y*6"
+    },
+    {
+      "index": 24,
+      "name": "Boosts6",
+      "units": "stage",
+      "raw_min": -6,
+      "raw_max": 6,
+      "normalization": "x/6",
+      "inverse": "y*6"
+    },
+    {
+      "index": 25,
+      "name": "BaseStats0",
+      "units": "base stat",
+      "raw_min": 0,
+      "raw_max": 65535,
+      "normalization": "x/65535",
+      "inverse": "y*65535"
+    },
+    {
+      "index": 26,
+      "name": "BaseStats1",
+      "units": "base stat",
+      "raw_min": 0,
+      "raw_max": 65535,
+      "normalization": "x/65535",
+      "inverse": "y*65535"
+    },
+    {
+      "index": 27,
+      "name": "BaseStats2",
+      "units": "base stat",
+      "raw_min": 0,
+      "raw_max": 65535,
+      "normalization": "x/65535",
+      "inverse": "y*65535"
+    },
+    {
+      "index": 28,
+      "name": "BaseStats3",
+      "units": "base stat",
+      "raw_min": 0,
+      "raw_max": 65535,
+      "normalization": "x/65535",
+      "inverse": "y*65535"
+    },
+    {
+      "index": 29,
+      "name": "BaseStats4",
+      "units": "base stat",
+      "raw_min": 0,
+      "raw_max": 65535,
+      "normalization": "x/65535",
+      "inverse": "y*65535"
+    },
+    {
+      "index": 30,
+      "name": "BaseStats5",
+      "units": "base stat",
+      "raw_min": 0,
+      "raw_max": 65535,
+      "normalization": "x/65535",
+      "inverse": "y*65535"
+    },
+    {
+      "index": 31,
+      "name": "Hp",
+      "units": "native feature units",
+      "raw_min": 0,
+      "raw_max": 65535,
+      "normalization": "x/65535",
+      "inverse": "y*65535",
+      "missing": "known=false; numeric value zero",
+      "reserved": false
+    },
+    {
+      "index": 32,
+      "name": "MaxHp",
+      "units": "native feature units",
+      "raw_min": 0,
+      "raw_max": 65535,
+      "normalization": "x/65535",
+      "inverse": "y*65535",
+      "missing": "known=false; numeric value zero",
+      "reserved": false
+    },
+    {
+      "index": 33,
+      "name": "HpFraction",
+      "units": "native feature units",
+      "raw_min": 0,
+      "raw_max": 1,
+      "normalization": "x/1",
+      "inverse": "y*1",
+      "missing": "known=false; numeric value zero",
+      "reserved": false
+    },
+    {
+      "index": 34,
+      "name": "PublicHpNumerator",
+      "units": "native feature units",
+      "raw_min": 0,
+      "raw_max": 100,
+      "normalization": "x/65535",
+      "inverse": "y*65535",
+      "missing": "known=false; numeric value zero",
+      "reserved": false
+    },
+    {
+      "index": 35,
+      "name": "PublicHpDenominator",
+      "units": "native feature units",
+      "raw_min": 0,
+      "raw_max": 100,
+      "normalization": "x/65535",
+      "inverse": "y*65535",
+      "missing": "known=false; numeric value zero",
+      "reserved": false
+    },
+    {
+      "index": 36,
+      "name": "Level",
+      "units": "native feature units",
+      "raw_min": 1,
+      "raw_max": 65535,
+      "normalization": "x/65535",
+      "inverse": "y*65535",
+      "missing": "known=false; numeric value zero",
+      "reserved": false
+    },
+    {
+      "index": 37,
+      "name": "Pp",
+      "units": "native feature units",
+      "raw_min": 0,
+      "raw_max": 255,
+      "normalization": "x/255",
+      "inverse": "y*255",
+      "missing": "known=false; numeric value zero",
+      "reserved": false
+    },
+    {
+      "index": 38,
+      "name": "MaxPp",
+      "units": "native feature units",
+      "raw_min": 0,
+      "raw_max": 255,
+      "normalization": "x/255",
+      "inverse": "y*255",
+      "missing": "known=false; numeric value zero",
+      "reserved": false
+    },
+    {
+      "index": 39,
+      "name": "BasePp",
+      "units": "native feature units",
+      "raw_min": 0,
+      "raw_max": 255,
+      "normalization": "x/255",
+      "inverse": "y*255",
+      "missing": "known=false; numeric value zero",
+      "reserved": false
+    },
+    {
+      "index": 40,
+      "name": "Power",
+      "units": "native feature units",
+      "raw_min": 0,
+      "raw_max": 65535,
+      "normalization": "x/65535",
+      "inverse": "y*65535",
+      "missing": "known=false; numeric value zero",
+      "reserved": false
+    },
+    {
+      "index": 41,
+      "name": "Accuracy",
+      "units": "native feature units",
+      "raw_min": 0,
+      "raw_max": 100,
+      "normalization": "x/100",
+      "inverse": "y*100",
+      "missing": "known=false; numeric value zero",
+      "reserved": false
+    },
+    {
+      "index": 42,
+      "name": "Priority",
+      "units": "native feature units",
+      "raw_min": -128,
+      "raw_max": 127,
+      "normalization": "x/128",
+      "inverse": "y*128",
+      "missing": "known=false; numeric value zero",
+      "reserved": false
+    },
+    {
+      "index": 43,
+      "name": "EventChange",
+      "units": "mixed signed event integer",
+      "raw_min": -2147483648,
+      "raw_max": 2147483647,
+      "normalization": "asinh(x)/asinh(2147483648)",
+      "inverse": "sinh(y*asinh(2147483648))",
+      "missing": "known=false; numeric value zero",
+      "reserved": false
+    },
+    {
+      "index": 44,
+      "name": "Turn",
+      "units": "native feature units",
+      "raw_min": 0,
+      "raw_max": 65535,
+      "normalization": "x/65535",
+      "inverse": "y*65535",
+      "missing": "known=false; numeric value zero",
+      "reserved": false
+    },
+    {
+      "index": 45,
+      "name": "CritRatio",
+      "units": "native feature units",
+      "raw_min": 0,
+      "raw_max": 255,
+      "normalization": "x/255",
+      "inverse": "y*255",
+      "missing": "known=false; numeric value zero",
+      "reserved": false
+    },
+    {
+      "index": 46,
+      "name": "Weight",
+      "units": "hectograms",
+      "raw_min": 0,
+      "raw_max": 15908,
+      "normalization": "x/10000",
+      "inverse": "y*10000",
+      "missing": "known=false; numeric value zero",
+      "reserved": false
+    },
+    {
+      "index": 47,
+      "name": "Recoil",
+      "units": "native feature units",
+      "raw_min": 0,
+      "raw_max": 1,
+      "normalization": "x/1",
+      "inverse": "y*1",
+      "missing": "known=false; numeric value zero",
+      "reserved": false
+    },
+    {
+      "index": 48,
+      "name": "Drain",
+      "units": "native feature units",
+      "raw_min": 0,
+      "raw_max": 1,
+      "normalization": "x/1",
+      "inverse": "y*1",
+      "missing": "known=false; numeric value zero",
+      "reserved": false
+    },
+    {
+      "index": 49,
+      "name": "Reserved",
+      "units": "native feature units",
+      "raw_min": 0,
+      "raw_max": 0,
+      "normalization": "x/1",
+      "inverse": "y*1",
+      "missing": "known=false; numeric value zero",
+      "reserved": true
+    }
+  ],
+  "opponent_move_tokens": "First four publicly revealed moves in reveal order; category Slot unknown. No claim of true private move-slot identity. Uncapped repertoire preserves all public reveals.",
+  "ragged_numeric_units": {
+    "effects_duration_stacks": "i16 /32768, explicit known masks",
+    "base_move_pp": "u8 /255",
+    "move_effect_chance": "percent /100",
+    "move_effect_boosts": "stage /6",
+    "move_effect_heal": "ratio with known mask",
+    "IDs": "exact categorical integers; never half quantized"
   }
 }

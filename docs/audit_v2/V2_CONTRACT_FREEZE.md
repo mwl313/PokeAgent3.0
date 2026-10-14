@@ -1,7 +1,7 @@
 # Phase 0.5 — frozen V2 contract
 
 Normative source: `configs/pa3_v2_contract.json`, canonical JSON SHA256
-`8a0e225e3f657f1016b1dfb39d0e683425185bf14b5a6c2a540930da55f6db43`.
+`dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35`.
 P1 prerequisite: `548902547a5d5235f532193a47a77a89abfb1cdd`.
 
 The 96/88 token layout and fixed 32/50/40 feature shapes remain. Wire version

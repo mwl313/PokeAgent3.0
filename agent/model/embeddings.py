@@ -18,6 +18,7 @@ from torch import nn
 
 from agent.model.config import PA3Config
 from agent.types.observation import ObservationBatch
+from agent.model.ragged_embeddings import RaggedEmbedding
 
 
 class TokenEmbedding(nn.Module):
@@ -30,12 +31,13 @@ class TokenEmbedding(nn.Module):
         self.category_value_embedding = nn.Embedding(
             config.category_vocab, config.category_embed_dim
         )
-        numeric_dim = config.float_slots + config.flag_slots
+        numeric_dim = 2 * (config.float_slots + config.flag_slots)
         self.numeric_projection = nn.Linear(numeric_dim, d)
         self.category_projection = nn.Linear(
             config.category_slots * config.category_embed_dim, d
         )
         self.normalization = nn.LayerNorm(d)
+        self.ragged_embedding = RaggedEmbedding(config)
         self.reset_parameters()
 
     def reset_parameters(self) -> None:
@@ -50,20 +52,26 @@ class TokenEmbedding(nn.Module):
 
     def forward(self, observation: ObservationBatch) -> torch.Tensor:
         cfg = self.config
+        observation.validate_semantics()
         token_mask = observation.token_mask
-        role_ids = observation.role_ids.clamp(0, cfg.role_vocab - 1)
-        side_ids = observation.side_ids.clamp(0, cfg.side_vocab - 1)
+        role_ids = observation.role_ids
+        side_ids = observation.side_ids
+        if bool(((role_ids<0)|(role_ids>=cfg.role_vocab)).any()) or bool(((side_ids<0)|(side_ids>=cfg.side_vocab)).any()):
+            raise ValueError("invalid role/side category ID")
 
         # Continuous features: mask unknown entries and flush non-finite values.
         floats = observation.floats
         float_known = observation.float_known
-        floats = torch.nan_to_num(floats, nan=0.0, posinf=0.0, neginf=0.0)
-        floats = floats * float_known.to(floats.dtype)
+        if bool((~torch.isfinite(floats)&float_known).any()):
+            raise ValueError("nonfinite known observation value")
+        floats = torch.where(float_known,floats,0.)
 
         flags = observation.flags.to(floats.dtype) * observation.flag_known.to(floats.dtype)
-        numeric = torch.cat([floats, flags], dim=-1)
+        numeric = torch.cat([floats, flags, float_known.to(floats.dtype), observation.flag_known.to(floats.dtype)], dim=-1)
 
-        categories = observation.categories.clamp(0, cfg.category_vocab - 1)
+        categories = torch.where(observation.category_known,observation.categories,0)
+        if bool(((categories<0)|(categories>=cfg.category_vocab)).any()):
+            raise ValueError("invalid known category ID; clamping is forbidden")
         categories = categories * observation.category_known.to(torch.long)
         category_values = self.category_value_embedding(categories)
         category_values = category_values * observation.category_known.unsqueeze(-1).to(
@@ -76,6 +84,7 @@ class TokenEmbedding(nn.Module):
             + self.category_projection(category_values)
             + self.role_embedding(role_ids)
             + self.side_embedding(side_ids)
+            + self.ragged_embedding(observation)
         )
         hidden = self.normalization(hidden)
         hidden = hidden * token_mask.unsqueeze(-1).to(hidden.dtype)

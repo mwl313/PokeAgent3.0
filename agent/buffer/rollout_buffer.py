@@ -55,12 +55,17 @@ class InlineObservationStore(ObservationStore):
         if len(observation) != 1:
             raise ValueError("store one observation row at a time")
         # Compact low-precision arrays with a leading batch dimension of one.
-        self._rows.append(observation.to_compact_numpy())
-        return len(self._rows) - 1
+        return self.add_compact(observation.to_compact_numpy())
 
     def add_compact(self, row: dict[str, Any]) -> int:
         """Store an already-compact row (same dtypes as ``to_compact_numpy``)."""
-        self._rows.append(row)
+        owned={}
+        for key,value in row.items():
+            copied=value.copy()
+            if value.dtype.hasobject:
+                for i,entry in enumerate(value):copied[i]=entry.copy()
+            owned[key]=copied
+        self._rows.append(owned)
         return len(self._rows) - 1
 
     def get(self, index: int) -> ObservationBatch:
@@ -134,7 +139,7 @@ class ColumnarObservationStore(ObservationStore):
         index = self._count
         for key, value in row.items():
             self._ensure(key, value.shape[1:], value.dtype)
-            self._arrays[key][index] = value[0]
+            self._arrays[key][index] = value[0].copy() if value.dtype.hasobject else value[0]
         self._count += 1
         return index
 

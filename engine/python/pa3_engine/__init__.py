@@ -23,6 +23,7 @@ from .observation import (
 
 NativeEngine = _native.NativeEngine
 SCHEMA_VERSION = _native.SCHEMA_VERSION
+CONTRACT_HASH = _native.CONTRACT_HASH
 OBSERVATION_TOKENS = _native.OBSERVATION_TOKENS
 CATEGORY_COUNT = _native.CATEGORY_COUNT
 FLOAT_COUNT = _native.FLOAT_COUNT
@@ -32,6 +33,7 @@ OBSERVATION_FIXED_BYTES = _native.OBSERVATION_FIXED_BYTES
 __all__ = [
     "NativeEngine",
     "SCHEMA_VERSION",
+    "CONTRACT_HASH",
     "OBSERVATION_TOKENS",
     "CATEGORY_COUNT",
     "FLOAT_COUNT",

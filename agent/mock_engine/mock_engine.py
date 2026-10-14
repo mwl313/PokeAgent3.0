@@ -141,7 +141,7 @@ class MockNativeEngine:
         token_mask = np.zeros(tokens, dtype=bool)
         token_mask[: layout.ACTIVE_TOKENS] = True
         categories = rng.integers(
-            0, 512, size=(tokens, layout.CATEGORY_SLOTS), dtype=np.uint16
+            0, 64, size=(tokens, layout.CATEGORY_SLOTS), dtype=np.uint16
         )
         floats = rng.normal(0.0, 1.0, size=(tokens, layout.FLOAT_SLOTS)).astype(np.float32)
         floats[~token_mask] = 0.0
@@ -153,7 +153,7 @@ class MockNativeEngine:
         flag_known = np.ones((tokens, layout.FLAG_SLOTS), dtype=bool)
         flag_known[layout.ACTIVE_TOKENS :] = False
         payload = {
-            "schema_version": 1,
+            "schema_version": 2,
             "token_mask": token_mask,
             "categories": categories,
             "category_known": known,
@@ -164,6 +164,17 @@ class MockNativeEngine:
             "role_ids": layout.default_roles().numpy(),
             "side_ids": layout.default_sides().numpy(),
         }
+        from agent.contracts import CONTRACT_HASH,SPEC
+        from agent.types.ragged import FIELDS,COUNTS
+        payload['contract_hash']=np.frombuffer(bytes.fromhex(CONTRACT_HASH),dtype=np.uint8)
+        for row in SPEC['category_features']:
+            payload['categories'][:,row['index']] %= row['max_id']+1
+        payload['categories'][:,17]=0
+        payload['category_known'][:,[30,31]]=False
+        payload['float_known'][:,49]=False
+        for name,fields in FIELDS.items():
+            payload[name]=np.zeros((0,len(fields)),dtype=np.float32)
+            payload[COUNTS[name]]=np.zeros(tokens,dtype=np.uint16)
         # Target locations are encoded -1..4 in the packed engine blob.
         payload["floats"][:, 0] = float(side)
         return payload

@@ -158,6 +158,8 @@ def validate_envelope(envelope: dict, *, dataset_manifest_hash: str,
         raise ValueError("unsupported experimental checkpoint schema")
     if envelope.get("kind") != "ppo_experimental_iteration_boundary":
         raise ValueError("not an experimental iteration-boundary checkpoint")
+    from agent.contracts import require_checkpoint_identity
+    require_checkpoint_identity(envelope.get('learner',{}))
     if envelope.get("dataset_manifest_hash") != dataset_manifest_hash:
         raise ValueError("dataset manifest hash mismatch")
     if envelope.get("action_schema_hash") != action_schema_hash:
@@ -242,6 +244,8 @@ def fork_for_epochs(envelope: dict, epochs: int) -> dict:
     """Clone a verified envelope with only the explicit PPO epoch override."""
     if epochs not in (2, 4):
         raise ValueError("experimental PPO fork must use 2 or 4 epochs")
+    from agent.contracts import require_checkpoint_identity
+    require_checkpoint_identity(envelope.get('learner',{}))
     fork = copy.deepcopy(envelope)
     fork["experiment"]["ppo_epochs"] = int(epochs)
     fork["experiment"]["fork_parent_schema_version"] = SCHEMA_VERSION

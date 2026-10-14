@@ -298,17 +298,27 @@ def load_frozen_model(path, *, device="cpu", config: Optional[PA3Config] = None)
     if "://" in path or not os.path.isfile(path):
         raise ValueError("evaluation checkpoints must be existing local files")
     payload = torch.load(path, map_location="cpu", weights_only=False)
+    from agent.contracts import require_checkpoint_identity
+    learner_payload=payload.get('learner',payload) if isinstance(payload,dict) else payload
+    restored_mode=require_checkpoint_identity(learner_payload)
     state = payload.get("model", payload) if isinstance(payload, dict) else payload
     if isinstance(payload, dict) and "learner" in payload:
         state = payload["learner"]["model"]
     experiment = payload.get("experiment", {}) if isinstance(payload, dict) else {}
-    precision_mode = experiment.get("precision_mode", "A")
+    precision_mode = experiment.get("precision_mode", restored_mode)
+    require_checkpoint_identity(learner_payload,precision_mode)
     precision_stability = experiment.get("precision_stability", "default")
     if precision_stability not in ("default", "fp16-reduction-off"):
         raise ValueError(f"unsupported frozen-policy precision stability: {precision_stability!r}")
     if precision_stability == "fp16-reduction-off" and device != "cpu":
         torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = False
-    model = build_model(config or PA3Config(), device=device)
+    saved_config=learner_payload.get('config',{}).get('model')
+    if not isinstance(saved_config,dict):
+        raise ValueError('V2 checkpoint is missing model architecture identity')
+    resolved=config or PA3Config.from_dict(saved_config)
+    if resolved.to_dict()!=saved_config:
+        raise ValueError('frozen checkpoint model configuration mismatch')
+    model = build_model(resolved, device=device)
     model.configure_precision(precision_mode)
     model.load_state_dict(state, strict=True)
     model.eval()
