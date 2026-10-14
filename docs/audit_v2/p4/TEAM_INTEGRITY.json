@@ -1,0 +1,9 @@
+{
+  "caveat": "Policy-conditioned training outcomes; neither causal team strength nor unseen-roster generalization",
+  "committed_natural_matches": 4096,
+  "confidence_method": "Wilson 95% binary win probability; draws count as non-wins; score_rate has no CI",
+  "team_appearances": 8192,
+  "team_rows": 1220,
+  "verified": true,
+  "window_semantics": "100k start-clock buckets; whole drained iterations assigned by their start clock"
+}

@@ -1,0 +1,110 @@
+{
+  "source_sha": "cc8cd97c57d342394be95e2c74baa50a2cc59e77",
+  "full_smoke_source_sha": "328f5160bbf7191c5a3a3d010ca6d22d1b5b4653",
+  "full_smoke_clean": true,
+  "continuation_clean": true,
+  "training_runtime_diff_from_smoke": [],
+  "engine_binary_sha256": "8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62",
+  "dataset_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f",
+  "manifest_sha256": "1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb",
+  "contract_hash": "dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35",
+  "python_torch_cuda": {
+    "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+    "torch": "2.14.0+cu126",
+    "cuda_runtime": "12.6"
+  },
+  "hardware": "two Tesla V100 32GB, 175W each, stable cooling; no concurrent GPU workload",
+  "full_smoke_command": "PYTHONPATH=engine/python:. OMP_NUM_THREADS=2 CUBLAS_WORKSPACE_CONFIG=:4096:8 /home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python scripts/run_ddp_ppo.py --games 2048 --envs 1024 --workers 16 --iterations 2 --epochs 2 --microbatch 1024 --minibatch 4096 --teams engine/data/a10-training-teams.json --dataset-manifest data/teams/a10-p0-proposed-20261013/manifest.json --precision-mode D --precision-stability fp16-reduction-off --experimental-lr-scale 0.5 --deterministic-diagnostic --stop-file runs/v2_validation/p4_release_smoke/STOP --experimental-checkpoint runs/v2_validation/p4_release_smoke/boundary --rolling-checkpoint-root runs/v2_validation/p4_release_smoke/rolling --team-stats-root runs/v2_validation/p4_release_smoke/stats --checkpoint-interval-matches 100000 --report runs/v2_validation/p4_release_smoke/report.json --timeout 1200",
+  "continuation_command": "PYTHONPATH=engine/python:. OMP_NUM_THREADS=2 CUBLAS_WORKSPACE_CONFIG=:4096:8 /home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python scripts/validate_v2_continuation.py --output runs/v2_validation/p4_release_replay",
+  "unit_command": "PYTHONPATH=engine/python:. OMP_NUM_THREADS=2 /home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python -m pytest -q tests/agent/test_v2_team_stats.py tests/agent/test_v2_operational_contract.py tests/agent/test_a_checkpoint_envelope.py tests/agent/test_v2_bulk_decode.py tests/agent/test_v2_observation_contract.py tests/integration/test_ddp_collective_protocol.py",
+  "unit_result": "41 passed; additional V2 league/retention/profile suite 9 passed; overlap with prior suites",
+  "full_games": 4096,
+  "continuation_games": 256,
+  "evaluation_games": 8,
+  "reproducibility": "BIT_EXACT for the bounded deterministic uninterrupted/exit/restore comparison; not a universal bit-exactness claim across hardware/software changes",
+  "statistics_resume": {
+    "0": {
+      "equal": true,
+      "iterations": 2
+    },
+    "1": {
+      "equal": true,
+      "iterations": 2
+    }
+  },
+  "all_in_games_per_second": 27.00936253840084,
+  "iteration_games_per_second": 28.942121299252136,
+  "model_digests": [
+    "dd2d7bbd7e0bb8339311ddaae3013e666800eb95bed1d572e43e98d689cdad12",
+    "dd2d7bbd7e0bb8339311ddaae3013e666800eb95bed1d572e43e98d689cdad12"
+  ],
+  "optimizer_digests": [
+    "8bd07ab47b2c2fc640b786a837e5a780c7bd457ee8994918bfdaccb5543e2cc0",
+    "8bd07ab47b2c2fc640b786a837e5a780c7bd457ee8994918bfdaccb5543e2cc0"
+  ],
+  "limitations": [
+    "Frozen 1220-team closure only; not all Regulation M-C mechanics",
+    "All-train evaluation; no unseen-roster panel available, non-blocking T-EVAL-01 remains",
+    "Current policy role is resolved by run/iteration clock; WLD is policy-conditioned training telemetry",
+    "Natural iteration windows assigned by 100k start-clock bucket, not cut mid-battle",
+    "Wilson CI applies to binary wins; score rate has no claimed CI",
+    "General CUDA nondeterminism was observed; final V2 profile pins deterministic execution, explicitly checked on resume",
+    "8 evaluation games are a legality/integration smoke, not strength evidence",
+    "Long-run throughput/stability and cumulative receipt validation cost are not proven by this smoke"
+  ],
+  "artifacts": {
+    "p4-padding-before.log": "095b7047d65a20954f24f669c0de75d7c438f0294d62b532d1171661fa915cd6",
+    "p4-sidecar-first.log": "3b605515c336d6ec6902c2d7b97e35d19ddac9b33c186b423ce8ee21c030f435",
+    "TEAM_INTEGRITY.json": "1ffff1e0b6e8aa39264bed886656f8d7a93e20047efc773f2cc08164d83e7677",
+    "p4-helper-final-unit.log": "f48be363b627e616dd79361dd98ac03bdd795a83faa6c25bbcce6c674d0f505f",
+    "TELEMETRY.rank0.jsonl": "3ff5a603aaab4db37d5389916960699f25a3162aef1a69976a0f3ed0bae22d00",
+    "p4-release-replay.log": "d5da14f966458518e4ffe697b778a97cb2876d5a1e06b53ebe2e9aa23e941554",
+    "STORAGE_ESTIMATE.json": "6d8ec8e00a07f619a9571ceb9d3f5b06383ff2404ee09003c28d48ae26643817",
+    "TELEMETRY.rank1.jsonl": "3d1c548725265719ffb9fa7a1f1a89b949d8be21c680f1b61d3ce6b6a9f611a5",
+    "p4-release-smoke.log": "dbeacecafc5d73b0ccb250ce079891480aae51e1d1f2261894447483dae1a70f",
+    "TWO_V100_SMOKE.json": "9746b786f6c064b89a9eda629fe9efb646c072633d4531d18c57a846682b4c31",
+    "DECODE_BENCHMARK.json": "4983f030d12345e71ea9a428e2a2f2c3e1cab07bf6eb0827f3938752f9df009c",
+    "RESUME_COMPARISON.json": "26032e6d87dbeec11925a20e7c44be2ddeed98af46d88362a02014e2786334ec",
+    "p4-sidecar.log": "43b61bf8b56d21bc3ee3931f854f11eb4e88ddd5c38d37a2bc889d553c45d662",
+    "STATS_RESUME_COMPARISON.json": "e9220db538c6dd4cdc6d206b22425a584df153fb06429d7a26ab94f4c69a1361",
+    "p4-release-unit.log": "5efb1c7a3d48f6bd8db43b2bfa6e7b327cf56d3e0fac51a9f9c70194849e7374"
+  },
+  "continuation_provenance": {
+    "reference": {
+      "cuda_runtime": "12.6",
+      "git_branch": "codex/pa3-v2-correctness",
+      "git_dirty": false,
+      "git_sha": "cc8cd97c57d342394be95e2c74baa50a2cc59e77",
+      "git_status": [],
+      "numa_binding": true,
+      "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+      "recorded_at_utc": "2026-10-14T05:57:42.410038+00:00",
+      "torch": "2.14.0+cu126",
+      "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "first": {
+      "cuda_runtime": "12.6",
+      "git_branch": "codex/pa3-v2-correctness",
+      "git_dirty": false,
+      "git_sha": "cc8cd97c57d342394be95e2c74baa50a2cc59e77",
+      "git_status": [],
+      "numa_binding": true,
+      "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+      "recorded_at_utc": "2026-10-14T05:58:00.926216+00:00",
+      "torch": "2.14.0+cu126",
+      "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "resumed": {
+      "cuda_runtime": "12.6",
+      "git_branch": "codex/pa3-v2-correctness",
+      "git_dirty": false,
+      "git_sha": "cc8cd97c57d342394be95e2c74baa50a2cc59e77",
+      "git_status": [],
+      "numa_binding": true,
+      "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+      "recorded_at_utc": "2026-10-14T05:58:21.280748+00:00",
+      "torch": "2.14.0+cu126",
+      "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  }
+}

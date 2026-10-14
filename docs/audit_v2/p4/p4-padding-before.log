@@ -1,0 +1,47 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________________ test_cdf_roundoff_cannot_select_padding ____________________
+
+    def test_cdf_roundoff_cannot_select_padding():
+        evaluator=BatchedPolicyEvaluator(None,device='cpu')
+        class Scorer:
+            def build_keys(self,*args):return torch.zeros(1,4,2)
+            def score_keys(self,*args):return torch.zeros(1,4)
+            def advance_keys(self,keys,hidden):return keys
+        class Model:
+            scorer=Scorer()
+            def _branch_stats(self,*args):
+                return None,torch.tensor([[.49999994,.49999994,0.,0.]]),None,None
+        table=SimpleNamespace(action_ids=torch.zeros(1,1,4,6,dtype=torch.long),
+            entity_token=torch.zeros(1,1,4,dtype=torch.long),move_token=torch.zeros(1,1,4,dtype=torch.long),
+            mask=torch.tensor([[[True,True,False,False]]]))
+>       picks,_=evaluator._sample_model(Model(),SimpleNamespace(tokens=torch.zeros(1,1,2)),None,table,[np.nextafter(1.,0.)])
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/agent/test_v2_eval_padding.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <agent.evaluation.batched_policy.BatchedPolicyEvaluator object at 0x7a0cb27c7860>
+model = <test_v2_eval_padding.test_cdf_roundoff_cannot_select_padding.<locals>.Model object at 0x7a0cb27f0410>
+encoded = namespace(tokens=tensor([[[0., 0.]]])), hidden = None
+table = namespace(action_ids=tensor([[[[0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0, 0],
+       ...ity_token=tensor([[[0, 0, 0, 0]]]), move_token=tensor([[[0, 0, 0, 0]]]), mask=tensor([[[ True,  True, False, False]]]))
+uniforms = [np.float64(0.9999999999999999)]
+
+    def _sample_model(self, model, encoded, hidden, table, uniforms):
+        keys = model.scorer.build_keys(encoded.tokens, table.action_ids[:, 0], table.entity_token[:, 0], table.move_token[:, 0])
+        logits = model.scorer.score_keys(keys, hidden, table.mask[:, 0])
+        _logprob, probs, _entropy, _kl = model._branch_stats(logits, table.mask[:, 0])
+        cdf = probs.detach().float().cpu().cumsum(dim=-1).numpy()
+        picks = np.asarray([min(int(np.searchsorted(cdf[i], value, side="right")), cdf.shape[1] - 1) for i, value in enumerate(uniforms)], dtype=np.int64)
+        # The table mask ensures each selected index is legal; guard anyway.
+        if any(not bool(table.mask[i, 0, int(pick)].item()) for i, pick in enumerate(picks)):
+>           raise RuntimeError("sampled illegal candidate index")
+E           RuntimeError: sampled illegal candidate index
+
+agent/evaluation/batched_policy.py:54: RuntimeError
+=========================== short test summary info ============================
+FAILED tests/agent/test_v2_eval_padding.py::test_cdf_roundoff_cannot_select_padding
+1 failed in 0.08s

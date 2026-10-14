@@ -1,0 +1,276 @@
+{
+  "commands": [
+    [
+      "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python",
+      "scripts/run_ddp_ppo.py",
+      "--games",
+      "32",
+      "--envs",
+      "32",
+      "--workers",
+      "8",
+      "--epochs",
+      "2",
+      "--microbatch",
+      "1024",
+      "--minibatch",
+      "4096",
+      "--teams",
+      "engine/data/a10-training-teams.json",
+      "--dataset-manifest",
+      "data/teams/a10-p0-proposed-20261013/manifest.json",
+      "--precision-mode",
+      "D",
+      "--precision-stability",
+      "fp16-reduction-off",
+      "--experimental-lr-scale",
+      "0.5",
+      "--checkpoint-interval-matches",
+      "1",
+      "--deterministic-diagnostic",
+      "--timeout",
+      "900",
+      "--iterations",
+      "2",
+      "--report",
+      "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_release_replay/reference/report.json",
+      "--experimental-checkpoint",
+      "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_release_replay/reference/boundary",
+      "--rolling-checkpoint-root",
+      "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_release_replay/reference/rolling",
+      "--team-stats-root",
+      "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_release_replay/reference/team_stats"
+    ],
+    [
+      "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python",
+      "scripts/run_ddp_ppo.py",
+      "--games",
+      "32",
+      "--envs",
+      "32",
+      "--workers",
+      "8",
+      "--epochs",
+      "2",
+      "--microbatch",
+      "1024",
+      "--minibatch",
+      "4096",
+      "--teams",
+      "engine/data/a10-training-teams.json",
+      "--dataset-manifest",
+      "data/teams/a10-p0-proposed-20261013/manifest.json",
+      "--precision-mode",
+      "D",
+      "--precision-stability",
+      "fp16-reduction-off",
+      "--experimental-lr-scale",
+      "0.5",
+      "--checkpoint-interval-matches",
+      "1",
+      "--deterministic-diagnostic",
+      "--timeout",
+      "900",
+      "--iterations",
+      "1",
+      "--report",
+      "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_release_replay/first/report.json",
+      "--experimental-checkpoint",
+      "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_release_replay/first/boundary",
+      "--rolling-checkpoint-root",
+      "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_release_replay/first/rolling",
+      "--team-stats-root",
+      "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_release_replay/first/team_stats"
+    ],
+    [
+      "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python",
+      "scripts/run_ddp_ppo.py",
+      "--games",
+      "32",
+      "--envs",
+      "32",
+      "--workers",
+      "8",
+      "--epochs",
+      "2",
+      "--microbatch",
+      "1024",
+      "--minibatch",
+      "4096",
+      "--teams",
+      "engine/data/a10-training-teams.json",
+      "--dataset-manifest",
+      "data/teams/a10-p0-proposed-20261013/manifest.json",
+      "--precision-mode",
+      "D",
+      "--precision-stability",
+      "fp16-reduction-off",
+      "--experimental-lr-scale",
+      "0.5",
+      "--checkpoint-interval-matches",
+      "1",
+      "--deterministic-diagnostic",
+      "--timeout",
+      "900",
+      "--iterations",
+      "1",
+      "--report",
+      "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_release_replay/resumed/report.json",
+      "--experimental-checkpoint",
+      "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_release_replay/resumed/boundary",
+      "--rolling-checkpoint-root",
+      "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_release_replay/resumed/rolling",
+      "--team-stats-root",
+      "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_release_replay/first/team_stats",
+      "--resume-latest-from",
+      "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_release_replay/first/rolling"
+    ]
+  ],
+  "comparisons": {
+    "0": {
+      "model_digest": {
+        "reference": "c8556be306127f11a0cad8859a5bd701fdae737a347e1c2641632143707e98c5",
+        "resumed": "c8556be306127f11a0cad8859a5bd701fdae737a347e1c2641632143707e98c5",
+        "equal": true
+      },
+      "optimizer_digest": {
+        "reference": "3afc7ed9ae56953d4280c58ea429f08f789f99a7915c16be0cd9916276d11baa",
+        "resumed": "3afc7ed9ae56953d4280c58ea429f08f789f99a7915c16be0cd9916276d11baa",
+        "equal": true
+      },
+      "games": {
+        "reference": 32,
+        "resumed": 32,
+        "equal": true
+      },
+      "rows": {
+        "reference": 765,
+        "resumed": 765,
+        "equal": true
+      },
+      "global_committed_matches": {
+        "reference": 128,
+        "resumed": 128,
+        "equal": true
+      },
+      "rollout_digest": {
+        "reference": "6d1bc42914d9968fc610089c2792a6b4de2125bd986a5c052678c45846a7bead",
+        "resumed": "6d1bc42914d9968fc610089c2792a6b4de2125bd986a5c052678c45846a7bead",
+        "equal": true
+      },
+      "optimizer_steps": {
+        "reference": 4,
+        "resumed": 4,
+        "equal": true
+      },
+      "collector_wins": {
+        "reference": 20,
+        "resumed": 20,
+        "equal": true
+      },
+      "collector_losses": {
+        "reference": 12,
+        "resumed": 12,
+        "equal": true
+      },
+      "collector_draws": {
+        "reference": 0,
+        "resumed": 0,
+        "equal": true
+      },
+      "collector_operational_errors": {
+        "reference": 0,
+        "resumed": 0,
+        "equal": true
+      },
+      "scheduler": {
+        "reference": "876792512a1ac7779c0d26ff146c8ecd846e8cb792543e6afd12b26cf3d9b08b",
+        "resumed": "876792512a1ac7779c0d26ff146c8ecd846e8cb792543e6afd12b26cf3d9b08b",
+        "equal": true
+      },
+      "scaler": {
+        "reference": "b06feb87e44dcc3e30db47dc95035bb5e41174e3282bd278efdbf950b0d87ac6",
+        "resumed": "b06feb87e44dcc3e30db47dc95035bb5e41174e3282bd278efdbf950b0d87ac6",
+        "equal": true
+      },
+      "rng": {
+        "reference": "892c102783b0bd3af8647e9f5ea99b46c6fcf260bb46bed402943fbe10ddb9b3",
+        "resumed": "892c102783b0bd3af8647e9f5ea99b46c6fcf260bb46bed402943fbe10ddb9b3",
+        "equal": true
+      }
+    },
+    "1": {
+      "model_digest": {
+        "reference": "c8556be306127f11a0cad8859a5bd701fdae737a347e1c2641632143707e98c5",
+        "resumed": "c8556be306127f11a0cad8859a5bd701fdae737a347e1c2641632143707e98c5",
+        "equal": true
+      },
+      "optimizer_digest": {
+        "reference": "3afc7ed9ae56953d4280c58ea429f08f789f99a7915c16be0cd9916276d11baa",
+        "resumed": "3afc7ed9ae56953d4280c58ea429f08f789f99a7915c16be0cd9916276d11baa",
+        "equal": true
+      },
+      "games": {
+        "reference": 32,
+        "resumed": 32,
+        "equal": true
+      },
+      "rows": {
+        "reference": 807,
+        "resumed": 807,
+        "equal": true
+      },
+      "global_committed_matches": {
+        "reference": 128,
+        "resumed": 128,
+        "equal": true
+      },
+      "rollout_digest": {
+        "reference": "38731f990563c08a6bba676c8e32463fc0b7c8f3690ad26f4fc65b51ba6c0e87",
+        "resumed": "38731f990563c08a6bba676c8e32463fc0b7c8f3690ad26f4fc65b51ba6c0e87",
+        "equal": true
+      },
+      "optimizer_steps": {
+        "reference": 4,
+        "resumed": 4,
+        "equal": true
+      },
+      "collector_wins": {
+        "reference": 21,
+        "resumed": 21,
+        "equal": true
+      },
+      "collector_losses": {
+        "reference": 11,
+        "resumed": 11,
+        "equal": true
+      },
+      "collector_draws": {
+        "reference": 0,
+        "resumed": 0,
+        "equal": true
+      },
+      "collector_operational_errors": {
+        "reference": 0,
+        "resumed": 0,
+        "equal": true
+      },
+      "scheduler": {
+        "reference": "876792512a1ac7779c0d26ff146c8ecd846e8cb792543e6afd12b26cf3d9b08b",
+        "resumed": "876792512a1ac7779c0d26ff146c8ecd846e8cb792543e6afd12b26cf3d9b08b",
+        "equal": true
+      },
+      "scaler": {
+        "reference": "b06feb87e44dcc3e30db47dc95035bb5e41174e3282bd278efdbf950b0d87ac6",
+        "resumed": "b06feb87e44dcc3e30db47dc95035bb5e41174e3282bd278efdbf950b0d87ac6",
+        "equal": true
+      },
+      "rng": {
+        "reference": "5f780635627055586262b945cdc8a1e173aac9185999be1516098ad50032cff8",
+        "resumed": "5f780635627055586262b945cdc8a1e173aac9185999be1516098ad50032cff8",
+        "equal": true
+      }
+    }
+  },
+  "classification": "BIT_EXACT"
+}

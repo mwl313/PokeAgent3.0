@@ -1,12 +1,15 @@
 {
   "inventory_and_dossier_source_sha": "55d3b0a5e7ae776b53b4278add5acd2904f93983",
-  "tested_runtime_source_sha": "0492577d2ae611b3720f52f57939422b0148e103",
-  "runtime_note": "Later source commit changes only inventory/status scripts; Rust runtime unchanged.",
+  "tested_runtime_source_sha": "cc8cd97c57d342394be95e2c74baa50a2cc59e77",
+  "runtime_note": "See p4/RECEIPT.json per-execution exact source/clean status; early failed logs retained as historical evidence.",
   "production_started": false,
   "phase_status": {
-    "P0": "inventory/archive complete",
-    "P1": "partial; release blocked",
-    "P2-P5": "not started"
+    "P0": "complete",
+    "P1": "exact-pool gate complete",
+    "P2": "passed",
+    "P3": "passed",
+    "P4": "passed",
+    "P5": "not yet launched"
   },
   "test_runs": {
     "P1_ALL_UNIT.log": {
@@ -40,5 +43,12 @@
     "P1_PHASE_EXIT_REPORT.md": "cbffff2f98d973c059b5ada9f0ac8c3e6a5de4a939fe05e4636cb4765a596baf",
     "P1_PRIMITIVES_AFTER.log": "ea99050245d391279d2209bbb087a412766c254af22a0c116bc8143ebd4349a7",
     "P1_REGRESSION.log": "db7e2ebc4faedf1b915bd6fe0873b9520f4975321322e9b91143ef45f70db5d1"
-  }
+  },
+  "historical_initial_phase_status": {
+    "P0": "inventory/archive complete",
+    "P1": "partial; release blocked",
+    "P2-P5": "not started"
+  },
+  "historical_initial_runtime_source_sha": "0492577d2ae611b3720f52f57939422b0148e103",
+  "current_receipt": "p4/RECEIPT.json"
 }
