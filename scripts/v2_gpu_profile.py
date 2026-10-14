@@ -55,6 +55,14 @@ def main():
             scope=torch.profiler.record_function('V2_MODULE_'+key);scope.__enter__();scopes[key]=scope
         def after(module,args,output,key=name):scopes.pop(key).__exit__(None,None,None)
         handles.extend([module.register_forward_pre_hook(before),module.register_forward_hook(after)])
+    for name in ['build_keys','score_keys','advance_keys','token_references','action_features']:
+        original=getattr(model.scorer,name)
+        def wrapped(*args,_name=name,_original=original,**kwargs):
+            with torch.profiler.record_function('V2_SCORER_'+_name):
+                torch.cuda.nvtx.range_push('V2_SCORER_'+_name)
+                try:return _original(*args,**kwargs)
+                finally:torch.cuda.nvtx.range_pop()
+        setattr(model.scorer,name,wrapped)
     torch.cuda.reset_peak_memory_stats()
     with torch.profiler.profile(activities=[torch.profiler.ProfilerActivity.CPU,torch.profiler.ProfilerActivity.CUDA]) as prof:
         step();torch.cuda.synchronize()
