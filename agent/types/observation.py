@@ -216,6 +216,20 @@ class ObservationBatch:
             if not bool(torch.isfinite(section.values).all()):
                 raise ValueError(f'nonfinite ragged feature {name}')
 
+    def active_to_roster(self):
+        """Player-known active positions → stable own roster, -1 if absent."""
+        values=self.categories[:,4:10,22].detach().cpu().numpy()
+        known=self.category_known[:,4:10,22].detach().cpu().numpy()
+        if not known.all() or np.any((values<0)|(values>2)):
+            raise ValueError('missing/invalid own active-to-roster metadata')
+        mapping=np.full((len(self),2),-1,np.int64)
+        for slot in (0,1):
+            matches=values==slot+1
+            if np.any(matches.sum(1)>1):raise ValueError('duplicate own active roster assignment')
+            for row in np.flatnonzero(matches.any(1)):
+                mapping[row,slot]=int(np.flatnonzero(matches[row])[0])
+        return mapping
+
     @property
     def validated_token_limit(self) -> int | None:
         """CPU-proven bound on participating tokens, or ``None`` if unknown.
@@ -368,6 +382,8 @@ class ObservationBatch:
         for row in SPEC['category_features']:
             categories[:,:,row['index']] %= row['max_id']+1
         categories[:,:,17]=0  # synthetic IDs must match their synthetic namespace
+        categories[:,4:10,22]=0
+        categories[:,4,22]=1;categories[:,5,22]=2
         floats = torch.randn(
             (batch_size, layout.TOKENS, layout.FLOAT_SLOTS), generator=generator
         )

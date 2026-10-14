@@ -100,7 +100,7 @@ class BatchedPolicyEvaluator:
                         candidate_start=time.perf_counter(); count_bytes, action_bytes, _ = self.engine.candidates_packed_walk(walk_handles, walk_sides, level, np.ascontiguousarray(prefix[:, :level, :]).tobytes()); packed=parse_packed_candidates(count_bytes, action_bytes, len(indices)); self.timing["candidates"] += time.perf_counter()-candidate_start
                         if np.any(packed["counts"] <= 0): raise RuntimeError("native engine returned an empty legal candidate set")
                         if mode == "checkpoint":
-                            table=self._helper._level_table_packed(packed["counts"], packed["records"], packed["offsets"])
+                            table=self._helper._level_table_packed(packed["counts"], packed["records"], packed["offsets"],subset.active_to_roster())
                             uniforms=[self._uniform(cohort[decision[idx][0]], decision[idx][1], decisions[decision[idx][0]][decision[idx][1]], level) for idx in indices]
                             model_start=time.perf_counter()
                             with torch.inference_mode(): picks, hidden=self._sample_model(sample_model, encoded, hidden, table, uniforms)

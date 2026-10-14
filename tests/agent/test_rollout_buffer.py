@@ -70,6 +70,9 @@ def test_encoder_activations_are_not_stored():
         "flag_known",
         "role_ids",
         "side_ids",
+        "schema_version", "contract_hash",
+        "effect_counts", "repertoire_counts", "type_counts", "base_move_counts", "move_effect_counts",
+        "ragged_effects", "ragged_repertoire", "ragged_types", "ragged_base_moves", "ragged_move_effects",
     }
     # No 320-wide encoder activation of any kind is present.
     for name, array in payload.items():

@@ -47,6 +47,15 @@ def collection(native_engine_data):
         collect_both_sides_when_current_self_play=True,
     )
     collector = NativeCollector(engine, model, config, device="cpu")
+    learner_seats={}
+    reset=collector._reset_cohort
+    def recorded_reset():
+        result=reset()
+        for index,role in enumerate(result[2]):
+            learner_seats[collector._match_counter+index]=tuple(role).index(0)
+        return result
+    collector._reset_cohort=recorded_reset
+    collector._test_learner_seats=learner_seats
     buffer = collector.collect(16)
     return collector, buffer
 
@@ -94,7 +103,7 @@ def test_terminal_rewards_are_opposite_and_paid_once_per_side(collection):
         first, second = terminal_rewards[(match_id, 0)], terminal_rewards[(match_id, 1)]
         assert first == -second, (match_id, first, second)
         assert first != 0.0 or second == 0.0
-        learner_revenue += second  # learner seat is side 1 for this fixture's role layout
+        learner_revenue += terminal_rewards[(match_id,collector._test_learner_seats[match_id])]
     assert learner_revenue == pytest.approx(collector.stats.reward_sum)
     assert collector.stats.wins + collector.stats.losses + collector.stats.draws == collector.stats.games
 

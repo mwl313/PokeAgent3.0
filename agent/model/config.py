@@ -22,6 +22,8 @@ class PA3Config:
     name: str = "PA3-8M"
     initialization: str = "random"
     observation_contract_hash: str = CONTRACT_HASH
+    target_vocab: int = 5
+    null_entity_reference: bool = True
 
     # Transformer encoder
     encoder_layers: int = 6
@@ -68,6 +70,8 @@ class PA3Config:
     def validate(self) -> None:
         if self.observation_contract_hash != CONTRACT_HASH:
             raise ValueError("model observation contract is incompatible with V2")
+        if self.target_vocab != 5 or not self.null_entity_reference:
+            raise ValueError('model Action V2 architecture mismatch')
         if self.attention_heads * self.head_dim != self.d_model:
             raise ValueError(
                 "attention_heads * head_dim must equal d_model "

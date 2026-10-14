@@ -34,9 +34,9 @@ BRANCH_CAPACITY = 4
 NO_SLOT = 255
 """``engine/src/actions.rs::NO_SLOT``; used for unpresent tuple fields."""
 
-TARGET_LOCATION_MIN = -1
-TARGET_LOCATION_MAX = 4
-"""Player-visible target locations: -1 self/field, 0..3 opposing slots."""
+TARGET_LOCATION_MIN = -2
+TARGET_LOCATION_MAX = 2
+"""Native signed locations: own side -2/-1, automatic 0, foes 1/2."""
 
 
 class RequestKind(IntEnum):
@@ -71,12 +71,10 @@ class Resource(IntEnum):
 
 
 def normalize_target_location(value: int) -> int:
-    """Clamp an ``i8`` target location into the model's embedding range."""
+    """Validate an already signed canonical target; never alias by clamping."""
     value = int(value)
-    if value < TARGET_LOCATION_MIN:
-        return TARGET_LOCATION_MIN
-    if value > TARGET_LOCATION_MAX:
-        return TARGET_LOCATION_MAX
+    if not TARGET_LOCATION_MIN <= value <= TARGET_LOCATION_MAX:
+        raise ValueError(f"target outside native signed range: {value}")
     return value
 
 
@@ -92,12 +90,17 @@ class AtomicAction:
     resource: int = int(Resource.NONE)
 
     def __post_init__(self) -> None:
+        normalize_target_location(self.target_location)
         if int(self.kind) not in {int(k) for k in ActionKind}:
             raise ValueError(f"unknown action kind {self.kind!r}")
         if int(self.resource) not in {int(r) for r in Resource}:
             raise ValueError(f"unknown action resource {self.resource!r}")
         if not 0 <= int(self.own_slot) <= NO_SLOT:
             raise ValueError(f"own_slot out of range: {self.own_slot!r}")
+        if not 0 <= int(self.move_slot) <= NO_SLOT:
+            raise ValueError(f"move_slot out of range: {self.move_slot!r}")
+        if not 0 <= int(self.switch_destination) <= NO_SLOT:
+            raise ValueError(f"switch_destination out of range: {self.switch_destination!r}")
 
     @classmethod
     def from_tuple(cls, values: Sequence[int]) -> "AtomicAction":

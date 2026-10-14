@@ -218,6 +218,8 @@ def parse_packed_candidates(counts: bytes, actions: bytes, request_count: int) -
     `sum(counts)` fixed 6-field `u8` records in request order:
     `(kind, own_slot, move_slot, target_as_i8, destination, resource)`.
     """
+    if request_count<0 or len(counts)!=request_count*2:
+        raise ValueError('packed candidate count header size mismatch')
     counts_array = np.frombuffer(counts, dtype="<u2", count=request_count)
     total = int(counts_array.sum())
     expected = total * PACKED_CANDIDATE_FIELDS

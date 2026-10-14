@@ -105,7 +105,7 @@ class FrozenPPOPolicy:
             for level, candidates in enumerate(candidate_lists):
                 if not candidates:
                     raise ValueError("candidate branch is empty")
-                table = self._helper._level_table([candidates])
+                table = self._helper._level_table([candidates],observation.active_to_roster())
                 keys = self.model.scorer.build_keys(encoded.tokens, table.action_ids[:, 0],
                                                     table.entity_token[:, 0], table.move_token[:, 0])
                 logits = self.model.scorer.score_keys(keys, hidden, table.mask[:, 0])

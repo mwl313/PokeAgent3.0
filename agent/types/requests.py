@@ -34,7 +34,7 @@ NO_TOKEN = -1
 
 
 def resolve_action_tokens(
-    layout: ObservationLayout, action: AtomicAction
+    layout: ObservationLayout, action: AtomicAction, active_to_roster=None
 ) -> tuple[int, int]:
     """Token indices an action refers to inside its own observation.
 
@@ -46,22 +46,13 @@ def resolve_action_tokens(
     ``NO_TOKEN`` is returned for the move reference of non-move actions; the
     scorer substitutes a learned null embedding instead of a token gather.
     """
-    kind = int(action.kind)
-    if kind == ActionKind.PICK:
-        return layout.self_pokemon_token(int(action.switch_destination)), NO_TOKEN
-    if kind == ActionKind.MOVE:
-        own_slot = int(action.own_slot)
-        move_slot = int(action.move_slot)
-        entity = layout.self_pokemon_token(own_slot) if 0 <= own_slot < 6 else NO_TOKEN
-        # Struggle (and engine-internal move encodings) carry NO_SLOT for the
-        # move slot; the scorer then substitutes its learned null move embedding
-        # instead of gathering a token that does not exist.
-        if 0 <= move_slot < 4 and 0 <= own_slot < 6:
-            return entity, layout.move_token(own_slot, move_slot)
-        return entity, NO_TOKEN
-    if kind in (ActionKind.SWITCH, ActionKind.PASS):
-        return layout.self_pokemon_token(int(action.own_slot)), NO_TOKEN
-    raise ValueError(f"unsupported action kind {action.kind!r}")
+    from agent.types.action_mapping import token_refs
+    if active_to_roster is None:
+        if int(action.kind)!=ActionKind.PICK:
+            raise ValueError('normal action requires player-known active-to-roster map')
+        active_to_roster=(-1,-1)
+    _,entity,move=token_refs([action.as_tuple()],active_to_roster,layout)
+    return int(entity[0]),int(move[0])
 
 
 @dataclass(frozen=True)
@@ -74,9 +65,9 @@ class ActionRef:
 
     @classmethod
     def resolve(
-        cls, layout: ObservationLayout, action: AtomicAction
+        cls, layout: ObservationLayout, action: AtomicAction, active_to_roster=None
     ) -> "ActionRef":
-        entity, move = resolve_action_tokens(layout, action)
+        entity, move = resolve_action_tokens(layout, action, active_to_roster)
         return cls(action=action, entity_token=entity, move_token=move)
 
     @property
@@ -107,13 +98,21 @@ class RequestRow:
                 f"{len(self.branch_slots)} branch slots"
             )
         if not self.refs:
+            mapping=self.observation.active_to_roster()[0]
             self.refs = tuple(
-                tuple(ActionRef.resolve(self.layout, action) for action in branch.actions)
+                tuple(ActionRef.resolve(self.layout, action,mapping) for action in branch.actions)
                 for branch in self.branches
             )
+        if len(self.refs) != len(self.branches):
+            raise ValueError("branch references must cover every branch")
+        mapping = self.observation.active_to_roster()[0]
         for branch, refs in zip(self.branches, self.refs):
             if len(branch.actions) != len(refs):
                 raise ValueError("branch candidates and references must align")
+            for action, ref in zip(branch.actions, refs):
+                expected = ActionRef.resolve(self.layout, action, mapping)
+                if ref != expected:
+                    raise ValueError("candidate reference identity/order mismatch")
 
     # -- convenience -----------------------------------------------------
     @property

@@ -258,6 +258,9 @@ class NativeCollector:
         stays balanced over the iteration. When `slots` is given the engine's
         per-slot reset is used, so in-flight handles stay valid (v5d A6).
         """
+        if slots is not None and (len(slots)!=count or len(set(slots))!=count or
+                any(not 0<=int(slot)<len(self._assignments) for slot in slots)):
+            raise ValueError('invalid partial refill assignment slots')
         team_a, team_b, seeds, roles = [], [], [], []
         for index in range(count):
             team_a.append(rng.randrange(self._team_count))
@@ -272,7 +275,12 @@ class NativeCollector:
             handles = self.engine.reset_slots_batch(
                 [int(slot) for slot in slots], team_a, team_b, seeds, roles
             )
-        self._assignments = self._make_assignments(len(roles), roles)
+        assignments=self._make_assignments(len(roles),roles)
+        if slots is None:
+            self._assignments=assignments
+        else:
+            for slot,assignment in zip(slots,assignments):
+                self._assignments[int(slot)]=assignment
         self.stats.reset_seconds += time.perf_counter() - start
         self.stats.cohorts += 1
         self.stats.team_ids_seen += len(set(team_a) | set(team_b))
@@ -297,7 +305,7 @@ class NativeCollector:
         return side == self._learner_side(roles)
 
     def _level_table(
-        self, candidate_rows: Sequence[Sequence[Sequence[int]]]
+        self, candidate_rows: Sequence[Sequence[Sequence[int]]], active_maps=None
     ) -> BranchCandidatesBatch:
         """Build a single-branch table for one level from native candidate tuples."""
         batch = len(candidate_rows)
@@ -316,7 +324,7 @@ class NativeCollector:
                 )
             for index, packed in enumerate(candidates):
                 action = AtomicAction.from_tuple(packed)
-                ref = ActionRef.resolve(self.layout, action)
+                ref = ActionRef.resolve(self.layout, action,None if active_maps is None else active_maps[row_index])
                 action_ids[row_index, 0, index] = torch.tensor(ref.tuple, dtype=torch.long)
                 mask[row_index, 0, index] = True
                 entity[row_index, 0, index] = int(ref.entity_token)
@@ -330,7 +338,7 @@ class NativeCollector:
             selected=torch.full((batch, 1), -1, dtype=torch.long, device=self.device),
         )
 
-    def _level_table_packed(self, counts, records, offsets) -> BranchCandidatesBatch:
+    def _level_table_packed(self, counts, records, offsets, active_maps=None) -> BranchCandidatesBatch:
         """Vectorized single-branch table from the packed candidate wire.
 
         No per-candidate Python object is created: the `[B, 1, P, 6]` action
@@ -340,28 +348,28 @@ class NativeCollector:
         import numpy as np
 
         from pa3_engine.observation import packed_candidate_rows
+        from agent.types.action_mapping import token_refs
 
         batch = len(counts)
         total = len(records)
+        if len(offsets)!=batch+1 or int(offsets[0])!=0 or int(offsets[-1])!=total or not np.array_equal(np.diff(offsets),counts):
+            raise ValueError('packed candidate offsets/counts mismatch')
+        if batch and (np.any(counts==0) or int(counts.max())>self.config.candidate_capacity):
+            raise ValueError('empty/overflowed packed candidate capacity; no truncation allowed')
         capacity = max(int(counts.max()) if batch else 0, 1)
         action_ids = np.zeros((batch, 1, capacity, 6), dtype=np.int64)
         mask = np.zeros((batch, 1, capacity), dtype=bool)
+        entity = np.full((batch,1,capacity),-1,np.int64)
+        move_token = np.full_like(entity,-1)
         if total:
             row, position = packed_candidate_rows({"counts": counts, "records": records, "offsets": offsets})
-            action_ids[row, 0, position] = records.astype(np.int64)
             mask[row, 0, position] = True
-        kind = action_ids[..., 0]
-        own_slot = action_ids[..., 1]
-        move_slot = action_ids[..., 2]
-        destination = action_ids[..., 4]
-        # Same token mapping as ActionRef.resolve, vectorized.
-        slot_for_entity = np.where(kind == 0, destination, own_slot)
-        valid_entity = (slot_for_entity >= 0) & (slot_for_entity < 6) & mask
-        entity = np.where(valid_entity, self.layout.POKEMON_START + slot_for_entity, -1)
-        valid_move = (kind == 1) & (own_slot >= 0) & (own_slot < 6) & (move_slot >= 0) & (move_slot < 4) & mask
-        move_token = np.where(
-            valid_move, self.layout.MOVES_START + own_slot * 4 + move_slot, -1
-        )
+            for i in range(batch):
+                raw=records[int(offsets[i]):int(offsets[i+1])]
+                if active_maps is None and np.any(raw[:,0]!=0):
+                    raise ValueError('packed normal action requires active-to-roster metadata')
+                canonical,actors,moves=token_refs(raw,(-1,-1) if active_maps is None else active_maps[i],self.layout)
+                n=len(raw);action_ids[i,0,:n]=canonical;entity[i,0,:n]=actors;move_token[i,0,:n]=moves
         return BranchCandidatesBatch(
             action_ids=torch.as_tensor(action_ids).to(self.device),
             mask=torch.as_tensor(mask).to(self.device),
@@ -401,9 +409,10 @@ class NativeCollector:
                   int(record[4]), int(record[5]))
                  for record in packed["records"][start:stop] ]
 
-    def _packed_row_inputs(self, packed_by_level, offset: int, branch_count: int):
+    def _packed_row_inputs(self, packed_by_level, offset: int, branch_count: int, active_map=None):
         """Per-level record arrays plus vectorized entity/move token references."""
         import numpy as np
+        from agent.types.action_mapping import token_refs
 
         records = []
         entities = []
@@ -413,17 +422,10 @@ class NativeCollector:
             start = int(packed["offsets"][offset])
             stop = int(packed["offsets"][offset + 1])
             record = packed["records"][start:stop]
-            records.append(record)
-            kind = record[:, 0].astype(np.int64)
-            own_slot = record[:, 1].astype(np.int64)
-            move_slot = record[:, 2].astype(np.int64)
-            destination = record[:, 4].astype(np.int64)
-            slot_for_entity = np.where(kind == 0, destination, own_slot)
-            valid_entity = (slot_for_entity >= 0) & (slot_for_entity < 6)
-            entities.append(np.where(valid_entity, self.layout.POKEMON_START + slot_for_entity, -1))
-            valid_move = ((kind == 1) & (own_slot >= 0) & (own_slot < 6)
-                          & (move_slot >= 0) & (move_slot < 4))
-            moves.append(np.where(valid_move, self.layout.MOVES_START + own_slot * 4 + move_slot, -1))
+            if active_map is None and np.any(record[:,0]!=0):
+                raise ValueError('stored normal action requires active-to-roster metadata')
+            canonical,actor,move=token_refs(record,(-1,-1) if active_map is None else active_map,self.layout)
+            records.append(canonical);entities.append(actor);moves.append(move)
         return records, entities, moves
 
     def _record(
@@ -547,6 +549,7 @@ class NativeCollector:
                     if len(indices) > 1 else observations[indices[0]]
                 subset_obs = subset_obs.to(self.device)
             self.stats.h2d_seconds += time.perf_counter() - start
+            active_maps=subset_obs.active_to_roster()
             amp_context, grad_context = self._inference_context()
             start = time.perf_counter()
             with grad_context, amp_context:
@@ -610,8 +613,8 @@ class NativeCollector:
                 with grad_context, amp_context:
                     start_table = time.perf_counter()
                     level_table = (
-                        self._level_table_packed(packed["counts"], packed["records"], packed["offsets"])
-                        if packed is not None else self._level_table(candidate_lists)
+                        self._level_table_packed(packed["counts"], packed["records"], packed["offsets"],active_maps)
+                        if packed is not None else self._level_table(candidate_lists,active_maps)
                     )
                     self.stats.table_seconds += time.perf_counter() - start_table
                     start_model = time.perf_counter()
@@ -664,7 +667,7 @@ class NativeCollector:
                         # Fast path: no typed ActionRef/CandidateSet objects and
                         # no per-row torch copy — compact numpy rows only.
                         records, entities, moves = self._packed_row_inputs(
-                            packed_by_level, offset, branch_count
+                            packed_by_level, offset, branch_count,active_maps[offset]
                         )
                         # compact_batch is indexed by the round-wide decision
                         # index, while `offset` is the index inside this branch

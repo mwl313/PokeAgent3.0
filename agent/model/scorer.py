@@ -68,7 +68,7 @@ class ConditionalPrefixScorer(nn.Module):
         self.kind_embedding = nn.Embedding(4, self.field_embed_dims["kind"])
         self.own_slot_embedding = nn.Embedding(256, self.field_embed_dims["own_slot"])
         self.move_slot_embedding = nn.Embedding(256, self.field_embed_dims["move_slot"])
-        self.target_embedding = nn.Embedding(8, self.field_embed_dims["target"])
+        self.target_embedding = nn.Embedding(config.target_vocab, self.field_embed_dims["target"])
         self.destination_embedding = nn.Embedding(
             256, self.field_embed_dims["destination"]
         )
@@ -79,6 +79,7 @@ class ConditionalPrefixScorer(nn.Module):
         self.entity_projection = nn.Linear(d, d)
         self.move_projection = nn.Linear(d, d)
         self.null_move = nn.Parameter(torch.zeros(d))
+        self.null_entity = nn.Parameter(torch.zeros(d))
         self.key_norm = nn.LayerNorm(d)
         self.query_projection = nn.Linear(d, d)
         self.query_norm = nn.LayerNorm(d)
@@ -124,19 +125,24 @@ class ConditionalPrefixScorer(nn.Module):
             # start perfectly uniform with no learnable direction.
             nn.init.normal_(self.initial_hidden, std=cfg.embedding_init_std)
             self.null_move.zero_()
+            self.null_entity.zero_()
             self.key_norm.reset_parameters()
             self.query_norm.reset_parameters()
 
     # -- helpers ---------------------------------------------------------
     @staticmethod
     def _field_ids(action_ids: torch.Tensor) -> tuple[torch.Tensor, ...]:
-        kind = action_ids[..., 0].clamp(0, 3)
-        own_slot = action_ids[..., 1].clamp(0, 255)
-        move_slot = action_ids[..., 2].clamp(0, 255)
+        kind = action_ids[..., 0]
+        own_slot = action_ids[..., 1]
+        move_slot = action_ids[..., 2]
         raw_target = action_ids[..., 3]
-        target = (raw_target.clamp(TARGET_MIN, TARGET_MAX) + 1).clamp(0, 7)
-        destination = action_ids[..., 4].clamp(0, 255)
-        resource = action_ids[..., 5].clamp(0, 1)
+        destination = action_ids[..., 4]
+        resource = action_ids[..., 5]
+        if bool(((kind<0)|(kind>3)|(own_slot<0)|(own_slot>255)|(move_slot<0)|(move_slot>255)|
+                 (raw_target<TARGET_MIN)|(raw_target>TARGET_MAX)|(destination<0)|(destination>255)|
+                 (resource<0)|(resource>1)).any()):
+            raise ValueError('invalid canonical Action V2 fields; clamping forbidden')
+        target = raw_target - TARGET_MIN
         return kind, own_slot, move_slot, target, destination, resource
 
     def action_features(self, action_ids: torch.Tensor) -> torch.Tensor:
@@ -166,17 +172,23 @@ class ConditionalPrefixScorer(nn.Module):
     ) -> torch.Tensor:
         """Gather entity/move references and project them into key space."""
         tokens, token_count, d = encoded_tokens.shape
-        flat_entity = entity_token.reshape(tokens, -1).clamp(0, token_count - 1)
+        flat_entity = entity_token.reshape(tokens, -1)
+        if bool(((flat_entity < -1)|(flat_entity>=token_count)).any()):
+            raise ValueError('invalid actor token reference')
+        has_entity=flat_entity>=0
         entity_ref = torch.gather(
-            encoded_tokens, 1, flat_entity.unsqueeze(-1).expand(-1, -1, d)
+            encoded_tokens, 1, flat_entity.clamp_min(0).unsqueeze(-1).expand(-1, -1, d)
         )
+        entity_ref=torch.where(has_entity.unsqueeze(-1),entity_ref,self.null_entity.view(1,1,d))
 
         flat_move = move_token.reshape(tokens, -1)
+        if bool(((flat_move < -1)|(flat_move>=token_count)).any()):
+            raise ValueError('invalid move token reference')
         has_move = flat_move >= 0
         move_ref = torch.gather(
             encoded_tokens,
             1,
-            flat_move.clamp(0, token_count - 1).unsqueeze(-1).expand(-1, -1, d),
+            flat_move.clamp_min(0).unsqueeze(-1).expand(-1, -1, d),
         )
         move_ref = torch.where(
             has_move.unsqueeze(-1), move_ref, self.null_move.view(1, 1, d)

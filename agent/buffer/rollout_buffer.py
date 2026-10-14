@@ -388,6 +388,8 @@ class RolloutBuffer:
         action_ids = []
         masks = []
         for level in branch_records:
+            from agent.types.action_mapping import canonical_records
+            level=canonical_records(level)
             records = tuple(map(tuple, level.tolist())) if hasattr(level, "tolist") else tuple(
                 tuple(int(v) for v in record) for record in level
             )

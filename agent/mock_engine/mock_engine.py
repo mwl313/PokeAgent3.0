@@ -170,6 +170,8 @@ class MockNativeEngine:
         for row in SPEC['category_features']:
             payload['categories'][:,row['index']] %= row['max_id']+1
         payload['categories'][:,17]=0
+        payload['categories'][4:10,22]=0
+        payload['categories'][4,22]=1;payload['categories'][5,22]=2
         payload['category_known'][:,[30,31]]=False
         payload['float_known'][:,49]=False
         for name,fields in FIELDS.items():

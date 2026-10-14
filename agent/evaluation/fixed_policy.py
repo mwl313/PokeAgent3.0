@@ -116,7 +116,7 @@ class FixedPolicyEvaluator:
             )
             actions = []
             for candidates in candidates_by_level:
-                table = self._helper._level_table([candidates])
+                table = self._helper._level_table([candidates],observation.active_to_roster())
                 step = model.sample_level_step(encoded, hidden, table, generator=rng)
                 pick = int(step.pick.item())
                 actions.append(tuple(candidates[pick]))
@@ -185,7 +185,7 @@ class FixedPolicyEvaluator:
                         candidates = self._candidates(handle, side, prefix)
                         candidates_by_level.append(candidates)
                         if side_kind == "checkpoint":
-                            table = self._helper_for(side_model)._level_table([candidates])
+                            table = self._helper_for(side_model)._level_table([candidates],observation.active_to_roster())
                             with torch.inference_mode():
                                 step = side_model.sample_level_step(encoded, hidden, table, generator=torch_rng)
                             pick = int(step.pick.item())
