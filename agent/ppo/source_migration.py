@@ -20,6 +20,9 @@ def git(root, *args):
 
 def validate_recovery_migration(path, root, source, target):
     receipt = json.loads(Path(path).read_text())
+    if receipt.get('schema')=='pa3-v2-data-path-migration-v1':
+        from agent.ppo.v2_source_migration import validate_v2_migration
+        return validate_v2_migration(receipt,root,source,target)
     if receipt.get("schema") != "a10-exact-recovery-migration-v1" or source != BASE:
         raise ValueError("unsupported A10 recovery source")
     if (receipt.get("source_sha"), receipt.get("target_sha")) != (source, target):

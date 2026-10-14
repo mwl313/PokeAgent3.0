@@ -51,8 +51,11 @@ class RaggedBatch:
         if index.ndim!=1 or np.any(index<0) or np.any(index>=len(self.host_counts)):
             raise ValueError("ragged selection index out of range")
         offsets=np.r_[0,np.cumsum(self.host_counts.sum(1))]
-        ranges=[np.arange(offsets[i],offsets[i+1],dtype=np.int64) for i in index]
-        gather=np.concatenate(ranges) if ranges else np.zeros(0,np.int64)
+        lengths=offsets[index+1]-offsets[index]
+        starts=np.cumsum(lengths)-lengths
+        # One vectorized gather, including repeats, arbitrary order and empty
+        # rows. Offsets are recomputed: no mutable-CSR cache is trusted.
+        gather=np.arange(int(lengths.sum()),dtype=np.int64)+np.repeat(offsets[index]-starts,lengths)
         counts=self.host_counts[index].copy()
         return RaggedBatch(self.values.index_select(0,torch.as_tensor(gather,device=self.values.device)),
                            torch.as_tensor(counts,device=self.counts.device),counts)

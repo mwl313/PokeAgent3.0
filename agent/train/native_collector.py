@@ -190,7 +190,8 @@ class NativeCollector:
                 layout=self.layout, observation_store=ColumnarObservationStore()
             )
         else:
-            self.buffer = RolloutBuffer(layout=self.layout)
+            from agent.buffer.rollout_buffer import BlockObservationStore
+            self.buffer = RolloutBuffer(layout=self.layout,observation_store=BlockObservationStore())
         self.generator = torch.Generator(device=self.device.type).manual_seed(self.config.seed)
         self.stats = NativeCollectorStats()
         self._match_counter = 0
@@ -340,7 +341,7 @@ class NativeCollector:
             selected=torch.full((batch, 1), -1, dtype=torch.long, device=self.device),
         )
 
-    def _level_table_packed(self, counts, records, offsets, active_maps=None) -> BranchCandidatesBatch:
+    def _level_table_packed(self, counts, records, offsets, active_maps=None, canonical=None) -> BranchCandidatesBatch:
         """Vectorized single-branch table from the packed candidate wire.
 
         No per-candidate Python object is created: the `[B, 1, P, 6]` action
@@ -350,7 +351,7 @@ class NativeCollector:
         import numpy as np
 
         from pa3_engine.observation import packed_candidate_rows
-        from agent.types.action_mapping import token_refs
+        from agent.types.action_mapping import CanonicalCandidateBlock
 
         batch = len(counts)
         total = len(records)
@@ -363,15 +364,14 @@ class NativeCollector:
         mask = np.zeros((batch, 1, capacity), dtype=bool)
         entity = np.full((batch,1,capacity),-1,np.int64)
         move_token = np.full_like(entity,-1)
+        if canonical is None:
+            canonical=CanonicalCandidateBlock.from_packed(counts,records,offsets,active_maps,self.layout,self.config.candidate_capacity)
         if total:
-            row, position = packed_candidate_rows({"counts": counts, "records": records, "offsets": offsets})
+            row, position = canonical.rows,canonical.positions
             mask[row, 0, position] = True
-            for i in range(batch):
-                raw=records[int(offsets[i]):int(offsets[i+1])]
-                if active_maps is None and np.any(raw[:,0]!=0):
-                    raise ValueError('packed normal action requires active-to-roster metadata')
-                canonical,actors,moves=token_refs(raw,(-1,-1) if active_maps is None else active_maps[i],self.layout)
-                n=len(raw);action_ids[i,0,:n]=canonical;entity[i,0,:n]=actors;move_token[i,0,:n]=moves
+            action_ids[row,0,position]=canonical.records
+            entity[row,0,position]=canonical.entity
+            move_token[row,0,position]=canonical.move
         return BranchCandidatesBatch(
             action_ids=torch.as_tensor(action_ids).to(self.device),
             mask=torch.as_tensor(mask).to(self.device),
@@ -421,6 +421,10 @@ class NativeCollector:
         moves = []
         for level in range(branch_count):
             packed = packed_by_level[level]
+            if '_canonical' in packed:
+                row=packed['_canonical'].row(offset)
+                records.append(row);entities.append(row.entity);moves.append(row.move)
+                continue
             start = int(packed["offsets"][offset])
             stop = int(packed["offsets"][offset + 1])
             record = packed["records"][start:stop]
@@ -536,6 +540,11 @@ class NativeCollector:
         # Batch-level compact observation (one conversion for the whole round)
         # for the packed rollout fast path.
         compact_batch = batch_observations.to_compact_numpy() if batch_observations is not None else None
+        observation_block_ref=None
+        if compact_batch is not None and hasattr(self.buffer.observation_store,'own_block'):
+            start_record=time.perf_counter()
+            observation_block_ref=self.buffer.observation_store.own_block(compact_batch)
+            self.stats.record_seconds+=time.perf_counter()-start_record
         for (policy_id, branch_count), indices in sorted(groups.items()):
             group_row_start = len(self.buffer.rows)
             group_observation_hash = None
@@ -614,8 +623,13 @@ class NativeCollector:
                 packed_by_level.append(packed)
                 with grad_context, amp_context:
                     start_table = time.perf_counter()
+                    if packed is not None:
+                        from agent.types.action_mapping import CanonicalCandidateBlock
+                        packed['_canonical']=CanonicalCandidateBlock.from_packed(
+                            packed['counts'],packed['records'],packed['offsets'],active_maps,
+                            self.layout,self.config.candidate_capacity)
                     level_table = (
-                        self._level_table_packed(packed["counts"], packed["records"], packed["offsets"],active_maps)
+                        self._level_table_packed(packed["counts"], packed["records"], packed["offsets"],active_maps,packed['_canonical'])
                         if packed is not None else self._level_table(candidate_lists,active_maps)
                     )
                     self.stats.table_seconds += time.perf_counter() - start_table
@@ -679,6 +693,7 @@ class NativeCollector:
                         self.buffer.record_packed(
                             compact_batch,
                             observation_index=decision_offset,
+                            observation_block_ref=observation_block_ref,
                             branch_records=records,
                             entity_token=entities,
                             move_token=moves,

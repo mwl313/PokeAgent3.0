@@ -72,6 +72,11 @@ class InlineObservationStore(ObservationStore):
         row = self._rows[index]
         return ObservationBatch.from_compact_numpy(row)
 
+    def add_compact_at(self, block: dict, index: int) -> int:
+        # Slices are borrowed only for this call. add_compact owns each fixed
+        # array and deep-copies each ragged payload exactly once.
+        return self.add_compact({key:value[index:index+1] for key,value in block.items()})
+
     def __len__(self) -> int:
         return len(self._rows)
 
@@ -102,6 +107,61 @@ class InlineObservationStore(ObservationStore):
             for key in chosen[0]
         }
         return ObservationBatch.from_compact_numpy(combined)
+
+
+class BlockObservationStore(InlineObservationStore):
+    """Own each producer batch once; row references are (block, offset) pairs.
+
+    No source-identity cache: own_block always copies. All public reads gather
+    fresh fixed arrays; ragged reconstruction also owns its numeric payloads.
+    This prevents writable source or returned tensors mutating earlier rows.
+    """
+    def __init__(self):
+        self._blocks=[]
+        self._rows=[]
+
+    def own_block(self, block):
+        owned={}
+        for key,value in block.items():
+            copied=value.copy()
+            if value.dtype.hasobject:
+                for i,row in enumerate(value):copied[i]=row.copy()
+            owned[key]=copied
+        index=len(self._blocks);self._blocks.append(owned)
+        return index
+
+    def add_block_row(self, block_index, index):
+        block=self._blocks[block_index]
+        if not 0<=index<len(next(iter(block.values()))):raise IndexError(index)
+        ref=len(self._rows);self._rows.append((block_index,index))
+        return ref
+
+    def add_compact(self,row):
+        return self.add_block_row(self.own_block(row),0)
+
+    def add_compact_at(self,block,index):
+        # Untrusted caller: no identity-based reuse of mutable blocks.
+        return self.add_compact({k:v[index:index+1] for k,v in block.items()})
+
+    def get(self,index):
+        return self.stacked_indices([index])
+
+    def stacked(self):
+        return self.stacked_indices(range(len(self)))
+
+    def stacked_indices(self,indices):
+        refs=np.asarray([self._rows[int(i)] for i in indices],dtype=np.int64)
+        if not len(refs):raise ValueError('observation selection is empty')
+        first=self._blocks[int(refs[0,0])]
+        out={key:np.empty((len(refs),)+value.shape[1:],dtype=value.dtype) for key,value in first.items()}
+        # Group once, then one vectorized gather per field per owned block.
+        order=np.argsort(refs[:,0],kind='stable')
+        cuts=np.r_[0,np.flatnonzero(np.diff(refs[order,0]))+1,len(refs)]
+        for left,right in zip(cuts[:-1],cuts[1:]):
+            destination=order[left:right];source=refs[destination,1]
+            block=self._blocks[int(refs[destination[0],0])]
+            for key in out:out[key][destination]=block[key][source]
+        return ObservationBatch.from_compact_numpy(out)
 
 
 class ColumnarObservationStore(ObservationStore):
@@ -373,6 +433,7 @@ class RolloutBuffer:
         request_kind: RequestKind,
         branch_slots: Sequence[int],
         observation_index: Optional[int] = None,
+        observation_block_ref: Optional[int] = None,
         reward: float = 0.0,
         done: bool = False,
         actor_active: bool = True,
@@ -387,9 +448,12 @@ class RolloutBuffer:
         selected = tuple(int(i) for i in selected)
         action_ids = []
         masks = []
-        for level in branch_records:
-            from agent.types.action_mapping import canonical_records
-            level=canonical_records(level)
+        resolved_entities=[];resolved_moves=[]
+        for branch_index,level in enumerate(branch_records):
+            from agent.types.action_mapping import canonical_records, CanonicalCandidateRow
+            resolved_entities.append(level.entity if isinstance(level,CanonicalCandidateRow) else entity_token[branch_index])
+            resolved_moves.append(level.move if isinstance(level,CanonicalCandidateRow) else move_token[branch_index])
+            level=level.records if isinstance(level,CanonicalCandidateRow) else canonical_records(level)
             records = tuple(map(tuple, level.tolist())) if hasattr(level, "tolist") else tuple(
                 tuple(int(v) for v in record) for record in level
             )
@@ -404,7 +468,11 @@ class RolloutBuffer:
         for index, mask in zip(selected, masks):
             if not 0 <= index < len(mask):
                 raise ValueError("selected prefix index out of range")
-        if observation_index is not None:
+        if observation_block_ref is not None:
+            if not isinstance(self.observation_store,BlockObservationStore) or observation_index is None:
+                raise ValueError('owned block reference requires block store and row index')
+            observation_ref=self.observation_store.add_block_row(observation_block_ref,int(observation_index))
+        elif observation_index is not None:
             if hasattr(self.observation_store, "add_compact_at"):
                 # SoA fast path: append row `observation_index` straight into
                 # the per-field slabs without a per-row dict (v5b T1).
@@ -433,8 +501,8 @@ class RolloutBuffer:
             branch_slots=tuple(int(slot) for slot in branch_slots),
             action_ids=tuple(action_ids),
             candidate_mask=tuple(masks),
-            entity_token=tuple(tuple(int(v) for v in level) for level in entity_token),
-            move_token=tuple(tuple(int(v) for v in level) for level in move_token),
+            entity_token=tuple(tuple(int(v) for v in level) for level in resolved_entities),
+            move_token=tuple(tuple(int(v) for v in level) for level in resolved_moves),
             selected=selected,
             selected_actions=tuple(action_ids[level][selected[level]] for level in range(len(selected))),
             old_logprob=float(old_logprob),
