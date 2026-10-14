@@ -15,9 +15,11 @@ import json
 from typing import Iterable, Optional
 
 import torch
+import numpy as np
 
 
 SCHEMA_VERSION = 1
+RNG_SCHEMA_VERSION = 2
 
 
 def hash_file(path) -> str:
@@ -36,8 +38,9 @@ def hash_json(value) -> str:
 def capture_rng_state(generators: Optional[Iterable[torch.Generator]] = None) -> dict:
     """Capture Python, CPU/CUDA torch, and explicitly owned generators."""
     state = {
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": RNG_SCHEMA_VERSION,
         "python": random.getstate(),
+        "numpy": np.random.get_state(),
         "torch_cpu": torch.get_rng_state(),
         "generators": [],
     }
@@ -52,9 +55,10 @@ def capture_rng_state(generators: Optional[Iterable[torch.Generator]] = None) ->
 
 def restore_rng_state(state: dict, generators: Optional[Iterable[torch.Generator]] = None) -> None:
     """Restore a state captured by :func:`capture_rng_state`."""
-    if int(state.get("schema_version", 0)) != SCHEMA_VERSION:
+    if int(state.get("schema_version", 0)) != RNG_SCHEMA_VERSION or 'numpy' not in state:
         raise ValueError("unsupported experimental RNG checkpoint schema")
     random.setstate(state["python"])
+    np.random.set_state(state['numpy'])
     torch.set_rng_state(state["torch_cpu"])
     cuda_state = state.get("torch_cuda")
     if cuda_state is not None:
@@ -158,6 +162,9 @@ def validate_envelope(envelope: dict, *, dataset_manifest_hash: str,
         raise ValueError("unsupported experimental checkpoint schema")
     if envelope.get("kind") != "ppo_experimental_iteration_boundary":
         raise ValueError("not an experimental iteration-boundary checkpoint")
+    rng=envelope.get('rng',{})
+    if rng.get('schema_version') != RNG_SCHEMA_VERSION or 'numpy' not in rng:
+        raise ValueError('checkpoint lacks complete RNG v2 state; explicit migration required')
     from agent.contracts import require_checkpoint_identity
     require_checkpoint_identity(envelope.get('learner',{}))
     if envelope.get("dataset_manifest_hash") != dataset_manifest_hash:

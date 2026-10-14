@@ -17,6 +17,11 @@ from pathlib import Path
 SCHEMA = 'pa3-ppo-team-stats-v1'
 
 
+def run_identity(root):
+    path=Path(root).resolve()
+    return path.name+'-'+hashlib.sha256(str(path).encode()).hexdigest()[:16]
+
+
 def digest(value):
     return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':'),allow_nan=False).encode()).hexdigest()
 

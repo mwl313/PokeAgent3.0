@@ -96,8 +96,10 @@ def from_native(payload,batch):
     if batch==0:
         return {name:RaggedBatch.empty(0,len(fields)) for name,fields in FIELDS.items()}
     if "ragged" in payload:
-        from pa3_engine.observation import split_batch_ragged
-        rows=[split_batch_ragged(payload,i) for i in range(batch)]
+        from pa3_engine.observation import split_batch_ragged_all
+        rows=split_batch_ragged_all(payload)
+        if len(rows)!=batch:
+            raise ValueError('ragged/fixed batch size mismatch')
     else:
         if batch!=1:
             raise ValueError("multi-view ragged payload requires explicit batch sidecar")

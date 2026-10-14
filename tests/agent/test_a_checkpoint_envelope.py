@@ -131,3 +131,20 @@ def test_epoch_fork_changes_only_explicit_epoch_override(model_factory):
     restore_rng_state(fork["rng"], [right])
     assert torch.equal(torch.randperm(16, generator=left),
                        torch.randperm(16, generator=right))
+
+
+def test_python_numpy_rng_roundtrip_and_incomplete_rng_rejected(model_factory):
+    import random
+    import numpy as np
+    from agent.ppo.experimental_checkpoint import capture_rng_state,restore_rng_state
+    random.seed(312);np.random.seed(312)
+    state=capture_rng_state();expected=(random.random(),np.random.random(10))
+    random.seed(999);np.random.seed(999);restore_rng_state(state)
+    assert random.random()==expected[0]
+    assert np.array_equal(np.random.random(10),expected[1])
+    learner=_make(model_factory);envelope=_envelope(learner,torch.Generator())
+    del envelope['rng']['numpy']
+    before=copy.deepcopy(learner.state_dict())
+    with pytest.raises(ValueError,match='RNG v2'):
+        restore_envelope(learner,envelope,dataset_manifest_hash='dataset',action_schema_hash='actions')
+    assert all(torch.equal(v,learner.state_dict()['model'][k]) for k,v in before['model'].items())

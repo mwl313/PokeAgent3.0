@@ -180,6 +180,39 @@ def parse_batch(fixed: bytes, ragged: bytes, count: int) -> dict:
     return view
 
 
+def split_batch_ragged_all(batch: dict) -> list[dict]:
+    """Decode every view with one offset scan, rather than B full rescans.
+
+    Offsets are recomputed from the current payload on each invocation; no
+    cached proof can survive a caller's mutation of writable count arrays.
+    """
+    sections = (("effects", EFFECT, "effect_counts"),
+                ("repertoire", REPERTOIRE, "repertoire_counts"),
+                ("types", TYPE, "type_counts"),
+                ("base_moves", BASE_MOVE, "base_move_counts"),
+                ("move_effects", MOVE_EFFECT, "move_effect_counts"))
+    totals = []
+    count = len(batch['effect_counts'])
+    for _, dtype, key in sections:
+        counts = np.asarray(batch[key])
+        if counts.shape != (count, TOKENS) or not np.issubdtype(counts.dtype, np.integer) or np.any(counts < 0) or np.any(counts > 65535):
+            raise ValueError('invalid batch ragged counts')
+        totals.append(counts.astype(np.int64).sum(axis=1))
+    sizes = sum(total * dtype.itemsize for total, (_, dtype, _) in zip(totals, sections))
+    offsets = np.r_[0, np.cumsum(sizes)]
+    if int(offsets[-1]) != len(batch['ragged']):
+        raise ValueError('ragged byte/count mismatch')
+    result = []
+    for index in range(count):
+        row = {}; offset = int(offsets[index])
+        for total, (name, dtype, _) in zip(totals, sections):
+            size = int(total[index])
+            row[name] = np.frombuffer(batch['ragged'], dtype=dtype, count=size, offset=offset)
+            offset += size * dtype.itemsize
+        result.append(row)
+    return result
+
+
 def split_batch_ragged(batch: dict, index: int) -> dict:
     """Slice one view's ragged rows out of a `parse_batch` result.
 
