@@ -57,4 +57,6 @@ def launcher_values(resolved: dict) -> dict:
         values["dataset_manifest"] = d["manifest"]
     if "checkpoint_interval_matches" in t:
         values["checkpoint_interval_matches"] = t["checkpoint_interval_matches"]
+    if 'deterministic_diagnostic' in c:
+        values['deterministic_diagnostic'] = c['deterministic_diagnostic']
     return values

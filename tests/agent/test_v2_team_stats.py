@@ -52,8 +52,10 @@ def test_digest_identity_attempt_and_counts_fail_closed(tmp_path):
     other=pair(tmp_path,1,0,'other')
     with pytest.raises(ValueError,match='boundary'):reconcile([refs[0],other[1]],committed_matches=8)
     with pytest.raises(ValueError,match='contract'):reconcile(refs,committed_matches=8,run_id='wrong')
-    ref=refs[0];path=tmp_path/'receipts'/f"{ref['sha256']}.json"
-    content=json.loads(path.read_text());content['natural_matches']+=1;path.write_text(json.dumps(content))
+    import gzip
+    from pathlib import Path
+    ref=refs[0];path=Path(ref['path'])
+    content=load(ref);content['natural_matches']+=1;path.write_bytes(gzip.compress(json.dumps(content).encode()))
     with pytest.raises(ValueError,match='digest'):load(ref)
 
 
@@ -94,3 +96,13 @@ def test_checkpoint_publication_uses_inspected_byte_snapshot(tmp_path,monkeypatc
         team_stats_root='',dataset_manifest='manifest',precision_mode='D',epochs=2)
     result=module._publish_completed_rolling_boundary(args,Store(),set())
     assert result['iteration']==1 and len(reads)==2
+
+
+def test_reconciliation_streams_payloads_and_windows_reconcile(tmp_path):
+    refs=pair(tmp_path,1,0)+pair(tmp_path,2,8)
+    metadata=reconcile(refs,committed_matches=16)
+    assert all('team_counts' not in item and 'matchups' not in item for item in metadata)
+    report=summarize(refs,teams(),16)
+    assert sum(c['games'] for w in report['team_windows'] for c in w['team_counts'].values())==32
+    assert all(ref['codec']=='gzip-json-v1' for ref in refs)
+    assert stage(tmp_path,load(refs[0]))==refs[0]

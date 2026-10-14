@@ -185,6 +185,7 @@ def parse_args(argv=None):
     parser.add_argument("--team-stats-root", default="", help="opt-in checkpoint-bound V2 natural-match statistics")
     parser.add_argument("--checkpoint-first-iteration", action="store_true",
                         help="also publish the first scratch boundary without changing the regular interval")
+    parser.add_argument('--stop-file', default='', help='cooperative stop: checkpoint and exit at the next verified iteration boundary')
     parser.add_argument(
         "--rolling-checkpoint-root", default="",
         help="opt-in generation-based publication root; requires experimental checkpoint envelopes",
@@ -287,6 +288,8 @@ def parse_args(argv=None):
         parser.error("experimental LR scale requires an experimental checkpoint or resume")
     if args.team_stats_root and (not args.rolling_checkpoint_root or not args.experimental_checkpoint):
         parser.error('--team-stats-root requires generation-based experimental checkpoints')
+    if args.stop_file and not args.experimental_checkpoint:
+        parser.error('--stop-file requires experimental checkpoint publication')
     if args.profile and resolved['profile']['version'] == 'pa3-v2-production-v1' and not args.team_stats_root:
         parser.error('V2 production profile requires checkpoint-bound --team-stats-root')
     if not 0.0 <= args.historical_probability <= 1.0:
@@ -673,6 +676,8 @@ def worker(args) -> None:
                 raise RuntimeError("opponent manifest mismatch; explicit migration is required")
             note("explicit opponent-manifest migration from current-only A4 envelope")
             restore_opponents = old_manifest
+        if bool(resume_envelope.get('experiment',{}).get('deterministic_diagnostic',False)) != bool(args.deterministic_diagnostic):
+            raise RuntimeError('experimental resume deterministic execution contract mismatch')
         restore_envelope(
             learner, resume_envelope, dataset_manifest_hash=dataset_manifest_hash,
             action_schema_hash=action_schema_hash, source_sha=expected_source_sha,
@@ -895,8 +900,13 @@ def worker(args) -> None:
                 },
                 digests_equal=digests_equal,
             )
+        stop_signal = [bool(args.stop_file and Path(args.stop_file).exists()) if rank == 0 else None]
+        dist.broadcast_object_list(stop_signal, src=0)
+        stop_requested = bool(stop_signal[0])
+        if stop_requested and not args.experimental_checkpoint:
+            raise RuntimeError('cooperative stop requires a resumable checkpoint destination')
         checkpoint_due = bool(args.experimental_checkpoint and
-            (checkpoint_schedule.due(global_games) or args.checkpoint_first_iteration and absolute_iteration == 0))
+            (checkpoint_schedule.due(global_games) or args.checkpoint_first_iteration and absolute_iteration == 0 or stop_requested))
         if checkpoint_due:
             if args.rolling_slots:
                 raise RuntimeError("experimental envelope requires static collector restart")
@@ -919,6 +929,7 @@ def worker(args) -> None:
                     "source_migration": source_migration,
                     "recompute_secondary": bool(args.recompute_secondary),
                     "precision_mode": args.precision_mode,
+                    "deterministic_diagnostic": bool(args.deterministic_diagnostic),
                     "precision_stability": args.precision_stability,
                     "precision_contract_version": f"pa3-precision-{args.precision_mode}-v2",
                     "fp16_reduced_precision_reduction": effective_reduction,
@@ -1044,6 +1055,9 @@ def worker(args) -> None:
             note(f"WARNING: nonfatal PPO telemetry write failure: {exc}")
         iterations.append(metrics)
         note(f"iteration {index + 1} complete in {metrics['iteration_wall_s']:.1f}s, digests equal")
+        if stop_requested:
+            note('cooperative stop requested; completed boundary saved, exiting both ranks')
+            break
 
     # One-iteration consumers retain all original rank keys. For persistent
     # runs, counters/durations below are totals and report/profile are the last
@@ -1093,6 +1107,7 @@ def parent(args) -> None:
                 "--data", args.data, "--teams", args.teams, "--port", str(port),
                 "--report", args.report, "--checkpoint", args.checkpoint,
                 "--team-stats-root", args.team_stats_root,
+                '--stop-file', args.stop_file,
                 "--experimental-checkpoint", args.experimental_checkpoint,
                 "--experimental-resume", args.experimental_resume,
                 "--checkpoint-interval-matches", str(args.checkpoint_interval_matches),

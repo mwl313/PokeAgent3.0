@@ -12,6 +12,7 @@ import json
 import math
 import os
 import uuid
+import gzip
 from pathlib import Path
 
 SCHEMA = 'pa3-ppo-team-stats-v1'
@@ -101,30 +102,48 @@ def validate(value):
 
 
 def stage(root,value):
-    validate(value);sha=value['receipt_sha256'];path=Path(root).resolve()/'receipts'/f'{sha}.json'
+    validate(value);sha=value['receipt_sha256'];path=Path(root).resolve()/'receipts'/f'{sha}.json.gz'
+    reference={'path':str(path),'sha256':sha,'codec':'gzip-json-v1'}
     if path.exists():
-        if json.loads(path.read_text())!=value:raise ValueError('immutable receipt collision')
-    else:atomic_json(path,value)
-    return {'path':str(path),'sha256':sha}
+        if load(reference)!=value:raise ValueError('immutable receipt collision')
+    else:
+        path.parent.mkdir(parents=True,exist_ok=True)
+        payload=gzip.compress(json.dumps(value,sort_keys=True,separators=(',',':')).encode(),mtime=0)
+        temp=path.with_name('.'+path.name+'.'+uuid.uuid4().hex)
+        with temp.open('xb') as f:f.write(payload);f.flush();os.fsync(f.fileno())
+        os.replace(temp,path)
+        fd=os.open(path.parent,os.O_DIRECTORY)
+        try:os.fsync(fd)
+        finally:os.close(fd)
+    return reference
 
 
 def load(reference):
-    value=json.loads(Path(reference['path']).read_text());validate(value)
+    codec=reference.get('codec','json-v1')
+    if codec not in ('json-v1','gzip-json-v1'):raise ValueError('unknown statistics receipt codec')
+    raw=Path(reference['path']).read_bytes()
+    value=json.loads(gzip.decompress(raw) if codec=='gzip-json-v1' else raw);validate(value)
     if value.get('receipt_sha256')!=reference['sha256']:raise ValueError('wrong receipt reference')
     return value
 
 
 def reconcile(references,*,committed_matches,run_id=None):
     """Verify complete two-rank attempts and exact contiguous clock; reject duplicates."""
-    values=[load(ref) for ref in references];seen=set();iterations={};identity=None
-    for value in values:
+    values=[];seen=set();iterations={};identity=None
+    for reference in references:
+        value=load(reference)
         key=(value['run_id'],value['iteration_id'],value['rank'])
         if key in seen:raise ValueError('duplicate rank/iteration receipt')
         seen.add(key)
         contract=tuple(value[k] for k in ['run_id','dataset_manifest_sha256','team_file_sha256','team_count'])
         if identity is None:identity=contract
         if contract!=identity or run_id is not None and value['run_id']!=run_id:raise ValueError('statistics contract mismatch')
-        iterations.setdefault(value['iteration_id'],{})[value['rank']]=value
+        # Never retain decoded team/matchup dictionaries for the entire run.
+        # At 100M matches that would exceed host RAM during publication.
+        metadata={k:value[k] for k in ['run_id','iteration_id','rank','start_matches','end_matches',
+            'source_sha','attempt_id','natural_matches','team_count','team_file_sha256']}
+        values.append(metadata)
+        iterations.setdefault(value['iteration_id'],{})[value['rank']]=metadata
     clock=0
     for expected_iteration,(iteration,ranks) in enumerate(sorted(iterations.items()),1):
         if iteration != expected_iteration:raise ValueError('statistics iteration gap')
@@ -148,13 +167,18 @@ def wilson(wins,games):
 
 
 def summarize(references,teams,committed_matches):
-    values=reconcile(references,committed_matches=committed_matches)
+    reconcile(references,committed_matches=committed_matches)
     totals={str(i):dict(total=counter(),seat0=counter(),seat1=counter()) for i in range(len(teams))}
-    matchups={};windows=[];policies={}
-    for value in values:
+    matchups={};windows={};policies={}
+    for reference in references:
+        value=load(reference)
         if value['team_count']!=len(teams):raise ValueError('team coverage mismatch')
-        windows.append(value)
+        bucket=(value['start_matches']//100000)*100000
+        window=windows.setdefault(bucket,dict(start_matches=bucket,end_matches=0,team_counts={}))
+        window['end_matches']=max(window['end_matches'],value['end_matches'])
         for team,groups in value['team_counts'].items():
+            counts=window['team_counts'].setdefault(team,counter())
+            for k,v in groups['total'].items():counts[k]+=v
             for group,c in groups.items():
                 for k,v in c.items():totals[team][group][k]+=v
         for name,target in [('matchups',matchups),('policy_splits',policies)]:
@@ -173,10 +197,11 @@ def summarize(references,teams,committed_matches):
             u=usage.setdefault(str(species),counter())
             for k,v in t.items():u[k]+=v
         rows.append(row)
-    return dict(team_totals=rows,team_matchups=matchups,team_windows=windows,opponent_policy_splits=policies,
+    return dict(team_totals=rows,team_matchups=matchups,team_windows=list(windows.values()),opponent_policy_splits=policies,
         pokemon_usage=usage,integrity=dict(verified=True,committed_natural_matches=committed_matches,
         team_rows=len(rows),team_appearances=sum(r['games'] for r in rows),
         confidence_method='Wilson 95% binary win probability; draws count as non-wins; score_rate has no CI',
+        window_semantics='100k start-clock buckets; whole drained iterations assigned by their start clock',
         caveat='Policy-conditioned training outcomes; neither causal team strength nor unseen-roster generalization'))
 
 
@@ -207,12 +232,11 @@ def main():
             writer=csv.DictWriter(f,fieldnames=['key',*counter()]);writer.writeheader();writer.writerows(entries)
     window_rows=[]
     for value in result['team_windows']:
-        for team,groups in value['team_counts'].items():
-            window_rows.append(dict(iteration=value['iteration_id'],rank=value['rank'],
-                start_matches=value['start_matches'],end_matches=value['end_matches'],
-                team_index=int(team),**groups['total']))
+        for team,counts in value['team_counts'].items():
+            window_rows.append(dict(start_matches=value['start_matches'],end_matches=value['end_matches'],
+                team_index=int(team),**counts))
     with (out/'team_windows.csv').open('w') as f:
-        fields=['iteration','rank','start_matches','end_matches','team_index',*counter()]
+        fields=['start_matches','end_matches','team_index',*counter()]
         writer=csv.DictWriter(f,fieldnames=fields);writer.writeheader();writer.writerows(window_rows)
     qualified=sorted((r for r in rows if r['games']>=max(1,args.min_games)),key=lambda r:r['score_rate'],reverse=True)
     lines=['# Committed training-team statistics','',result['integrity']['caveat'],

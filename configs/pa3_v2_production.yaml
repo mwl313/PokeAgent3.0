@@ -58,7 +58,8 @@
     "columnar_store": false,
     "rolling_slots": false,
     "executor": "ddp",
-    "world_size": 2
+    "world_size": 2,
+    "deterministic_diagnostic": true
   },
   "evaluation": {
     "lightweight_every_matches": 50000,
@@ -71,6 +72,7 @@
   "evidence": {
     "derived_from": "configs/a10_production.yaml",
     "release_gate": "P4 must pass before P5 activation",
-    "semantic_contract": "dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35"
+    "semantic_contract": "dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35",
+    "determinism": "Enabled for V2 continuation fidelity; recorded and checked on resume. PPO objective/hyperparameters unchanged."
   }
 }
