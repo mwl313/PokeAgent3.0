@@ -16,10 +16,15 @@ from agent.model import build_model
 
 def _checkpoint(path, *, seed=1, matches=7):
     torch.manual_seed(seed)
-    torch.save({"learner": {"model": build_model().state_dict()}, "source_sha": "a" * 40,
-                "model_config_hash": "b" * 64, "action_schema_hash": "c" * 64,
+    from agent.contracts import execution_identity
+    from agent.ppo.experimental_checkpoint import hash_json
+    model=build_model()
+    torch.save({"learner": {"model": model.state_dict(), "contracts": execution_identity('A'),
+                          "config": {'model':model.config.to_dict()}}, "source_sha": "a" * 40,
+                "model_config_hash": hash_json(model.config.to_dict()), "action_schema_hash": "c" * 64,
                 "accounting": {"committed_matches": matches},
-                "rank_digests": {"0": {"model": "x", "optimizer": "y"}}}, path)
+                "ddp": {'world_size':2},
+                "rank_digests": {str(i): {"model": "x", "optimizer": "y"} for i in (0,1)}}, path)
 
 
 def test_schedule_all_cycles_restart_missing_and_idempotent(tmp_path):

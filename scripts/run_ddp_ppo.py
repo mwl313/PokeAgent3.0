@@ -71,7 +71,13 @@ def _publish_completed_rolling_boundary(args, store, published_keys):
     if any(not path.is_file() for path in paths.values()):
         return None
     try:
-        envelopes = {rank: load_envelope(str(path)) for rank, path in paths.items()}
+        # Inspect and publish the same immutable byte snapshot. Re-reading a
+        # worker's replaceable boundary file can otherwise publish iteration
+        # N+1 bytes with iteration N metadata.
+        import io
+        payloads = {rank: path.read_bytes() for rank, path in paths.items()}
+        envelopes = {rank: torch.load(io.BytesIO(payload), map_location='cpu', weights_only=False)
+                     for rank, payload in payloads.items()}
         a0, a1 = (envelopes[0].get("accounting", {}), envelopes[1].get("accounting", {}))
         # Rows and natural-game counts are rank-local.  The boundary identity
         # is the global iteration/clock (and cumulative optimizer step count).
@@ -94,6 +100,14 @@ def _publish_completed_rolling_boundary(args, store, published_keys):
         key = (iteration, committed)
         if key in published_keys:
             return None
+        team_receipts = []
+        if args.team_stats_root:
+            from agent.analysis.team_stats import reconcile
+            if any(not e.get('team_stats_receipts') for e in envelopes.values()):
+                raise RuntimeError('checkpoint missing required team statistics')
+            team_receipts = [ref for e in envelopes.values() for ref in e['team_stats_receipts']]
+            reconcile(team_receipts, committed_matches=committed,
+                      run_id=Path(args.team_stats_root).resolve().name)
         generation_name = f"iter-{committed:012d}"
         for ready in store.generations_ready():
             try:
@@ -104,12 +118,13 @@ def _publish_completed_rolling_boundary(args, store, published_keys):
                 continue
         manifest = store.publish(
             generation_name,
-            {rank: path.read_bytes() for rank, path in paths.items()},
+            payloads,
             {"schema": "ppo-experimental-envelope-v1", "iteration_complete": True,
              "world_size": 2, "iteration": iteration, "committed_matches": committed,
              "dataset_manifest": os.path.abspath(args.dataset_manifest),
              "dataset_manifest_hash": envelopes[0].get("dataset_manifest_hash"),
              "source_sha": envelopes[0].get("source_sha"),
+             "team_stats_receipts": team_receipts,
              "precision_mode": args.precision_mode,
              "ppo_epochs": int(args.epochs or envelopes[0].get("experiment", {}).get("ppo_epochs", 2))},
         )
@@ -167,6 +182,7 @@ def parse_args(argv=None):
     parser.add_argument("--teams", default=os.path.join(ROOT, "engine", "data", "training-teams.json"))
     parser.add_argument("--report", default=os.path.join(ROOT, "runs", "perf", "v4_ddp.json"))
     parser.add_argument("--checkpoint", default="")
+    parser.add_argument("--team-stats-root", default="", help="opt-in checkpoint-bound V2 natural-match statistics")
     parser.add_argument(
         "--rolling-checkpoint-root", default="",
         help="opt-in generation-based publication root; requires experimental checkpoint envelopes",
@@ -267,6 +283,10 @@ def parse_args(argv=None):
         parser.error("--experimental-lr-scale must be positive")
     if args.experimental_lr_scale != 1.0 and not (args.experimental_resume or args.experimental_checkpoint):
         parser.error("experimental LR scale requires an experimental checkpoint or resume")
+    if args.team_stats_root and (not args.rolling_checkpoint_root or not args.experimental_checkpoint):
+        parser.error('--team-stats-root requires generation-based experimental checkpoints')
+    if args.profile and resolved['profile']['version'] == 'pa3-v2-production-v1' and not args.team_stats_root:
+        parser.error('V2 production profile requires checkpoint-bound --team-stats-root')
     if not 0.0 <= args.historical_probability <= 1.0:
         parser.error("--historical-probability must be between 0 and 1")
     if args.historical_probability and not args.historical_checkpoint:
@@ -704,11 +724,38 @@ def worker(args) -> None:
     from agent.ppo.checkpoint_schedule import CommittedMatchCheckpointSchedule
     checkpoint_schedule = CommittedMatchCheckpointSchedule.from_clock(
         global_games, args.checkpoint_interval_matches)
+    team_receipts = []
+    stats_attempt = None
+    if args.team_stats_root:
+        from agent.analysis.team_stats import TeamAccumulator, stage as stage_team_stats, load as load_team_stats
+        dataset_identity = dict(teams=hash_file(args.teams), manifest=dataset_manifest_hash,
+                                team_count=int(engine.team_count()))
+        if dataset_identity != dict(teams='ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f',
+                                    manifest='1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb', team_count=1220):
+            raise RuntimeError('V2 team statistics require the authoritative frozen 1220-team dataset')
+        identities = [None] * world_size
+        dist.all_gather_object(identities, dataset_identity)
+        if any(identity != identities[0] for identity in identities):
+            raise RuntimeError('ranks disagree on actual native dataset identity')
+        import uuid
+        attempt = [uuid.uuid4().hex if rank == 0 else None]
+        dist.broadcast_object_list(attempt, src=0)
+        stats_attempt = attempt[0]
+        if resume_envelope:
+            team_receipts = resume_envelope.get('team_stats_receipts', [])
+            if not team_receipts and global_games:
+                raise RuntimeError('cannot resume team statistics without prior checkpoint receipts')
+            for ref in team_receipts:
+                value = load_team_stats(ref)
+                if value['rank'] != rank or value['run_id'] != Path(args.team_stats_root).resolve().name:
+                    raise RuntimeError('team statistics resume identity mismatch')
     iterations = []
     torch.cuda.synchronize(device)
     startup_wall = time.perf_counter() - worker_started
     for index in range(args.iterations):
         absolute_iteration = iteration_offset + index
+        iteration_start_matches = global_games
+        team_accumulator = TeamAccumulator(int(engine.team_count())) if args.team_stats_root else None
         iteration_started = time.perf_counter()
         timings = {key: 0.0 for key in STAGE_WALL_KEYS}
 
@@ -734,6 +781,7 @@ def worker(args) -> None:
             ),
             historical_models=historical_models,
             device=device,
+            team_stats_sink=team_accumulator,
         )
         if communication is not None:
             communication.sync_calls = 0
@@ -808,6 +856,17 @@ def worker(args) -> None:
         finish_stage("digest_wall_s", stage_started)
         if not digests_equal:
             raise RuntimeError("ranks disagree on model/optimizer digests after update")
+        if args.team_stats_root:
+            if report.optimizer_steps_skipped or not collector.drain_complete or collector.in_flight_battles != 0:
+                raise RuntimeError('team statistics refuse skipped-step or undrained iteration')
+            if team_accumulator.matches != collector.stats.games:
+                raise RuntimeError('natural match statistics disagree with collector')
+            receipt = team_accumulator.receipt(
+                run_id=Path(args.team_stats_root).resolve().name, rank=rank,
+                iteration=absolute_iteration + 1, attempt_id=stats_attempt, source_sha=source_sha,
+                dataset_manifest_sha256=dataset_manifest_hash, team_file_sha256=hash_file(args.teams),
+                start_matches=iteration_start_matches, end_matches=global_games)
+            team_receipts.append(stage_team_stats(args.team_stats_root, receipt))
 
         stage_started = time.perf_counter()
         if args.checkpoint and rank == 0:
@@ -847,7 +906,7 @@ def worker(args) -> None:
                     "recompute_secondary": bool(args.recompute_secondary),
                     "precision_mode": args.precision_mode,
                     "precision_stability": args.precision_stability,
-                    "precision_contract_version": "pa3-execution-contract-v1",
+                    "precision_contract_version": f"pa3-precision-{args.precision_mode}-v2",
                     "fp16_reduced_precision_reduction": effective_reduction,
                 },
                 rank=rank, world_size=world_size, executor=args.executor,
@@ -872,6 +931,8 @@ def worker(args) -> None:
                     "source": "NativeCollector.collect static drain invariant",
                 },
             )
+            if args.team_stats_root:
+                envelope['team_stats_receipts'] = list(team_receipts)
             save_envelope(
                 f"{os.path.abspath(args.experimental_checkpoint)}.rank{rank}",
                 envelope,
@@ -1017,6 +1078,7 @@ def parent(args) -> None:
                 "--historical-probability", str(args.historical_probability),
                 "--data", args.data, "--teams", args.teams, "--port", str(port),
                 "--report", args.report, "--checkpoint", args.checkpoint,
+                "--team-stats-root", args.team_stats_root,
                 "--experimental-checkpoint", args.experimental_checkpoint,
                 "--experimental-resume", args.experimental_resume,
                 "--checkpoint-interval-matches", str(args.checkpoint_interval_matches),

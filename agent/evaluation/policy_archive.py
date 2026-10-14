@@ -14,9 +14,8 @@ import tempfile
 import torch
 from agent.evaluation.identity import canonical_model_digest, sha256_file, MODEL_DIGEST_ALGORITHM
 
-ARCHIVE_SCHEMA = "pa3-policy-archive-v1"
-OBSERVATION_SCHEMA = "pa3-entity-observation-v1"
-ACTION_SCHEMA = "atomic-action-v1"
+from agent.contracts import OBSERVATION_SCHEMA, ACTION_SCHEMA, require_checkpoint_identity
+ARCHIVE_SCHEMA = "pa3-policy-archive-v2"
 
 
 def _sha256(path):
@@ -40,6 +39,12 @@ def _load_envelope(path):
         raise ValueError("archive requires an experimental learner envelope")
     if not isinstance(payload["learner"].get("model"), dict):
         raise ValueError("archive envelope has no model state")
+    require_checkpoint_identity(payload['learner'])
+    if not isinstance(payload['learner'].get('config',{}).get('model'),dict):
+        raise ValueError('archive requires V2 model architecture identity')
+    from agent.ppo.experimental_checkpoint import hash_json
+    if payload.get('model_config_hash') != hash_json(payload['learner']['config']['model']):
+        raise ValueError('archive model configuration hash mismatch')
     return payload
 
 
@@ -58,7 +63,8 @@ def _atomic_json(path, value):
 
 def _validate_rank_digests(payload, policy_id):
     digests = payload.get("rank_digests")
-    if not isinstance(digests, dict) or not digests:
+    world_size=payload.get('ddp',{}).get('world_size')
+    if world_size != 2 or not isinstance(digests, dict) or set(digests)!={'0','1'}:
         raise ValueError(f"archived rank digests missing: {policy_id}")
     values = list(digests.values())
     if any(not row.get("model") or not row.get("optimizer") for row in values):

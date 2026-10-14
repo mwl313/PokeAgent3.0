@@ -56,18 +56,20 @@ def environment_identity(*, engine_path=None, data_path=None, teams_path=None):
 
 
 def evaluation_identity(left, right, fixtures, *, seed, max_rounds, environment):
+    from agent.contracts import CONTRACT_HASH
+    from agent.evaluation.batched_policy import BATCHED_EVALUATOR_VERSION, SAMPLING_SEMANTICS
     def contract(entry):
         return {"precision_mode": entry.get("precision_mode", "A"),
                 "precision_stability": entry.get("precision_stability", "default"),
                 "precision_contract_version": entry.get("precision_contract_version", "legacy"),
                 "observation_quantization": "fp16-round-continuous-v1" if entry.get("precision_mode", "A") == "D" else "none"}
-    body = {"identity_version": "pa3-evaluation-identity-v3",
+    body = {"identity_version": "pa3-evaluation-identity-v4", "semantic_contract": CONTRACT_HASH,
             "candidate": [left["id"], left["file_sha256"], left["model_digest"], contract(left)],
             "opponent": [right["id"], right["file_sha256"], right["model_digest"], contract(right)],
             "fixture_manifest_hash": fixture_manifest_hash(fixtures), "environment": environment,
-            "engine": ENGINE_ID, "evaluator": EVALUATOR_VERSION,
+            "engine": ENGINE_ID, "evaluator": BATCHED_EVALUATOR_VERSION if environment.get('backend')=='batched' else EVALUATOR_VERSION,
             "seed": int(seed), "max_rounds": int(max_rounds),
-            "sampling": ("fixture-seat-decision-rng-v2" if environment.get("backend") == "batched" else "sequential-reference-v1")}
+            "sampling": (SAMPLING_SEMANTICS if environment.get("backend") == "batched" else "sequential-reference-v1")}
     encoded = json.dumps(body, sort_keys=True, separators=(",", ":")).encode()
     return hashlib.sha256(encoded).hexdigest(), body
 

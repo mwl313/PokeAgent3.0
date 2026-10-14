@@ -153,8 +153,10 @@ class NativeCollector:
         historical_models: Optional[dict[str, PA3Model]] = None,
         historical_probability: Optional[float] = None,
         device: Optional[torch.device] = None,
+        team_stats_sink=None,
     ) -> None:
         self.engine = engine
+        self.team_stats_sink = team_stats_sink
         self.config = config or NativeCollectorConfig()
         self.layout = layout or ObservationLayout()
         self.policy_id = str(policy_id)
@@ -771,6 +773,9 @@ class NativeCollector:
                 self.stats.operational_errors += 1
                 raise RuntimeError(f"operational error in env {env}: {error}")
             if terminated:
+                if self.team_stats_sink is not None:
+                    self.team_stats_sink.record(match_ids[env], team_ids[env],
+                        self._assignments[env].seat_policy_ids, winner, turn[env] + int(bool(accepted)))
                 learner = self._learner_side(roles[env])
                 # One terminal reward per recorded side's own trajectory; a
                 # draw pays 0.0 to both seats.

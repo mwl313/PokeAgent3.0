@@ -14,7 +14,7 @@ def load_profile(path: str) -> dict:
     with open(path) as f: data = json.load(f)
     if set(data) - ALLOWED or data.get("schema") != SCHEMA:
         raise ValueError("unsupported or unknown runtime profile schema/keys")
-    if data.get("version") not in {"a9.4-validated-v1", "a10-production-v1"}:
+    if data.get("version") not in {"a9.4-validated-v1", "a10-production-v1", "pa3-v2-production-v1"}:
         raise ValueError("stale runtime profile version")
     for section in ("training", "precision", "dataset", "collector", "evaluation"):
         if not isinstance(data.get(section), dict): raise ValueError(f"profile section missing: {section}")

@@ -1,0 +1,76 @@
+{
+  "schema": "pa3-validated-runtime-v1",
+  "profile": "pa3_v2_production",
+  "version": "pa3-v2-production-v1",
+  "training": {
+    "algorithm": "ppo",
+    "ppo_epochs": 2,
+    "lr_scale": 0.5,
+    "global_minibatch": 4096,
+    "microbatch": 1024,
+    "per_rank_minibatch": 2048,
+    "grad_accumulation": 2,
+    "envs": 1024,
+    "workers": 16,
+    "historical_probability": 0.0,
+    "optimizer": "adam",
+    "clip_epsilon": 0.2,
+    "gamma": 1.0,
+    "gae_lambda": 0.95,
+    "entropy_coefficient": 0.01,
+    "uniform_kl_coefficient": 0.001,
+    "target_approx_kl": 0.03,
+    "value_coefficient": 0.5,
+    "max_grad_norm": 0.5,
+    "action_temperature": 1.0,
+    "warmup_matches": 250000,
+    "horizon_matches": 100000000,
+    "peak_lr": 0.0003,
+    "effective_peak_lr": 0.00015,
+    "checkpoint_interval_matches": 100000
+  },
+  "precision": {
+    "mode": "D",
+    "stability": "fp16-reduction-off",
+    "observation": "fp16-round-continuous-then-fp32",
+    "encoder_amp": true,
+    "scorer_fp32": true,
+    "gru_fp32": true,
+    "recompute_gate": true,
+    "tolerance": 0.001,
+    "contract_version": "pa3-precision-D-v2"
+  },
+  "dataset": {
+    "id": "a10-p0-proposed-20261013",
+    "manifest": "data/teams/a10-p0-proposed-20261013/manifest.json",
+    "manifest_sha256": "1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb",
+    "train_teams": 1220,
+    "sampling": "uniform_unique_team",
+    "frozen": true,
+    "teams": "engine/data/a10-training-teams.json",
+    "data": "engine/data",
+    "teams_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+  },
+  "collector": {
+    "batch_cache": "cuda",
+    "compact_candidates": true,
+    "trim_observation_padding": false,
+    "columnar_store": false,
+    "rolling_slots": false,
+    "executor": "ddp",
+    "world_size": 2
+  },
+  "evaluation": {
+    "lightweight_every_matches": 50000,
+    "full_every_matches": 200000,
+    "backend": "batched",
+    "batch_size": 128,
+    "fixture_pairs": 1024,
+    "namespace": "pa3-v2-only"
+  },
+  "evidence": {
+    "derived_from": "configs/a10_production.yaml",
+    "release_gate": "P4 must pass before P5 activation",
+    "semantic_contract": "dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35"
+  }
+}

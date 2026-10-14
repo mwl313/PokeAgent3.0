@@ -21,8 +21,8 @@ from agent.types.observation import ObservationBatch, ObservationLayout
 from agent.types.requests import RequestKind
 from agent.model.precision import get_precision_contract
 
-BATCHED_EVALUATOR_VERSION = "pa3-native-batched-evaluator-v2"
-SAMPLING_SEMANTICS = "fixture-seat-decision-branch-keyed-cdf-v2"
+BATCHED_EVALUATOR_VERSION = "pa3-native-batched-evaluator-v3"
+SAMPLING_SEMANTICS = "fixture-seat-decision-branch-keyed-valid-cdf-v3"
 
 
 class BatchedPolicyEvaluator:
@@ -47,8 +47,22 @@ class BatchedPolicyEvaluator:
         keys = model.scorer.build_keys(encoded.tokens, table.action_ids[:, 0], table.entity_token[:, 0], table.move_token[:, 0])
         logits = model.scorer.score_keys(keys, hidden, table.mask[:, 0])
         _logprob, probs, _entropy, _kl = model._branch_stats(logits, table.mask[:, 0])
-        cdf = probs.detach().float().cpu().cumsum(dim=-1).numpy()
-        picks = np.asarray([min(int(np.searchsorted(cdf[i], value, side="right")), cdf.shape[1] - 1) for i, value in enumerate(uniforms)], dtype=np.int64)
+        probabilities = probs.detach().float().cpu().numpy()
+        masks = table.mask[:, 0].cpu().numpy()
+        picks = []
+        if len(uniforms) != len(probabilities):
+            raise ValueError("evaluation uniforms do not cover every row")
+        for row, value in enumerate(uniforms):
+            legal = np.flatnonzero(masks[row])
+            weights = probabilities[row, legal].astype(np.float64)
+            if not len(legal) or not np.isfinite(weights).all() or np.any(weights < 0) or weights.sum() <= 0:
+                raise ValueError("invalid legal evaluation probability mass")
+            if np.any(probabilities[row, ~masks[row]] != 0) or not 0 <= value < 1:
+                raise ValueError("invalid masked mass or evaluation uniform")
+            cdf = np.cumsum(weights / weights.sum())
+            cdf[-1] = 1.0
+            picks.append(legal[np.searchsorted(cdf, value, side="right")])
+        picks = np.asarray(picks, dtype=np.int64)
         # The table mask ensures each selected index is legal; guard anyway.
         if any(not bool(table.mask[i, 0, int(pick)].item()) for i, pick in enumerate(picks)):
             raise RuntimeError("sampled illegal candidate index")
