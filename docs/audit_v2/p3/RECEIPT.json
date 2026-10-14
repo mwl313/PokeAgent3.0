@@ -1,0 +1,35 @@
+{
+  "source_sha": "f3060f4368eb0ec98c1a4fbabc008d82ae60258c",
+  "executed_tree": "verified source diff on 5344aab; committed unchanged after tests",
+  "dataset_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f",
+  "observation_action_contract": "dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35",
+  "tests": {
+    "final": {
+      "command": "PYTHONPATH=engine/python:. OMP_NUM_THREADS=2 /home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python -m pytest -q tests/agent/test_v2_action_contract.py tests/agent/test_logprob_recompute.py tests/agent/test_streaming_equivalence.py tests/agent/test_fixed_policy_eval.py tests/integration/test_collect_both_current_sides.py tests/integration/test_rolling_slot_equivalence.py",
+      "result": "18 passed"
+    },
+    "reference": {
+      "command": "PYTHONPATH=engine/python:. OMP_NUM_THREADS=2 /home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python -m pytest -q tests/agent/test_v2_observation_contract.py tests/agent/test_gae.py tests/agent/test_full_ppo_objective_reference.py tests/agent/test_ddp_global_gradient.py tests/agent/test_manual_allreduce_parity.py",
+      "result": "37 passed"
+    },
+    "storage": {
+      "command": "PYTHONPATH=engine/python:. OMP_NUM_THREADS=2 /home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python -m pytest -q tests/agent/test_v2_action_contract.py tests/agent/test_masked_sampling.py tests/agent/test_candidate_padding.py tests/agent/test_entropy_kl.py tests/agent/test_rollout_buffer.py tests/agent/test_cached_rollout.py",
+      "result": "52 passed; one existing tensor conversion warning"
+    },
+    "rust": {
+      "command": "CARGO_HOME=/home/minidc/Desktop/PokeAgent3.0-A/.tools/cargo RUSTUP_HOME=/home/minidc/Desktop/PokeAgent3.0-A/.tools/rustup CARGO_TARGET_DIR=/home/minidc/Desktop/PokeAgent3.0-V2/.audit-target /home/minidc/Desktop/PokeAgent3.0-A/.tools/cargo/bin/cargo test --manifest-path engine/Cargo.toml --locked --release --test legality --test snapshot_phases",
+      "result": "2 passed"
+    }
+  },
+  "logs": {
+    "reference.log": "1eb0154971db18e36b89a2ddb71421e928d4c750fe5f21af44d7af5666462bf3",
+    "rust.log": "93755b75475b3aa4caa78fe8fdd1f43a159160384f8c7a44d4746944bfff26e0",
+    "final.log": "a94eb3222817577af3d6efe2ff3d3058201b5740a1a8e8fe3397c4262d244d1a",
+    "storage.log": "0313153bb2560b2830ef5a40ce0d0f30a87f3a1e15b02c4a3140c4cfbc9203e8"
+  },
+  "limitations": [
+    "Counts overlap across suites, not 107 unique tests",
+    "Direct target/destination projections explicitly deferred under frozen architecture; not required correctness fix",
+    "P4 two-V100/statistics gates pending; no production started"
+  ]
+}
