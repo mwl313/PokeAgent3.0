@@ -11,6 +11,7 @@ ALLOWED={
  'scripts/v2_recovery_analysis.py','scripts/v2_gpu_profile.py',
  'scripts/analyze_v2_live_bottlenecks.py','scripts/run_ddp_ppo.py',
  'scripts/v2_continuation_probe.py',
+ 'scripts/v2_reconstruct_boundary.py',
 }
 
 def sha(path):
