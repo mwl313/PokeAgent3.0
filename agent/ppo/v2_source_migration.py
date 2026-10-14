@@ -34,6 +34,8 @@ def validate_v2_migration(receipt,root,source,target):
     if (receipt.get('source_sha'),receipt.get('target_sha'))!=(source,target):
         raise ValueError('V2 migration source/target mismatch')
     if receipt.get('purpose')!='bounded-validation-only':raise ValueError('V2 migration has no production authorization')
+    if receipt.get('execution_environment')!={'CUBLAS_WORKSPACE_CONFIG':':4096:8'}:
+        raise ValueError('V2 migration must preserve original CUDA workspace contract')
     if git(root,'rev-parse','HEAD')!=target or git(root,'status','--porcelain','--untracked-files=no'):
         raise ValueError('V2 migration requires exact clean committed runtime')
     if runtime_delta(root,target)!=receipt.get('runtime_blobs'):raise ValueError('V2 runtime blob mismatch')
@@ -61,6 +63,7 @@ def prepare(root,checkpoint,proof,output):
         if sha(checkpoint/f'rank{rank}.pt')!=manifest['ranks'][str(rank)]['sha256']:
             raise ValueError('input checkpoint rank hash mismatch')
     receipt={'schema':'pa3-v2-data-path-migration-v1','purpose':'bounded-validation-only',
+       'execution_environment':{'CUBLAS_WORKSPACE_CONFIG':':4096:8'},
        'source_sha':BASE,'target_sha':target,'runtime_blobs':runtime_delta(root,target),
        'checkpoint':str(checkpoint),'checkpoint_manifest_sha256':sha(checkpoint/'manifest.json'),
        'rank_artifact_hashes':{str(r):sha(checkpoint/f'rank{r}.pt') for r in (0,1)},

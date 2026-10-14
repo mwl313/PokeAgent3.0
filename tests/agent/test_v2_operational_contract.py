@@ -26,3 +26,14 @@ def test_v2_profile_keeps_ppo_hyperparameters_and_requires_durable_stats(tmp_pat
 def test_cooperative_stop_requires_checkpoint_destination():
     _,module=launcher()
     with pytest.raises(SystemExit):module.parse_args(['--stop-file','STOP'])
+
+
+def test_deterministic_workspace_is_pinned_and_conflicts_rejected(monkeypatch):
+    from types import SimpleNamespace
+    _,module=launcher();args=SimpleNamespace(deterministic_diagnostic=True)
+    monkeypatch.delenv('CUBLAS_WORKSPACE_CONFIG',raising=False)
+    module.pin_deterministic_workspace(args)
+    import os
+    assert os.environ['CUBLAS_WORKSPACE_CONFIG']==':4096:8'
+    monkeypatch.setenv('CUBLAS_WORKSPACE_CONFIG',':16:8')
+    with pytest.raises(RuntimeError,match='requires'):module.pin_deterministic_workspace(args)

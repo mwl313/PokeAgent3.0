@@ -41,9 +41,9 @@ def main():
         started=time.time()
         with report.with_suffix('.log').open('x') as log:
             result=subprocess.run(command,cwd=a.source,stdout=log,stderr=subprocess.STDOUT,
-                                  env={**os.environ,'OMP_NUM_THREADS':'2','MKL_NUM_THREADS':'2',
+                                  env={**os.environ,'OMP_NUM_THREADS':'2','MKL_NUM_THREADS':'2','CUBLAS_WORKSPACE_CONFIG':':4096:8',
                                        'PYTHONPATH':f'{a.source}/engine/python:{a.source}'},timeout=2400)
-        receipt=dict(source_sha=source,command=command,returncode=result.returncode,wall_s=time.time()-started)
+        receipt=dict(source_sha=source,command=command,execution_environment={'CUBLAS_WORKSPACE_CONFIG':':4096:8'},returncode=result.returncode,wall_s=time.time()-started)
         receipts.append(receipt);(root/'commands.json').write_text(json.dumps(receipts,indent=2)+'\n')
         print(json.dumps(receipt),flush=True)
         if result.returncode:raise RuntimeError('benchmark failed; inspect logs before continuing')

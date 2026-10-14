@@ -29,7 +29,7 @@ def main():
         (path/'command.json').write_text(json.dumps(command,indent=2)+'\n')
         with (path/'process.log').open('x') as log:
             proc=subprocess.Popen(command,cwd=source,stdout=log,stderr=subprocess.STDOUT,
-               env={**os.environ,'PYTHONPATH':f'{source}/engine/python:{source}'})
+               env={**os.environ,'PYTHONPATH':f'{source}/engine/python:{source}','CUBLAS_WORKSPACE_CONFIG':':4096:8'})
             mismatch=False;began=time.monotonic()
             while proc.poll() is None:
                 # Final update finishes at73,728; request checkpoint before its
@@ -49,7 +49,7 @@ def main():
         if proc.returncode:raise RuntimeError('original replay failed')
         latest=(path/'rolling/LATEST').read_text().strip();manifest=json.loads((path/'rolling/generations'/latest/'manifest.json').read_text())
         return dict(matched_historical_digests=not mismatch,matches=manifest['committed_matches'],checkpoint=str(path/'rolling/generations'/latest))
-    result={'probe':execute('probe',1,True)}
+    result={'execution_environment':{'CUBLAS_WORKSPACE_CONFIG':':4096:8'},'probe':execute('probe',1,True)}
     if result['probe']['matched_historical_digests']:
         result['reconstructed']=execute('reconstructed',17)
         result['status']='RECOVERED_MODEL_AND_ADAM' if result['reconstructed']['matched_historical_digests'] and result['reconstructed']['matches']==73728 else 'HISTORICAL_REPLAY_DIFFERS'

@@ -396,6 +396,15 @@ def stop_workers(processes, timeout: float = 10.0) -> None:
             process.wait(timeout=timeout)
 
 
+def pin_deterministic_workspace(args):
+    """Pin the original V2 CUDA numeric environment before CUDA initializes."""
+    if args.deterministic_diagnostic:
+        configured=os.environ.get('CUBLAS_WORKSPACE_CONFIG')
+        if configured not in (None, ':4096:8'):
+            raise RuntimeError('deterministic V2 execution requires CUBLAS_WORKSPACE_CONFIG=:4096:8')
+        os.environ['CUBLAS_WORKSPACE_CONFIG']=':4096:8'
+
+
 def source_provenance() -> dict:
     """Record the checkout actually executed, including uncommitted changes."""
     def git(*command):
@@ -407,6 +416,7 @@ def source_provenance() -> dict:
         status = git("status", "--porcelain", "--untracked-files=normal")
         return {
             "git_sha": git("rev-parse", "HEAD"),
+            "cublas_workspace_config": os.environ.get('CUBLAS_WORKSPACE_CONFIG'),
             "git_branch": git("branch", "--show-current"),
             "git_dirty": bool(status),
             "git_status": status.splitlines(),
@@ -475,6 +485,7 @@ def summarize_iterations(rank_results: list[dict]) -> tuple[list[dict], dict | N
 
 
 def worker(args) -> None:
+    pin_deterministic_workspace(args)
     """One rank: local rollout, fixed-step DDP update, per-rank metrics JSON."""
     import torch.distributed as dist
 
@@ -646,6 +657,12 @@ def worker(args) -> None:
             )
         if args.precision_stability == "fp16-reduction-off" and effective_reduction:
             raise RuntimeError("effective CUDA FP16 reduction setting does not match D1 contract")
+        saved_experiment=resume_envelope.get('experiment',{})
+        if 'cublas_workspace_config' in saved_experiment:
+            if saved_experiment['cublas_workspace_config']!=os.environ.get('CUBLAS_WORKSPACE_CONFIG'):
+                raise RuntimeError('checkpoint CUDA workspace execution contract mismatch')
+        elif resume_envelope.get('source_sha')==source_sha:
+            raise RuntimeError('same-source checkpoint missing CUDA workspace execution identity')
         validate_epoch_override(resume_envelope, ppo_config, ppo_config.ppo_epochs)
         recorded_source_sha = resume_envelope.get("source_sha")
         expected_source_sha = source_sha
@@ -932,6 +949,7 @@ def worker(args) -> None:
                     "source_migration": source_migration,
                     "recompute_secondary": bool(args.recompute_secondary),
                     "precision_mode": args.precision_mode,
+                    "cublas_workspace_config": os.environ.get('CUBLAS_WORKSPACE_CONFIG'),
                     "deterministic_diagnostic": bool(args.deterministic_diagnostic),
                     "precision_stability": args.precision_stability,
                     "precision_contract_version": f"pa3-precision-{args.precision_mode}-v2",
@@ -1277,6 +1295,7 @@ def parent(args) -> None:
 
 def main():
     args = parse_args()
+    pin_deterministic_workspace(args)
     if args.worker:
         worker(args)
     else:

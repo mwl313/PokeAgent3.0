@@ -20,6 +20,7 @@ def fixture(tmp_path,monkeypatch):
     monkeypatch.setattr(migration,'git',git)
     monkeypatch.setattr(migration,'runtime_delta',lambda root,target:{'agent/types/ragged.py':'blob'})
     r={'schema':'pa3-v2-data-path-migration-v1','purpose':'bounded-validation-only',
+       'execution_environment':{'CUBLAS_WORKSPACE_CONFIG':':4096:8'},
        'source_sha':migration.BASE,'target_sha':target,'runtime_blobs':{'agent/types/ragged.py':'blob'},
        'checkpoint':str(checkpoint),'checkpoint_manifest_sha256':migration.sha(checkpoint/'manifest.json'),
        'rank_artifact_hashes':{str(i):migration.sha(checkpoint/f'rank{i}.pt') for i in (0,1)},

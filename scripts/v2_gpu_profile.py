@@ -19,6 +19,9 @@ def main():
     p.add_argument('--rows',type=int,default=1024);a=p.parse_args()
     if not 1<=a.rows<=1024:raise ValueError('bounded GPU profile exceeds micro1024')
     root=pathlib.Path(a.output);root.mkdir(parents=True,exist_ok=True)
+    from types import SimpleNamespace
+    from scripts.run_ddp_ppo import pin_deterministic_workspace
+    pin_deterministic_workspace(SimpleNamespace(deterministic_diagnostic=True))
     torch.set_num_threads(2);torch.cuda.set_device(0);torch.use_deterministic_algorithms(True)
     torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction=False
     e=load_envelope(str(pathlib.Path(a.artifact).resolve()));buffer=RolloutBuffer()
@@ -76,7 +79,9 @@ def main():
     sync=[e for e in runtime if 'Synchronize' in e.get('name','') or e.get('name')=='cudaMemcpy']
     ops=[{'name':e.key,'cpu_total_ms':e.cpu_time_total/1000,'self_cpu_ms':e.self_cpu_time_total/1000,
           'device_total_ms':getattr(e,'device_time_total',0)/1000,'count':e.count} for e in prof.key_averages()]
-    result={'rows':a.rows,'scope':'single GPU captured-row synthetic-loss profile; no DDP; duplicates to requested micro size',
+    result={'rows':a.rows,'source_sha':__import__('subprocess').check_output(['git','rev-parse','HEAD'],text=True).strip(),
+       'cublas_workspace_config':__import__('os').environ.get('CUBLAS_WORKSPACE_CONFIG'),
+       'scope':'single GPU captured-row synthetic-loss profile; no DDP; duplicates to requested micro size',
        'cuda_event_step_ms':events,'synchronized_host_step_ms':host,'materialize_and_h2d_s':h2d,
        'kernel_union_ms':union(intervals)/1000,'kernel_span_ms':(max(x[1] for x in intervals)-min(x[0] for x in intervals))/1000,
        'top_kernels_ms':sorted(grouped.items(),key=lambda x:x[1],reverse=True)[:25],
