@@ -1,0 +1,5 @@
+layout ok
+fixed batch ok
+batched request expansion ok
+determinism ok: 96278292c24785ea
+snapshot/restore ok

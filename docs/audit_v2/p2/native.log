@@ -1,0 +1,68 @@
+   Compiling pa3-engine v0.1.0 (/home/minidc/Desktop/PokeAgent3.0-V2/engine)
+    Finished `release` profile [optimized] target(s) in 58.87s
+     Running unittests src/lib.rs (.audit-target/release/deps/pa3_engine-4278f28771b6b564)
+
+running 14 tests
+test items::tests::mega_stones_classify_only_with_the_exact_declaration ... ok
+test observation::tests::batch_high_water_pool_hides_inactive_rows_and_retains_ragged_storage ... ok
+test battle::type_conversion_tests::cold_move_metadata_preserves_canonical_exclusions ... ok
+test battle::public_type_tests::imprison_hidden_disable_cannot_change_served_last_active_observation ... ok
+test battle::public_type_tests::hidden_imprison_choice_revises_request_without_advancing_world ... ok
+test battle::public_type_tests::unsupported_empty_type_change_is_atomic ... ok
+test battle::public_type_tests::public_set_type_updates_both_viewers_without_revealing_identity ... ok
+test battle::public_type_tests::stale_bench_disabled_does_not_become_a_current_public_restriction ... ok
+test battle::public_type_tests::batch_retry_is_reported_in_both_submission_orders_and_preserves_peer ... ok
+test battle::public_type_tests::public_type_reversion_is_visible_on_reentry ... ok
+test battle::public_type_tests::imprison_retry_and_struggle_match_emitted_reference_boundaries ... ok
+test battle::public_type_tests::replacement_view_has_no_inherited_move_mask ... ok
+test battle::type_conversion_tests::synchronize_failed_reflection_keeps_activation_but_allocates_no_source_status ... ok
+test battle::type_conversion_tests::all_seven_type_callbacks_match_pinned_primary_primitives ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.25s
+
+     Running tests/exact_pool_closure.rs (.audit-target/release/deps/exact_pool_closure-29c7c7a0e356cd88)
+
+running 1 test
+test exact_frozen_pool_dynamic_identity_closure_has_no_native_blockers ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+     Running tests/observation.rs (.audit-target/release/deps/observation-0861ff8f746a4ad5)
+
+running 11 tests
+test audience_filtered_event_integers_remain_unknown_while_hp_and_public_boosts_stay_known ... ok
+test public_health_boundary_and_event_order_are_preserved_without_exact_hp ... ok
+test fixed_roles_and_unknown_fields_are_masked_zero ... ok
+test output_reuse_clears_stale_padding_and_retains_ragged_capacity ... ok
+test effects_repertoire_and_dynamic_types_have_no_token_cap_and_unknown_values_are_zero ... ok
+test opponent_reveal_order_never_claims_a_private_move_slot ... ok
+test own_actual_state_pp_and_original_moves_survive_current_slot_changes ... ok
+test v2_numeric_units_preserve_small_signed_events_and_catalogue_weight ... ok
+test malformed_known_ids_health_sources_and_event_windows_fail_without_replacing_output ... ok
+test hidden_world_changes_and_unknown_stale_payloads_do_not_change_encoding ... ok
+test cold_metadata_validation_rejects_bad_catalogue_and_ratio_and_move_effects_are_complete ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests/observation_completeness.rs (.audit-target/release/deps/observation_completeness-e4ab77193ed3ef60)
+
+running 2 tests
+test every_player_known_state_field_reaches_the_observation_tensor ... ok
+test revealed_lock_conditions_reach_the_observation_tensor ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.84s
+
+     Running tests/observation_leakage.rs (.audit-target/release/deps/observation_leakage-06d690cf32f99caf)
+
+running 1 test
+test hidden_opponent_state_cannot_change_p1_observation_or_mask ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.20s
+
+     Running tests/public_type_oracle.rs (.audit-target/release/deps/public_type_oracle-355e23dd2d7f811b)
+
+running 1 test
+test dynamic_types_and_identity_match_public_showdown_messages ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+

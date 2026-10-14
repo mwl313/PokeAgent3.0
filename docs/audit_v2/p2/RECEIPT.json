@@ -1,0 +1,67 @@
+{
+  "source_sha": "9c03ee63e18e47ef2a707e5c1722af7d3b1520f5",
+  "phase": "P2",
+  "status": "PASS",
+  "observation_schema": "pa3-entity-observation-v2",
+  "wire_version": 2,
+  "semantic_hash": "dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35",
+  "dataset_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f",
+  "team_count": 1220,
+  "native_binary_sha256": "8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62",
+  "model_parameters": 9889459,
+  "tests": {
+    "Python": 44,
+    "Rust": 30,
+    "CUDA_mode_D_nonempty_ragged": true,
+    "bridge": "layout/fixed-wire/candidates/determinism/snapshot PASS"
+  },
+  "source_files_sha256": {
+    "agent/buffer/rollout_buffer.py": "18d957be0a63271ae297566225c34eaa82ca85d8b2901f1aa68aa5fa6f902839",
+    "agent/contracts.py": "eab079df74b2ba37cbeb15a155c06fed828343216448c60646823116212a998b",
+    "agent/evaluation/fixed_policy.py": "1721d54272eb0c3adfbbd8a9a8a077a3636f3af20d085eed6b90b3c2eea5f170",
+    "agent/evaluation/frozen_policy.py": "89fd87b25cf6b497bc5ed06142b65b7dda9da163de224fdfd9ab5d1046a66c90",
+    "agent/mock_engine/mock_engine.py": "a94a7358f26c769685fe668c5ec2fafd088d936410cfb584d1f64d2d0abbe373",
+    "agent/model/config.py": "d161568000dfc6089bdffb167d154b19676ca1dcf2a3a2399b04106b887cddea",
+    "agent/model/embeddings.py": "732e7a6caea9dadc90bf656a1d7abf024ec3efcd6c57036295c654d6993d8178",
+    "agent/model/precision.py": "360b07e56662d305dcb92f91949940a95a13c26243d697e055624a4456106d8c",
+    "agent/model/ragged_embeddings.py": "922ca15203d1cfebec62ce9febdba55583385648fcf215ee7fd75f2dfb64a450",
+    "agent/ppo/experimental_checkpoint.py": "95733fef285cc661656debf1a20af5e3a508fe4666dbc4c4048c1a89c99df377",
+    "agent/ppo/learner.py": "9b909af9ee217ea6304bbd78812366432d6473d95f7c174eda676412bc60f4b7",
+    "agent/ppo/recompute_safety.py": "ecb663d0fff52b767dab2cdfb99e8e6829b675bccc8ac2de2d69b782ea7b6dd8",
+    "agent/types/observation.py": "5c0c6dd44fe02b68b7e5648bd779af0782f5db67377f2191fbdfe5d55f8287ca",
+    "agent/types/ragged.py": "404c579a010841688c353a9adfd9992bf47867ddcce203fe105aaad196db6b9b",
+    "configs/pa3_v2_contract.json": "a4f7c057f17e583859287adf0fc337ef92a225fb9d4a4a950117f704e3a615d4",
+    "docs/audit_v2/V2_CONTRACT_FREEZE.md": "19bb4920900384c9644d5bfc7a6e7033764ee21c057ca72f1b6aeb438327b346",
+    "engine/python/pa3_engine/__init__.py": "bf8c8865ebe763bc0470de5baca28a2c10502199fe0df6e42b58bed8125c8c7e",
+    "engine/python/pa3_engine/observation.py": "8bb81dfa67af7d2e31ef06af488f72dde431448f9bcaf003bceecd13f18805fb",
+    "engine/src/observation.rs": "edd53f78a8f3fe518407878b4a8935eaa54bd2110db10e945c5ccd67cce6d000",
+    "engine/src/python.rs": "56b5bdd48dc9121991fbf07a18cac417c3bca3e3efc5701f84797335579853e3",
+    "engine/tests/observation.rs": "73ca04279da3cc3c75e204229a7926b4fda2b8d537b7326da58f881e587eb182",
+    "scripts/audit_v2_numeric.py": "e9e8fdc9493c29a5edcd107788c118b7ced62552095cfa83539d35ffbe0aca72",
+    "scripts/run_ddp_ppo.py": "cbb72186dbd918eea117c76e29ebba9695a5d5fc990131cd6c9db936b2e8d654",
+    "tests/agent/test_v2_observation_contract.py": "3d2b9ff4a0d4414594b0543fa457d5a05f6a4bf789c62bbb8a7f8fd75cb5a3e6"
+  },
+  "artifacts": {
+    "native.log": "2f37389fbe8cac99292e443a26e4d1da6defd1c5fdaca2bac926e6cae4d4529c",
+    "python.log": "5a14b2fa25219b84ffa0baf393bcd9ebf0169de5db512e0cec3b791b160044ea",
+    "build.log": "ecf9f23edf38ab3f4318d0ca0a368bc0ab9be2d9e4a338fe1fc5e0605cfcaa39",
+    "numeric.json": "ce381957c229f65a31949b3033992813408733d72bf30f637d9b390214758419",
+    "bridge.log": "4f5c46df0aabaabda2e6b12bcf4c5d4effb80658af07f09bd8a76d56b069277f",
+    "numeric.csv": "78dc0a35027973c87ebff01e2c0aa4a2c52f8bbae41b656ffba3af61595bcca5"
+  },
+  "limitations": [
+    "Action signed targets/active-roster semantic correction is P3 and remains blocking.",
+    "Full two-rank Mode D PPO/DDP and production telemetry/statistics are P4; no scratch campaign launched.",
+    "Numeric empirical ranges cover all frozen preview views; dynamic domain limits audited mathematically and with targeted tests, not exhaustive gameplay.",
+    "Global scope still not certified as all-Reg-M-C ready."
+  ],
+  "command_environment": "PYTHONPATH=engine/python:. OMP_NUM_THREADS=2; Python /home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python; CARGO_HOME and RUSTUP_HOME from PokeAgent3.0-A/.tools; CARGO_TARGET_DIR=.audit-target",
+  "test_commands": [
+    "python -m pytest -q tests/agent/test_v2_observation_contract.py tests/agent/test_a_checkpoint_envelope.py tests/agent/test_fixed_policy_eval.py tests/agent/test_a_cached_select.py tests/agent/test_logprob_recompute.py tests/agent/test_streaming_equivalence.py tests/integration/test_imprison_retry.py tests/integration/test_collect_both_current_sides.py",
+    "cargo test --manifest-path engine/Cargo.toml --locked --release --lib --test observation --test observation_leakage --test observation_completeness --test public_type_oracle --test exact_pool_closure",
+    "python engine/python/test_bridge.py",
+    "python scripts/audit_v2_numeric.py --output /tmp/p2-numeric.csv"
+  ],
+  "training_started": false,
+  "execution_provenance": "Tests executed before the commit; verified production/test file contents match the committed candidate. No claim of a preexisting clean-HEAD execution."
+}
