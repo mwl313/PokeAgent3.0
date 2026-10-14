@@ -39,7 +39,7 @@
     "evidence/recovery_report.json": "4099448a6c2186abe78bb7adde0172a02d8dfd1f3aaf761cbbd143088e149485",
     "evidence/closeout_audit.log": "43fd22a6dafe9e224fba53ecb004466a6e13e497cb4fd2ce5c2b8f8222e20cf9"
   },
-  "ledger_sha256": "025ad84292a34d37f67f545f435a59949dd22c1bbec73539ec10c8f6bd997cd8",
+  "ledger_sha256": "3d2eb5c82c04fc4d990863ffb824574f993b6251318f674e9ec397e3869a2541",
   "raw_artifacts": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/runs/perf/v2_recovery",
   "classification": "BOUNDED_CLOSEOUT_NOT_PRODUCTION_ACCEPTANCE",
   "cancelled_jobs": [
@@ -48,5 +48,6 @@
     "corrected candidate checkpoint continuation"
   ],
   "hash_note": "Receipt excludes itself. Checkpoints and traces remain local. UNEXECUTED files are prepared diagnostics, not executed evidence.",
-  "closeout_evidence_payloads_verified": true
+  "closeout_evidence_payloads_verified": true,
+  "raw_log_whitespace_note": "Captured pytest logs preserve original trailing spaces as evidence; only derived CSV line endings normalized."
 }
