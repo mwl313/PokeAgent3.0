@@ -1,0 +1,18 @@
+{
+  "runtime_source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+  "snapshot_kst": "2026-10-14T15:29:06.594074+09:00",
+  "method": "read-only complete paired JSONL; no training restart or profiler attachment",
+  "files": {
+    "docs/perf/v2_bottleneck_20261014/SUMMARY.json": "41279d2436eb9c5c5e1b8858887a696841780aad39bd7c7808599c0c57615943",
+    "docs/perf/v2_bottleneck_20261014/continuation.json.rank0.ppo.jsonl": "b1c83cde10ffb1f807b9d303b06908cec6eb47b7d81e48ad1c9807b366680d6f",
+    "docs/perf/v2_bottleneck_20261014/continuation.json.rank1.ppo.jsonl": "11355193f5f3e308396bdd75bcb772e6beed1f2b665a175f15e73b976a6ce9f5",
+    "docs/perf/v2_bottleneck_20261014/first.json": "28ac0a41da636f61338d257faac08cec6da022ee73c4dda6ee308ea23531198d",
+    "docs/perf/v2_bottleneck_20261014/first.json.rank0.ppo.jsonl": "00149780ad282715bddd247e789d5f8ef6b68ef5c991d364ebb59a06dc9f922e",
+    "docs/perf/v2_bottleneck_20261014/first.json.rank1.ppo.jsonl": "149bf2bd55c34a2b17f5c5c128551cbfd94b381ab7dde0d4164c38f60a7eaf1a",
+    "docs/perf/v2_bottleneck_20261014/gpu_samples.json": "52c908f73e3ad43a1ecd244f955537cc0a20c59c87de813f42099ebff5cf336e",
+    "docs/perf/v2_bottleneck_20261014/launch_manifest.json": "0304d137322b6177699ef73b9f96a2fba5c762228f34624a841a834713021f71"
+  },
+  "analysis_script_sha256": "14e23e8dd7e5e5dabe826a248dcc22beaf755e6857ff9d79ca9e1f50b040e7cd",
+  "report_sha256": "71149b210e205e7846b58973cd1f330df25d5582f3d435de73f00bbd673ad7cc",
+  "validation": "Snapshot hashes, rates, additive budgets, epochs, errors and skips checked; script compiled; runtime source unchanged and PPO/eval timer active before commit."
+}

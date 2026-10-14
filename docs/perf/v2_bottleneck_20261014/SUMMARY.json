@@ -1,0 +1,514 @@
+{
+  "captured_utc": "2026-10-14T06:29:06.594074+00:00",
+  "captured_kst": "2026-10-14T15:29:06.594074+09:00",
+  "run_root": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z",
+  "source_files": [
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/reports/continuation.json.rank0.ppo.jsonl",
+      "read_bytes": 15680,
+      "complete_bytes": 15680,
+      "sha256": "b1c83cde10ffb1f807b9d303b06908cec6eb47b7d81e48ad1c9807b366680d6f"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/reports/continuation.json.rank1.ppo.jsonl",
+      "read_bytes": 15644,
+      "complete_bytes": 15644,
+      "sha256": "11355193f5f3e308396bdd75bcb772e6beed1f2b665a175f15e73b976a6ce9f5"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/reports/first.json.rank0.ppo.jsonl",
+      "read_bytes": 3123,
+      "complete_bytes": 3123,
+      "sha256": "00149780ad282715bddd247e789d5f8ef6b68ef5c991d364ebb59a06dc9f922e"
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/reports/first.json.rank1.ppo.jsonl",
+      "read_bytes": 3132,
+      "complete_bytes": 3132,
+      "sha256": "149bf2bd55c34a2b17f5c5c128551cbfd94b381ab7dde0d4164c38f60a7eaf1a"
+    }
+  ],
+  "paired_iterations": [
+    {
+      "iteration": 1,
+      "clock": 4096,
+      "games": 4096,
+      "wall_s": 139.5782216280004,
+      "games_per_s": 29.34555228047348,
+      "critical_rank": 0,
+      "exclusive_budget_s": {
+        "collection_and_clock_wait": 73.16978810599903,
+        "ppo_update": 50.25967140300054,
+        "prepare": 12.337905715001398,
+        "other_and_unaccounted": 3.8108564039994235
+      },
+      "max_rank_stage_s": {
+        "checkpoint_wall_s": 0.8330085939996934,
+        "cleanup_wall_s": 0.5891781569989689,
+        "collect_wall_s": 73.29856258099971,
+        "digest_wall_s": 0.7772808949994214,
+        "iteration_barrier_wall_s": 0.03775404000043636,
+        "iteration_setup_wall_s": 0.02610097599972505,
+        "lr_clock_wall_s": 3.314225109999825,
+        "prepare_wall_s": 12.337905715001398,
+        "recompute_wall_s": 0.2475118870006554,
+        "team_stats_wall_s": 0.16626156699931016,
+        "update_wall_s": 50.889400643000045
+      },
+      "learner_rows": 108401,
+      "epochs": [
+        2,
+        2
+      ],
+      "optimizer_steps": 54,
+      "skipped_steps": [
+        0,
+        0
+      ],
+      "errors": [
+        0,
+        0
+      ],
+      "recompute_max": 9.5367431640625e-07,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32"
+    },
+    {
+      "iteration": 2,
+      "clock": 8192,
+      "games": 4096,
+      "wall_s": 137.0446415539991,
+      "games_per_s": 29.888071168299355,
+      "critical_rank": 1,
+      "exclusive_budget_s": {
+        "collection_and_clock_wait": 70.40806468799929,
+        "ppo_update": 51.25550493300034,
+        "prepare": 12.573729061001359,
+        "other_and_unaccounted": 2.8073428719981166
+      },
+      "max_rank_stage_s": {
+        "checkpoint_wall_s": 0.022700098999848706,
+        "cleanup_wall_s": 0.5830574370011163,
+        "collect_wall_s": 70.25413302699963,
+        "digest_wall_s": 0.7366405650009256,
+        "iteration_barrier_wall_s": 0.055085480998968706,
+        "iteration_setup_wall_s": 0.011819446001027245,
+        "lr_clock_wall_s": 6.451990813999146,
+        "prepare_wall_s": 13.476752210000996,
+        "recompute_wall_s": 0.23630461900029331,
+        "team_stats_wall_s": 0.16326659599872073,
+        "update_wall_s": 51.25550493300034
+      },
+      "learner_rows": 107682,
+      "epochs": [
+        2,
+        2
+      ],
+      "optimizer_steps": 108,
+      "skipped_steps": [
+        0,
+        0
+      ],
+      "errors": [
+        0,
+        0
+      ],
+      "recompute_max": 9.5367431640625e-07,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32"
+    },
+    {
+      "iteration": 3,
+      "clock": 12288,
+      "games": 4096,
+      "wall_s": 131.25871381499928,
+      "games_per_s": 31.20554728102127,
+      "critical_rank": 1,
+      "exclusive_budget_s": {
+        "collection_and_clock_wait": 65.75430823399984,
+        "ppo_update": 50.55747435699959,
+        "prepare": 12.35615129100006,
+        "other_and_unaccounted": 2.5907799329997943
+      },
+      "max_rank_stage_s": {
+        "checkpoint_wall_s": 0.015997231001165346,
+        "cleanup_wall_s": 0.5593163739995362,
+        "collect_wall_s": 65.68103598699963,
+        "digest_wall_s": 0.6063606910011003,
+        "iteration_barrier_wall_s": 0.041438062999077374,
+        "iteration_setup_wall_s": 0.00423149500056752,
+        "lr_clock_wall_s": 1.9441801739994844,
+        "prepare_wall_s": 12.745716917001118,
+        "recompute_wall_s": 0.17862663500091003,
+        "team_stats_wall_s": 0.13913051799863752,
+        "update_wall_s": 50.55747435699959
+      },
+      "learner_rows": 107228,
+      "epochs": [
+        2,
+        2
+      ],
+      "optimizer_steps": 162,
+      "skipped_steps": [
+        0,
+        0
+      ],
+      "errors": [
+        0,
+        0
+      ],
+      "recompute_max": 0.00021457672119140625,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32"
+    },
+    {
+      "iteration": 4,
+      "clock": 16384,
+      "games": 4096,
+      "wall_s": 129.004266285001,
+      "games_per_s": 31.750887919868987,
+      "critical_rank": 1,
+      "exclusive_budget_s": {
+        "collection_and_clock_wait": 65.98673718300051,
+        "ppo_update": 48.771859421000045,
+        "prepare": 11.721542651999698,
+        "other_and_unaccounted": 2.524127029000738
+      },
+      "max_rank_stage_s": {
+        "checkpoint_wall_s": 0.011121636000098079,
+        "cleanup_wall_s": 0.5502534370007197,
+        "collect_wall_s": 65.89608754799883,
+        "digest_wall_s": 0.5843902680007886,
+        "iteration_barrier_wall_s": 0.02702491300078691,
+        "iteration_setup_wall_s": 0.004200883999146754,
+        "lr_clock_wall_s": 3.3764117480004643,
+        "prepare_wall_s": 12.283391274999303,
+        "recompute_wall_s": 0.1780606030006311,
+        "team_stats_wall_s": 0.13706197700048506,
+        "update_wall_s": 48.771859421000045
+      },
+      "learner_rows": 105101,
+      "epochs": [
+        2,
+        2
+      ],
+      "optimizer_steps": 214,
+      "skipped_steps": [
+        0,
+        0
+      ],
+      "errors": [
+        0,
+        0
+      ],
+      "recompute_max": 9.5367431640625e-07,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32"
+    },
+    {
+      "iteration": 5,
+      "clock": 20480,
+      "games": 4096,
+      "wall_s": 127.7350533280005,
+      "games_per_s": 32.06637405538332,
+      "critical_rank": 1,
+      "exclusive_budget_s": {
+        "collection_and_clock_wait": 64.96142665599837,
+        "ppo_update": 49.00195190899831,
+        "prepare": 11.28154597700086,
+        "other_and_unaccounted": 2.4901287860029697
+      },
+      "max_rank_stage_s": {
+        "checkpoint_wall_s": 0.011705980999977328,
+        "cleanup_wall_s": 0.5359364320011082,
+        "collect_wall_s": 64.80748357000084,
+        "digest_wall_s": 0.5943069820004894,
+        "iteration_barrier_wall_s": 0.041178329000103986,
+        "iteration_setup_wall_s": 0.003930273000150919,
+        "lr_clock_wall_s": 3.276030928998807,
+        "prepare_wall_s": 12.078374176999205,
+        "recompute_wall_s": 0.1900444780003454,
+        "team_stats_wall_s": 0.13526160100082052,
+        "update_wall_s": 49.00195190899831
+      },
+      "learner_rows": 103449,
+      "epochs": [
+        2,
+        2
+      ],
+      "optimizer_steps": 266,
+      "skipped_steps": [
+        0,
+        0
+      ],
+      "errors": [
+        0,
+        0
+      ],
+      "recompute_max": 9.5367431640625e-07,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32"
+    },
+    {
+      "iteration": 6,
+      "clock": 24576,
+      "games": 4096,
+      "wall_s": 128.2254548389992,
+      "games_per_s": 31.943735392812343,
+      "critical_rank": 0,
+      "exclusive_budget_s": {
+        "collection_and_clock_wait": 65.46175583200056,
+        "ppo_update": 48.098857382999995,
+        "prepare": 12.08262526100043,
+        "other_and_unaccounted": 2.582216362998224
+      },
+      "max_rank_stage_s": {
+        "checkpoint_wall_s": 0.010775496999485767,
+        "cleanup_wall_s": 0.5291877119998389,
+        "collect_wall_s": 65.46143193200078,
+        "digest_wall_s": 0.5976673370005301,
+        "iteration_barrier_wall_s": 0.013426806001007208,
+        "iteration_setup_wall_s": 0.0052470099999482045,
+        "lr_clock_wall_s": 4.951005032000467,
+        "prepare_wall_s": 12.08262526100043,
+        "recompute_wall_s": 0.17853465400003188,
+        "team_stats_wall_s": 0.1327399340007105,
+        "update_wall_s": 48.72174765099953
+      },
+      "learner_rows": 104281,
+      "epochs": [
+        2,
+        2
+      ],
+      "optimizer_steps": 318,
+      "skipped_steps": [
+        0,
+        0
+      ],
+      "errors": [
+        0,
+        0
+      ],
+      "recompute_max": 9.5367431640625e-07,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32"
+    }
+  ],
+  "aggregate": {
+    "iterations": 6,
+    "games": 24576,
+    "wall_s": 792.8463514489995,
+    "weighted_games_per_s": 30.997178652692423,
+    "min_games_per_s": 29.34555228047348,
+    "max_games_per_s": 32.06637405538332,
+    "mean_wall_s": 132.14105857483324,
+    "mean_exclusive_budget_s": {
+      "collection_and_clock_wait": 67.6236801164996,
+      "ppo_update": 49.657553234333136,
+      "prepare": 12.058916659500634,
+      "other_and_unaccounted": 2.8009085644998777
+    }
+  },
+  "continuation_aggregate": {
+    "iterations": 5,
+    "games": 20480,
+    "wall_s": 653.2681298209991,
+    "weighted_games_per_s": 31.350067552831163,
+    "min_games_per_s": 29.888071168299355,
+    "max_games_per_s": 32.06637405538332,
+    "mean_wall_s": 130.65362596419982,
+    "mean_exclusive_budget_s": {
+      "collection_and_clock_wait": 66.51445851859971,
+      "ppo_update": 49.537129600599656,
+      "prepare": 12.003118848400481,
+      "other_and_unaccounted": 2.5989189965999686
+    }
+  },
+  "first_launch_all_in_games_per_s": 27.546855850452182,
+  "first_profiles": [
+    {
+      "rank": 0,
+      "collector_stats": {
+        "action_kinds": {
+          "0": 16384,
+          "1": 77007,
+          "2": 8430,
+          "3": 8029
+        },
+        "assemble_seconds": 0.009323185999164707,
+        "candidate_calls": 306,
+        "candidate_seconds": 0.26481674499154906,
+        "candidates_returned": 842123,
+        "cohorts": 2,
+        "cpu_fraction_of_one_core": 1.106790140085257,
+        "cpu_seconds": 77.314819,
+        "current_current_games": 2048,
+        "current_historical_games": 0,
+        "decisions": 54439,
+        "draws": 0,
+        "games": 2048,
+        "h2d_seconds": 3.1407435329929285,
+        "historical_policy_games": {},
+        "learner_rows": 54439,
+        "losses": 1058,
+        "max_open_games": 1024,
+        "model_seconds": 5.8740476119710365,
+        "observation_seconds": 3.7852825340032723,
+        "operational_errors": 0,
+        "opponent_requests": 0,
+        "parse_seconds": 9.22629225000128,
+        "readback_seconds": 0.0925465779764636,
+        "record_seconds": 30.493971527117537,
+        "request_info_seconds": 0.029615903013109346,
+        "reset_seconds": 0.03571602699958021,
+        "reward_sum": -68.0,
+        "rounds": 121,
+        "spec_seconds": 0.0002224609906988917,
+        "step_seconds": 0.35080510500665696,
+        "table_seconds": 13.876565515005495,
+        "team_ids_seen": 1985,
+        "unaccounted_seconds": 2.675045389931256,
+        "wall_seconds": 69.85499436600003,
+        "wins": 990
+      },
+      "profile": {
+        "backward": 18.444761059001394,
+        "cached_contiguous_fraction": 0.0,
+        "cached_contiguous_hits": 0.0,
+        "cached_select_calls": 54.0,
+        "ddp_sync_steps": 54.0,
+        "epoch_sync": 0.0,
+        "forward": 21.616956535979625,
+        "h2d": 0.1410819089924189,
+        "metrics": 0.3824927980094799,
+        "minibatch_select": 2.939950841002428,
+        "optimizer": 6.462908543002413,
+        "prepare_build": 0.0,
+        "prepare_normalize": 0.0,
+        "prepare_total": 0.0,
+        "total": 50.256489146000604
+      },
+      "prepare_profile": {
+        "cache_budget_bytes": 8589934592,
+        "cache_build": 9.571549009999217,
+        "cache_enabled": 1.0,
+        "cache_estimated_bytes": 4230073617,
+        "candidate_padding": 32,
+        "gae": 2.7348469070002466,
+        "normalize": 0.02642198900139192,
+        "total": 12.333640986998944
+      },
+      "gpu_peak_reserved_gib": 13.39453125
+    },
+    {
+      "rank": 1,
+      "collector_stats": {
+        "action_kinds": {
+          "0": 16384,
+          "1": 76745,
+          "2": 8308,
+          "3": 7620
+        },
+        "assemble_seconds": 0.008414374986386974,
+        "candidate_calls": 277,
+        "candidate_seconds": 0.2439964440127369,
+        "candidates_returned": 838931,
+        "cohorts": 2,
+        "cpu_fraction_of_one_core": 1.1011297158238784,
+        "cpu_seconds": 80.710604,
+        "current_current_games": 2048,
+        "current_historical_games": 0,
+        "decisions": 53962,
+        "draws": 0,
+        "games": 2048,
+        "h2d_seconds": 3.1792168129959464,
+        "historical_policy_games": {},
+        "learner_rows": 53962,
+        "losses": 1041,
+        "max_open_games": 1024,
+        "model_seconds": 5.901574615994832,
+        "observation_seconds": 3.610542265998447,
+        "operational_errors": 0,
+        "opponent_requests": 0,
+        "parse_seconds": 9.282103807005115,
+        "readback_seconds": 0.0840899770064425,
+        "record_seconds": 32.56041447501775,
+        "request_info_seconds": 0.02928403700752824,
+        "reset_seconds": 0.03384342800018203,
+        "reward_sum": -34.0,
+        "rounds": 110,
+        "spec_seconds": 0.00025806802659644745,
+        "step_seconds": 0.3465621919876867,
+        "table_seconds": 15.301245769000161,
+        "team_ids_seen": 2007,
+        "unaccounted_seconds": 2.716451997961485,
+        "wall_seconds": 73.2979982650013,
+        "wins": 1007
+      },
+      "profile": {
+        "backward": 18.0961169370039,
+        "cached_contiguous_fraction": 0.0,
+        "cached_contiguous_hits": 0.0,
+        "cached_select_calls": 54.0,
+        "ddp_sync_steps": 54.0,
+        "epoch_sync": 0.0,
+        "forward": 21.100939751004262,
+        "h2d": 0.3795047120001982,
+        "metrics": 0.41012966700145626,
+        "minibatch_select": 2.725395084988122,
+        "optimizer": 7.331770711994977,
+        "prepare_build": 0.0,
+        "prepare_normalize": 0.0,
+        "prepare_total": 0.0,
+        "total": 50.88731875799931
+      },
+      "prepare_profile": {
+        "cache_budget_bytes": 8589934592,
+        "cache_build": 8.940796122000393,
+        "cache_enabled": 1.0,
+        "cache_estimated_bytes": 4193009286,
+        "candidate_padding": 32,
+        "gae": 2.5026340420008637,
+        "normalize": 0.2590976640003646,
+        "total": 11.702902855000502
+      },
+      "gpu_peak_reserved_gib": 13.318359375
+    }
+  ],
+  "limitations": [
+    "Snapshot of complete paired lines only; evolving policy and short sample, not a fixed-policy benchmark",
+    "CPU perf_counter substage labels are inclusive host wall and may include CUDA synchronization; not pure kernel timings",
+    "Stage maxima across ranks are not additive; exclusive budget uses one critical rank per iteration",
+    "No profiler attachment, new PPO experiment, restart, or runtime setting change"
+  ],
+  "durable_matches": 4096,
+  "latest_durable_generation": "iter-000000004096-1791958101732995099",
+  "last_verified_in_memory_matches": 24576,
+  "units": {
+    "pa3-v2-ppo-20261014-060525.service": {
+      "returncode": 0,
+      "status": "MainPID=69501\nResult=success\nActiveState=active\nSubState=running"
+    },
+    "pa3-v2-evaluation-20261014-060525.timer": {
+      "returncode": 0,
+      "status": "Result=success\nActiveState=active\nSubState=waiting"
+    },
+    "pa3-v2-evaluation-20261014-060525.service": {
+      "returncode": 0,
+      "status": "MainPID=0\nResult=success\nActiveState=inactive\nSubState=dead"
+    }
+  },
+  "gpu_sampling": {
+    "0": {
+      "samples": 15,
+      "mean_util_percent": 11.866666666666667,
+      "max_util_percent": 64.0,
+      "max_temperature_c": 48.0,
+      "max_power_w": 190.19,
+      "power_limit_w": 175.0
+    },
+    "1": {
+      "samples": 15,
+      "mean_util_percent": 15.066666666666666,
+      "max_util_percent": 61.0,
+      "max_temperature_c": 45.0,
+      "max_power_w": 172.34,
+      "power_limit_w": 175.0
+    }
+  },
+  "gpu_sampling_note": "15 samples about 2s apart; phase-limited window, not full-iteration utilization or a thermal/power-throttling diagnosis"
+}
