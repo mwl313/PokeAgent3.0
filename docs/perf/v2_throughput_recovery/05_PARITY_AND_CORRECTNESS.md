@@ -1,5 +1,43 @@
 # Correctness evidence
 
+Final closure on executed optimization source
+`b3c189ba9e61ffa002a3875b0848ac592f6450a0`: **28 passed in2.33s**:
+
+```bash
+OMP_NUM_THREADS=2 PYTHONPATH=engine/python:. \
+ /home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python \
+ -m pytest -q tests/agent/test_v2_source_migration.py \
+ tests/agent/test_v2_operational_contract.py \
+ tests/agent/test_a_checkpoint_envelope.py \
+ tests/agent/test_v2_throughput_paths.py
+```
+
+Persistent log: `evidence/final_closure_tests.log`. Earlier focused47-test
+run passed in9.81s (`evidence/focused_tests_final.log`); the counts below
+describe separate runs and must not be summed into a unique test count.
+
+The original-workspace historical replay completed13 iterations/53,248 games.
+Both rank artifacts were independently loaded on CPU: full model and Adam
+digests match historical telemetry at57,344, ranks have the same source,
+iteration14, dataset/action/opponent contract and rank digests. Scheduler,
+GradScaler, owned RNG and collector restart state exist. Both collector drain
+receipts report complete with0 in-flight battles. All28 team-stat receipts
+passed the codec's canonical-content hash validation and clock/W/L/D
+reconciliation. Manifest/rank SHA256 and a separate local full-state backup
+are verified in `evidence/CLOSEOUT_RECEIPT.json`.
+
+The raw recovery utility reports HISTORICAL_REPLAY_DIFFERS whenever its fixed
+73,728 target is not reached, even when every digest matches. Its raw output
+is retained unchanged. The audited closeout classification is
+**USER_STOPPED_VERIFIED_PARTIAL**, not a digest failure or full recovery.
+
+Exploratory source8a743ad full-stack3×5 comparisons match rollouts/model/Adam/
+work; same-source uninterrupted-versus-restored test was BIT_EXACT at12,288.
+Both ran without the original cuBLAS workspace setting. Their results prove
+only that tested runtime and are not production-runtime acceptance. The
+corrected-environment panel and continuation were cancelled before launch.
+No all-green production gate claim is made.
+
 Focused first run:53 passed in13.65s. After block store:61 passed in12.32s.
 Migration/ownership/envelope/operational tests:27 passed in2.00s.
 Commands use `OMP_NUM_THREADS=2 PYTHONPATH=engine/python:.` and the existing

@@ -1,0 +1,37 @@
+{
+  "source_sha": "8a743adb1b55d3940fa593d4ac196a91a572d3a0",
+  "ranks": [
+    {
+      "rank": 0,
+      "checks": {
+        "learner": true,
+        "rng": true,
+        "accounting": true,
+        "collector_restart": true,
+        "rank_digests": true,
+        "dataset_manifest_hash": true,
+        "opponent_manifest": true,
+        "rollout_digest": true,
+        "outcomes_rows_steps": true
+      },
+      "matches": 12288
+    },
+    {
+      "rank": 1,
+      "checks": {
+        "learner": true,
+        "rng": true,
+        "accounting": true,
+        "collector_restart": true,
+        "rank_digests": true,
+        "dataset_manifest_hash": true,
+        "opponent_manifest": true,
+        "rollout_digest": true,
+        "outcomes_rows_steps": true
+      },
+      "matches": 12288
+    }
+  ],
+  "classification": "BIT_EXACT",
+  "scope": "bounded same-source/same-runtime static collector; no campaign team-ledger writes; no cross-hardware guarantee"
+}

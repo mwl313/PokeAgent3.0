@@ -1,0 +1,1489 @@
+{
+  "arms": {
+    "baseline": {
+      "runs": [
+        {
+          "path": "baseline_pinned/repeat2.json",
+          "source": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+          "games": 20480,
+          "wall_s": 739.133470572001,
+          "iteration_games_s": 27.70812149008883,
+          "all_in_games_s": 27.411924946481896,
+          "steady_games_s": 28.03788850373046,
+          "iterations": [
+            {
+              "clock": 8192,
+              "games": 4096,
+              "rows": 107682,
+              "wall_s": 154.78133585900014,
+              "games_s": 26.463138964838105,
+              "rows_s": 695.704035647387,
+              "candidate_records": 1658542,
+              "candidate_records_s": 10715.387554936651,
+              "steps": 54,
+              "steps_s": 0.34887927346222114,
+              "rows_game": 26.28955078125,
+              "budget_s": {
+                "collect_and_wait": 83.62517222799988,
+                "prepare": 13.764767010000014,
+                "update": 54.326099998000245,
+                "other": 3.0652966229999947
+              },
+              "collect_imbalance_s": 14.216117468999983,
+              "gpu_reserved_gib": 13.3828125,
+              "rss_peak_gib": 10.569099426269531,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "76b14183ddc007cd81018f01b83ef005ee23ac05cf790482cffbcc0f0c4cc568",
+              "optimizer_digest": "f48330eae342504d95139b4b7a503c37c6d6070d5ff6e47bbd710a1ad4ede130",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 36.1789809089928,
+              "table_max_s": 16.70982550999588,
+              "parse_max_s": 11.276128555002288,
+              "collector_cpu_one_core": [
+                1.0922967355133115,
+                1.1165302782454931
+              ]
+            },
+            {
+              "clock": 12288,
+              "games": 4096,
+              "rows": 107328,
+              "wall_s": 152.5102971440001,
+              "games_s": 26.85720293451766,
+              "rows_s": 703.742645643533,
+              "candidate_records": 1649553,
+              "candidate_records_s": 10816.010662168557,
+              "steps": 54,
+              "steps_s": 0.35407445274998867,
+              "rows_game": 26.203125,
+              "budget_s": {
+                "collect_and_wait": 83.00890127100001,
+                "prepare": 13.975979890000417,
+                "update": 52.86592762199962,
+                "other": 2.659488361000058
+              },
+              "collect_imbalance_s": 17.843089879999752,
+              "gpu_reserved_gib": 14.6015625,
+              "rss_peak_gib": 10.949153900146484,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 0.0002446174621582031,
+              "model_digest": "d8146f8a65223d1ecc3dcc4de08999719e7f9703fb47c43f9617a67322d96522",
+              "optimizer_digest": "17b5aff68eb33f82c77208d9eed449bfec82ff369685f96191401fef122ba194",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 37.82706914099617,
+              "table_max_s": 17.202631988998746,
+              "parse_max_s": 10.069781439998224,
+              "collector_cpu_one_core": [
+                1.0921441389464877,
+                1.1246189447950874
+              ]
+            },
+            {
+              "clock": 16384,
+              "games": 4096,
+              "rows": 107326,
+              "wall_s": 136.64961637600027,
+              "games_s": 29.974471269129587,
+              "rows_s": 785.4101815016119,
+              "candidate_records": 1644380,
+              "candidate_records_s": 12033.55006482698,
+              "steps": 54,
+              "steps_s": 0.3951712520832514,
+              "rows_game": 26.20263671875,
+              "budget_s": {
+                "collect_and_wait": 69.76900796600057,
+                "prepare": 12.784696613000051,
+                "update": 51.391789633999906,
+                "other": 2.704122162999738
+              },
+              "collect_imbalance_s": 1.4462832720000733,
+              "gpu_reserved_gib": 14.6015625,
+              "rss_peak_gib": 10.949153900146484,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "1d41c963675136a783e690296d6b34e0c5f5fa338b86ab182dddb9d6b4ecfd7a",
+              "optimizer_digest": "dd600cd38a5dc332ffbb3054b0e08713ae6e043498c0a2dce66de6772c64d987",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 31.235467874928872,
+              "table_max_s": 14.292966951009475,
+              "parse_max_s": 9.059440623999762,
+              "collector_cpu_one_core": [
+                1.1072079057515127,
+                1.1081068908910923
+              ]
+            },
+            {
+              "clock": 20480,
+              "games": 4096,
+              "rows": 109628,
+              "wall_s": 150.3590364540005,
+              "games_s": 27.24146214686002,
+              "rows_s": 729.1081572841724,
+              "candidate_records": 1687762,
+              "candidate_records_s": 11224.879061501162,
+              "steps": 54,
+              "steps_s": 0.35914037010020533,
+              "rows_game": 26.7646484375,
+              "budget_s": {
+                "collect_and_wait": 79.83585593600037,
+                "prepare": 14.118787868999789,
+                "update": 53.63871376099996,
+                "other": 2.765678888000366
+              },
+              "collect_imbalance_s": 11.413497788000313,
+              "gpu_reserved_gib": 15.857421875,
+              "rss_peak_gib": 11.055644989013672,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "df3c4e934a5ac46a62a128083347210ef4912b6004707ae485fdee79cf15a02c",
+              "optimizer_digest": "800530613a264ff2eda6e6d7a075e32b22bc03b85771fff4d47fecae7ba01ba3",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 35.49912474998382,
+              "table_max_s": 16.494959116996142,
+              "parse_max_s": 10.18616280299284,
+              "collector_cpu_one_core": [
+                1.09903807313099,
+                1.1169041356024854
+              ]
+            },
+            {
+              "clock": 24576,
+              "games": 4096,
+              "rows": 109573,
+              "wall_s": 144.833184739,
+              "games_s": 28.280811523832,
+              "rows_s": 756.5462307375107,
+              "candidate_records": 1681328,
+              "candidate_records_s": 11608.720770932961,
+              "steps": 54,
+              "steps_s": 0.37284273005051954,
+              "rows_game": 26.751220703125,
+              "budget_s": {
+                "collect_and_wait": 78.19133317000069,
+                "prepare": 12.907036057000369,
+                "update": 51.03547316100048,
+                "other": 2.6993423509984495
+              },
+              "collect_imbalance_s": 10.016776118999587,
+              "gpu_reserved_gib": 15.896484375,
+              "rss_peak_gib": 11.107715606689453,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "887fb25ef697ce23112eb49c2ebfb056785c6923ae2d770975b8dfb6a0f971c5",
+              "optimizer_digest": "20f01bf9d75e95d85e6c2d722c4e54428807f8b093aa7c7b626d0fe70b0df472",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 34.08595602702553,
+              "table_max_s": 15.887573644004078,
+              "parse_max_s": 10.13165279200257,
+              "collector_cpu_one_core": [
+                1.1011679173905935,
+                1.1185344318211226
+              ]
+            }
+          ]
+        },
+        {
+          "path": "baseline_pinned/repeat3.json",
+          "source": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+          "games": 20480,
+          "wall_s": 723.7605038820002,
+          "iteration_games_s": 28.296653230111875,
+          "all_in_games_s": 28.011931175314373,
+          "steady_games_s": 28.13565265082492,
+          "iterations": [
+            {
+              "clock": 8192,
+              "games": 4096,
+              "rows": 107682,
+              "wall_s": 141.438842347,
+              "games_s": 28.959513044875248,
+              "rows_s": 761.3325887935197,
+              "candidate_records": 1658542,
+              "candidate_records_s": 11726.213057732784,
+              "steps": 54,
+              "steps_s": 0.3817904551814608,
+              "rows_game": 26.28955078125,
+              "budget_s": {
+                "collect_and_wait": 74.26033047599958,
+                "prepare": 12.497184361000109,
+                "update": 52.14810213700002,
+                "other": 2.5332253730002776
+              },
+              "collect_imbalance_s": 9.633993579999697,
+              "gpu_reserved_gib": 13.3828125,
+              "rss_peak_gib": 10.570335388183594,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "76b14183ddc007cd81018f01b83ef005ee23ac05cf790482cffbcc0f0c4cc568",
+              "optimizer_digest": "f48330eae342504d95139b4b7a503c37c6d6070d5ff6e47bbd710a1ad4ede130",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 32.68051647789616,
+              "table_max_s": 15.113116855995031,
+              "parse_max_s": 9.72452781299944,
+              "collector_cpu_one_core": [
+                1.0974581069819258,
+                1.1154051281439383
+              ]
+            },
+            {
+              "clock": 12288,
+              "games": 4096,
+              "rows": 107328,
+              "wall_s": 147.05232792800052,
+              "games_s": 27.854030315014636,
+              "rows_s": 729.8626380981179,
+              "candidate_records": 1649553,
+              "candidate_records_s": 11217.455876031088,
+              "steps": 54,
+              "steps_s": 0.3672162199733375,
+              "rows_game": 26.203125,
+              "budget_s": {
+                "collect_and_wait": 77.51578066100046,
+                "prepare": 14.397601972000302,
+                "update": 52.17925073599963,
+                "other": 2.959694559000127
+              },
+              "collect_imbalance_s": 10.182929996000894,
+              "gpu_reserved_gib": 14.6015625,
+              "rss_peak_gib": 10.962024688720703,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 0.0002446174621582031,
+              "model_digest": "d8146f8a65223d1ecc3dcc4de08999719e7f9703fb47c43f9617a67322d96522",
+              "optimizer_digest": "17b5aff68eb33f82c77208d9eed449bfec82ff369685f96191401fef122ba194",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 35.45539211192772,
+              "table_max_s": 16.36412721099623,
+              "parse_max_s": 9.279327078997085,
+              "collector_cpu_one_core": [
+                1.0978469175631915,
+                1.1138157835893434
+              ]
+            },
+            {
+              "clock": 16384,
+              "games": 4096,
+              "rows": 107326,
+              "wall_s": 143.1763655549994,
+              "games_s": 28.608073575010348,
+              "rows_s": 749.6069591092678,
+              "candidate_records": 1644380,
+              "candidate_records_s": 11484.99609992078,
+              "steps": 54,
+              "steps_s": 0.3771572199830466,
+              "rows_game": 26.20263671875,
+              "budget_s": {
+                "collect_and_wait": 75.22288446600032,
+                "prepare": 13.71481928599951,
+                "update": 51.56772415099931,
+                "other": 2.670937652000248
+              },
+              "collect_imbalance_s": 9.292179403000773,
+              "gpu_reserved_gib": 14.6015625,
+              "rss_peak_gib": 10.962024688720703,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "1d41c963675136a783e690296d6b34e0c5f5fa338b86ab182dddb9d6b4ecfd7a",
+              "optimizer_digest": "dd600cd38a5dc332ffbb3054b0e08713ae6e043498c0a2dce66de6772c64d987",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 33.7501659899026,
+              "table_max_s": 15.821714871998665,
+              "parse_max_s": 9.774267042001156,
+              "collector_cpu_one_core": [
+                1.1031349403339423,
+                1.1171941156263954
+              ]
+            },
+            {
+              "clock": 20480,
+              "games": 4096,
+              "rows": 109628,
+              "wall_s": 148.6077628410003,
+              "games_s": 27.562490153239356,
+              "rows_s": 737.7003590135068,
+              "candidate_records": 1687762,
+              "candidate_records_s": 11357.159059084854,
+              "steps": 54,
+              "steps_s": 0.3633726729186829,
+              "rows_game": 26.7646484375,
+              "budget_s": {
+                "collect_and_wait": 81.62086938399989,
+                "prepare": 12.877983516999848,
+                "update": 51.540616725999826,
+                "other": 2.5682932140007324
+              },
+              "collect_imbalance_s": 14.44785820099969,
+              "gpu_reserved_gib": 15.857421875,
+              "rss_peak_gib": 11.07040023803711,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "df3c4e934a5ac46a62a128083347210ef4912b6004707ae485fdee79cf15a02c",
+              "optimizer_digest": "800530613a264ff2eda6e6d7a075e32b22bc03b85771fff4d47fecae7ba01ba3",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 36.23944325607954,
+              "table_max_s": 17.094797094995556,
+              "parse_max_s": 10.521697760002098,
+              "collector_cpu_one_core": [
+                1.097176110701081,
+                1.122795611834124
+              ]
+            },
+            {
+              "clock": 24576,
+              "games": 4096,
+              "rows": 109573,
+              "wall_s": 143.485205211,
+              "games_s": 28.546497138688892,
+              "rows_s": 763.6536452581929,
+              "candidate_records": 1681328,
+              "candidate_records_s": 11717.779526659551,
+              "steps": 54,
+              "steps_s": 0.37634542126201176,
+              "rows_game": 26.751220703125,
+              "budget_s": {
+                "collect_and_wait": 74.6499526409998,
+                "prepare": 13.264687068000057,
+                "update": 52.95060345999991,
+                "other": 2.6199620420002248
+              },
+              "collect_imbalance_s": 10.002302653000697,
+              "gpu_reserved_gib": 15.896484375,
+              "rss_peak_gib": 11.124725341796875,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "887fb25ef697ce23112eb49c2ebfb056785c6923ae2d770975b8dfb6a0f971c5",
+              "optimizer_digest": "20f01bf9d75e95d85e6c2d722c4e54428807f8b093aa7c7b626d0fe70b0df472",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 33.124859387965444,
+              "table_max_s": 15.665775378985927,
+              "parse_max_s": 9.408327632007968,
+              "collector_cpu_one_core": [
+                1.1041211741277082,
+                1.1191083087896945
+              ]
+            }
+          ]
+        },
+        {
+          "path": "baseline_extra/repeat1.json",
+          "source": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+          "games": 20480,
+          "wall_s": 718.7363797809994,
+          "iteration_games_s": 28.49445300965606,
+          "all_in_games_s": 28.20465965744783,
+          "steady_games_s": 28.899191424538312,
+          "iterations": [
+            {
+              "clock": 8192,
+              "games": 4096,
+              "rows": 107682,
+              "wall_s": 151.80010259200026,
+              "games_s": 26.982853964262446,
+              "rows_s": 709.3671095165304,
+              "candidate_records": 1658542,
+              "candidate_records_s": 10925.829243065373,
+              "steps": 54,
+              "steps_s": 0.3557309848804131,
+              "rows_game": 26.28955078125,
+              "budget_s": {
+                "collect_and_wait": 81.23379800300063,
+                "prepare": 13.598981771000581,
+                "update": 53.83237582199945,
+                "other": 3.1349469959995986
+              },
+              "collect_imbalance_s": 13.316405171999577,
+              "gpu_reserved_gib": 13.3828125,
+              "rss_peak_gib": 10.580886840820312,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "76b14183ddc007cd81018f01b83ef005ee23ac05cf790482cffbcc0f0c4cc568",
+              "optimizer_digest": "f48330eae342504d95139b4b7a503c37c6d6070d5ff6e47bbd710a1ad4ede130",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 35.09408888812777,
+              "table_max_s": 16.401817002001735,
+              "parse_max_s": 10.906094790995667,
+              "collector_cpu_one_core": [
+                1.0962726731791865,
+                1.1129281856642599
+              ]
+            },
+            {
+              "clock": 12288,
+              "games": 4096,
+              "rows": 107328,
+              "wall_s": 144.55158591999952,
+              "games_s": 28.335904956911964,
+              "rows_s": 742.4892595740838,
+              "candidate_records": 1649553,
+              "candidate_records_s": 11411.517829440674,
+              "steps": 54,
+              "steps_s": 0.3735690594905386,
+              "rows_game": 26.203125,
+              "budget_s": {
+                "collect_and_wait": 74.0007625039998,
+                "prepare": 15.739731437000046,
+                "update": 52.10482689800028,
+                "other": 2.706265080999401
+              },
+              "collect_imbalance_s": 1.9598983540008703,
+              "gpu_reserved_gib": 14.6015625,
+              "rss_peak_gib": 10.945465087890625,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 0.0002446174621582031,
+              "model_digest": "d8146f8a65223d1ecc3dcc4de08999719e7f9703fb47c43f9617a67322d96522",
+              "optimizer_digest": "17b5aff68eb33f82c77208d9eed449bfec82ff369685f96191401fef122ba194",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 33.14082385796064,
+              "table_max_s": 14.893334579999646,
+              "parse_max_s": 9.409781537004164,
+              "collector_cpu_one_core": [
+                1.109268225695296,
+                1.1118448771101426
+              ]
+            },
+            {
+              "clock": 16384,
+              "games": 4096,
+              "rows": 107326,
+              "wall_s": 136.83380474299975,
+              "games_s": 29.934123425808977,
+              "rows_s": 784.3529616206968,
+              "candidate_records": 1644380,
+              "candidate_records_s": 12017.352021223574,
+              "steps": 54,
+              "steps_s": 0.3946393225082238,
+              "rows_game": 26.20263671875,
+              "budget_s": {
+                "collect_and_wait": 70.61557708000055,
+                "prepare": 12.83476969900039,
+                "update": 50.84723827699963,
+                "other": 2.536219686999175
+              },
+              "collect_imbalance_s": 7.054715935000786,
+              "gpu_reserved_gib": 14.6015625,
+              "rss_peak_gib": 10.945465087890625,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "1d41c963675136a783e690296d6b34e0c5f5fa338b86ab182dddb9d6b4ecfd7a",
+              "optimizer_digest": "dd600cd38a5dc332ffbb3054b0e08713ae6e043498c0a2dce66de6772c64d987",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 30.95096575806474,
+              "table_max_s": 14.560786102992097,
+              "parse_max_s": 9.206103364004775,
+              "collector_cpu_one_core": [
+                1.1055754480972653,
+                1.1169517205697383
+              ]
+            },
+            {
+              "clock": 20480,
+              "games": 4096,
+              "rows": 109628,
+              "wall_s": 141.31680278800013,
+              "games_s": 28.984522145924252,
+              "rows_s": 775.7605453645957,
+              "candidate_records": 1687762,
+              "candidate_records_s": 11943.10914698472,
+              "steps": 54,
+              "steps_s": 0.38212016500974355,
+              "rows_game": 26.7646484375,
+              "budget_s": {
+                "collect_and_wait": 73.00112166700092,
+                "prepare": 12.561399608999636,
+                "update": 53.080457804000616,
+                "other": 2.673823707998963
+              },
+              "collect_imbalance_s": 7.034690602999035,
+              "gpu_reserved_gib": 15.857421875,
+              "rss_peak_gib": 11.058765411376953,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "df3c4e934a5ac46a62a128083347210ef4912b6004707ae485fdee79cf15a02c",
+              "optimizer_digest": "800530613a264ff2eda6e6d7a075e32b22bc03b85771fff4d47fecae7ba01ba3",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 31.52238502702494,
+              "table_max_s": 14.909197546001451,
+              "parse_max_s": 9.573951444002887,
+              "collector_cpu_one_core": [
+                1.1052538355039359,
+                1.1189185411969804
+              ]
+            },
+            {
+              "clock": 24576,
+              "games": 4096,
+              "rows": 109573,
+              "wall_s": 144.23408373799975,
+              "games_s": 28.398280724272887,
+              "rows_s": 759.6886752443245,
+              "candidate_records": 1681328,
+              "candidate_records_s": 11656.939583393625,
+              "steps": 54,
+              "steps_s": 0.3743913962672695,
+              "rows_game": 26.751220703125,
+              "budget_s": {
+                "collect_and_wait": 74.90162611600044,
+                "prepare": 14.929146349999428,
+                "update": 51.82337943499988,
+                "other": 2.5799318370000037
+              },
+              "collect_imbalance_s": 9.561014033999527,
+              "gpu_reserved_gib": 15.896484375,
+              "rss_peak_gib": 11.115360260009766,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "887fb25ef697ce23112eb49c2ebfb056785c6923ae2d770975b8dfb6a0f971c5",
+              "optimizer_digest": "20f01bf9d75e95d85e6c2d722c4e54428807f8b093aa7c7b626d0fe70b0df472",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 32.37186447187014,
+              "table_max_s": 15.287823302006473,
+              "parse_max_s": 9.867043209993426,
+              "collector_cpu_one_core": [
+                1.1055483005507174,
+                1.115978427174501
+              ]
+            }
+          ]
+        }
+      ],
+      "median_iteration_games_s": 28.296653230111875,
+      "iteration_range_games_s": [
+        27.70812149008883,
+        28.49445300965606
+      ],
+      "iteration_stdev_games_s": 0.40902559424140217,
+      "median_all_in_games_s": 28.011931175314373,
+      "all_in_range_games_s": [
+        27.411924946481896,
+        28.20465965744783
+      ],
+      "weighted_iteration_games_s": 28.16242443672097,
+      "mean_budget_s": {
+        "collect_and_wait": 76.76353157126692,
+        "prepare": 13.597838167266703,
+        "update": 52.35550530813325,
+        "other": 2.7251485689998236
+      },
+      "mean_rows_s": 745.6217328271367,
+      "mean_steps_s": 0.3717627330613943,
+      "mean_candidate_records_s": 11457.126637193556,
+      "mean_record_max_s": 33.94380692858313,
+      "mean_table_max_s": 15.780029810465143,
+      "gpu_reserved_peak_gib": 15.896484375,
+      "rank_rss_peak_gib": 11.124725341796875,
+      "all_epochs_2": true,
+      "all_cache_admitted": true
+    },
+    "candidate": {
+      "runs": [
+        {
+          "path": "candidate/repeat1.json",
+          "source": "8a743adb1b55d3940fa593d4ac196a91a572d3a0",
+          "games": 20480,
+          "wall_s": 480.81762118000006,
+          "iteration_games_s": 42.594112815039814,
+          "all_in_games_s": 41.87442176905501,
+          "steady_games_s": 42.719751954031025,
+          "iterations": [
+            {
+              "clock": 8192,
+              "games": 4096,
+              "rows": 107682,
+              "wall_s": 97.29479507300039,
+              "games_s": 42.098860447023576,
+              "rows_s": 1106.7601295547834,
+              "candidate_records": 1658542,
+              "candidate_records_s": 17046.5645028143,
+              "steps": 54,
+              "steps_s": 0.5550142734715022,
+              "rows_game": 26.28955078125,
+              "budget_s": {
+                "collect_and_wait": 32.04987063699991,
+                "prepare": 11.835744146999787,
+                "update": 51.039850888999354,
+                "other": 2.369329400001334
+              },
+              "collect_imbalance_s": 2.807570357000259,
+              "gpu_reserved_gib": 13.3828125,
+              "rss_peak_gib": 10.383132934570312,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "76b14183ddc007cd81018f01b83ef005ee23ac05cf790482cffbcc0f0c4cc568",
+              "optimizer_digest": "f48330eae342504d95139b4b7a503c37c6d6070d5ff6e47bbd710a1ad4ede130",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 4.057066160986324,
+              "table_max_s": 2.5515892120065473,
+              "parse_max_s": 9.471413210996616,
+              "collector_cpu_one_core": [
+                1.2293189217721685,
+                1.242850188632529
+              ]
+            },
+            {
+              "clock": 12288,
+              "games": 4096,
+              "rows": 107328,
+              "wall_s": 92.80843839200043,
+              "games_s": 44.13391789547719,
+              "rows_s": 1156.4465673549257,
+              "candidate_records": 1649553,
+              "candidate_records_s": 17773.739420468282,
+              "steps": 54,
+              "steps_s": 0.5818436441298263,
+              "rows_game": 26.203125,
+              "budget_s": {
+                "collect_and_wait": 28.09012500799963,
+                "prepare": 12.344563702999949,
+                "update": 50.148906921999696,
+                "other": 2.224842759001149
+              },
+              "collect_imbalance_s": 0.8168774559999292,
+              "gpu_reserved_gib": 14.6015625,
+              "rss_peak_gib": 10.7657470703125,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 0.0002446174621582031,
+              "model_digest": "d8146f8a65223d1ecc3dcc4de08999719e7f9703fb47c43f9617a67322d96522",
+              "optimizer_digest": "17b5aff68eb33f82c77208d9eed449bfec82ff369685f96191401fef122ba194",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 4.139237471065826,
+              "table_max_s": 2.5787086200052727,
+              "parse_max_s": 8.505430046001493,
+              "collector_cpu_one_core": [
+                1.262521940451225,
+                1.2715096117754865
+              ]
+            },
+            {
+              "clock": 16384,
+              "games": 4096,
+              "rows": 107326,
+              "wall_s": 96.56745941000008,
+              "games_s": 42.41594451200646,
+              "rows_s": 1111.4095851307632,
+              "candidate_records": 1644380,
+              "candidate_records_s": 17028.303426917282,
+              "steps": 54,
+              "steps_s": 0.5591945809688352,
+              "rows_game": 26.20263671875,
+              "budget_s": {
+                "collect_and_wait": 30.907003133000217,
+                "prepare": 12.540642387999469,
+                "update": 50.951316532999954,
+                "other": 2.1684973560004437
+              },
+              "collect_imbalance_s": 3.281465371000195,
+              "gpu_reserved_gib": 14.6015625,
+              "rss_peak_gib": 10.7657470703125,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "1d41c963675136a783e690296d6b34e0c5f5fa338b86ab182dddb9d6b4ecfd7a",
+              "optimizer_digest": "dd600cd38a5dc332ffbb3054b0e08713ae6e043498c0a2dce66de6772c64d987",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 4.345195550158678,
+              "table_max_s": 2.649933746989518,
+              "parse_max_s": 8.93306858300366,
+              "collector_cpu_one_core": [
+                1.253494954553944,
+                1.2658216779030134
+              ]
+            },
+            {
+              "clock": 20480,
+              "games": 4096,
+              "rows": 109628,
+              "wall_s": 96.6493618609993,
+              "games_s": 42.3800004586771,
+              "rows_s": 1134.2858130575814,
+              "candidate_records": 1687762,
+              "candidate_records_s": 17462.732991732857,
+              "steps": 54,
+              "steps_s": 0.5587207091720126,
+              "rows_game": 26.7646484375,
+              "budget_s": {
+                "collect_and_wait": 29.8734074719996,
+                "prepare": 13.601689584999804,
+                "update": 50.71193545500046,
+                "other": 2.4623293489994467
+              },
+              "collect_imbalance_s": 1.7961203940003543,
+              "gpu_reserved_gib": 15.857421875,
+              "rss_peak_gib": 10.863388061523438,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "df3c4e934a5ac46a62a128083347210ef4912b6004707ae485fdee79cf15a02c",
+              "optimizer_digest": "800530613a264ff2eda6e6d7a075e32b22bc03b85771fff4d47fecae7ba01ba3",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 4.110853195102209,
+              "table_max_s": 2.6751913499883813,
+              "parse_max_s": 8.858607776998724,
+              "collector_cpu_one_core": [
+                1.2595224279309996,
+                1.2612234061916985
+              ]
+            },
+            {
+              "clock": 24576,
+              "games": 4096,
+              "rows": 109573,
+              "wall_s": 97.49756644399986,
+              "games_s": 42.01130499347016,
+              "rows_s": 1123.8536919066175,
+              "candidate_records": 1681328,
+              "candidate_records_s": 17244.820166518846,
+              "steps": 54,
+              "steps_s": 0.553859977941257,
+              "rows_game": 26.751220703125,
+              "budget_s": {
+                "collect_and_wait": 31.450842325999474,
+                "prepare": 12.633126488000016,
+                "update": 51.160751510999944,
+                "other": 2.2528461190004236
+              },
+              "collect_imbalance_s": 2.871148092999647,
+              "gpu_reserved_gib": 15.896484375,
+              "rss_peak_gib": 10.898792266845703,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "887fb25ef697ce23112eb49c2ebfb056785c6923ae2d770975b8dfb6a0f971c5",
+              "optimizer_digest": "20f01bf9d75e95d85e6c2d722c4e54428807f8b093aa7c7b626d0fe70b0df472",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 4.2325947092613205,
+              "table_max_s": 2.6835668360090494,
+              "parse_max_s": 9.37836440900628,
+              "collector_cpu_one_core": [
+                1.2538613502308855,
+                1.2709651175067058
+              ]
+            }
+          ]
+        },
+        {
+          "path": "candidate/repeat2.json",
+          "source": "8a743adb1b55d3940fa593d4ac196a91a572d3a0",
+          "games": 20480,
+          "wall_s": 484.3041731170006,
+          "iteration_games_s": 42.28747373409963,
+          "all_in_games_s": 41.53477088425492,
+          "steady_games_s": 42.48856997502865,
+          "iterations": [
+            {
+              "clock": 8192,
+              "games": 4096,
+              "rows": 107682,
+              "wall_s": 98.69458424099957,
+              "games_s": 41.501770654386576,
+              "rows_s": 1091.062907130287,
+              "candidate_records": 1658542,
+              "candidate_records_s": 16804.79240836612,
+              "steps": 54,
+              "steps_s": 0.5471424842131043,
+              "rows_game": 26.28955078125,
+              "budget_s": {
+                "collect_and_wait": 33.11698015299953,
+                "prepare": 12.012450250000256,
+                "update": 51.12538525899981,
+                "other": 2.439768578999974
+              },
+              "collect_imbalance_s": 2.7580314690003433,
+              "gpu_reserved_gib": 13.3828125,
+              "rss_peak_gib": 10.377071380615234,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "76b14183ddc007cd81018f01b83ef005ee23ac05cf790482cffbcc0f0c4cc568",
+              "optimizer_digest": "f48330eae342504d95139b4b7a503c37c6d6070d5ff6e47bbd710a1ad4ede130",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 4.113622473929354,
+              "table_max_s": 2.5497529569975086,
+              "parse_max_s": 9.701268447995972,
+              "collector_cpu_one_core": [
+                1.2283662389043288,
+                1.2361485257172449
+              ]
+            },
+            {
+              "clock": 12288,
+              "games": 4096,
+              "rows": 107328,
+              "wall_s": 93.78518463399996,
+              "games_s": 43.67427559038015,
+              "rows_s": 1144.4025025791798,
+              "candidate_records": 1649553,
+              "candidate_records_s": 17588.63093821737,
+              "steps": 54,
+              "steps_s": 0.5757839067091133,
+              "rows_game": 26.203125,
+              "budget_s": {
+                "collect_and_wait": 28.254627088000234,
+                "prepare": 12.865358981999634,
+                "update": 50.28015866700025,
+                "other": 2.3850398969998423
+              },
+              "collect_imbalance_s": 1.815024825999899,
+              "gpu_reserved_gib": 14.6015625,
+              "rss_peak_gib": 10.765995025634766,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 0.0002446174621582031,
+              "model_digest": "d8146f8a65223d1ecc3dcc4de08999719e7f9703fb47c43f9617a67322d96522",
+              "optimizer_digest": "17b5aff68eb33f82c77208d9eed449bfec82ff369685f96191401fef122ba194",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 4.218523907239614,
+              "table_max_s": 2.5743914819968268,
+              "parse_max_s": 8.462393892001273,
+              "collector_cpu_one_core": [
+                1.2491212821074769,
+                1.27005607738989
+              ]
+            },
+            {
+              "clock": 16384,
+              "games": 4096,
+              "rows": 107326,
+              "wall_s": 95.80343203200027,
+              "games_s": 42.754209459133506,
+              "rows_s": 1120.2730186550202,
+              "candidate_records": 1644380,
+              "candidate_records_s": 17164.10325937743,
+              "steps": 54,
+              "steps_s": 0.5636541286116233,
+              "rows_game": 26.20263671875,
+              "budget_s": {
+                "collect_and_wait": 30.718903255999976,
+                "prepare": 12.37975580300008,
+                "update": 50.32589183100026,
+                "other": 2.3788811419999547
+              },
+              "collect_imbalance_s": 3.6170248469998114,
+              "gpu_reserved_gib": 14.6015625,
+              "rss_peak_gib": 10.765995025634766,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "1d41c963675136a783e690296d6b34e0c5f5fa338b86ab182dddb9d6b4ecfd7a",
+              "optimizer_digest": "dd600cd38a5dc332ffbb3054b0e08713ae6e043498c0a2dce66de6772c64d987",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 4.409435364088495,
+              "table_max_s": 2.6336990610070643,
+              "parse_max_s": 9.042860241002018,
+              "collector_cpu_one_core": [
+                1.2496033048147868,
+                1.2818348593135962
+              ]
+            },
+            {
+              "clock": 20480,
+              "games": 4096,
+              "rows": 109628,
+              "wall_s": 97.0567064120005,
+              "games_s": 42.20213266471974,
+              "rows_s": 1129.525244083959,
+              "candidate_records": 1687762,
+              "candidate_records_s": 17389.442341424005,
+              "steps": 54,
+              "steps_s": 0.55637577243527,
+              "rows_game": 26.7646484375,
+              "budget_s": {
+                "collect_and_wait": 31.06058671700066,
+                "prepare": 12.928380348000246,
+                "update": 50.664310574999945,
+                "other": 2.4034287719996428
+              },
+              "collect_imbalance_s": 1.903112439999859,
+              "gpu_reserved_gib": 15.857421875,
+              "rss_peak_gib": 10.864044189453125,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "df3c4e934a5ac46a62a128083347210ef4912b6004707ae485fdee79cf15a02c",
+              "optimizer_digest": "800530613a264ff2eda6e6d7a075e32b22bc03b85771fff4d47fecae7ba01ba3",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 4.236021065990826,
+              "table_max_s": 2.672004650992676,
+              "parse_max_s": 9.239816453997264,
+              "collector_cpu_one_core": [
+                1.2556899778778192,
+                1.2700294732782007
+              ]
+            },
+            {
+              "clock": 24576,
+              "games": 4096,
+              "rows": 109573,
+              "wall_s": 98.96426579800027,
+              "games_s": 41.388676680131205,
+              "rows_s": 1107.1976244804728,
+              "candidate_records": 1681328,
+              "candidate_records_s": 16989.24340460245,
+              "steps": 54,
+              "steps_s": 0.5456514992009485,
+              "rows_game": 26.751220703125,
+              "budget_s": {
+                "collect_and_wait": 32.00341951399878,
+                "prepare": 13.230007758999818,
+                "update": 51.441480096000305,
+                "other": 2.2893584290013678
+              },
+              "collect_imbalance_s": 3.596958405000805,
+              "gpu_reserved_gib": 15.896484375,
+              "rss_peak_gib": 10.893383026123047,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "887fb25ef697ce23112eb49c2ebfb056785c6923ae2d770975b8dfb6a0f971c5",
+              "optimizer_digest": "20f01bf9d75e95d85e6c2d722c4e54428807f8b093aa7c7b626d0fe70b0df472",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 4.355469185959009,
+              "table_max_s": 2.6660344850033653,
+              "parse_max_s": 9.464045172003352,
+              "collector_cpu_one_core": [
+                1.2474439247787072,
+                1.272521338789318
+              ]
+            }
+          ]
+        },
+        {
+          "path": "candidate/repeat3.json",
+          "source": "8a743adb1b55d3940fa593d4ac196a91a572d3a0",
+          "games": 20480,
+          "wall_s": 487.8259829640001,
+          "iteration_games_s": 41.982183637625866,
+          "all_in_games_s": 41.28343852190979,
+          "steady_games_s": 42.05207761733107,
+          "iterations": [
+            {
+              "clock": 8192,
+              "games": 4096,
+              "rows": 107682,
+              "wall_s": 98.21384182099973,
+              "games_s": 41.7049157639632,
+              "rows_s": 1096.403500804464,
+              "candidate_records": 1658542,
+              "candidate_records_s": 16887.049414305435,
+              "steps": 54,
+              "steps_s": 0.5498206668100617,
+              "rows_game": 26.28955078125,
+              "budget_s": {
+                "collect_and_wait": 33.37534683500053,
+                "prepare": 11.69681277699965,
+                "update": 50.687250985999526,
+                "other": 2.4544312230000287
+              },
+              "collect_imbalance_s": 1.7407893019990297,
+              "gpu_reserved_gib": 13.3828125,
+              "rss_peak_gib": 10.383224487304688,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "76b14183ddc007cd81018f01b83ef005ee23ac05cf790482cffbcc0f0c4cc568",
+              "optimizer_digest": "f48330eae342504d95139b4b7a503c37c6d6070d5ff6e47bbd710a1ad4ede130",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 4.217453557996123,
+              "table_max_s": 2.535006559995054,
+              "parse_max_s": 9.866406601002382,
+              "collector_cpu_one_core": [
+                1.2258408080705563,
+                1.235506990589864
+              ]
+            },
+            {
+              "clock": 12288,
+              "games": 4096,
+              "rows": 107328,
+              "wall_s": 95.60922890700022,
+              "games_s": 42.841052551362054,
+              "rows_s": 1122.5694551349088,
+              "candidate_records": 1649553,
+              "candidate_records_s": 17253.07293927171,
+              "steps": 54,
+              "steps_s": 0.5647990326595583,
+              "rows_game": 26.203125,
+              "budget_s": {
+                "collect_and_wait": 29.594162633999986,
+                "prepare": 12.92256963499949,
+                "update": 50.686408016000314,
+                "other": 2.406088622000425
+              },
+              "collect_imbalance_s": 2.53850786699968,
+              "gpu_reserved_gib": 14.6015625,
+              "rss_peak_gib": 10.774150848388672,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 0.0002446174621582031,
+              "model_digest": "d8146f8a65223d1ecc3dcc4de08999719e7f9703fb47c43f9617a67322d96522",
+              "optimizer_digest": "17b5aff68eb33f82c77208d9eed449bfec82ff369685f96191401fef122ba194",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 4.452332408037364,
+              "table_max_s": 2.5683405010022398,
+              "parse_max_s": 9.006974271993386,
+              "collector_cpu_one_core": [
+                1.2497790005711875,
+                1.2759474869217782
+              ]
+            },
+            {
+              "clock": 16384,
+              "games": 4096,
+              "rows": 107326,
+              "wall_s": 95.81245120099993,
+              "games_s": 42.750184852355105,
+              "rows_s": 1120.16756334567,
+              "candidate_records": 1644380,
+              "candidate_records_s": 17162.487540897386,
+              "steps": 54,
+              "steps_s": 0.5636010698308535,
+              "rows_game": 26.20263671875,
+              "budget_s": {
+                "collect_and_wait": 31.06600750099915,
+                "prepare": 12.365174182000374,
+                "update": 50.12272777100043,
+                "other": 2.258541746999981
+              },
+              "collect_imbalance_s": 1.9131455069991716,
+              "gpu_reserved_gib": 14.6015625,
+              "rss_peak_gib": 10.774150848388672,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "1d41c963675136a783e690296d6b34e0c5f5fa338b86ab182dddb9d6b4ecfd7a",
+              "optimizer_digest": "dd600cd38a5dc332ffbb3054b0e08713ae6e043498c0a2dce66de6772c64d987",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 4.368825639030547,
+              "table_max_s": 2.6272472830041806,
+              "parse_max_s": 9.284252449001542,
+              "collector_cpu_one_core": [
+                1.2578825269557556,
+                1.26095329362359
+              ]
+            },
+            {
+              "clock": 20480,
+              "games": 4096,
+              "rows": 109628,
+              "wall_s": 99.34519872000055,
+              "games_s": 41.2299744001154,
+              "rows_s": 1103.5057699062136,
+              "candidate_records": 1687762,
+              "candidate_records_s": 16988.86329430849,
+              "steps": 54,
+              "steps_s": 0.5435592328140214,
+              "rows_game": 26.7646484375,
+              "budget_s": {
+                "collect_and_wait": 31.483227809999335,
+                "prepare": 12.895974946000024,
+                "update": 52.55177650099995,
+                "other": 2.4142194630012455
+              },
+              "collect_imbalance_s": 3.9950222210009088,
+              "gpu_reserved_gib": 15.857421875,
+              "rss_peak_gib": 10.873149871826172,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "df3c4e934a5ac46a62a128083347210ef4912b6004707ae485fdee79cf15a02c",
+              "optimizer_digest": "800530613a264ff2eda6e6d7a075e32b22bc03b85771fff4d47fecae7ba01ba3",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 4.229506699863123,
+              "table_max_s": 2.6880727949992433,
+              "parse_max_s": 9.05848812000113,
+              "collector_cpu_one_core": [
+                1.2438378672664283,
+                1.26723873642161
+              ]
+            },
+            {
+              "clock": 24576,
+              "games": 4096,
+              "rows": 109573,
+              "wall_s": 98.84526231499967,
+              "games_s": 41.43850604540746,
+              "rows_s": 1108.5306208284744,
+              "candidate_records": 1681328,
+              "candidate_records_s": 17009.697385818563,
+              "steps": 54,
+              "steps_s": 0.546308429309571,
+              "rows_game": 26.751220703125,
+              "budget_s": {
+                "collect_and_wait": 31.472169854999265,
+                "prepare": 14.218301433000306,
+                "update": 50.76399932200002,
+                "other": 2.3907917050000833
+              },
+              "collect_imbalance_s": 4.390921945999253,
+              "gpu_reserved_gib": 15.896484375,
+              "rss_peak_gib": 10.898826599121094,
+              "epochs": [
+                2,
+                2
+              ],
+              "recompute_max": 9.5367431640625e-07,
+              "model_digest": "887fb25ef697ce23112eb49c2ebfb056785c6923ae2d770975b8dfb6a0f971c5",
+              "optimizer_digest": "20f01bf9d75e95d85e6c2d722c4e54428807f8b093aa7c7b626d0fe70b0df472",
+              "cache_enabled": [
+                1.0,
+                1.0
+              ],
+              "candidate_padding": [
+                32,
+                32
+              ],
+              "record_max_s": 4.246177268835709,
+              "table_max_s": 2.6749195790043814,
+              "parse_max_s": 9.409652126002584,
+              "collector_cpu_one_core": [
+                1.253852060625196,
+                1.279134899594015
+              ]
+            }
+          ]
+        }
+      ],
+      "median_iteration_games_s": 42.28747373409963,
+      "iteration_range_games_s": [
+        41.982183637625866,
+        42.594112815039814
+      ],
+      "iteration_stdev_games_s": 0.3059648365240992,
+      "median_all_in_games_s": 41.53477088425492,
+      "all_in_range_games_s": [
+        41.28343852190979,
+        41.87442176905501
+      ],
+      "weighted_iteration_games_s": 42.286447566493095,
+      "mean_budget_s": {
+        "collect_and_wait": 30.967778662599752,
+        "prepare": 12.698036828399927,
+        "update": 50.84414335560002,
+        "other": 2.3532263041336896
+      },
+      "mean_rows_s": 1118.4262662635547,
+      "mean_steps_s": 0.5576886272185039,
+      "mean_candidate_records_s": 17186.2362290027,
+      "mean_record_max_s": 4.248820977169634,
+      "mean_table_max_s": 2.6218972746000873,
+      "gpu_reserved_peak_gib": 15.896484375,
+      "rank_rss_peak_gib": 10.898826599121094,
+      "all_epochs_2": true,
+      "all_cache_admitted": true
+    }
+  },
+  "comparison": [
+    {
+      "path": "baseline_pinned/repeat2.json",
+      "same_rollouts_models_adam_and_work": true
+    },
+    {
+      "path": "baseline_pinned/repeat3.json",
+      "same_rollouts_models_adam_and_work": true
+    },
+    {
+      "path": "baseline_extra/repeat1.json",
+      "same_rollouts_models_adam_and_work": true
+    },
+    {
+      "path": "candidate/repeat1.json",
+      "same_rollouts_models_adam_and_work": true
+    },
+    {
+      "path": "candidate/repeat2.json",
+      "same_rollouts_models_adam_and_work": true
+    },
+    {
+      "path": "candidate/repeat3.json",
+      "same_rollouts_models_adam_and_work": true
+    }
+  ],
+  "excluded": [
+    "baseline_pinned/repeat1: concurrent unit tests/CPU probes"
+  ],
+  "notes": [
+    "Separate experiment namespace; original campaign counters unchanged.",
+    "Campaign team-statistics writes omitted in both timing arms.",
+    "Three independent processes per arm, same seed/checkpoint, five 4096-game iterations per process.",
+    "All control timings precede candidates; temporal/clock confounding remains; variation is descriptive."
+  ],
+  "median_iteration_improvement_percent": 49.44337547699607,
+  "median_all_in_improvement_percent": 48.275285357182376
+}

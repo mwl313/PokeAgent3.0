@@ -1,4 +1,25 @@
-# Active work handoff — not final acceptance
+# Session closed at the user's bounded stop request
+
+Do not launch more jobs automatically. The diagnostic recovery has exited
+cleanly; queued tests and the resource sampler are cancelled. No production
+or evaluation service was restarted. Final report:06_FINAL_THROUGHPUT_REPORT.md.
+
+Full recovered boundary:57,344 matches,718 cumulative optimizer steps,
+13 replay iterations/53,248 games after restoring4,096. Model/Adam match
+original telemetry at every boundary; manifest/rank hashes,28 team receipts,
+drain and additional local backup verified. It is not the full73,728 recovery.
+See evidence/CLOSEOUT_RECEIPT.json and07_SAFE_CUTOVER_AND_ROLLBACK.md.
+
+Final focused28 tests passed in2.33s on b3c189b. Corrected-workspace candidate
+A/B, CUDA/DDP profiles and continuation were cancelled before launch. The
+workspace-UNSET49.44% improvement remains exploratory, not production acceptance.
+
+Next session, only when requested: corrected-workspace A/B/continuation,
+long-run ModeD recompute repair, optionally finish73,728 state reconstruction.
+No automatic overnight work or production cutover. Large artifacts remain
+local; Git includes compact evidence and exact source identities.
+
+## Prior in-progress handoff, retained as historical context
 
 Original production source5ccc51b and campaign checkpoints remain unchanged.
 Both production transient units were absent/not-found at task entry (no running
@@ -33,7 +54,7 @@ ledger/workspace. Only if historical model+Adam digests match does it replay
 starts production or overwrites original generations. Additional immutable
 orphan stats receipts may be appended under original ledger identity.
 
-Remaining: corrected-runtime3×5 A/B, CUDA/DDP traces, bounded continuation,
+Previously planned, now cancelled: corrected-runtime3×5 A/B, CUDA/DDP traces, bounded continuation,
 recovery outcome, evidence/CSV/final report, pinned validated runtime, commit/push.
 Long-run ModeD recompute failure atiteration19 remains a production blocker;
 data-path parity is not a precision repair. No cutover without full gates and

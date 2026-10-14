@@ -48,7 +48,7 @@ A10-P5 and current P2/P3/P4/frozen-contract documents.
 | Five ragged family embeddings | genuinely new required V2 work | family projection/reduction/count features, empty graph connectivity | preserve all families |
 | Expanded known masks / public knowledge | genuinely new required V2 work | numeric/boolean knowns explicit; own/public repertoire distinct | preserve |
 | Active→roster mapping | genuinely new correctness requirement | old slot=roster shortcut was wrong | batch map correctly; no clamping |
-| Team statistics / generation accounting | PRESENT_AND_ACTIVE in campaign | path-bound original ledger, durable manifest reconciliation | experiment does not write campaign ledger |
+| Team statistics / generation accounting | PRESENT_AND_ACTIVE in campaign | path-bound original ledger, durable manifest reconciliation | timing arms omit ledger writes; original-source recovery appends immutable receipts under original identity |
 | Deterministic CUDA | PRESENT_AND_ACTIVE | true, reduction-off; costs throughput but bounded restore proof | preserve |
 | Continuous PPO telemetry | PRESENT_AND_ACTIVE | V2 launcher writes persistent JSONL, unlike initial d10 utility alone | retain |
 

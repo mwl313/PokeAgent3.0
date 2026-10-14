@@ -30,8 +30,20 @@ bound migration →3 independent full-stack repetitions ×5 iterations per arm
 where correctness permits → CUDA trace → bounded checkpoint continuation.
 Promotion requires repeatable total improvement and every mandatory gate.
 
-Known pre-existing blocker: full73,728-match optimizer/RNG state was never
-persisted. A safe campaign cutover requires deterministic recovery/replay of
-that boundary or explicit user choice of an older exact checkpoint/model-only
-continuation. Do not silently reset optimizer or counters, and do not call
-a model-only artifact a resumable checkpoint.
+Closeout: the user stopped recovery around50k replay games. A full57,344-match
+checkpoint (718 cumulative optimizer steps) is now preserved, with model/Adam
+matching the historical trajectory at all13 replayed boundaries and28 team
+receipts reconciled. The latest73,728 model-only evidence remains preserved;
+that latest boundary's full optimizer/RNG state has not been reconstructed.
+The recent historical RNG was unavailable for direct comparison, so replay
+does not establish universal bit-exact recovery. No production restart.
+
+Remaining, NOT scheduled after today's stop:
+1. Corrected-workspace3×5 source-pinned A/B and two-rank stop/restore test.
+2. Repair the demonstrated long-run recompute failure without relaxing1e-3.
+3. Complete historical recovery to73,728 only if authorized for a later session.
+4. Profile/experiment with deterministic gather backward accumulation, then
+   preparation/H2D; micro2048 only as a separate bounded comparison.
+5. Reconcile the approved boundary/source migration and obtain cutover approval.
+
+These are pending tasks, not an automation or permission to resume overnight.

@@ -1,0 +1,33 @@
+{
+  "schema": "pa3-v2-data-path-migration-v1",
+  "purpose": "bounded-validation-only",
+  "execution_environment": {
+    "CUBLAS_WORKSPACE_CONFIG": ":4096:8"
+  },
+  "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+  "target_sha": "b3c189ba9e61ffa002a3875b0848ac592f6450a0",
+  "runtime_blobs": {
+    "agent/buffer/rollout_buffer.py": "8aafc87bcd18f6e091bedd128d40cdd634d29e17",
+    "agent/ppo/source_migration.py": "d64fed9e7743618b1515c5833de0c4b8b6c9f267",
+    "agent/ppo/v2_source_migration.py": "67681e0bfd6bd24d8bbe3501505e7f0fd7c6b286",
+    "agent/train/native_collector.py": "df4ef9d4825cf959bb10d5706f67b7fc0759d201",
+    "agent/types/action_mapping.py": "f2e3691ac22a1e4fb241b26ba59c069837bca942",
+    "agent/types/ragged.py": "4847c0d43da1f1c25d078e0b437ae5b37588351f",
+    "scripts/analyze_v2_live_bottlenecks.py": "3f2703bf66e8547e8506db485eb3d67f05d4f9fe",
+    "scripts/run_ddp_ppo.py": "9c728025aa4857f588ef07ead19b6fa59053db78",
+    "scripts/v2_continuation_probe.py": "e6590737479eae8544a861eab3b0770a74943eda",
+    "scripts/v2_data_path_probe.py": "ed4275609375a73abe8122c97b47fed8ac076b10",
+    "scripts/v2_gpu_profile.py": "f4cb5a53002fc90e8f120d550de04815d32c8003",
+    "scripts/v2_reconstruct_boundary.py": "2a3fbbc84362ec5e9a0fa5168e5505bca9d11043",
+    "scripts/v2_recovery_analysis.py": "0b9a820e66f7a7f0aff680860e411fe1ea469916",
+    "scripts/v2_throughput_ab.py": "47b7ee199a58c88c10b3105763b676964ca864f1"
+  },
+  "checkpoint": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/rolling/generations/iter-000000004096-1791958101732995099",
+  "checkpoint_manifest_sha256": "70c5fb7c480bcc23c30086b886a70e7bebc84e0b0aefb4de475b8ff65c1eb0a9",
+  "rank_artifact_hashes": {
+    "0": "70942df03fc8131e8ab6d09c414b1e9f048144a77dbc4e5774b1f263b3f2db3c",
+    "1": "08f75e6bf215628952de466e1209b6ef6bfb5d104f41bfefe62ef67a91f4b7a5"
+  },
+  "parity_report": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/runs/perf/v2_recovery/CPU_PARITY.json",
+  "parity_report_sha256": "750bad877a20e4b99898cd317bbf3c20a8326c44ea767ad4f5e22bca5078ee17"
+}

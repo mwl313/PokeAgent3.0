@@ -1,5 +1,21 @@
 # V2 root cause and measurement boundaries
 
+Closeout (user requested stopping around50k test games): original-source replay
+completed53,248 games from the4,096 checkpoint, saving a full57,344-match
+boundary. All13 model/Adam boundaries match historical telemetry. The replay
+measured32.0347 iteration games/s and31.8008 startup-inclusive games/s, with
+65.364s collection/clock wait,11.767s preparation and47.996s PPO update on the
+critical rank. This is the ORIGINAL runtime, not optimized candidate speed.
+No operational errors or skipped updates; maximum recompute0.000802279.
+See06_FINAL_THROUGHPUT_REPORT.md and evidence/CLOSEOUT_RECEIPT.json.
+
+The completed candidate A/B panel omitted original
+`CUBLAS_WORKSPACE_CONFIG=:4096:8`. Both arms had the same omitted setting and
+matched each other, but it is exploratory evidence, not production-runtime
+acceptance. Corrected-runtime A/B and continuation were cancelled at the
+user's stop request before they launched. The workspace is now pinned and
+checked in the launcher/benchmarks; its corrected full-stack speed is unmeasured.
+
 Published first-five continuation snapshot: 31.35 games/s; collection/clock
 wait66.514s, update49.537s, prepare12.003s, residual2.599s per4096 games.
 Fresh read of all18 completed production iterations gives **33.4166 games/s**

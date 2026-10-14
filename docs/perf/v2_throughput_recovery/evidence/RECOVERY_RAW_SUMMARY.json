@@ -1,0 +1,17 @@
+{
+  "execution_environment": {
+    "CUBLAS_WORKSPACE_CONFIG": ":4096:8"
+  },
+  "probe": {
+    "matched_historical_digests": true,
+    "matches": 8192,
+    "checkpoint": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/runs/perf/v2_recovery/reconstruction_contract/probe/rolling/generations/iter-000000008192-1791985009283608915"
+  },
+  "reconstructed": {
+    "matched_historical_digests": true,
+    "matches": 57344,
+    "checkpoint": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/runs/perf/v2_recovery/reconstruction_contract/reconstructed/rolling/generations/iter-000000057344-1791986684864852699"
+  },
+  "status": "HISTORICAL_REPLAY_DIFFERS",
+  "limitations": "Original recent RNG payload is unavailable for direct comparison; state is replayed from owned initial RNG. This is not a production restart or a new campaign."
+}

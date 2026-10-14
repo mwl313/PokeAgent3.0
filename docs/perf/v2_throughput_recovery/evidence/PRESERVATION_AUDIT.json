@@ -1,0 +1,245 @@
+{
+  "latest_durable_matches": 4096,
+  "ranks": [
+    {
+      "rank": 0,
+      "source": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "accounting": {
+        "iteration": 1,
+        "committed_matches": 4096,
+        "natural_games": 2048,
+        "learner_rows": 54439,
+        "optimizer_steps": 54
+      },
+      "model_config": {
+        "name": "PA3-8M",
+        "initialization": "random",
+        "observation_contract_hash": "dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35",
+        "target_vocab": 5,
+        "null_entity_reference": true,
+        "encoder_layers": 6,
+        "d_model": 320,
+        "attention_heads": 5,
+        "head_dim": 64,
+        "ffn_dim": 1280,
+        "activation": "gelu",
+        "pre_layernorm": true,
+        "causal_attention": false,
+        "dropout": 0.0,
+        "attention_dropout": 0.0,
+        "tokens": 96,
+        "active_tokens": 88,
+        "category_slots": 32,
+        "float_slots": 50,
+        "flag_slots": 40,
+        "category_vocab": 8192,
+        "category_embed_dim": 16,
+        "role_vocab": 12,
+        "side_vocab": 3,
+        "prefix_decoder": "GRUCell",
+        "prefix_hidden": 320,
+        "max_request_branches": 4,
+        "candidate_padding": 64,
+        "critic_hidden": 256,
+        "critic_output": "linear_scalar",
+        "critic_input": "observation_only",
+        "embedding_init_std": 0.02,
+        "linear_init": "xavier",
+        "policy_output_init_gain": 0.01,
+        "seed": 20261006
+      },
+      "scheduler": {
+        "matches": 4096,
+        "lr": 7.37568e-06,
+        "lr_scale": 0.5
+      },
+      "scaler": {
+        "scale": 65536.0,
+        "growth_factor": 2.0,
+        "backoff_factor": 0.5,
+        "growth_interval": 2000,
+        "_growth_tracker": 54
+      },
+      "optimizer_steps": 54,
+      "rank_digests": {
+        "0": {
+          "model": "0df0208bef7210ab721fd7877bbf54127a3192a00fdecfee7c8105ee7df63dfb",
+          "optimizer": "45386f468878f46e20e85c355034fe7b7177eb6a40f8043b27f257b718d8e780"
+        },
+        "1": {
+          "model": "0df0208bef7210ab721fd7877bbf54127a3192a00fdecfee7c8105ee7df63dfb",
+          "optimizer": "45386f468878f46e20e85c355034fe7b7177eb6a40f8043b27f257b718d8e780"
+        }
+      },
+      "rng_keys": [
+        "schema_version",
+        "python",
+        "numpy",
+        "torch_cpu",
+        "generators",
+        "torch_cuda"
+      ],
+      "rng_generators": 1,
+      "cuda_rng_states": 2,
+      "collector_restart": {
+        "seed": 20261014,
+        "iteration": 1,
+        "cohorts": 2,
+        "match_counter": 4096,
+        "slot_counter": 0,
+        "config_hash": "b0e1582e4c870645af463fa2057530a1f37c9b87aca8a594f2bdb2c7e43a4adf"
+      },
+      "opponents": {
+        "current": "current",
+        "historical": [],
+        "historical_probability": 0.0
+      },
+      "dataset_hash": "1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb",
+      "action_hash": "57efb5822b05f6e7729a4b5e123628b267292728314337ba451c9232c2c314af"
+    },
+    {
+      "rank": 1,
+      "source": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "accounting": {
+        "iteration": 1,
+        "committed_matches": 4096,
+        "natural_games": 2048,
+        "learner_rows": 53962,
+        "optimizer_steps": 54
+      },
+      "model_config": {
+        "name": "PA3-8M",
+        "initialization": "random",
+        "observation_contract_hash": "dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35",
+        "target_vocab": 5,
+        "null_entity_reference": true,
+        "encoder_layers": 6,
+        "d_model": 320,
+        "attention_heads": 5,
+        "head_dim": 64,
+        "ffn_dim": 1280,
+        "activation": "gelu",
+        "pre_layernorm": true,
+        "causal_attention": false,
+        "dropout": 0.0,
+        "attention_dropout": 0.0,
+        "tokens": 96,
+        "active_tokens": 88,
+        "category_slots": 32,
+        "float_slots": 50,
+        "flag_slots": 40,
+        "category_vocab": 8192,
+        "category_embed_dim": 16,
+        "role_vocab": 12,
+        "side_vocab": 3,
+        "prefix_decoder": "GRUCell",
+        "prefix_hidden": 320,
+        "max_request_branches": 4,
+        "candidate_padding": 64,
+        "critic_hidden": 256,
+        "critic_output": "linear_scalar",
+        "critic_input": "observation_only",
+        "embedding_init_std": 0.02,
+        "linear_init": "xavier",
+        "policy_output_init_gain": 0.01,
+        "seed": 20261006
+      },
+      "scheduler": {
+        "matches": 4096,
+        "lr": 7.37568e-06,
+        "lr_scale": 0.5
+      },
+      "scaler": {
+        "scale": 65536.0,
+        "growth_factor": 2.0,
+        "backoff_factor": 0.5,
+        "growth_interval": 2000,
+        "_growth_tracker": 54
+      },
+      "optimizer_steps": 54,
+      "rank_digests": {
+        "0": {
+          "model": "0df0208bef7210ab721fd7877bbf54127a3192a00fdecfee7c8105ee7df63dfb",
+          "optimizer": "45386f468878f46e20e85c355034fe7b7177eb6a40f8043b27f257b718d8e780"
+        },
+        "1": {
+          "model": "0df0208bef7210ab721fd7877bbf54127a3192a00fdecfee7c8105ee7df63dfb",
+          "optimizer": "45386f468878f46e20e85c355034fe7b7177eb6a40f8043b27f257b718d8e780"
+        }
+      },
+      "rng_keys": [
+        "schema_version",
+        "python",
+        "numpy",
+        "torch_cpu",
+        "generators",
+        "torch_cuda"
+      ],
+      "rng_generators": 1,
+      "cuda_rng_states": 2,
+      "collector_restart": {
+        "seed": 20261014,
+        "iteration": 1,
+        "cohorts": 2,
+        "match_counter": 4096,
+        "slot_counter": 0,
+        "config_hash": "b0e1582e4c870645af463fa2057530a1f37c9b87aca8a594f2bdb2c7e43a4adf"
+      },
+      "opponents": {
+        "current": "current",
+        "historical": [],
+        "historical_probability": 0.0
+      },
+      "dataset_hash": "1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb",
+      "action_hash": "57efb5822b05f6e7729a4b5e123628b267292728314337ba451c9232c2c314af"
+    }
+  ],
+  "backup_verified": {
+    "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/backups/safe-preservation-73728-20261014/durable-4096/iter-000000004096-1791958101732995099/rank0.pt": "70942df03fc8131e8ab6d09c414b1e9f048144a77dbc4e5774b1f263b3f2db3c",
+    "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/backups/safe-preservation-73728-20261014/failure-evidence/continuation.json.rank0.iteration19.recompute.pt": "bc17c560a465307f58e56d30ea57586fbfee15d68e5708e6b354c6b088151040",
+    "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/backups/safe-preservation-73728-20261014/durable-4096/iter-000000004096-1791958101732995099/rank1.pt": "08f75e6bf215628952de466e1209b6ef6bfb5d104f41bfefe62ef67a91f4b7a5",
+    "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/backups/safe-preservation-73728-20261014/failure-evidence/continuation.json.rank1.iteration19.recompute.pt": "a30f5c4e34797358ac78136098559db263f61f57756b93df065f5e3d5aeec91d",
+    "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/backups/safe-preservation-73728-20261014/durable-4096/iter-000000004096-1791958101732995099/manifest.json": "70c5fb7c480bcc23c30086b886a70e7bebc84e0b0aefb4de475b8ff65c1eb0a9"
+  },
+  "failure_evidence": [
+    {
+      "rank": 0,
+      "model_matches_last_verified": true,
+      "matches": 73728,
+      "model_digest": "90d083dfa6b95eac05f317ed9aa0cef25e9d229bc201bb7d1277e393df5b84c6",
+      "keys": [
+        "kind",
+        "result",
+        "model",
+        "model_config",
+        "precision_mode",
+        "sampled_rows",
+        "actor_groups",
+        "group_rows",
+        "sampled_observations",
+        "group_observations"
+      ],
+      "actor_groups": 0
+    },
+    {
+      "rank": 1,
+      "model_matches_last_verified": true,
+      "matches": 73728,
+      "model_digest": "90d083dfa6b95eac05f317ed9aa0cef25e9d229bc201bb7d1277e393df5b84c6",
+      "keys": [
+        "kind",
+        "result",
+        "model",
+        "model_config",
+        "precision_mode",
+        "sampled_rows",
+        "actor_groups",
+        "group_rows",
+        "sampled_observations",
+        "group_observations"
+      ],
+      "actor_groups": 0
+    }
+  ],
+  "note": "Legacy SHA256SUMS.txt includes its own incomplete-write hash; data copies verify independently. This new receipt never hashes itself."
+}

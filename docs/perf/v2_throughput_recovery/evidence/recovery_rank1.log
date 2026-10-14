@@ -1,0 +1,59 @@
+[rank1] process group ready at 1791985019.6
+/home/minidc/.codex/worktrees/pa3-v2-runtime/PokeAgent3.0/scripts/run_ddp_ppo.py:620: FutureWarning: `broadcast_buffers` is deprecated. Use `forward_sync_buffers` instead. IMPORTANT: unlike `broadcast_buffers=False`, `forward_sync_buffers=False` still syncs buffers at init. If you rely on buffers NOT being synced at init (e.g. rank-local buffers), keep using `broadcast_buffers=False` until `init_sync_buffers` is available.
+  ddp_model = torch.nn.parallel.DistributedDataParallel(
+[rank1] resume state verified: matches=4096 optimizer_steps=54 model=0df0208bef7210ab721fd7877bbf54127a3192a00fdecfee7c8105ee7df63dfb optimizer=45386f468878f46e20e85c355034fe7b7177eb6a40f8043b27f257b718d8e780
+[rank1] iteration 1/17: collected 2048 games / 53574 rows in 68.1s
+[rank1] recompute gate: 576 rows max|diff|=9.537e-07 (tol 1.0e-03) within=True
+[rank1]:[W1014 22:38:30.061397265 reducer.cpp:1529] Warning: find_unused_parameters=True was specified in DDP constructor, but did not find any unused parameters in the forward pass. This flag results in an extra traversal of the autograd graph every iteration,  which can adversely affect performance. If your model indeed never has any unused parameters in the forward pass, consider turning this flag off. Note that this warning may be a false positive if your model has flow control causing later iterations to have unused parameters. (function operator())
+[rank1] update done in 51.6s (epochs 2, steps 54, cumulative steps 108, skipped 0, global matches 8192)
+[rank1] iteration 1 complete in 140.6s, digests equal
+[rank1] iteration 2/17: collected 2048 games / 53725 rows in 64.9s
+[rank1] recompute gate: 576 rows max|diff|=4.721e-05 (tol 1.0e-03) within=True
+[rank1] update done in 50.9s (epochs 2, steps 54, cumulative steps 162, skipped 0, global matches 12288)
+[rank1] iteration 2 complete in 136.0s, digests equal
+[rank1] iteration 3/17: collected 2048 games / 52716 rows in 71.1s
+[rank1] recompute gate: 576 rows max|diff|=9.537e-07 (tol 1.0e-03) within=True
+[rank1] update done in 49.3s (epochs 2, steps 52, cumulative steps 214, skipped 0, global matches 16384)
+[rank1] iteration 3 complete in 135.2s, digests equal
+[rank1] iteration 4/17: collected 2048 games / 51835 rows in 61.3s
+[rank1] recompute gate: 576 rows max|diff|=9.537e-07 (tol 1.0e-03) within=True
+[rank1] update done in 48.1s (epochs 2, steps 52, cumulative steps 266, skipped 0, global matches 20480)
+[rank1] iteration 4 complete in 127.2s, digests equal
+[rank1] iteration 5/17: collected 2048 games / 52264 rows in 63.4s
+[rank1] recompute gate: 576 rows max|diff|=9.537e-07 (tol 1.0e-03) within=True
+[rank1] update done in 48.4s (epochs 2, steps 52, cumulative steps 318, skipped 0, global matches 24576)
+[rank1] iteration 5 complete in 131.3s, digests equal
+[rank1] iteration 6/17: collected 2048 games / 52947 rows in 58.3s
+[rank1] recompute gate: 576 rows max|diff|=9.537e-07 (tol 1.0e-03) within=True
+[rank1] update done in 47.6s (epochs 2, steps 52, cumulative steps 370, skipped 0, global matches 28672)
+[rank1] iteration 6 complete in 123.3s, digests equal
+[rank1] iteration 7/17: collected 2048 games / 52398 rows in 59.4s
+[rank1] recompute gate: 576 rows max|diff|=6.051e-04 (tol 1.0e-03) within=True
+[rank1] update done in 48.7s (epochs 2, steps 52, cumulative steps 422, skipped 0, global matches 32768)
+[rank1] iteration 7 complete in 122.3s, digests equal
+[rank1] iteration 8/17: collected 2048 games / 52411 rows in 61.2s
+[rank1] recompute gate: 576 rows max|diff|=9.537e-07 (tol 1.0e-03) within=True
+[rank1] update done in 47.7s (epochs 2, steps 52, cumulative steps 474, skipped 0, global matches 36864)
+[rank1] iteration 8 complete in 122.7s, digests equal
+[rank1] iteration 9/17: collected 2048 games / 49604 rows in 57.1s
+[rank1] recompute gate: 576 rows max|diff|=9.537e-07 (tol 1.0e-03) within=True
+[rank1] update done in 46.0s (epochs 2, steps 50, cumulative steps 524, skipped 0, global matches 40960)
+[rank1] iteration 9 complete in 116.5s, digests equal
+[rank1] iteration 10/17: collected 2048 games / 50111 rows in 56.3s
+[rank1] recompute gate: 576 rows max|diff|=1.013e-06 (tol 1.0e-03) within=True
+[rank1] update done in 48.6s (epochs 2, steps 50, cumulative steps 574, skipped 0, global matches 45056)
+[rank1] iteration 10 complete in 123.7s, digests equal
+[rank1] iteration 11/17: collected 2048 games / 47787 rows in 58.6s
+[rank1] recompute gate: 576 rows max|diff|=9.537e-07 (tol 1.0e-03) within=True
+[rank1] update done in 45.6s (epochs 2, steps 48, cumulative steps 622, skipped 0, global matches 49152)
+[rank1] iteration 11 complete in 131.5s, digests equal
+[rank1] iteration 12/17: collected 2048 games / 47470 rows in 54.0s
+[rank1] recompute gate: 576 rows max|diff|=9.537e-07 (tol 1.0e-03) within=True
+[rank1] update done in 46.1s (epochs 2, steps 48, cumulative steps 670, skipped 0, global matches 53248)
+[rank1] iteration 12 complete in 121.4s, digests equal
+[rank1] iteration 13/17: collected 2048 games / 47810 rows in 59.3s
+[rank1] recompute gate: 576 rows max|diff|=1.907e-06 (tol 1.0e-03) within=True
+[rank1] update done in 46.8s (epochs 2, steps 48, cumulative steps 718, skipped 0, global matches 57344)
+[rank1] iteration 13 complete in 130.5s, digests equal
+[rank1] cooperative stop requested; completed boundary saved, exiting both ranks
+[rank1] rank metrics written to /home/minidc/Desktop/PokeAgent3.0-V2-throughput/runs/perf/v2_recovery/reconstruction_contract/reconstructed/report.json.rank1.json

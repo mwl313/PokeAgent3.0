@@ -1,0 +1,35 @@
+{
+  "classification": "USER_STOPPED_VERIFIED_PARTIAL",
+  "request": "wrap up test at50000",
+  "executed_optimization_revision": "b3c189ba9e61ffa002a3875b0848ac592f6450a0",
+  "checkpoint": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/runs/perf/v2_recovery/reconstruction_contract/reconstructed/rolling/generations/iter-000000057344-1791986684864852699",
+  "committed_matches": 57344,
+  "replayed_games": 53248,
+  "completed_replay_iterations": 13,
+  "original_full_boundary_target": 73728,
+  "all_historical_model_and_adam_match": true,
+  "raw_script_status_note": "HISTORICAL_REPLAY_DIFFERS was emitted because the fixed73728 target was not reached; matched_historical_digests is true. User stopped early; this is not an observed digest mismatch.",
+  "team_receipt_checksums_verified": 28,
+  "team_stats_clock_and_wld_reconciled": true,
+  "additional_verified_local_backup": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/backups/throughput-stop-57344-20261014",
+  "original_campaign_latest_unchanged": true,
+  "corrected_runtime_ab": "CANCELLED_BY_USER; no corrected-environment candidate speed measurement",
+  "corrected_runtime_continuation": "CANCELLED_BY_USER; prior workspace-unset bounded BIT_EXACT remains exploratory",
+  "production_cutover": "BLOCKED; original iteration19 recompute failure unresolved"
+}
+{
+  "iteration_games_s": 32.03467626994059,
+  "all_in_games_s": 31.800817399401407,
+  "wall_s_iterations": 1662.1987858190005,
+  "wall_s_launcher": 1674.422368810001,
+  "mean_stage_s": {
+    "collect_and_wait_s": 65.3635555322302,
+    "prepare_s": 11.767498875154091,
+    "update_s": 47.99554196792283
+  },
+  "learner_rows": 1327695,
+  "optimizer_steps": 664,
+  "max_recompute": 0.0008022785186767578,
+  "errors": 0,
+  "skips": 0
+}

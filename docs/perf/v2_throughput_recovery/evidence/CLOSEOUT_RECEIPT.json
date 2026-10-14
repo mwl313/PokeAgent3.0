@@ -1,0 +1,362 @@
+{
+  "classification": "USER_STOPPED_VERIFIED_PARTIAL",
+  "request": "wrap up test at50000",
+  "executed_optimization_revision": "b3c189ba9e61ffa002a3875b0848ac592f6450a0",
+  "checkpoint": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/runs/perf/v2_recovery/reconstruction_contract/reconstructed/rolling/generations/iter-000000057344-1791986684864852699",
+  "committed_matches": 57344,
+  "replayed_games": 53248,
+  "completed_replay_iterations": 13,
+  "original_full_boundary_target": 73728,
+  "all_historical_model_and_adam_match": true,
+  "raw_script_status_note": "HISTORICAL_REPLAY_DIFFERS was emitted because the fixed73728 target was not reached; matched_historical_digests is true. User stopped early; this is not an observed digest mismatch.",
+  "ranks": [
+    {
+      "rank": 0,
+      "sha256": "242783259d942c3847764c966cac1f3e077ae062a326bb702b7866330fcf5efc",
+      "accounting": {
+        "iteration": 14,
+        "committed_matches": 57344,
+        "natural_games": 2048,
+        "learner_rows": 47631,
+        "optimizer_steps": 718
+      },
+      "model_digest": "6a01f14dfeec378f9577df94f5d97cf155924615cca3a000ae4b2108c134bb5d",
+      "optimizer_digest": "ca358b33d33d8008fdd77ae94223b83bc0b5fa9f41f16182101f00b96750e3cc",
+      "scheduler": {
+        "matches": 57344,
+        "lr": 3.825951999999999e-05,
+        "lr_scale": 0.5
+      },
+      "scaler": {
+        "scale": 65536.0,
+        "growth_factor": 2.0,
+        "backoff_factor": 0.5,
+        "growth_interval": 2000,
+        "_growth_tracker": 718
+      },
+      "rng_keys": [
+        "schema_version",
+        "python",
+        "numpy",
+        "torch_cpu",
+        "generators",
+        "torch_cuda"
+      ],
+      "collector_restart": {
+        "seed": 20261014,
+        "iteration": 14,
+        "cohorts": 2,
+        "match_counter": 4096,
+        "slot_counter": 0,
+        "config_hash": "b0e1582e4c870645af463fa2057530a1f37c9b87aca8a594f2bdb2c7e43a4adf"
+      },
+      "collector_drain": {
+        "complete": true,
+        "in_flight_battles": 0,
+        "source": "NativeCollector.collect static drain invariant"
+      },
+      "opponents": {
+        "current": "current",
+        "historical": [],
+        "historical_probability": 0.0
+      }
+    },
+    {
+      "rank": 1,
+      "sha256": "c8aff16cd22b0264d067872c3d8df457bba30f1008815765c2cb999a5216aaf8",
+      "accounting": {
+        "iteration": 14,
+        "committed_matches": 57344,
+        "natural_games": 2048,
+        "learner_rows": 47810,
+        "optimizer_steps": 718
+      },
+      "model_digest": "6a01f14dfeec378f9577df94f5d97cf155924615cca3a000ae4b2108c134bb5d",
+      "optimizer_digest": "ca358b33d33d8008fdd77ae94223b83bc0b5fa9f41f16182101f00b96750e3cc",
+      "scheduler": {
+        "matches": 57344,
+        "lr": 3.825951999999999e-05,
+        "lr_scale": 0.5
+      },
+      "scaler": {
+        "scale": 65536.0,
+        "growth_factor": 2.0,
+        "backoff_factor": 0.5,
+        "growth_interval": 2000,
+        "_growth_tracker": 718
+      },
+      "rng_keys": [
+        "schema_version",
+        "python",
+        "numpy",
+        "torch_cpu",
+        "generators",
+        "torch_cuda"
+      ],
+      "collector_restart": {
+        "seed": 20261014,
+        "iteration": 14,
+        "cohorts": 2,
+        "match_counter": 4096,
+        "slot_counter": 0,
+        "config_hash": "b0e1582e4c870645af463fa2057530a1f37c9b87aca8a594f2bdb2c7e43a4adf"
+      },
+      "collector_drain": {
+        "complete": true,
+        "in_flight_battles": 0,
+        "source": "NativeCollector.collect static drain invariant"
+      },
+      "opponents": {
+        "current": "current",
+        "historical": [],
+        "historical_probability": 0.0
+      }
+    }
+  ],
+  "team_receipt_checksums_verified": 28,
+  "team_stats_clock_and_wld_reconciled": true,
+  "additional_verified_local_backup": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/backups/throughput-stop-57344-20261014",
+  "original_campaign_latest_unchanged": true,
+  "measurement": {
+    "iterations": [
+      {
+        "clock": 8192,
+        "games": 4096,
+        "rows": 107682,
+        "wall_s": 140.55000326200025,
+        "collect_and_wait_s": 73.80843279499823,
+        "prepare_s": 12.454519068998707,
+        "update_s": 51.5644225420001,
+        "steps": 54,
+        "recompute_max": 9.5367431640625e-07,
+        "errors": 0,
+        "skips": 0,
+        "epochs": [
+          2,
+          2
+        ]
+      },
+      {
+        "clock": 12288,
+        "games": 4096,
+        "rows": 107228,
+        "wall_s": 135.95616778099975,
+        "collect_and_wait_s": 69.14671161799924,
+        "prepare_s": 12.62738223300039,
+        "update_s": 50.939521156999035,
+        "steps": 54,
+        "recompute_max": 0.00021457672119140625,
+        "errors": 0,
+        "skips": 0,
+        "epochs": [
+          2,
+          2
+        ]
+      },
+      {
+        "clock": 16384,
+        "games": 4096,
+        "rows": 105101,
+        "wall_s": 135.2243943020003,
+        "collect_and_wait_s": 70.9596338299998,
+        "prepare_s": 12.7287819330013,
+        "update_s": 48.78474906300107,
+        "steps": 52,
+        "recompute_max": 9.5367431640625e-07,
+        "errors": 0,
+        "skips": 0,
+        "epochs": [
+          2,
+          2
+        ]
+      },
+      {
+        "clock": 20480,
+        "games": 4096,
+        "rows": 103449,
+        "wall_s": 127.16207508099978,
+        "collect_and_wait_s": 65.57294557299974,
+        "prepare_s": 10.87486200100102,
+        "update_s": 48.14437962400007,
+        "steps": 52,
+        "recompute_max": 9.5367431640625e-07,
+        "errors": 0,
+        "skips": 0,
+        "epochs": [
+          2,
+          2
+        ]
+      },
+      {
+        "clock": 24576,
+        "games": 4096,
+        "rows": 104281,
+        "wall_s": 131.32841304000067,
+        "collect_and_wait_s": 69.43224495699906,
+        "prepare_s": 11.035427491000519,
+        "update_s": 48.41359955199914,
+        "steps": 52,
+        "recompute_max": 9.5367431640625e-07,
+        "errors": 0,
+        "skips": 0,
+        "epochs": [
+          2,
+          2
+        ]
+      },
+      {
+        "clock": 28672,
+        "games": 4096,
+        "rows": 106141,
+        "wall_s": 123.28237791599895,
+        "collect_and_wait_s": 61.875112527000965,
+        "prepare_s": 11.385985003000314,
+        "update_s": 47.60639234200062,
+        "steps": 52,
+        "recompute_max": 9.5367431640625e-07,
+        "errors": 0,
+        "skips": 0,
+        "epochs": [
+          2,
+          2
+        ]
+      },
+      {
+        "clock": 32768,
+        "games": 4096,
+        "rows": 104687,
+        "wall_s": 122.3234589069998,
+        "collect_and_wait_s": 59.66856422499768,
+        "prepare_s": 11.284833851001167,
+        "update_s": 48.57472647399845,
+        "steps": 52,
+        "recompute_max": 0.0006051063537597656,
+        "errors": 0,
+        "skips": 0,
+        "epochs": [
+          2,
+          2
+        ]
+      },
+      {
+        "clock": 36864,
+        "games": 4096,
+        "rows": 103696,
+        "wall_s": 122.72725926199928,
+        "collect_and_wait_s": 61.63106435699956,
+        "prepare_s": 10.954067065000345,
+        "update_s": 47.721072192000065,
+        "steps": 52,
+        "recompute_max": 0.0007610321044921875,
+        "errors": 0,
+        "skips": 0,
+        "epochs": [
+          2,
+          2
+        ]
+      },
+      {
+        "clock": 40960,
+        "games": 4096,
+        "rows": 99298,
+        "wall_s": 116.4856440679996,
+        "collect_and_wait_s": 57.54102162500021,
+        "prepare_s": 10.60593092199997,
+        "update_s": 46.02434627299954,
+        "steps": 50,
+        "recompute_max": 9.5367431640625e-07,
+        "errors": 0,
+        "skips": 0,
+        "epochs": [
+          2,
+          2
+        ]
+      },
+      {
+        "clock": 45056,
+        "games": 4096,
+        "rows": 99516,
+        "wall_s": 123.68681132600068,
+        "collect_and_wait_s": 58.017289397997956,
+        "prepare_s": 14.62913933100026,
+        "update_s": 48.28612022499874,
+        "steps": 50,
+        "recompute_max": 0.0008022785186767578,
+        "errors": 0,
+        "skips": 0,
+        "epochs": [
+          2,
+          2
+        ]
+      },
+      {
+        "clock": 49152,
+        "games": 4096,
+        "rows": 95775,
+        "wall_s": 131.54722355100057,
+        "collect_and_wait_s": 71.74417960199935,
+        "prepare_s": 11.695684616999642,
+        "update_s": 45.61463450300107,
+        "steps": 48,
+        "recompute_max": 1.430511474609375e-06,
+        "errors": 0,
+        "skips": 0,
+        "epochs": [
+          2,
+          2
+        ]
+      },
+      {
+        "clock": 53248,
+        "games": 4096,
+        "rows": 95400,
+        "wall_s": 121.38260273500055,
+        "collect_and_wait_s": 61.84082234900052,
+        "prepare_s": 10.704881374998877,
+        "update_s": 46.07648891600002,
+        "steps": 48,
+        "recompute_max": 9.5367431640625e-07,
+        "errors": 0,
+        "skips": 0,
+        "epochs": [
+          2,
+          2
+        ]
+      },
+      {
+        "clock": 57344,
+        "games": 4096,
+        "rows": 95441,
+        "wall_s": 130.5423545880003,
+        "collect_and_wait_s": 68.48819906300014,
+        "prepare_s": 11.995990486000665,
+        "update_s": 46.19159271999888,
+        "steps": 48,
+        "recompute_max": 1.9073486328125e-06,
+        "errors": 0,
+        "skips": 0,
+        "epochs": [
+          2,
+          2
+        ]
+      }
+    ],
+    "iteration_games_s": 32.03467626994059,
+    "all_in_games_s": 31.800817399401407,
+    "wall_s_iterations": 1662.1987858190005,
+    "wall_s_launcher": 1674.422368810001,
+    "mean_stage_s": {
+      "collect_and_wait_s": 65.3635555322302,
+      "prepare_s": 11.767498875154091,
+      "update_s": 47.99554196792283
+    },
+    "learner_rows": 1327695,
+    "optimizer_steps": 664,
+    "max_recompute": 0.0008022785186767578,
+    "errors": 0,
+    "skips": 0
+  },
+  "corrected_runtime_ab": "CANCELLED_BY_USER; no corrected-environment candidate speed measurement",
+  "corrected_runtime_continuation": "CANCELLED_BY_USER; prior workspace-unset bounded BIT_EXACT remains exploratory",
+  "production_cutover": "BLOCKED; original iteration19 recompute failure unresolved"
+}

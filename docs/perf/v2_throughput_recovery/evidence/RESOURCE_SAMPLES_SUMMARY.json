@@ -1,0 +1,42 @@
+{
+  "scope": "low-rate external samples during original-source recovery only; not full-session CPU/GPU trace or SM occupancy",
+  "sample_count": 129,
+  "first_unix_time": 1791985422.1234186,
+  "last_unix_time": 1791986713.659514,
+  "system_cpu_busy_percent_range": [
+    0.0,
+    10.125745365634586
+  ],
+  "gpus": {
+    "0": {
+      "power_limit_W": [
+        175.0
+      ],
+      "peak_sampled_power_W": 200.51,
+      "peak_sampled_temperature_C": 52.0,
+      "sm_clock_MHz_range": [
+        1162.0,
+        1380.0
+      ],
+      "memory_clock_MHz_range": [
+        877.0,
+        877.0
+      ]
+    },
+    "1": {
+      "power_limit_W": [
+        175.0
+      ],
+      "peak_sampled_power_W": 179.69,
+      "peak_sampled_temperature_C": 49.0,
+      "sm_clock_MHz_range": [
+        1230.0,
+        1380.0
+      ],
+      "memory_clock_MHz_range": [
+        877.0,
+        877.0
+      ]
+    }
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "method": "Leaf kernels joined to originating CPU op External id, then innermost forward scope or enclosing backward/optimizer stage. Autograd worker threads are assigned by enclosing main-thread stage time.",
+  "kernel_stream_counts": {
+    "7": 5073
+  },
+  "stage_kernel_ms": {
+    "fixed_embedding_forward_and_validation": 13.151726999999996,
+    "ragged_embedding_forward": 10.600465999999996,
+    "forward_loss_other": 2.8298780000000097,
+    "transformer_blocks_forward": 51.753474000000004,
+    "value_head_forward": 0.050976,
+    "scorer_token_references": 16.970981,
+    "scorer_action_features": 7.645185999999994,
+    "scorer_build_keys": 3.063527,
+    "scorer_score_keys": 1.6461339999999998,
+    "scorer_advance_keys": 0.5147179999999999,
+    "backward": 409.6117850000001,
+    "clip_amp_adam": 2.0157030000000056
+  },
+  "total_leaf_kernel_ms": 519.8545550000001,
+  "top_originating_ops_leaf_kernel_ms": [
+    [
+      "aten::_index_put_impl_",
+      111.523324
+    ],
+    [
+      "aten::mm",
+      83.69873300000009
+    ],
+    [
+      "aten::embedding_dense_backward",
+      41.33657299999999
+    ],
+    [
+      "aten::addmm",
+      41.21947999999999
+    ],
+    [
+      "aten::fill_",
+      40.842169999999896
+    ],
+    [
+      "aten::add_",
+      28.554679999999998
+    ],
+    [
+      "aten::copy_",
+      28.119918000000013
+    ],
+    [
+      "aten::_efficient_attention_backward",
+      19.011703
+    ],
+    [
+      "aten::mul",
+      15.718417000000002
+    ],
+    [
+      "aten::native_layer_norm_backward",
+      15.468879000000003
+    ],
+    [
+      "aten::add",
+      13.447866
+    ],
+    [
+      "aten::sum",
+      10.779221000000003
+    ],
+    [
+      "aten::gather",
+      9.827933
+    ],
+    [
+      "aten::native_layer_norm",
+      8.416129
+    ],
+    [
+      "aten::_efficient_attention_forward",
+      7.335819
+    ],
+    [
+      "aten::gelu_backward",
+      5.588151999999999
+    ],
+    [
+      "aten::where",
+      5.3585600000000015
+    ],
+    [
+      "aten::aminmax",
+      5.178494000000001
+    ],
+    [
+      "aten::remainder",
+      4.716570000000001
+    ],
+    [
+      "aten::arange",
+      4.700163
+    ],
+    [
+      "aten::gelu",
+      3.731622
+    ],
+    [
+      "aten::div_",
+      3.395115
+    ],
+    [
+      "aten::_segment_reduce_backward",
+      3.004299
+    ],
+    [
+      "aten::segment_reduce",
+      2.40971
+    ],
+    [
+      "aten::cat",
+      1.031802
+    ],
+    [
+      "aten::any",
+      0.6409219999999999
+    ],
+    [
+      "aten::lt",
+      0.41030399999999995
+    ],
+    [
+      "aten::_assert_async",
+      0.3330239999999999
+    ],
+    [
+      "aten::silu_backward",
+      0.26313400000000003
+    ],
+    [
+      "aten::_foreach_addcdiv_",
+      0.250911
+    ]
+  ],
+  "note": "One assignment per leaf kernel. Sum is device work, not SM occupancy; compare stream counts and global kernel union before treating as exclusive elapsed time. Memcopies and CPU-only work excluded."
+}
