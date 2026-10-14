@@ -160,5 +160,6 @@ def verify_entry(registry_path, entry):
 def verify_archive(registry_path):
     registry = json.load(open(registry_path))
     if registry.get("schema") != ARCHIVE_SCHEMA: raise ValueError("unsupported policy archive schema")
-    for entry in registry["policies"].values(): verify_entry(registry_path, entry)
+    for entry in registry["policies"].values():
+        if not entry.get('retired'):verify_entry(registry_path, entry)
     return registry

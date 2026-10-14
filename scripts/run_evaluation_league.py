@@ -98,7 +98,7 @@ def main(argv=None):
     if args.command == "run-pair":
         if not args.candidate or not args.opponent: parser.error("run-pair needs --candidate and --opponent")
         engine = pa3_engine.NativeEngine(args.data, args.teams, workers=args.workers)
-        environment = environment_identity(engine_path=pa3_engine.__file__, data_path=args.data, teams_path=args.teams)
+        environment = environment_identity(engine_path=pa3_engine._native.__file__, data_path=args.data, teams_path=args.teams)
         fixtures = build_fixture_manifest(pairs=args.pairs, team_count=engine.team_count(), seed=args.seed)
         receipt, cached = run_pair(args.registry, args.receipts, engine, fixtures, args.candidate, args.opponent,
                                    device=args.device, seed=args.seed, environment=environment, backend=args.backend, batch_size=args.batch_size)
@@ -106,7 +106,7 @@ def main(argv=None):
     if args.command == "process-pending":
         registry = verify_archive(args.registry); results = []
         engine = pa3_engine.NativeEngine(args.data, args.teams, workers=args.workers)
-        environment = environment_identity(engine_path=pa3_engine.__file__, data_path=args.data, teams_path=args.teams)
+        environment = environment_identity(engine_path=pa3_engine._native.__file__, data_path=args.data, teams_path=args.teams)
         for job in pending_jobs(args.schedule_state, anchor=args.anchor):
             if job.get("missing_snapshot"):
                 results.append({"job": job["id"], "status": "deferred", "reason": job["reason"]}); continue
