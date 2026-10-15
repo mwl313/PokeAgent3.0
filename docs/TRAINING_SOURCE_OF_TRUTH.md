@@ -111,3 +111,5 @@ Starting/resuming/rollback is deliberately **not a runnable approved command yet
 
 Track C: **DEFERRED_INDEFINITELY**, protected06dbb31, no merge/import/teacher activation. Historical self-play,PFSP,populations,BC,offline RL/search,batch/epoch changes require separate research authorization. Older1,137-team/V1/PPO4/V5/V6 documents and configs/train.yaml are historical, non-normative; preserve their evidence. [Readiness](operations/V2_TRAINING_READINESS_REPORT.md), [integration](operations/V2_BRANCH_INTEGRATION_REPORT.md), [cleanup proposal](operations/BRANCH_AND_WORKTREE_CLEANUP_PLAN.md).
 
+
+Tested clean integration candidate source: `e9dc1d20141986d9e0e19234d26240a7d933d5d0`;23 focused tests PASS. Final documentation receipt commit follows. This does not supersede unchanged canonical correctness source or approve cutover.

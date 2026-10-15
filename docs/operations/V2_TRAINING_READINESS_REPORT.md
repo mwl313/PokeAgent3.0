@@ -14,3 +14,5 @@ Historical correct-workspace clean6a2a693 same-source1500-game diagnostic: gathe
 
 Evaluation intended cadence50k/200k differs from actual sidecar implementation: polls published checkpoints (normally100k cadence); saved command256 pairs/batch32, CPU-only. No new V2 competitive evaluation performed. Old A10 results are incompatible strength evidence. Reconcile before production.
 
+
+Final clean-source receipt: `e9dc1d20141986d9e0e19234d26240a7d933d5d0`,23 focused tests passed in1.92s. Subsequent commit adds receipts only. Candidate is pushed separately; origin/codex/pa3-v2-correctness remainsc96c35f and C-track remains06dbb31. No training/evaluation process or GPU workload remains. Original rolling/LATEST is unchanged. Disk-space issue excluded per user.

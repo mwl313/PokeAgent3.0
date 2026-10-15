@@ -34,5 +34,11 @@
     "failed": 8,
     "passed": 47
   },
-  "candidate_padding_failure": "UNRESOLVED_ORDER_SENSITIVE"
+  "candidate_padding_failure": "UNRESOLVED_ORDER_SENSITIVE",
+  "executed_clean_candidate_sha": "e9dc1d20141986d9e0e19234d26240a7d933d5d0",
+  "clean_head_focused_tests": {
+    "passed": 23,
+    "failed": 0,
+    "seconds": 1.92
+  }
 }
