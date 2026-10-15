@@ -1,0 +1,25 @@
+.........................................................s.............. [ 16%]
+........................................................................ [ 32%]
+...ssssssss.s..s.s.s.s.s.s.s.s.s.s.s.................................... [ 49%]
+..................................................s.s.s.s.s.s.s.s...s.s. [ 65%]
+s.s..............s......................s............................... [ 82%]
+........................................................................ [ 98%]
+.....                                                                    [100%]
+=============================== warnings summary ===============================
+tests/agent/test_entropy_kl.py::test_uniform_policy_has_normalized_entropy_one_and_zero_kl
+  /home/minidc/Desktop/PokeAgent3.0-V2-validation/tests/agent/test_entropy_kl.py:39: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+  Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+    assert abs(float(evaluation.entropy_normalized[0, 0]) - 1.0) < 1e-5
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/agent/test_a91_precision.py:40: CUDA required
+SKIPPED [8] tests/agent/test_exact_lookup_and_transfer.py:15: requires CUDA
+SKIPPED [1] tests/agent/test_exact_lookup_and_transfer.py:51: requires CUDA
+SKIPPED [10] tests/agent/test_exact_lookup_and_transfer.py:105: requires CUDA
+SKIPPED [1] tests/agent/test_exact_lookup_and_transfer.py:127: requires CUDA
+SKIPPED [8] tests/agent/test_token_lookup_optimization.py:26: CUDA unavailable
+SKIPPED [4] tests/agent/test_token_lookup_optimization.py:67: requires CUDA
+SKIPPED [1] tests/agent/test_v2_canonical_encoder.py:4: CUDA required
+SKIPPED [1] tests/agent/test_v2_observation_contract.py:166: bounded V100 precision test requires CUDA
+402 passed, 35 skipped, 1 warning in 85.45s (0:01:25)

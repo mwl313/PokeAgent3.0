@@ -1,0 +1,438 @@
+{
+  "B": {
+    "runs": [
+      {
+        "run": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/B_contract/repeat1",
+        "source_sha": "0045e32f6d7e0981339e1d28fa5944cbc7e33fd9",
+        "metrics": {
+          "iteration_games_per_s": 37.211753385486524,
+          "all_in_games_per_s": 30.537117887958782,
+          "collect_wall_s": 26.090182996002113,
+          "update_wall_s": 21.746429699000146,
+          "collector_games_per_s": 78.49695804409735,
+          "learner_rows_per_s": 4245.018666408693,
+          "actor_policy_rows_per_s": 1769.132857637403,
+          "recompute_max": 1.430511474609375e-06,
+          "gpu0_peak_reserved_gib": 11.296875,
+          "actor0_utilization": 0.276391300154321,
+          "actor0_encoder_host_seconds": 4.097295530995325,
+          "gpu1_peak_reserved_gib": 11.3125,
+          "actor1_utilization": 0.3151041666666667,
+          "actor1_encoder_host_seconds": 3.5165785429926473
+        },
+        "rows_per_rank": [
+          22925,
+          23232
+        ],
+        "digests": [
+          "db0ba6eea2baca604035753c4e482651948bb26e4f59bb5e18f675166c118736",
+          "271faa201c99251ff8816a1c577e43ef20f897c4dfac4d6f46662e54a9077155"
+        ],
+        "steps": 24
+      },
+      {
+        "run": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/B_contract/repeat2",
+        "source_sha": "0045e32f6d7e0981339e1d28fa5944cbc7e33fd9",
+        "metrics": {
+          "iteration_games_per_s": 36.75314566563483,
+          "all_in_games_per_s": 30.090272745601812,
+          "collect_wall_s": 26.433351040999696,
+          "update_wall_s": 21.94450745100039,
+          "collector_games_per_s": 77.47788000179888,
+          "learner_rows_per_s": 4206.701845832117,
+          "actor_policy_rows_per_s": 1746.1652867397613,
+          "recompute_max": 1.430511474609375e-06,
+          "gpu0_peak_reserved_gib": 11.296875,
+          "actor0_utilization": 0.276391300154321,
+          "actor0_encoder_host_seconds": 4.10538489398823,
+          "gpu1_peak_reserved_gib": 11.3125,
+          "actor1_utilization": 0.3151041666666667,
+          "actor1_encoder_host_seconds": 3.523626030986634
+        },
+        "rows_per_rank": [
+          22925,
+          23232
+        ],
+        "digests": [
+          "db0ba6eea2baca604035753c4e482651948bb26e4f59bb5e18f675166c118736",
+          "271faa201c99251ff8816a1c577e43ef20f897c4dfac4d6f46662e54a9077155"
+        ],
+        "steps": 24
+      },
+      {
+        "run": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/B_contract/repeat3",
+        "source_sha": "0045e32f6d7e0981339e1d28fa5944cbc7e33fd9",
+        "metrics": {
+          "iteration_games_per_s": 37.615063679234886,
+          "all_in_games_per_s": 30.54089053609431,
+          "collect_wall_s": 26.312844805001077,
+          "update_wall_s": 21.76742387300328,
+          "collector_games_per_s": 77.83270927857836,
+          "learner_rows_per_s": 4240.924444646435,
+          "actor_policy_rows_per_s": 1754.1622862164754,
+          "recompute_max": 1.430511474609375e-06,
+          "gpu0_peak_reserved_gib": 11.296875,
+          "actor0_utilization": 0.276391300154321,
+          "actor0_encoder_host_seconds": 4.074139596992609,
+          "gpu1_peak_reserved_gib": 11.3125,
+          "actor1_utilization": 0.3151041666666667,
+          "actor1_encoder_host_seconds": 3.4544047149938706
+        },
+        "rows_per_rank": [
+          22925,
+          23232
+        ],
+        "digests": [
+          "db0ba6eea2baca604035753c4e482651948bb26e4f59bb5e18f675166c118736",
+          "271faa201c99251ff8816a1c577e43ef20f897c4dfac4d6f46662e54a9077155"
+        ],
+        "steps": 24
+      }
+    ],
+    "median": {
+      "iteration_games_per_s": 37.211753385486524,
+      "all_in_games_per_s": 30.537117887958782,
+      "collect_wall_s": 26.312844805001077,
+      "update_wall_s": 21.76742387300328,
+      "collector_games_per_s": 77.83270927857836,
+      "learner_rows_per_s": 4240.924444646435,
+      "actor_policy_rows_per_s": 1754.1622862164754,
+      "recompute_max": 1.430511474609375e-06,
+      "gpu0_peak_reserved_gib": 11.296875,
+      "actor0_utilization": 0.276391300154321,
+      "actor0_encoder_host_seconds": 4.097295530995325,
+      "gpu1_peak_reserved_gib": 11.3125,
+      "actor1_utilization": 0.3151041666666667,
+      "actor1_encoder_host_seconds": 3.5165785429926473
+    },
+    "min_games_per_s": 36.75314566563483,
+    "max_games_per_s": 37.615063679234886
+  },
+  "C": {
+    "runs": [
+      {
+        "run": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/C_contract/repeat1",
+        "source_sha": "5d9f58fa0ecf38f232eb92d36e09e2dc2edcb5de",
+        "metrics": {
+          "iteration_games_per_s": 39.71671490312445,
+          "all_in_games_per_s": 31.967653154536073,
+          "collect_wall_s": 23.469526548997237,
+          "update_wall_s": 21.661260562003008,
+          "collector_games_per_s": 87.2620926427467,
+          "learner_rows_per_s": 4261.709503736461,
+          "actor_policy_rows_per_s": 1966.6779346246383,
+          "recompute_max": 1.430511474609375e-06,
+          "gpu0_peak_reserved_gib": 11.296875,
+          "actor0_utilization": 0.276391300154321,
+          "actor0_encoder_host_seconds": 4.090571206990717,
+          "gpu1_peak_reserved_gib": 11.3125,
+          "actor1_utilization": 0.3151041666666667,
+          "actor1_encoder_host_seconds": 3.7131818440066127
+        },
+        "rows_per_rank": [
+          22925,
+          23232
+        ],
+        "digests": [
+          "db0ba6eea2baca604035753c4e482651948bb26e4f59bb5e18f675166c118736",
+          "271faa201c99251ff8816a1c577e43ef20f897c4dfac4d6f46662e54a9077155"
+        ],
+        "steps": 24
+      },
+      {
+        "run": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/C_contract/repeat2",
+        "source_sha": "5d9f58fa0ecf38f232eb92d36e09e2dc2edcb5de",
+        "metrics": {
+          "iteration_games_per_s": 39.77497867944503,
+          "all_in_games_per_s": 31.477714874462997,
+          "collect_wall_s": 23.074600755000574,
+          "update_wall_s": 21.74306006900224,
+          "collector_games_per_s": 88.75559849312543,
+          "learner_rows_per_s": 4245.676538032771,
+          "actor_policy_rows_per_s": 2000.33796857773,
+          "recompute_max": 1.430511474609375e-06,
+          "gpu0_peak_reserved_gib": 11.296875,
+          "actor0_utilization": 0.276391300154321,
+          "actor0_encoder_host_seconds": 4.048352292000345,
+          "gpu1_peak_reserved_gib": 11.3125,
+          "actor1_utilization": 0.3151041666666667,
+          "actor1_encoder_host_seconds": 3.4467528400018637
+        },
+        "rows_per_rank": [
+          22925,
+          23232
+        ],
+        "digests": [
+          "db0ba6eea2baca604035753c4e482651948bb26e4f59bb5e18f675166c118736",
+          "271faa201c99251ff8816a1c577e43ef20f897c4dfac4d6f46662e54a9077155"
+        ],
+        "steps": 24
+      },
+      {
+        "run": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/C_contract/repeat3",
+        "source_sha": "5d9f58fa0ecf38f232eb92d36e09e2dc2edcb5de",
+        "metrics": {
+          "iteration_games_per_s": 39.64649128533615,
+          "all_in_games_per_s": 31.96765885349709,
+          "collect_wall_s": 23.427060836998862,
+          "update_wall_s": 21.72134091099724,
+          "collector_games_per_s": 87.42027069676404,
+          "learner_rows_per_s": 4249.921787897661,
+          "actor_policy_rows_per_s": 1970.2428879641297,
+          "recompute_max": 1.430511474609375e-06,
+          "gpu0_peak_reserved_gib": 11.296875,
+          "actor0_utilization": 0.276391300154321,
+          "actor0_encoder_host_seconds": 3.9985892770091596,
+          "gpu1_peak_reserved_gib": 11.3125,
+          "actor1_utilization": 0.3151041666666667,
+          "actor1_encoder_host_seconds": 3.502191692990891
+        },
+        "rows_per_rank": [
+          22925,
+          23232
+        ],
+        "digests": [
+          "db0ba6eea2baca604035753c4e482651948bb26e4f59bb5e18f675166c118736",
+          "271faa201c99251ff8816a1c577e43ef20f897c4dfac4d6f46662e54a9077155"
+        ],
+        "steps": 24
+      }
+    ],
+    "median": {
+      "iteration_games_per_s": 39.71671490312445,
+      "all_in_games_per_s": 31.967653154536073,
+      "collect_wall_s": 23.427060836998862,
+      "update_wall_s": 21.72134091099724,
+      "collector_games_per_s": 87.42027069676404,
+      "learner_rows_per_s": 4249.921787897661,
+      "actor_policy_rows_per_s": 1970.2428879641297,
+      "recompute_max": 1.430511474609375e-06,
+      "gpu0_peak_reserved_gib": 11.296875,
+      "actor0_utilization": 0.276391300154321,
+      "actor0_encoder_host_seconds": 4.048352292000345,
+      "gpu1_peak_reserved_gib": 11.3125,
+      "actor1_utilization": 0.3151041666666667,
+      "actor1_encoder_host_seconds": 3.502191692990891
+    },
+    "min_games_per_s": 39.64649128533615,
+    "max_games_per_s": 39.77497867944503
+  },
+  "D": {
+    "runs": [
+      {
+        "run": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/D_contract/repeat1",
+        "source_sha": "e18b386a2a12cf00b1a204c690427fc9ed29e5c5",
+        "metrics": {
+          "iteration_games_per_s": 39.99471022854275,
+          "all_in_games_per_s": 31.96736429202396,
+          "collect_wall_s": 26.196282095999777,
+          "update_wall_s": 18.533817016003013,
+          "collector_games_per_s": 78.17903290607538,
+          "learner_rows_per_s": 4980.841233097938,
+          "actor_policy_rows_per_s": 1761.967588791856,
+          "recompute_max": 1.430511474609375e-06,
+          "gpu0_peak_reserved_gib": 10.7421875,
+          "actor0_utilization": 0.276391300154321,
+          "actor0_encoder_host_seconds": 4.2023344750086835,
+          "gpu1_peak_reserved_gib": 10.755859375,
+          "actor1_utilization": 0.3151041666666667,
+          "actor1_encoder_host_seconds": 3.461693692021072
+        },
+        "rows_per_rank": [
+          22925,
+          23232
+        ],
+        "digests": [
+          "db0ba6eea2baca604035753c4e482651948bb26e4f59bb5e18f675166c118736",
+          "271faa201c99251ff8816a1c577e43ef20f897c4dfac4d6f46662e54a9077155"
+        ],
+        "steps": 24
+      },
+      {
+        "run": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/D_contract/repeat2",
+        "source_sha": "e18b386a2a12cf00b1a204c690427fc9ed29e5c5",
+        "metrics": {
+          "iteration_games_per_s": 40.26157897533071,
+          "all_in_games_per_s": 31.96979838322897,
+          "collect_wall_s": 26.155949910000345,
+          "update_wall_s": 18.09477723499731,
+          "collector_games_per_s": 78.29958411171972,
+          "learner_rows_per_s": 5101.693090835872,
+          "actor_policy_rows_per_s": 1764.6845233616443,
+          "recompute_max": 1.430511474609375e-06,
+          "gpu0_peak_reserved_gib": 10.7421875,
+          "actor0_utilization": 0.276391300154321,
+          "actor0_encoder_host_seconds": 4.044548467001732,
+          "gpu1_peak_reserved_gib": 10.755859375,
+          "actor1_utilization": 0.3151041666666667,
+          "actor1_encoder_host_seconds": 3.409750714985421
+        },
+        "rows_per_rank": [
+          22925,
+          23232
+        ],
+        "digests": [
+          "db0ba6eea2baca604035753c4e482651948bb26e4f59bb5e18f675166c118736",
+          "271faa201c99251ff8816a1c577e43ef20f897c4dfac4d6f46662e54a9077155"
+        ],
+        "steps": 24
+      },
+      {
+        "run": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/D_contract/repeat3",
+        "source_sha": "e18b386a2a12cf00b1a204c690427fc9ed29e5c5",
+        "metrics": {
+          "iteration_games_per_s": 40.01392268809226,
+          "all_in_games_per_s": 31.968687200370297,
+          "collect_wall_s": 25.826770399999077,
+          "update_wall_s": 18.711012181000115,
+          "collector_games_per_s": 79.29756482444562,
+          "learner_rows_per_s": 4933.6721662625605,
+          "actor_policy_rows_per_s": 1787.176611133758,
+          "recompute_max": 1.430511474609375e-06,
+          "gpu0_peak_reserved_gib": 10.7421875,
+          "actor0_utilization": 0.276391300154321,
+          "actor0_encoder_host_seconds": 4.120819691001088,
+          "gpu1_peak_reserved_gib": 10.755859375,
+          "actor1_utilization": 0.3151041666666667,
+          "actor1_encoder_host_seconds": 3.4538215910179133
+        },
+        "rows_per_rank": [
+          22925,
+          23232
+        ],
+        "digests": [
+          "db0ba6eea2baca604035753c4e482651948bb26e4f59bb5e18f675166c118736",
+          "271faa201c99251ff8816a1c577e43ef20f897c4dfac4d6f46662e54a9077155"
+        ],
+        "steps": 24
+      }
+    ],
+    "median": {
+      "iteration_games_per_s": 40.01392268809226,
+      "all_in_games_per_s": 31.968687200370297,
+      "collect_wall_s": 26.155949910000345,
+      "update_wall_s": 18.533817016003013,
+      "collector_games_per_s": 78.29958411171972,
+      "learner_rows_per_s": 4980.841233097938,
+      "actor_policy_rows_per_s": 1764.6845233616443,
+      "recompute_max": 1.430511474609375e-06,
+      "gpu0_peak_reserved_gib": 10.7421875,
+      "actor0_utilization": 0.276391300154321,
+      "actor0_encoder_host_seconds": 4.120819691001088,
+      "gpu1_peak_reserved_gib": 10.755859375,
+      "actor1_utilization": 0.3151041666666667,
+      "actor1_encoder_host_seconds": 3.4538215910179133
+    },
+    "min_games_per_s": 39.99471022854275,
+    "max_games_per_s": 40.26157897533071
+  },
+  "E": {
+    "runs": [
+      {
+        "run": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/E_contract/repeat1",
+        "source_sha": "163a7c3e3a2af219f98de017d1fdb1b636d824e8",
+        "metrics": {
+          "iteration_games_per_s": 41.69974344239708,
+          "all_in_games_per_s": 32.9978727536243,
+          "collect_wall_s": 24.391775616000814,
+          "update_wall_s": 18.255517174999113,
+          "collector_games_per_s": 83.96272711923964,
+          "learner_rows_per_s": 5056.772652073851,
+          "actor_policy_rows_per_s": 1892.3181619349339,
+          "recompute_max": 1.430511474609375e-06,
+          "gpu0_peak_reserved_gib": 10.7421875,
+          "actor0_utilization": 0.276391300154321,
+          "actor0_encoder_host_seconds": 4.186041926008329,
+          "gpu1_peak_reserved_gib": 10.755859375,
+          "actor1_utilization": 0.3151041666666667,
+          "actor1_encoder_host_seconds": 3.9915830950012605
+        },
+        "rows_per_rank": [
+          22925,
+          23232
+        ],
+        "digests": [
+          "db0ba6eea2baca604035753c4e482651948bb26e4f59bb5e18f675166c118736",
+          "271faa201c99251ff8816a1c577e43ef20f897c4dfac4d6f46662e54a9077155"
+        ],
+        "steps": 24
+      },
+      {
+        "run": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/E_contract/repeat2",
+        "source_sha": "163a7c3e3a2af219f98de017d1fdb1b636d824e8",
+        "metrics": {
+          "iteration_games_per_s": 41.769784245978826,
+          "all_in_games_per_s": 33.00081023621631,
+          "collect_wall_s": 24.34460037900135,
+          "update_wall_s": 18.255558871001995,
+          "collector_games_per_s": 84.12543102438931,
+          "learner_rows_per_s": 5056.761102320235,
+          "actor_policy_rows_per_s": 1895.9851170862976,
+          "recompute_max": 1.430511474609375e-06,
+          "gpu0_peak_reserved_gib": 10.7421875,
+          "actor0_utilization": 0.276391300154321,
+          "actor0_encoder_host_seconds": 4.122378736999963,
+          "gpu1_peak_reserved_gib": 10.755859375,
+          "actor1_utilization": 0.3151041666666667,
+          "actor1_encoder_host_seconds": 3.5365595299990673
+        },
+        "rows_per_rank": [
+          22925,
+          23232
+        ],
+        "digests": [
+          "db0ba6eea2baca604035753c4e482651948bb26e4f59bb5e18f675166c118736",
+          "271faa201c99251ff8816a1c577e43ef20f897c4dfac4d6f46662e54a9077155"
+        ],
+        "steps": 24
+      },
+      {
+        "run": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/E_contract/repeat3",
+        "source_sha": "163a7c3e3a2af219f98de017d1fdb1b636d824e8",
+        "metrics": {
+          "iteration_games_per_s": 42.04183285115107,
+          "all_in_games_per_s": 33.539035674045756,
+          "collect_wall_s": 23.716140102998907,
+          "update_wall_s": 18.20171539900184,
+          "collector_games_per_s": 86.35469309531656,
+          "learner_rows_per_s": 5071.719778953492,
+          "actor_policy_rows_per_s": 1946.2273287111948,
+          "recompute_max": 1.430511474609375e-06,
+          "gpu0_peak_reserved_gib": 10.7421875,
+          "actor0_utilization": 0.276391300154321,
+          "actor0_encoder_host_seconds": 4.087295747023745,
+          "gpu1_peak_reserved_gib": 10.755859375,
+          "actor1_utilization": 0.3151041666666667,
+          "actor1_encoder_host_seconds": 3.5780616420051956
+        },
+        "rows_per_rank": [
+          22925,
+          23232
+        ],
+        "digests": [
+          "db0ba6eea2baca604035753c4e482651948bb26e4f59bb5e18f675166c118736",
+          "271faa201c99251ff8816a1c577e43ef20f897c4dfac4d6f46662e54a9077155"
+        ],
+        "steps": 24
+      }
+    ],
+    "median": {
+      "iteration_games_per_s": 41.769784245978826,
+      "all_in_games_per_s": 33.00081023621631,
+      "collect_wall_s": 24.34460037900135,
+      "update_wall_s": 18.255517174999113,
+      "collector_games_per_s": 84.12543102438931,
+      "learner_rows_per_s": 5056.772652073851,
+      "actor_policy_rows_per_s": 1895.9851170862976,
+      "recompute_max": 1.430511474609375e-06,
+      "gpu0_peak_reserved_gib": 10.7421875,
+      "actor0_utilization": 0.276391300154321,
+      "actor0_encoder_host_seconds": 4.122378736999963,
+      "gpu1_peak_reserved_gib": 10.755859375,
+      "actor1_utilization": 0.3151041666666667,
+      "actor1_encoder_host_seconds": 3.5780616420051956
+    },
+    "min_games_per_s": 41.69974344239708,
+    "max_games_per_s": 42.04183285115107
+  }
+}

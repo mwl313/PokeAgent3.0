@@ -1,0 +1,110 @@
+[
+  {
+    "scale": 65536.0,
+    "nonfinite_parameters": {
+      "encoder.embedding.category_value_embedding.weight": 1,
+      "value_head.2.weight": 8
+    },
+    "grad_norm": Infinity,
+    "forward": [
+      {
+        "loss_unscaled": 0.24172335863113403,
+        "value_mean": 0.24798008799552917
+      },
+      {
+        "loss_unscaled": 0.0,
+        "value_mean": 0.0
+      }
+    ]
+  },
+  {
+    "scale": 32768.0,
+    "nonfinite_parameters": {},
+    "grad_norm": 22.124980926513672,
+    "forward": [
+      {
+        "loss_unscaled": 0.24172335863113403,
+        "value_mean": 0.24798008799552917
+      },
+      {
+        "loss_unscaled": 0.0,
+        "value_mean": 0.0
+      }
+    ]
+  },
+  {
+    "scale": 16384.0,
+    "nonfinite_parameters": {},
+    "grad_norm": 22.12505531311035,
+    "forward": [
+      {
+        "loss_unscaled": 0.24172335863113403,
+        "value_mean": 0.24798008799552917
+      },
+      {
+        "loss_unscaled": 0.0,
+        "value_mean": 0.0
+      }
+    ]
+  },
+  {
+    "scale": 8192.0,
+    "nonfinite_parameters": {},
+    "grad_norm": 22.124923706054688,
+    "forward": [
+      {
+        "loss_unscaled": 0.24172335863113403,
+        "value_mean": 0.24798008799552917
+      },
+      {
+        "loss_unscaled": 0.0,
+        "value_mean": 0.0
+      }
+    ]
+  },
+  {
+    "scale": 4096.0,
+    "nonfinite_parameters": {},
+    "grad_norm": 22.124998092651367,
+    "forward": [
+      {
+        "loss_unscaled": 0.24172335863113403,
+        "value_mean": 0.24798008799552917
+      },
+      {
+        "loss_unscaled": 0.0,
+        "value_mean": 0.0
+      }
+    ]
+  },
+  {
+    "scale": 2048.0,
+    "nonfinite_parameters": {},
+    "grad_norm": 22.12483024597168,
+    "forward": [
+      {
+        "loss_unscaled": 0.24172335863113403,
+        "value_mean": 0.24798008799552917
+      },
+      {
+        "loss_unscaled": 0.0,
+        "value_mean": 0.0
+      }
+    ]
+  },
+  {
+    "scale": 1024.0,
+    "nonfinite_parameters": {},
+    "grad_norm": 22.124839782714844,
+    "forward": [
+      {
+        "loss_unscaled": 0.24172335863113403,
+        "value_mean": 0.24798008799552917
+      },
+      {
+        "loss_unscaled": 0.0,
+        "value_mean": 0.0
+      }
+    ]
+  }
+]

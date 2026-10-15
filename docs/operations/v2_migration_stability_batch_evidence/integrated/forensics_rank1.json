@@ -1,0 +1,148 @@
+{
+  "artifact": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/reports/v2-final-8052606/continuation.json.rank1.iteration25.recompute.pt",
+  "rank": 1,
+  "target": {
+    "row_index": 26896,
+    "match_id": 2722,
+    "request_index": 3,
+    "side": 1,
+    "kind": 1,
+    "branches": 2,
+    "selected": [
+      5,
+      5
+    ],
+    "legal_counts": [
+      9,
+      11
+    ],
+    "stored": -3.0076684951782227,
+    "batched_amp": -3.0106306076049805,
+    "inputs_verified": true,
+    "actor_group_size": 1320,
+    "actor_replay": -3.0076684951782227,
+    "actor_repeat": -3.0076684951782227,
+    "fp32_group": -3.0096492767333984,
+    "isolated_amp": -3.007667064666748,
+    "fp32_isolated": -3.009650707244873,
+    "accepted": false
+  },
+  "actor_group_rows": 1320,
+  "sampled_rows": 576,
+  "physical_rows": 1024,
+  "matrix": {
+    "historical_fp16_effects": {
+      "actor_group_logprob": -3.0076684951782227,
+      "actor_group_repeat_logprob": -3.0076684951782227,
+      "sampled_logprob": -3.0106306076049805,
+      "actor_vs_sampled_abs": 0.0029621124267578125,
+      "actor_repeat_abs": 0.0,
+      "first_operation": "ragged_embedding.numeric.effects",
+      "per_operation": {
+        "effects_numeric": {
+          "max_abs": 0.000244140625,
+          "mean_abs": 7.629394644936838e-07,
+          "shape": [
+            1,
+            320
+          ]
+        },
+        "embedding": {
+          "max_abs": 0.0012737512588500977,
+          "mean_abs": 9.844679738080231e-08,
+          "shape": [
+            96,
+            320
+          ]
+        },
+        "encoder": {
+          "max_abs": 0.0020189881324768066,
+          "mean_abs": 0.00025370452203787863,
+          "shape": [
+            96,
+            320
+          ]
+        }
+      },
+      "encoder_latency_ms": {
+        "actor_chunk_median": 88.59648132324219,
+        "sampled_chunk_median": 88.70191955566406,
+        "actor_chunk_samples": [
+          88.68252563476562,
+          87.8509750366211,
+          89.23241424560547,
+          87.2837142944336,
+          88.22681427001953,
+          88.7787857055664,
+          88.59648132324219
+        ],
+        "sampled_chunk_samples": [
+          88.71833801269531,
+          88.35584259033203,
+          88.72345733642578,
+          88.62003326416016,
+          88.70191955566406,
+          89.1975326538086,
+          88.67842864990234
+        ]
+      }
+    },
+    "stable_fp32_effects": {
+      "actor_group_logprob": -3.0092737674713135,
+      "actor_group_repeat_logprob": -3.0092737674713135,
+      "sampled_logprob": -3.0092740058898926,
+      "actor_vs_sampled_abs": 2.384185791015625e-07,
+      "actor_repeat_abs": 0.0,
+      "first_operation": "ragged_embedding.numeric.effects",
+      "per_operation": {
+        "effects_numeric": {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "shape": [
+            1,
+            320
+          ]
+        },
+        "embedding": {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "shape": [
+            96,
+            320
+          ]
+        },
+        "encoder": {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "shape": [
+            96,
+            320
+          ]
+        }
+      },
+      "encoder_latency_ms": {
+        "actor_chunk_median": 89.60819244384766,
+        "sampled_chunk_median": 89.09004974365234,
+        "actor_chunk_samples": [
+          89.27027130126953,
+          90.60249328613281,
+          89.60819244384766,
+          89.2221450805664,
+          89.32147216796875,
+          92.32588958740234,
+          92.30847930908203
+        ],
+        "sampled_chunk_samples": [
+          87.38508605957031,
+          89.28562927246094,
+          89.13203430175781,
+          88.39373016357422,
+          89.09004974365234,
+          88.62105560302734,
+          89.1310043334961
+        ]
+      }
+    }
+  },
+  "conclusion": "The historical FP16 effects numeric projection is the first captured batch-composition-dependent operation. The selective FP32 path must make both the target encoder output and selected log probability agree before it can be promoted."
+}

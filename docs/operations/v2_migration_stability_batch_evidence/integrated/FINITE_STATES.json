@@ -1,0 +1,42 @@
+[
+  {
+    "checkpoint": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/E_contract/sustained/rolling/generations/iter-000000061440-1792064046773277360",
+    "rank": 0,
+    "learner_all_finite": true
+  },
+  {
+    "checkpoint": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/E_contract/sustained/rolling/generations/iter-000000061440-1792064046773277360",
+    "rank": 1,
+    "learner_all_finite": true
+  },
+  {
+    "checkpoint": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/E_contract/sustained/rolling/generations/iter-000000065536-1792064144854282741",
+    "rank": 0,
+    "learner_all_finite": true
+  },
+  {
+    "checkpoint": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/E_contract/sustained/rolling/generations/iter-000000065536-1792064144854282741",
+    "rank": 1,
+    "learner_all_finite": true
+  },
+  {
+    "checkpoint": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/E_contract/sustained/rolling/generations/iter-000000069632-1792064224062670205",
+    "rank": 0,
+    "learner_all_finite": true
+  },
+  {
+    "checkpoint": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/E_contract/sustained/rolling/generations/iter-000000069632-1792064224062670205",
+    "rank": 1,
+    "learner_all_finite": true
+  },
+  {
+    "checkpoint": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/E_contract/sustained/rolling/generations/iter-000000073728-1792064316618806881",
+    "rank": 0,
+    "learner_all_finite": true
+  },
+  {
+    "checkpoint": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/E_contract/sustained/rolling/generations/iter-000000073728-1792064316618806881",
+    "rank": 1,
+    "learner_all_finite": true
+  }
+]

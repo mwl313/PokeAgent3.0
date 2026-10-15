@@ -1,0 +1,255 @@
+{
+  "schema": "pa3-v2-reviewed-release-migration-v2",
+  "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+  "target_sha": "163a7c3e3a2af219f98de017d1fdb1b636d824e8",
+  "checkpoint": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/runs/perf/v2_recovery/reconstruction_contract/reconstructed/rolling/generations/iter-000000057344-1791986684864852699",
+  "checkpoint_manifest_sha256": "b9539f3a0c426f0878375b61630cb4de9dcd2a5d4a6a59858b4d64f4287fd424",
+  "rank_artifact_hashes": {
+    "0": "242783259d942c3847764c966cac1f3e077ae062a326bb702b7866330fcf5efc",
+    "1": "c8aff16cd22b0264d067872c3d8df457bba30f1008815765c2cb999a5216aaf8"
+  },
+  "runtime_blobs": {
+    "agent/buffer/rollout_buffer.py": "1b65eddfb8e871a8a5dc981247dd719eacf0ee07",
+    "agent/model/cuda/exact_lookup.cu": "f84052da42dd563e66c9ff29ee52dcdcebe57dfc",
+    "agent/model/embeddings.py": "0b73a446380b47d1dbc316b29540898855e1ef34",
+    "agent/model/encoder.py": "6ed594d6fccec1c323a5584c47cf9b4f85320051",
+    "agent/model/exact_row_lookup.py": "cf72590eb44d15f5b9a304317e31468e4bec4246",
+    "agent/model/pa3_model.py": "7c14accad8ed4d7e00dd6701f1b2eb7b2a32150e",
+    "agent/model/precision.py": "8dd80b37ba593f471bce7edf3e5355f06bcd7af5",
+    "agent/model/ragged_embeddings.py": "39f1770aab8452f6024041304c8bee63e5b736e3",
+    "agent/model/scorer.py": "2a8ceb79f0335777d7f2926771a4b2b9e546e638",
+    "agent/ppo/learner.py": "e06009a3f2fba15f0e85352bf88848d3717d53d7",
+    "agent/ppo/recompute_safety.py": "0e1c70370abb7dde94ac570f300f1b7bcd01fa05",
+    "agent/ppo/source_migration.py": "540698ee4f62d7b48125721db264d7082eea02f5",
+    "agent/ppo/telemetry.py": "f879957a63b9f2a07e487a738fecf1b572c4db1a",
+    "agent/ppo/v2_release_migration.py": "8b4976a3888e7462f64ff71f0969fe2b0a2b336d",
+    "agent/ppo/v2_source_migration.py": "67681e0bfd6bd24d8bbe3501505e7f0fd7c6b286",
+    "agent/runtime/config.py": "9987603a9270b7ca9ee17a409fbf646d688d837b",
+    "agent/train/native_collector.py": "9626a27b564602b0293f3aaf0c0ad2bca459e7df",
+    "agent/types/action_mapping.py": "6de6e5ee1e0f9fbf8e4053affb2cdf3e6ceb6707",
+    "agent/types/observation.py": "d18a4c854b50875c5b487522a0cd356d8793cd07",
+    "agent/types/ragged.py": "45d8b2905502ee3714b7bf196f3a797ff73b6bbc",
+    "agent/types/requests.py": "f8da382cfb864f684a7217b1d6eef18eb5a71623",
+    "configs/pa3_v2_production.yaml": "2a182204845244a61acef9aed605d39ba596aef3",
+    "scripts/analyze_v2_live_bottlenecks.py": "3f2703bf66e8547e8506db485eb3d67f05d4f9fe",
+    "scripts/bench_pa3_end_to_end.py": "bb51079faeffb79b36742861256aa3f84bf443da",
+    "scripts/benchmark_v2_lookup_recovery.py": "d16b0fbce124583686164513b3d9161896517ff5",
+    "scripts/run_ddp_ppo.py": "3c5b5bf156639dac1be67e6dcfe583fe4563694b",
+    "scripts/v2_continuation_probe.py": "e6590737479eae8544a861eab3b0770a74943eda",
+    "scripts/v2_data_path_probe.py": "ed4275609375a73abe8122c97b47fed8ac076b10",
+    "scripts/v2_evaluation_sidecar.py": "fe8bbea8afb125846e5547507659bb34f5d120af",
+    "scripts/v2_gpu_profile.py": "f4cb5a53002fc90e8f120d550de04815d32c8003",
+    "scripts/v2_recompute_forensics.py": "82a77b3bb86dd31fccb450927df161eb7b0fd1f9",
+    "scripts/v2_reconstruct_boundary.py": "2a3fbbc84362ec5e9a0fa5168e5505bca9d11043",
+    "scripts/v2_recovery_analysis.py": "0b9a820e66f7a7f0aff680860e411fe1ea469916",
+    "scripts/v2_release_validation.py": "191df34c2430ee8e78cd3f251fbff5c94332cbad",
+    "scripts/v2_throughput_ab.py": "47b7ee199a58c88c10b3105763b676964ca864f1",
+    "scripts/v2_training_status.py": "b5db36c43ef7fcabdd84024a17383183129dc71b",
+    "scripts/validate_v2_source_of_truth.py": "4b867db02380d91ee76817912355e76e72dfed92"
+  },
+  "original_profile_path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/release/runtime_profile.json",
+  "original_profile_sha256": "24f35970cfb3b15b27bd941ee50420464d8a63bc4f75a4c16e826384e3383fdb",
+  "original_profile": {
+    "schema": "pa3-validated-runtime-v1",
+    "profile": "pa3_v2_production",
+    "version": "pa3-v2-production-v1",
+    "training": {
+      "algorithm": "ppo",
+      "ppo_epochs": 2,
+      "lr_scale": 0.5,
+      "global_minibatch": 4096,
+      "microbatch": 1024,
+      "per_rank_minibatch": 2048,
+      "grad_accumulation": 2,
+      "envs": 1024,
+      "workers": 16,
+      "historical_probability": 0.0,
+      "optimizer": "adam",
+      "clip_epsilon": 0.2,
+      "gamma": 1.0,
+      "gae_lambda": 0.95,
+      "entropy_coefficient": 0.01,
+      "uniform_kl_coefficient": 0.001,
+      "target_approx_kl": 0.03,
+      "value_coefficient": 0.5,
+      "max_grad_norm": 0.5,
+      "action_temperature": 1.0,
+      "warmup_matches": 250000,
+      "horizon_matches": 100000000,
+      "peak_lr": 0.0003,
+      "effective_peak_lr": 0.00015,
+      "checkpoint_interval_matches": 100000
+    },
+    "precision": {
+      "mode": "D",
+      "stability": "fp16-reduction-off",
+      "observation": "fp16-round-continuous-then-fp32",
+      "encoder_amp": true,
+      "scorer_fp32": true,
+      "gru_fp32": true,
+      "recompute_gate": true,
+      "tolerance": 0.001,
+      "contract_version": "pa3-precision-D-v2"
+    },
+    "dataset": {
+      "id": "a10-p0-proposed-20261013",
+      "manifest": "/home/minidc/Desktop/PokeAgent3.0-V2/data/teams/a10-p0-proposed-20261013/manifest.json",
+      "manifest_sha256": "1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb",
+      "train_teams": 1220,
+      "sampling": "uniform_unique_team",
+      "frozen": true,
+      "teams": "/home/minidc/Desktop/PokeAgent3.0-V2/engine/data/a10-training-teams.json",
+      "data": "/home/minidc/Desktop/PokeAgent3.0-V2/engine/data",
+      "teams_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    "collector": {
+      "batch_cache": "cuda",
+      "compact_candidates": true,
+      "trim_observation_padding": false,
+      "columnar_store": false,
+      "rolling_slots": false,
+      "executor": "ddp",
+      "world_size": 2,
+      "deterministic_diagnostic": true
+    },
+    "evaluation": {
+      "lightweight_every_matches": 50000,
+      "full_every_matches": 200000,
+      "backend": "batched",
+      "batch_size": 128,
+      "fixture_pairs": 1024,
+      "namespace": "pa3-v2-only"
+    },
+    "evidence": {
+      "derived_from": "configs/a10_production.yaml",
+      "release_gate": "P4 must pass before P5 activation",
+      "semantic_contract": "dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35",
+      "determinism": "Enabled for V2 continuation fidelity; recorded and checked on resume. PPO objective/hyperparameters unchanged."
+    }
+  },
+  "target_profile": {
+    "schema": "pa3-validated-runtime-v1",
+    "profile": "pa3_v2_production",
+    "version": "pa3-v2-production-v1",
+    "training": {
+      "algorithm": "ppo",
+      "ppo_epochs": 2,
+      "lr_scale": 0.5,
+      "global_minibatch": 4096,
+      "microbatch": 1024,
+      "per_rank_minibatch": 2048,
+      "grad_accumulation": 2,
+      "envs": 1024,
+      "workers": 16,
+      "historical_probability": 0.0,
+      "optimizer": "adam",
+      "clip_epsilon": 0.2,
+      "gamma": 1.0,
+      "gae_lambda": 0.95,
+      "entropy_coefficient": 0.01,
+      "uniform_kl_coefficient": 0.001,
+      "target_approx_kl": 0.03,
+      "value_coefficient": 0.5,
+      "max_grad_norm": 0.5,
+      "action_temperature": 1.0,
+      "warmup_matches": 250000,
+      "horizon_matches": 100000000,
+      "peak_lr": 0.0003,
+      "effective_peak_lr": 0.00015,
+      "checkpoint_interval_matches": 100000
+    },
+    "precision": {
+      "mode": "D",
+      "stability": "fp16-reduction-off",
+      "observation": "fp16-round-continuous-then-fp32",
+      "encoder_amp": true,
+      "ragged_effects_fp32": true,
+      "scorer_fp32": true,
+      "gru_fp32": true,
+      "recompute_gate": true,
+      "tolerance": 0.001,
+      "contract_version": "pa3-precision-D-v2",
+      "recompute_secondary": true,
+      "canonical_encoder_batch_rows": 1024,
+      "amp_overflow_retries": 3
+    },
+    "dataset": {
+      "id": "a10-p0-proposed-20261013",
+      "manifest": "data/teams/a10-p0-proposed-20261013/manifest.json",
+      "manifest_sha256": "1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb",
+      "train_teams": 1220,
+      "sampling": "uniform_unique_team",
+      "frozen": true,
+      "teams": "engine/data/a10-training-teams.json",
+      "data": "engine/data",
+      "teams_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    "collector": {
+      "batch_cache": "cuda",
+      "compact_candidates": true,
+      "trim_observation_padding": false,
+      "columnar_store": false,
+      "rolling_slots": false,
+      "executor": "ddp",
+      "world_size": 2,
+      "deterministic_diagnostic": true,
+      "token_lookup_backend": "exact-row-v100-v1"
+    },
+    "evaluation": {
+      "lightweight_every_matches": 50000,
+      "full_every_matches": 200000,
+      "backend": "batched",
+      "batch_size": 128,
+      "fixture_pairs": 1024,
+      "namespace": "pa3-v2-only"
+    },
+    "evidence": {
+      "derived_from": "configs/a10_production.yaml",
+      "release_gate": "P4 must pass before P5 activation",
+      "semantic_contract": "dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35",
+      "determinism": "Enabled for V2 continuation fidelity; recorded and checked on resume. PPO objective/hyperparameters unchanged."
+    }
+  },
+  "target_config_hash": "caf3e689bb033f440e5d883e339639e2cb2b4282685e1d55f619d415bde6105c",
+  "semantic_contract": "dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35",
+  "action_schema_hash": "57efb5822b05f6e7729a4b5e123628b267292728314337ba451c9232c2c314af",
+  "model_config_hash": "eafc7e0e1e8224139f2d3bf7a1016923d3dad465dbcc6a57220f2f02794c9a25",
+  "ppo_config_hash": "d929a5ca50469c17eb0d41ed2cb1828393d4d590be9d2ce7db017c6100d9f077",
+  "verified_rank_digests": {
+    "0": {
+      "model": "6a01f14dfeec378f9577df94f5d97cf155924615cca3a000ae4b2108c134bb5d",
+      "optimizer": "ca358b33d33d8008fdd77ae94223b83bc0b5fa9f41f16182101f00b96750e3cc"
+    },
+    "1": {
+      "model": "6a01f14dfeec378f9577df94f5d97cf155924615cca3a000ae4b2108c134bb5d",
+      "optimizer": "ca358b33d33d8008fdd77ae94223b83bc0b5fa9f41f16182101f00b96750e3cc"
+    }
+  },
+  "engine_sha256": "8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62",
+  "amp_overflow_retry_transition": {
+    "historical": 0,
+    "future": 3
+  },
+  "canonical_encoder_transition": {
+    "historical": 0,
+    "future": 1024
+  },
+  "ragged_effects_precision_transition": {
+    "historical": "fp16",
+    "future": "fp32"
+  },
+  "token_lookup_backend": "exact-row-v100-v1",
+  "token_lookup_transition": {
+    "historical": "gather",
+    "future": "exact-row-v100-v1"
+  },
+  "secondary_activation": {
+    "historical": false,
+    "future": true
+  },
+  "team_stats_origin_root": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats",
+  "team_stats_lineage_id": "team_stats-e11bfa3143699455",
+  "team_stats_root": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/E_contract/repeat3/team_stats",
+  "parity_report": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/E_contract/parity.json",
+  "parity_report_sha256": "e9b109d2eec10516208b89eff42cecb29bb22e267fefda704ac2fb9e05463939"
+}

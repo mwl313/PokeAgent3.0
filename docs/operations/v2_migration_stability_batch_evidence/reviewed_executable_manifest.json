@@ -1,0 +1,156 @@
+{
+  "historical_source": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+  "original_audit": "0b7253cfd915ff61c88248b1979bd8e254285ef0",
+  "selective_fp32_review": "93ebc1b5086b7a2bf247b779eb6442671bbbdd10",
+  "target": "04781f7f0c11c3716b00df084f0d8d872e26486b",
+  "files": {
+    "agent/buffer/rollout_buffer.py": {
+      "target_blob": "1b65eddfb8e871a8a5dc981247dd719eacf0ee07",
+      "baseline_blob": "bb49f57001bc5ff35a0a8b81f4bfb85263457cf5"
+    },
+    "agent/model/cuda/exact_lookup.cu": {
+      "target_blob": "f84052da42dd563e66c9ff29ee52dcdcebe57dfc",
+      "baseline_blob": null
+    },
+    "agent/model/embeddings.py": {
+      "target_blob": "0b73a446380b47d1dbc316b29540898855e1ef34",
+      "baseline_blob": "30f58fe290a823adb3b388bf165894a5a6053191"
+    },
+    "agent/model/encoder.py": {
+      "target_blob": "6ed594d6fccec1c323a5584c47cf9b4f85320051",
+      "baseline_blob": "c997bc57406a67007711714cf3ad7a33ef8ceea0"
+    },
+    "agent/model/exact_row_lookup.py": {
+      "target_blob": "cf72590eb44d15f5b9a304317e31468e4bec4246",
+      "baseline_blob": null
+    },
+    "agent/model/pa3_model.py": {
+      "target_blob": "7c14accad8ed4d7e00dd6701f1b2eb7b2a32150e",
+      "baseline_blob": "6e2752b1df2b05dde6f49d690cd33602242db8ed"
+    },
+    "agent/model/precision.py": {
+      "target_blob": "8dd80b37ba593f471bce7edf3e5355f06bcd7af5",
+      "baseline_blob": "2cf8ffb2d0340cd7b4251907e2f2ccfbd58a75e3"
+    },
+    "agent/model/ragged_embeddings.py": {
+      "target_blob": "39f1770aab8452f6024041304c8bee63e5b736e3",
+      "baseline_blob": "a1965cea6fc1f9ad87230923171343cc7e53adfe"
+    },
+    "agent/model/scorer.py": {
+      "target_blob": "2a8ceb79f0335777d7f2926771a4b2b9e546e638",
+      "baseline_blob": "f3b7993e93a560c509914afa350ea5eb9b9abf87"
+    },
+    "agent/ppo/learner.py": {
+      "target_blob": "e06009a3f2fba15f0e85352bf88848d3717d53d7",
+      "baseline_blob": "ab673ea3b7ad2318badab081ab7f0f12fb5b8d4a"
+    },
+    "agent/ppo/recompute_safety.py": {
+      "target_blob": "0e1c70370abb7dde94ac570f300f1b7bcd01fa05",
+      "baseline_blob": "6698c5ea21d30b6650716b941cbf066225badb02"
+    },
+    "agent/ppo/source_migration.py": {
+      "target_blob": "540698ee4f62d7b48125721db264d7082eea02f5",
+      "baseline_blob": "d60d230d030b7d5b1cc1fa2b82eaaa84eff94570"
+    },
+    "agent/ppo/telemetry.py": {
+      "target_blob": "f879957a63b9f2a07e487a738fecf1b572c4db1a",
+      "baseline_blob": "afa8f27d535f7a03b4e6d067648c927a924a8176"
+    },
+    "agent/ppo/v2_release_migration.py": {
+      "target_blob": "0f20fd8a84e6523f867c48541740eabd1e873abd",
+      "baseline_blob": null
+    },
+    "agent/ppo/v2_source_migration.py": {
+      "target_blob": "67681e0bfd6bd24d8bbe3501505e7f0fd7c6b286",
+      "baseline_blob": null
+    },
+    "agent/runtime/config.py": {
+      "target_blob": "9987603a9270b7ca9ee17a409fbf646d688d837b",
+      "baseline_blob": "b61f8e89a6d4f43ab0b430bce3d1e57dae25cb64"
+    },
+    "agent/train/native_collector.py": {
+      "target_blob": "9626a27b564602b0293f3aaf0c0ad2bca459e7df",
+      "baseline_blob": "158aeab7e51d687d02ea7b14a6a4b83479cc11c5"
+    },
+    "agent/types/action_mapping.py": {
+      "target_blob": "6de6e5ee1e0f9fbf8e4053affb2cdf3e6ceb6707",
+      "baseline_blob": "401a8af62220b2e10068ecb20e7c15c914381d20"
+    },
+    "agent/types/observation.py": {
+      "target_blob": "d18a4c854b50875c5b487522a0cd356d8793cd07",
+      "baseline_blob": "91d8b40507d1200f2abce8cc276e0989a987e643"
+    },
+    "agent/types/ragged.py": {
+      "target_blob": "45d8b2905502ee3714b7bf196f3a797ff73b6bbc",
+      "baseline_blob": "c8a2d9f1fdd886d75ee1da607e40d1ad7592bb02"
+    },
+    "agent/types/requests.py": {
+      "target_blob": "f8da382cfb864f684a7217b1d6eef18eb5a71623",
+      "baseline_blob": "9961ed07f0afa1f42181b3c4b9d59ba33416a75c"
+    },
+    "configs/pa3_v2_production.yaml": {
+      "target_blob": "d354223d3db40face7fc5aac41b510f795f7cdde",
+      "baseline_blob": "381fce85676f486d12c8a70d246887a9a506becc"
+    },
+    "scripts/analyze_v2_live_bottlenecks.py": {
+      "target_blob": "3f2703bf66e8547e8506db485eb3d67f05d4f9fe",
+      "baseline_blob": null
+    },
+    "scripts/bench_pa3_end_to_end.py": {
+      "target_blob": "bb51079faeffb79b36742861256aa3f84bf443da",
+      "baseline_blob": "0260d3d49ca30ef918e2ffff943155da28e85754"
+    },
+    "scripts/benchmark_v2_lookup_recovery.py": {
+      "target_blob": "d16b0fbce124583686164513b3d9161896517ff5",
+      "baseline_blob": null
+    },
+    "scripts/run_ddp_ppo.py": {
+      "target_blob": "3c5b5bf156639dac1be67e6dcfe583fe4563694b",
+      "baseline_blob": "2e11a408bf4405e68cbc5df8aadb4f89a7f8d51b"
+    },
+    "scripts/v2_continuation_probe.py": {
+      "target_blob": "e6590737479eae8544a861eab3b0770a74943eda",
+      "baseline_blob": null
+    },
+    "scripts/v2_data_path_probe.py": {
+      "target_blob": "ed4275609375a73abe8122c97b47fed8ac076b10",
+      "baseline_blob": null
+    },
+    "scripts/v2_evaluation_sidecar.py": {
+      "target_blob": "fe8bbea8afb125846e5547507659bb34f5d120af",
+      "baseline_blob": "6273b08c159e27ce21c4a163c4391ea306a5aa13"
+    },
+    "scripts/v2_gpu_profile.py": {
+      "target_blob": "f4cb5a53002fc90e8f120d550de04815d32c8003",
+      "baseline_blob": null
+    },
+    "scripts/v2_recompute_forensics.py": {
+      "target_blob": "82a77b3bb86dd31fccb450927df161eb7b0fd1f9",
+      "baseline_blob": null
+    },
+    "scripts/v2_reconstruct_boundary.py": {
+      "target_blob": "2a3fbbc84362ec5e9a0fa5168e5505bca9d11043",
+      "baseline_blob": null
+    },
+    "scripts/v2_recovery_analysis.py": {
+      "target_blob": "0b9a820e66f7a7f0aff680860e411fe1ea469916",
+      "baseline_blob": null
+    },
+    "scripts/v2_release_validation.py": {
+      "target_blob": "191df34c2430ee8e78cd3f251fbff5c94332cbad",
+      "baseline_blob": null
+    },
+    "scripts/v2_throughput_ab.py": {
+      "target_blob": "47b7ee199a58c88c10b3105763b676964ca864f1",
+      "baseline_blob": null
+    },
+    "scripts/v2_training_status.py": {
+      "target_blob": "b5db36c43ef7fcabdd84024a17383183129dc71b",
+      "baseline_blob": null
+    },
+    "scripts/validate_v2_source_of_truth.py": {
+      "target_blob": "4b867db02380d91ee76817912355e76e72dfed92",
+      "baseline_blob": null
+    }
+  }
+}

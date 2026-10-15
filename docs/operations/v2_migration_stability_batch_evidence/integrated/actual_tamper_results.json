@@ -1,0 +1,51 @@
+{
+  "approved_actual_checkpoint": "PASS",
+  "target_sha": {
+    "rejected": true,
+    "error": "migration source identity mismatch"
+  },
+  "ragged_effects_precision_transition": {
+    "rejected": true,
+    "error": "ragged effects precision migration mismatch"
+  },
+  "team_stats_lineage_id": {
+    "rejected": true,
+    "error": "statistics contract mismatch"
+  },
+  "ppo_config_hash": {
+    "rejected": true,
+    "error": "checkpoint model/PPO identity mismatch"
+  },
+  "runtime_blobs": {
+    "rejected": true,
+    "error": "migration runtime_blobs mismatch"
+  },
+  "token_lookup_backend": {
+    "rejected": true,
+    "error": "unauthorized arithmetic backend or safety transition"
+  },
+  "weights": {
+    "rejected": true,
+    "error": "checkpoint rank artifact corrupted"
+  },
+  "adam": {
+    "rejected": true,
+    "error": "checkpoint rank artifact corrupted"
+  },
+  "rng": {
+    "rejected": true,
+    "error": "checkpoint rank artifact corrupted"
+  },
+  "rank_missing": {
+    "rejected": true,
+    "error": "[Errno 2] No such file or directory: '/tmp/v2-tamper-nv655o_n/rank1.pt'"
+  },
+  "rank_altered": {
+    "rejected": true,
+    "error": "checkpoint rank artifact corrupted"
+  },
+  "manifest": {
+    "rejected": true,
+    "error": "wrong original checkpoint manifest"
+  }
+}

@@ -1,8 +1,8 @@
 # PokeAgent3.0 V2 — Training Source of Truth
 
-**READY_FOR_CUTOVER — 2026-10-15 KST. Production remains STOPPED at the user's explicit request.** Canonical `codex/pa3-v2-correctness` was ancestry-preserving fast-forwarded and pushed to the tested executable commit `0b7253cfd915ff61c88248b1979bd8e254285ef0`; subsequent changes are documentation/evidence only. No main/C-track change, destructive cleanup or production launch.
+**BLOCKED FOR PRODUCTION RESUME — 2026-10-15 KST. Production remains STOPPED.** Latest verified implementation and measured limits are in [the migration/stability/batch report](operations/V2_MIGRATION_STABILITY_BATCH_OPTIMIZATION_FINAL.md). Dedicated delivery branch: `codex/v2-migration-stability-batch`; tested optimized candidate `163a7c3e3a2af219f98de017d1fdb1b636d824e8`. Strict forced secondary audit rejected both ranks; the exact lookup activation is held back and delivered production profile retains gather. Original verified recovery boundary remains **57,344**; isolated diagnostic matches never advance production. The old rolling pointer remains 4,096; historical 102,400 failed boundary is excluded.
 
-Authority: immutable run/cutover manifest → verified checkpoint → versioned production profile → frozen observation/action contract → this index → historical research. Validated executable SHA `0b7253cfd915ff61c88248b1979bd8e254285ef0`. Final canonical documentation SHA and exact resume receipt are in the final local cutover manifest. Config semantic hash `7eec659435f3eacf6f9f0396c925f181eb107fb924b16c3da103420e3b46e5ec` (versioned relative-path profile; absolute executed profile hash recorded separately).
+Authority: immutable checkpoint and receipts → exact frozen source → versioned profile → frozen observation/action contract → this index → historical research. Config semantic hash `5f6579009dbad53339803f95b9e935fc33215cd15bb4953349ef05dc275c19bf`. Delivery HEAD-specific receipt and SHA are in the local `runs/v2_final_release/final_delivery/FINAL_DELIVERY.json`, generated after the documentation commit. No production restart, main merge, history rewrite or checkpoint modification occurred.
 
 Goal: strong Pokémon Champions Regulation M-C VGC doubles agent, native Rust/PyO3 battle engine, V2 Entity Transformer9,889,755 parameters, synchronous current/current scratch-origin PPO, target100M naturally completed matches. Both current-policy seats learn; one natural battle counted once. No search/LLM/teacher/historical mixture. Track C **DEFERRED_INDEFINITELY**, protected06dbb31 unchanged.
 
@@ -39,6 +39,8 @@ Goal: strong Pokémon Champions Regulation M-C VGC doubles agent, native Rust/Py
 | precision.stability | `"fp16-reduction-off"` |
 | precision.observation | `"fp16-round-continuous-then-fp32"` |
 | precision.encoder_amp | `true` |
+| precision.ragged_effects_fp32 | `true` |
+| precision.amp_overflow_retries | `3` |
 | precision.scorer_fp32 | `true` |
 | precision.gru_fp32 | `true` |
 | precision.recompute_gate | `true` |
@@ -47,6 +49,7 @@ Goal: strong Pokémon Champions Regulation M-C VGC doubles agent, native Rust/Py
 | precision.recompute_secondary | `true` |
 | precision.canonical_encoder_batch_rows | `1024` |
 | collector.batch_cache | `"cuda"` |
+| collector.token_lookup_backend | `"gather"` |
 | collector.compact_candidates | `true` |
 | collector.trim_observation_padding | `false` |
 | collector.columnar_store | `false` |
@@ -64,7 +67,7 @@ Goal: strong Pokémon Champions Regulation M-C VGC doubles agent, native Rust/Py
 | dataset.data | `"engine/data"` |
 | dataset.teams_sha256 | `"ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"` |
 
-Dual V100 PCIe32GiB at175W; deterministic CUDA workspace4096:8. Fixed physical1024-row AMP encoder groups stabilize batch arithmetic; internal padding never reaches action scoring or match counts. Model architecture/PPO math unchanged; actual1024-row gradients/Adam bitwise match baseline. Default gather active; both experimental lookup backends OFF. Primary.001 unchanged; secondary bounded provenance/replay/stable-FP32 proof mandatory on outliers. FP32 references remain independent, grouped versus truly isolated.
+Dual V100 PCIe32GiB at175W; deterministic CUDA workspace4096:8. Fixed physical1024-row AMP encoder groups stabilize batch arithmetic; internal padding never reaches action scoring or match counts. Model architecture/PPO math unchanged; actual1024-row gradients/Adam bitwise match baseline. The versioned production profile and ordinary unprofiled runs retain gather. Exact-order V100 lookup remains experimental and was NOT promoted after the strict secondary audit blocker. Backend changes require the explicit reviewed migration receipt. Flat embedding lookup stays OFF. Collective AMP retries reuse the identical minibatch, with at most three normal scaler backoffs and no Adam step on nonfinite gradients. Primary.001 unchanged; secondary bounded provenance/replay/stable-FP32 proof mandatory on outliers. FP32 references remain independent, grouped versus truly isolated.
 
 Frozen1220-team pool ID a10-p0-proposed-20261013, manifest SHA1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb, team SHAecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f. Observation/Action V2 semantic hashdd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35. Five ragged families,known masks,signed targets/roster mapping,player-visible boundaries. No official held-out split or unseen-team strength claim.
 

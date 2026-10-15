@@ -1,0 +1,122 @@
+[
+  {
+    "reference": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/migration_batch/retry_contract/sustained/rolling/generations/iter-000000061440-1792056131156095385",
+    "candidate": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/E_contract/sustained/rolling/generations/iter-000000061440-1792064046773277360",
+    "rank": 0,
+    "checks": {
+      "contracts": true,
+      "model": true,
+      "optimizer": true,
+      "scheduler": true,
+      "scaler": true,
+      "optimizer_steps": true,
+      "config": true,
+      "rng": true
+    }
+  },
+  {
+    "reference": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/migration_batch/retry_contract/sustained/rolling/generations/iter-000000061440-1792056131156095385",
+    "candidate": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/E_contract/sustained/rolling/generations/iter-000000061440-1792064046773277360",
+    "rank": 1,
+    "checks": {
+      "contracts": true,
+      "model": true,
+      "optimizer": true,
+      "scheduler": true,
+      "scaler": true,
+      "optimizer_steps": true,
+      "config": true,
+      "rng": true
+    }
+  },
+  {
+    "reference": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/migration_batch/retry_contract/sustained/rolling/generations/iter-000000065536-1792056247849600634",
+    "candidate": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/E_contract/sustained/rolling/generations/iter-000000065536-1792064144854282741",
+    "rank": 0,
+    "checks": {
+      "contracts": true,
+      "model": true,
+      "optimizer": true,
+      "scheduler": true,
+      "scaler": true,
+      "optimizer_steps": true,
+      "config": true,
+      "rng": true
+    }
+  },
+  {
+    "reference": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/migration_batch/retry_contract/sustained/rolling/generations/iter-000000065536-1792056247849600634",
+    "candidate": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/E_contract/sustained/rolling/generations/iter-000000065536-1792064144854282741",
+    "rank": 1,
+    "checks": {
+      "contracts": true,
+      "model": true,
+      "optimizer": true,
+      "scheduler": true,
+      "scaler": true,
+      "optimizer_steps": true,
+      "config": true,
+      "rng": true
+    }
+  },
+  {
+    "reference": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/migration_batch/retry_contract/sustained/rolling/generations/iter-000000069632-1792056337716619507",
+    "candidate": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/E_contract/sustained/rolling/generations/iter-000000069632-1792064224062670205",
+    "rank": 0,
+    "checks": {
+      "contracts": true,
+      "model": true,
+      "optimizer": true,
+      "scheduler": true,
+      "scaler": true,
+      "optimizer_steps": true,
+      "config": true,
+      "rng": true
+    }
+  },
+  {
+    "reference": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/migration_batch/retry_contract/sustained/rolling/generations/iter-000000069632-1792056337716619507",
+    "candidate": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/E_contract/sustained/rolling/generations/iter-000000069632-1792064224062670205",
+    "rank": 1,
+    "checks": {
+      "contracts": true,
+      "model": true,
+      "optimizer": true,
+      "scheduler": true,
+      "scaler": true,
+      "optimizer_steps": true,
+      "config": true,
+      "rng": true
+    }
+  },
+  {
+    "reference": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/migration_batch/retry_contract/sustained/rolling/generations/iter-000000073728-1792056437444156538",
+    "candidate": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/E_contract/sustained/rolling/generations/iter-000000073728-1792064316618806881",
+    "rank": 0,
+    "checks": {
+      "contracts": true,
+      "model": true,
+      "optimizer": true,
+      "scheduler": true,
+      "scaler": true,
+      "optimizer_steps": true,
+      "config": true,
+      "rng": true
+    }
+  },
+  {
+    "reference": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/migration_batch/retry_contract/sustained/rolling/generations/iter-000000073728-1792056437444156538",
+    "candidate": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/runs/v2_final_release/batch/E_contract/sustained/rolling/generations/iter-000000073728-1792064316618806881",
+    "rank": 1,
+    "checks": {
+      "contracts": true,
+      "model": true,
+      "optimizer": true,
+      "scheduler": true,
+      "scaler": true,
+      "optimizer_steps": true,
+      "config": true,
+      "rng": true
+    }
+  }
+]

@@ -34,13 +34,15 @@
     "stability": "fp16-reduction-off",
     "observation": "fp16-round-continuous-then-fp32",
     "encoder_amp": true,
+    "ragged_effects_fp32": true,
     "scorer_fp32": true,
     "gru_fp32": true,
     "recompute_gate": true,
     "tolerance": 0.001,
     "contract_version": "pa3-precision-D-v2",
     "recompute_secondary": true,
-    "canonical_encoder_batch_rows": 1024
+    "canonical_encoder_batch_rows": 1024,
+    "amp_overflow_retries": 3
   },
   "dataset": {
     "id": "a10-p0-proposed-20261013",
@@ -61,7 +63,8 @@
     "rolling_slots": false,
     "executor": "ddp",
     "world_size": 2,
-    "deterministic_diagnostic": true
+    "deterministic_diagnostic": true,
+    "token_lookup_backend": "gather"
   },
   "evaluation": {
     "lightweight_every_matches": 50000,

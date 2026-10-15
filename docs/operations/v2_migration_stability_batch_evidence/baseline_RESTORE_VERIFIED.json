@@ -1,0 +1,26 @@
+{
+  "classification": "BIT_EXACT",
+  "reference": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/migration_batch/retry_contract/sustained/rolling/generations/iter-000000073728-1792056437444156538",
+  "restored": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/migration_batch/retry_contract/restored_after_retry/rolling/generations/iter-000000073728-1792057443517136305",
+  "checks": {
+    "0": {
+      "learner": true,
+      "rng": true,
+      "accounting": true,
+      "collector_restart": true,
+      "rank_digests": true,
+      "dataset_manifest_hash": true,
+      "opponent_manifest": true
+    },
+    "1": {
+      "learner": true,
+      "rng": true,
+      "accounting": true,
+      "collector_restart": true,
+      "rank_digests": true,
+      "dataset_manifest_hash": true,
+      "opponent_manifest": true
+    }
+  },
+  "cooperative_stop": true
+}

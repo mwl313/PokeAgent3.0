@@ -1,0 +1,381 @@
+{
+  "source_sha": "163a7c3e3a2af219f98de017d1fdb1b636d824e8",
+  "iterations": [
+    {
+      "matches": 61440,
+      "games": 4096,
+      "rows": 91699,
+      "wall_s": 93.60928538699955,
+      "recompute_max": 9.5367431640625e-07,
+      "epochs": [
+        2,
+        2
+      ],
+      "steps": 46,
+      "retries": 0,
+      "skips": 0,
+      "strata": [
+        {
+          "kind0_branches4_actor1": {
+            "max_abs_diff": 9.5367431640625e-07,
+            "mean_abs_diff": 2.9305616067176743e-07,
+            "p99_abs_diff": 9.5367431640625e-07,
+            "rows": 96
+          },
+          "kind1_branches2_actor0": {
+            "max_abs_diff": 0.0,
+            "mean_abs_diff": 0.0,
+            "p99_abs_diff": 0.0,
+            "rows": 96
+          },
+          "kind1_branches2_actor1": {
+            "max_abs_diff": 9.5367431640625e-07,
+            "mean_abs_diff": 1.986821445143505e-07,
+            "p99_abs_diff": 9.5367431640625e-07,
+            "rows": 96
+          },
+          "kind2_branches1_actor0": {
+            "max_abs_diff": 0.0,
+            "mean_abs_diff": 0.0,
+            "p99_abs_diff": 0.0,
+            "rows": 96
+          },
+          "kind2_branches1_actor1": {
+            "max_abs_diff": 6.556510925292969e-07,
+            "mean_abs_diff": 1.819183381712719e-07,
+            "p99_abs_diff": 5.990267482047784e-07,
+            "rows": 96
+          },
+          "kind2_branches2_actor1": {
+            "max_abs_diff": 4.172325134277344e-07,
+            "mean_abs_diff": 7.388492662130375e-08,
+            "p99_abs_diff": 3.606081691032159e-07,
+            "rows": 96
+          }
+        },
+        {
+          "kind0_branches4_actor1": {
+            "max_abs_diff": 9.5367431640625e-07,
+            "mean_abs_diff": 3.452102248502342e-07,
+            "p99_abs_diff": 9.5367431640625e-07,
+            "rows": 96
+          },
+          "kind1_branches2_actor0": {
+            "max_abs_diff": 0.0,
+            "mean_abs_diff": 0.0,
+            "p99_abs_diff": 0.0,
+            "rows": 96
+          },
+          "kind1_branches2_actor1": {
+            "max_abs_diff": 9.5367431640625e-07,
+            "mean_abs_diff": 1.601874828338623e-07,
+            "p99_abs_diff": 9.5367431640625e-07,
+            "rows": 96
+          },
+          "kind2_branches1_actor0": {
+            "max_abs_diff": 0.0,
+            "mean_abs_diff": 0.0,
+            "p99_abs_diff": 0.0,
+            "rows": 96
+          },
+          "kind2_branches1_actor1": {
+            "max_abs_diff": 4.76837158203125e-07,
+            "mean_abs_diff": 1.3162691914203606e-07,
+            "p99_abs_diff": 4.2021281387860654e-07,
+            "rows": 96
+          },
+          "kind2_branches2_actor1": {
+            "max_abs_diff": 3.5762786865234375e-07,
+            "mean_abs_diff": 6.581345957101803e-08,
+            "p99_abs_diff": 3.010035243278253e-07,
+            "rows": 96
+          }
+        }
+      ]
+    },
+    {
+      "matches": 65536,
+      "games": 4096,
+      "rows": 92460,
+      "wall_s": 97.02653093299887,
+      "recompute_max": 1.430511474609375e-06,
+      "epochs": [
+        2,
+        2
+      ],
+      "steps": 46,
+      "retries": 0,
+      "skips": 0,
+      "strata": [
+        {
+          "kind0_branches4_actor1": {
+            "max_abs_diff": 1.430511474609375e-06,
+            "mean_abs_diff": 3.7501254723792954e-07,
+            "p99_abs_diff": 1.430511474609375e-06,
+            "rows": 96
+          },
+          "kind1_branches2_actor0": {
+            "max_abs_diff": 0.0,
+            "mean_abs_diff": 0.0,
+            "p99_abs_diff": 0.0,
+            "rows": 96
+          },
+          "kind1_branches2_actor1": {
+            "max_abs_diff": 1.430511474609375e-06,
+            "mean_abs_diff": 1.7695128917694092e-07,
+            "p99_abs_diff": 1.430511474609375e-06,
+            "rows": 96
+          },
+          "kind2_branches1_actor0": {
+            "max_abs_diff": 0.0,
+            "mean_abs_diff": 0.0,
+            "p99_abs_diff": 0.0,
+            "rows": 96
+          },
+          "kind2_branches1_actor1": {
+            "max_abs_diff": 7.748603820800781e-07,
+            "mean_abs_diff": 2.5394061253791733e-07,
+            "p99_abs_diff": 7.182360377555597e-07,
+            "rows": 96
+          },
+          "kind2_branches2_actor1": {
+            "max_abs_diff": 7.748603820800781e-07,
+            "mean_abs_diff": 1.0989606380462646e-07,
+            "p99_abs_diff": 4.91738603614067e-07,
+            "rows": 96
+          }
+        },
+        {
+          "kind0_branches4_actor1": {
+            "max_abs_diff": 1.430511474609375e-06,
+            "mean_abs_diff": 3.998478348421486e-07,
+            "p99_abs_diff": 1.430511474609375e-06,
+            "rows": 96
+          },
+          "kind1_branches2_actor0": {
+            "max_abs_diff": 0.0,
+            "mean_abs_diff": 0.0,
+            "p99_abs_diff": 0.0,
+            "rows": 96
+          },
+          "kind1_branches2_actor1": {
+            "max_abs_diff": 1.1920928955078125e-06,
+            "mean_abs_diff": 2.123415470123291e-07,
+            "p99_abs_diff": 9.655955182097387e-07,
+            "rows": 96
+          },
+          "kind2_branches1_actor0": {
+            "max_abs_diff": 0.0,
+            "mean_abs_diff": 0.0,
+            "p99_abs_diff": 0.0,
+            "rows": 96
+          },
+          "kind2_branches1_actor1": {
+            "max_abs_diff": 7.748603820800781e-07,
+            "mean_abs_diff": 1.999239174210743e-07,
+            "p99_abs_diff": 7.182360377555597e-07,
+            "rows": 96
+          },
+          "kind2_branches2_actor1": {
+            "max_abs_diff": 5.364418029785156e-07,
+            "mean_abs_diff": 1.3224780559539795e-07,
+            "p99_abs_diff": 4.798174586539972e-07,
+            "rows": 96
+          }
+        }
+      ]
+    },
+    {
+      "matches": 69632,
+      "games": 4096,
+      "rows": 94105,
+      "wall_s": 79.39732172499862,
+      "recompute_max": 1.9073486328125e-06,
+      "epochs": [
+        1,
+        1
+      ],
+      "steps": 24,
+      "retries": 1,
+      "skips": 0,
+      "strata": [
+        {
+          "kind0_branches4_actor1": {
+            "max_abs_diff": 1.9073486328125e-06,
+            "mean_abs_diff": 3.7997961044311523e-07,
+            "p99_abs_diff": 1.0013588962465292e-06,
+            "rows": 96
+          },
+          "kind1_branches2_actor0": {
+            "max_abs_diff": 0.0,
+            "mean_abs_diff": 0.0,
+            "p99_abs_diff": 0.0,
+            "rows": 96
+          },
+          "kind1_branches2_actor1": {
+            "max_abs_diff": 1.9073486328125e-06,
+            "mean_abs_diff": 3.5762786865234375e-07,
+            "p99_abs_diff": 1.9073486328125e-06,
+            "rows": 96
+          },
+          "kind2_branches1_actor0": {
+            "max_abs_diff": 0.0,
+            "mean_abs_diff": 0.0,
+            "p99_abs_diff": 0.0,
+            "rows": 96
+          },
+          "kind2_branches1_actor1": {
+            "max_abs_diff": 9.5367431640625e-07,
+            "mean_abs_diff": 2.4400651454925537e-07,
+            "p99_abs_diff": 7.271768822647573e-07,
+            "rows": 96
+          },
+          "kind2_branches2_actor1": {
+            "max_abs_diff": 5.364418029785156e-07,
+            "mean_abs_diff": 1.384566274964527e-07,
+            "p99_abs_diff": 4.798174586539972e-07,
+            "rows": 96
+          }
+        },
+        {
+          "kind0_branches4_actor1": {
+            "max_abs_diff": 1.9073486328125e-06,
+            "mean_abs_diff": 4.544854164123535e-07,
+            "p99_abs_diff": 1.9073486328125e-06,
+            "rows": 96
+          },
+          "kind1_branches2_actor0": {
+            "max_abs_diff": 0.0,
+            "mean_abs_diff": 0.0,
+            "p99_abs_diff": 0.0,
+            "rows": 96
+          },
+          "kind1_branches2_actor1": {
+            "max_abs_diff": 1.430511474609375e-06,
+            "mean_abs_diff": 2.253800630569458e-07,
+            "p99_abs_diff": 9.775166063263896e-07,
+            "rows": 96
+          },
+          "kind2_branches1_actor0": {
+            "max_abs_diff": 0.0,
+            "mean_abs_diff": 0.0,
+            "p99_abs_diff": 0.0,
+            "rows": 96
+          },
+          "kind2_branches1_actor1": {
+            "max_abs_diff": 1.0132789611816406e-06,
+            "mean_abs_diff": 2.4090209649330063e-07,
+            "p99_abs_diff": 7.867815270401479e-07,
+            "rows": 96
+          },
+          "kind2_branches2_actor1": {
+            "max_abs_diff": 4.76837158203125e-07,
+            "mean_abs_diff": 1.2417633854511223e-07,
+            "p99_abs_diff": 4.76837158203125e-07,
+            "rows": 96
+          }
+        }
+      ]
+    },
+    {
+      "matches": 73728,
+      "games": 4096,
+      "rows": 112444,
+      "wall_s": 91.2829452779988,
+      "recompute_max": 1.9073486328125e-06,
+      "epochs": [
+        1,
+        1
+      ],
+      "steps": 28,
+      "retries": 0,
+      "skips": 0,
+      "strata": [
+        {
+          "kind0_branches4_actor1": {
+            "max_abs_diff": 1.430511474609375e-06,
+            "mean_abs_diff": 3.97364289028701e-07,
+            "p99_abs_diff": 1.430511474609375e-06,
+            "rows": 96
+          },
+          "kind1_branches2_actor0": {
+            "max_abs_diff": 0.0,
+            "mean_abs_diff": 0.0,
+            "p99_abs_diff": 0.0,
+            "rows": 96
+          },
+          "kind1_branches2_actor1": {
+            "max_abs_diff": 9.5367431640625e-07,
+            "mean_abs_diff": 2.4586915969848633e-07,
+            "p99_abs_diff": 9.5367431640625e-07,
+            "rows": 96
+          },
+          "kind2_branches1_actor0": {
+            "max_abs_diff": 0.0,
+            "mean_abs_diff": 0.0,
+            "p99_abs_diff": 0.0,
+            "rows": 96
+          },
+          "kind2_branches1_actor1": {
+            "max_abs_diff": 7.748603820800781e-07,
+            "mean_abs_diff": 2.4462738679176255e-07,
+            "p99_abs_diff": 7.182360377555597e-07,
+            "rows": 96
+          },
+          "kind2_branches2_actor1": {
+            "max_abs_diff": 5.364418029785156e-07,
+            "mean_abs_diff": 1.1983017600414314e-07,
+            "p99_abs_diff": 5.364418029785156e-07,
+            "rows": 96
+          }
+        },
+        {
+          "kind0_branches4_actor1": {
+            "max_abs_diff": 1.9073486328125e-06,
+            "mean_abs_diff": 4.3213367462158203e-07,
+            "p99_abs_diff": 1.4543537645295146e-06,
+            "rows": 96
+          },
+          "kind1_branches2_actor0": {
+            "max_abs_diff": 0.0,
+            "mean_abs_diff": 0.0,
+            "p99_abs_diff": 0.0,
+            "rows": 96
+          },
+          "kind1_branches2_actor1": {
+            "max_abs_diff": 1.430511474609375e-06,
+            "mean_abs_diff": 3.11682612164077e-07,
+            "p99_abs_diff": 1.430511474609375e-06,
+            "rows": 96
+          },
+          "kind2_branches1_actor0": {
+            "max_abs_diff": 0.0,
+            "mean_abs_diff": 0.0,
+            "p99_abs_diff": 0.0,
+            "rows": 96
+          },
+          "kind2_branches1_actor1": {
+            "max_abs_diff": 9.5367431640625e-07,
+            "mean_abs_diff": 2.1109978831646004e-07,
+            "p99_abs_diff": 7.271768822647573e-07,
+            "rows": 96
+          },
+          "kind2_branches2_actor1": {
+            "max_abs_diff": 4.76837158203125e-07,
+            "mean_abs_diff": 1.1858841020284672e-07,
+            "p99_abs_diff": 4.76837158203125e-07,
+            "rows": 96
+          }
+        }
+      ]
+    }
+  ],
+  "completed_iterations": 4,
+  "accepted_diagnostic_matches": 16384,
+  "weighted_games_per_s": 45.34533821278485,
+  "production_matches_added": 0,
+  "recompute_max": 1.9073486328125e-06,
+  "optimizer_steps": 144,
+  "overflow_retries": 1,
+  "skips": 0
+}

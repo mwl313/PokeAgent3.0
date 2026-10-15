@@ -1,0 +1,36 @@
+{
+  "source_sha": "163a7c3e3a2af219f98de017d1fdb1b636d824e8",
+  "artifact_sha256": "b3ba7954d6ef380ab5de26dc4daa82a201451ca1e5ad63206fc6d0fd51076718",
+  "canonical_rows": 1024,
+  "tolerance": 0.001,
+  "logprobs": {
+    "original_actor": -3.0092737674713135,
+    "sampled_learner": -3.0092740058898926,
+    "rows1_position0": -3.009275436401367,
+    "rows17_position0": -3.0092740058898926,
+    "rows17_position16": -3.0092740058898926,
+    "rows576_position0": -3.0092740058898926,
+    "rows576_position575": -3.0092740058898926,
+    "rows1024_position0": -3.0092740058898926,
+    "rows1024_position1023": -3.0092740058898926,
+    "rows1025_position0": -3.0092740058898926,
+    "rows1025_position1024": -3.0092740058898926
+  },
+  "differences": {
+    "original_actor": 0.0,
+    "sampled_learner": 2.384185791015625e-07,
+    "rows1_position0": 1.6689300537109375e-06,
+    "rows17_position0": 2.384185791015625e-07,
+    "rows17_position16": 2.384185791015625e-07,
+    "rows576_position0": 2.384185791015625e-07,
+    "rows576_position575": 2.384185791015625e-07,
+    "rows1024_position0": 2.384185791015625e-07,
+    "rows1024_position1023": 2.384185791015625e-07,
+    "rows1025_position0": 2.384185791015625e-07,
+    "rows1025_position1024": 2.384185791015625e-07
+  },
+  "max_difference": 1.6689300537109375e-06,
+  "historical_stored_rollout_max": 0.0029621124267578125,
+  "historical_rollout_rejected": true,
+  "optimizer_updates": 0
+}

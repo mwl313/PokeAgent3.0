@@ -1,0 +1,208 @@
+{
+  "source_sha": "efc897eecc1fe54ab1f4c0b4b46ea8d424215d96",
+  "accepted_diagnostic_matches": 40960,
+  "production_matches_added": 0,
+  "iterations": [
+    {
+      "iteration": 15,
+      "matches": 61440,
+      "games": 4096,
+      "rows": 91699,
+      "wall_s": 105.45880170500095,
+      "recompute_max": 9.5367431640625e-07,
+      "epochs": [
+        2,
+        2
+      ],
+      "stopped_early": false,
+      "epoch_kl": [
+        0.012804723553433685,
+        0.010949949949484353
+      ],
+      "steps": 46,
+      "retries": 0,
+      "skips": 0
+    },
+    {
+      "iteration": 16,
+      "matches": 65536,
+      "games": 4096,
+      "rows": 92460,
+      "wall_s": 115.95041246699839,
+      "recompute_max": 1.430511474609375e-06,
+      "epochs": [
+        2,
+        2
+      ],
+      "stopped_early": true,
+      "epoch_kl": [
+        0.029596657421775942,
+        0.044319130142774395
+      ],
+      "steps": 46,
+      "retries": 0,
+      "skips": 0
+    },
+    {
+      "iteration": 17,
+      "matches": 69632,
+      "games": 4096,
+      "rows": 94105,
+      "wall_s": 88.8108699910008,
+      "recompute_max": 1.9073486328125e-06,
+      "epochs": [
+        1,
+        1
+      ],
+      "stopped_early": true,
+      "epoch_kl": [
+        0.08934350755709271
+      ],
+      "steps": 24,
+      "retries": 1,
+      "skips": 0
+    },
+    {
+      "iteration": 18,
+      "matches": 73728,
+      "games": 4096,
+      "rows": 112444,
+      "wall_s": 99.82747646500138,
+      "recompute_max": 1.9073486328125e-06,
+      "epochs": [
+        1,
+        1
+      ],
+      "stopped_early": true,
+      "epoch_kl": [
+        0.15193326852893776
+      ],
+      "steps": 28,
+      "retries": 0,
+      "skips": 0
+    },
+    {
+      "iteration": 19,
+      "matches": 77824,
+      "games": 4096,
+      "rows": 93056,
+      "wall_s": 79.84780010399845,
+      "recompute_max": 1.6689300537109375e-06,
+      "epochs": [
+        1,
+        1
+      ],
+      "stopped_early": true,
+      "epoch_kl": [
+        0.051406859654464
+      ],
+      "steps": 23,
+      "retries": 0,
+      "skips": 0
+    },
+    {
+      "iteration": 20,
+      "matches": 81920,
+      "games": 4096,
+      "rows": 98156,
+      "wall_s": 90.8936847240002,
+      "recompute_max": 1.9073486328125e-06,
+      "epochs": [
+        1,
+        1
+      ],
+      "stopped_early": true,
+      "epoch_kl": [
+        0.06462077761290515
+      ],
+      "steps": 25,
+      "retries": 0,
+      "skips": 0
+    },
+    {
+      "iteration": 21,
+      "matches": 86016,
+      "games": 4096,
+      "rows": 93082,
+      "wall_s": 112.20632875400042,
+      "recompute_max": 2.6226043701171875e-06,
+      "epochs": [
+        2,
+        2
+      ],
+      "stopped_early": true,
+      "epoch_kl": [
+        0.017061917701378337,
+        0.06949597229044345
+      ],
+      "steps": 46,
+      "retries": 0,
+      "skips": 0
+    },
+    {
+      "iteration": 22,
+      "matches": 90112,
+      "games": 4096,
+      "rows": 87606,
+      "wall_s": 99.58409447400118,
+      "recompute_max": 9.5367431640625e-07,
+      "epochs": [
+        2,
+        2
+      ],
+      "stopped_early": false,
+      "epoch_kl": [
+        0.012619212747330879,
+        0.012425729296970054
+      ],
+      "steps": 44,
+      "retries": 0,
+      "skips": 0
+    },
+    {
+      "iteration": 23,
+      "matches": 94208,
+      "games": 4096,
+      "rows": 87269,
+      "wall_s": 102.42799372900117,
+      "recompute_max": 1.1920928955078125e-06,
+      "epochs": [
+        2,
+        2
+      ],
+      "stopped_early": false,
+      "epoch_kl": [
+        0.015433626366832374,
+        0.015844329428433928
+      ],
+      "steps": 44,
+      "retries": 0,
+      "skips": 0
+    },
+    {
+      "iteration": 24,
+      "matches": 98304,
+      "games": 4096,
+      "rows": 84224,
+      "wall_s": 92.56592444499984,
+      "recompute_max": 1.9073486328125e-06,
+      "epochs": [
+        2,
+        2
+      ],
+      "stopped_early": false,
+      "epoch_kl": [
+        0.028956509648903596,
+        0.011737442600648795
+      ],
+      "steps": 42,
+      "retries": 0,
+      "skips": 0
+    }
+  ],
+  "weighted_games_per_s": 41.4753987349898,
+  "recompute_max": 2.6226043701171875e-06,
+  "optimizer_steps": 368,
+  "overflow_retries": 1,
+  "skips": 0
+}

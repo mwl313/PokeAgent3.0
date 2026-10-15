@@ -1,3 +1,5 @@
+> Latest status — 2026-10-15: **BLOCKED / PRODUCTION STOPPED**. The forced secondary audit rejects absolute FP16/FP32 drift under the unchanged0.001 limit. See [the final migration/stability/batch report](V2_MIGRATION_STABILITY_BATCH_OPTIMIZATION_FINAL.md). The historical readiness assessment below is preserved as prior evidence.
+
 # Final training readiness
 
 **READY_FOR_CUTOVER — 2026-10-15 KST. Production remains STOPPED at the user's explicit request.** Canonical `codex/pa3-v2-correctness` was ancestry-preserving fast-forwarded and pushed to the tested executable commit `0b7253cfd915ff61c88248b1979bd8e254285ef0`; subsequent changes are documentation/evidence only. No main/C-track change, destructive cleanup or production launch.
