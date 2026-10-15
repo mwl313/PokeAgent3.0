@@ -1,0 +1,20 @@
+....F..................................................                  [100%]
+=================================== FAILURES ===================================
+_______________________ test_no_milestone_clock_relabel ________________________
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ModuleNotFoundError: No module named 'scripts.a10_league_discover.shutil'; 'scripts.a10_league_discover' is not a package
+
+The above exception was the direct cause of the following exception:
+tests/agent/test_a10_2_league.py:37: in test_no_milestone_clock_relabel
+    monkeypatch.setattr('scripts.a10_league_discover.shutil.disk_usage',lambda p:SimpleNamespace(free=100*2**30))
+../PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/lib/python3.12/site-packages/_pytest/monkeypatch.py:107: in derive_importpath
+    target = resolve(module)
+             ^^^^^^^^^^^^^^^
+../PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/lib/python3.12/site-packages/_pytest/monkeypatch.py:88: in resolve
+    raise ImportError(f"import error in {used}: {ex}") from ex
+E   ImportError: import error in scripts.a10_league_discover.shutil: No module named 'scripts.a10_league_discover.shutil'; 'scripts.a10_league_discover' is not a package
+=========================== short test summary info ============================
+FAILED tests/agent/test_a10_2_league.py::test_no_milestone_clock_relabel - Im...
+1 failed, 54 passed in 8.91s

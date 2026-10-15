@@ -1,0 +1,11 @@
+# Strict V2 migration — implementation and validation
+
+Versioned pathway: pa3-v2-reviewed-release-migration-v1. It is restricted to source5ccc51b, exact57344/iteration14 manifest b9539f3a0c426f0878375b61630cb4de9dcd2a5d4a6a59858b4d64f4287fd424, both immutable rank hashes, original native binary8f3643a9..., dataset/action/model/PPO contracts, exact target Git tree and clean runtime, unchanged training/collector/evaluation profile sections and precision except prospective secondary activation.
+
+Changes classified: owned blocks/candidates/ragged reconstruction/H2D/scorer gather restructuring are performance; fresh semantic validations are validation-only; exact/flat GPU lookup files are unreachable default-OFF experimental code; secondary profile flag is execution configuration; launcher migration/collective gate/evidence bounds are safety instrumentation. Engine/dataset/model architecture/semantic contract/PPO learner/losses/scheduler remain unchanged. Every changed executable file must be explicitly reviewed and its target Git blob bound in the receipt. No mathematical or public-information change authorized.
+
+Baseline independent CPU process executes frozen5ccc51b against captured real V2 inputs; optimized same-shape CPU process gives bitwise representation/loss/gradient/full-step Adam/model digests. Original full learner payloads already restore exactly; startup verifies actual restored model and Adam digests, scheduler/scaler/step counters and all owned RNG. No historical actor groups are synthesized.
+
+Diagnostic statistics preserve the historical logical run identity but write new receipts only under an exactly receipt-authorized isolated root. Old content-addressed receipts remain immutable inputs. This separates namespace isolation from the preserved match clock. Original campaign is not advanced by diagnostic games.
+
+Negative unit tests reject source/target/checkpoint/rank/runtime/native/semantic/backend/config changes and missing independent proofs. Runtime also verifies original artifact and dataset bytes, peer envelope contracts and ledger. Migration activation false→true applies only to future actor groups; historical checkpoint metadata stays false. Receipt target is an exact SHA, never a branch wildcard.

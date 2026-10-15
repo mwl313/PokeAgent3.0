@@ -6,7 +6,7 @@ from agent.types.observation import ObservationBatch
 
 
 def test_precision_modes_are_explicit_and_versioned():
-    assert get_precision_contract("A").identity == "pa3-precision-A-v1"
+    assert get_precision_contract("A").identity == "pa3-precision-A-v2"
     assert not get_precision_contract("A").quantize_observation
     assert get_precision_contract("C").quantize_observation
     assert get_precision_contract("D").scorer_amp is False
@@ -27,7 +27,7 @@ def test_canonical_fp16_observation_preserves_non_float_fields():
 def test_model_precision_configuration_is_reversible():
     model = build_model(PA3Config())
     model.configure_precision("C")
-    assert model.precision_contract.identity == "pa3-precision-C-v1"
-    assert model.scorer.precision_contract.identity == "pa3-precision-C-v1"
+    assert model.precision_contract.identity == "pa3-precision-C-v2"
+    assert model.scorer.precision_contract.identity == "pa3-precision-C-v2"
     model.configure_precision("A")
-    assert model.precision_contract.identity == "pa3-precision-A-v1"
+    assert model.precision_contract.identity == "pa3-precision-A-v2"

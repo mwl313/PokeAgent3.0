@@ -120,9 +120,8 @@ def test_token_bounds_propagate_without_entering_the_wire_schema():
     compact = observation.to_compact_numpy()
     assert not any("limit" in key or "stamp" in key for key in compact)
     assert ObservationBatch.from_compact_numpy(compact).validated_token_limit == 88
-    payload = {entry.name: getattr(observation, entry.name).numpy()
-               for entry in fields(observation) if isinstance(getattr(observation, entry.name), torch.Tensor)}
-    assert ObservationBatch.from_native_payload(payload).validated_token_limit == 88
+    payload = observation.to_compact_numpy()
+    assert ObservationBatch.from_compact_numpy(payload).validated_token_limit == 88
     assert all("limit" not in entry.name and "stamp" not in entry.name for entry in fields(observation))
 
 
@@ -162,7 +161,7 @@ def test_inference_tensor_without_version_counter_uses_full_path(model_factory):
 def test_numpy_payload_and_compact_exports_cannot_mutate_verified_masks():
     observation = ObservationBatch.dummy(1)
     payload = observation.to_compact_numpy()
-    adapted = ObservationBatch.from_native_payload(payload)
+    adapted = ObservationBatch.from_compact_numpy(payload)
     assert adapted.validated_token_limit == 88
     payload["token_mask"][0, 95] = True
     assert not bool(observation.token_mask[0, 95])

@@ -102,12 +102,13 @@ def _publish_completed_rolling_boundary(args, store, published_keys):
             return None
         team_receipts = []
         if args.team_stats_root:
+            team_stats_identity = migration_statistics_identity(args, envelopes[0].get("experiment",{}).get("source_migration"))
             from agent.analysis.team_stats import reconcile, run_identity
             if any(not e.get('team_stats_receipts') for e in envelopes.values()):
                 raise RuntimeError('checkpoint missing required team statistics')
             team_receipts = [ref for e in envelopes.values() for ref in e['team_stats_receipts']]
             reconcile(team_receipts, committed_matches=committed,
-                      run_id=run_identity(args.team_stats_root))
+                      run_id=team_stats_identity)
         generation_name = f"iter-{committed:012d}"
         for ready in store.generations_ready():
             try:
@@ -182,6 +183,7 @@ def parse_args(argv=None):
     parser.add_argument("--teams", default=os.path.join(ROOT, "engine", "data", "training-teams.json"))
     parser.add_argument("--report", default=os.path.join(ROOT, "runs", "perf", "v4_ddp.json"))
     parser.add_argument("--checkpoint", default="")
+    parser.add_argument("--rolling-keep-generations", type=int, default=3, help="retain at least three full generations; increase to preserve diagnostic history")
     parser.add_argument("--team-stats-root", default="", help="opt-in checkpoint-bound V2 natural-match statistics")
     parser.add_argument("--checkpoint-first-iteration", action="store_true",
                         help="also publish the first scratch boundary without changing the regular interval")
@@ -329,8 +331,32 @@ def free_port() -> int:
         return handle.getsockname()[1]
 
 
-def validate_secondary_restore(experiment, args):
+def verify_recompute_ranks(result, device):
+    """No rank enters PPO when any peer rejects its independent proof."""
+    import torch.distributed as dist
+    accepted = torch.tensor(int(bool(result["within_gate"])),device=device)
+    dist.all_reduce(accepted,op=dist.ReduceOp.MIN)
+    result["all_ranks_accepted"] = bool(accepted.item())
+    if not result["all_ranks_accepted"]:
+        result["within_gate"] = False
+    return result
+
+
+def migration_statistics_identity(args, migration):
+    from agent.analysis.team_stats import run_identity
+    if migration and migration.get('scope')=='pa3-v2-reviewed-release-migration-v1':
+        if os.path.abspath(args.team_stats_root)!=migration['team_stats_root']:
+            raise RuntimeError('statistics migration namespace mismatch')
+        return migration['team_stats_lineage_id']
+    return run_identity(args.team_stats_root)
+
+
+def validate_secondary_restore(experiment, args, migration=None):
     if bool(experiment.get("recompute_secondary", False)) != bool(args.recompute_secondary):
+        if (not experiment.get("recompute_secondary", False) and args.recompute_secondary
+                and migration and migration.get('scope')=='pa3-v2-reviewed-release-migration-v1'
+                and migration.get('secondary_activation')=={'historical':False,'future':True}):
+            return
         raise RuntimeError("checkpoint recompute-secondary contract mismatch; reviewed migration required")
 
 
@@ -684,7 +710,6 @@ def worker(args) -> None:
             raise RuntimeError("effective CUDA FP16 reduction setting does not match D1 contract")
         saved_experiment=resume_envelope.get('experiment',{})
         validate_lookup_restore(saved_experiment,args)
-        validate_secondary_restore(saved_experiment,args)
         if 'cublas_workspace_config' in saved_experiment:
             if saved_experiment['cublas_workspace_config']!=os.environ.get('CUBLAS_WORKSPACE_CONFIG'):
                 raise RuntimeError('checkpoint CUDA workspace execution contract mismatch')
@@ -716,6 +741,7 @@ def worker(args) -> None:
                 raise RuntimeError("source SHA mismatch; pass --experimental-allow-source-sha only for the recorded A3 source")
             expected_source_sha = recorded_source_sha
             note(f"explicit checkpoint migration: {recorded_source_sha} -> {source_sha}")
+        validate_secondary_restore(saved_experiment,args,source_migration)
         restore_opponents = opponent_manifest
         if resume_envelope.get("opponent_manifest") != opponent_manifest:
             old_manifest = resume_envelope.get("opponent_manifest", {})
@@ -791,6 +817,7 @@ def worker(args) -> None:
         if dataset_identity != dict(teams='ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f',
                                     manifest='1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb', team_count=1220):
             raise RuntimeError('V2 team statistics require the authoritative frozen 1220-team dataset')
+        team_stats_identity = migration_statistics_identity(args,source_migration)
         identities = [None] * world_size
         dist.all_gather_object(identities, dataset_identity)
         if any(identity != identities[0] for identity in identities):
@@ -805,13 +832,13 @@ def worker(args) -> None:
                 raise RuntimeError('cannot resume team statistics without prior checkpoint receipts')
             for ref in team_receipts:
                 value = load_team_stats(ref)
-                if value['rank'] != rank or value['run_id'] != run_identity(args.team_stats_root):
+                if value['rank'] != rank or value['run_id'] != team_stats_identity:
                     raise RuntimeError('team statistics resume identity mismatch')
             from agent.analysis.team_stats import reconcile
             rank_receipts = [None] * world_size
             dist.all_gather_object(rank_receipts, team_receipts)
             reconcile([ref for refs in rank_receipts for ref in refs],
-                      committed_matches=global_games, run_id=run_identity(args.team_stats_root))
+                      committed_matches=global_games, run_id=team_stats_identity)
     iterations = []
     torch.cuda.synchronize(device)
     startup_wall = time.perf_counter() - worker_started
@@ -869,6 +896,7 @@ def worker(args) -> None:
                              f"iteration{absolute_iteration + 1}.recompute.pt")
             recompute = recompute_check(learner, buffer, device, amp=True, audit=args.recompute_audit,
                                         secondary=args.recompute_secondary, evidence_path=evidence_path)
+            verify_recompute_ranks(recompute,device)
             finish_stage("recompute_wall_s", stage_started)
             note(
                 f"recompute gate: {recompute['rows']} rows max|diff|="
@@ -926,7 +954,7 @@ def worker(args) -> None:
             if team_accumulator.matches != collector.stats.games:
                 raise RuntimeError('natural match statistics disagree with collector')
             receipt = team_accumulator.receipt(
-                run_id=run_identity(args.team_stats_root), rank=rank,
+                run_id=team_stats_identity, rank=rank,
                 iteration=absolute_iteration + 1, attempt_id=stats_attempt, source_sha=source_sha,
                 dataset_manifest_sha256=dataset_manifest_hash, team_file_sha256=hash_file(args.teams),
                 start_matches=iteration_start_matches, end_matches=global_games)
@@ -1223,7 +1251,7 @@ def parent(args) -> None:
             if not args.experimental_checkpoint:
                 raise RuntimeError("--rolling-checkpoint-root requires --experimental-checkpoint")
             from agent.ppo.storage_manager import CheckpointGenerationStore
-            rolling_store = CheckpointGenerationStore(os.path.abspath(args.rolling_checkpoint_root))
+            rolling_store = CheckpointGenerationStore(os.path.abspath(args.rolling_checkpoint_root),keep_generations=args.rolling_keep_generations)
         while any(proc.poll() is None for _, proc in procs):
             # A failed correctness gate must not leave its peer blocked in a
             # collective until the full process-group timeout expires.
@@ -1266,7 +1294,7 @@ def parent(args) -> None:
             results.append(json.load(handle))
     if args.rolling_checkpoint_root:
         from agent.ppo.storage_manager import CheckpointGenerationStore
-        store = CheckpointGenerationStore(os.path.abspath(args.rolling_checkpoint_root))
+        store = CheckpointGenerationStore(os.path.abspath(args.rolling_checkpoint_root),keep_generations=args.rolling_keep_generations)
         _publish_completed_rolling_boundary(args, store, set())
     expected_execution = {
         "batch_cache": args.batch_cache,

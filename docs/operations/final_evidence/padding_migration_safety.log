@@ -1,0 +1,13 @@
+F............................................................            [100%]
+=================================== FAILURES ===================================
+____ test_candidate_padding_preserves_objective_and_all_gradients[False-6] _____
+tests/agent/test_candidate_padding.py:88: in test_candidate_padding_preserves_objective_and_all_gradients
+    torch.testing.assert_close(updated[0][name],updated[1][name],rtol=2e-5,atol=2e-7,msg=lambda text:name+' '+text)
+E   AssertionError: scorer.query_projection.weight Tensor-likes are not close!
+E   
+E   Mismatched elements: 1 / 4096 (0.0%)
+E   Greatest absolute difference: 8.182250894606113e-07 at index (27, 22) (up to 2e-07 allowed)
+E   Greatest relative difference: 0.002249067649245262 at index (27, 22) (up to 2e-05 allowed)
+=========================== short test summary info ============================
+FAILED tests/agent/test_candidate_padding.py::test_candidate_padding_preserves_objective_and_all_gradients[False-6]
+1 failed, 60 passed in 9.53s

@@ -51,7 +51,7 @@ def test_learner_state_dict_round_trip_restores_identical_outputs(model_factory)
     learner.scheduler.step_to(1_000_000)
     state = learner.state_dict()
 
-    clone_model = model_factory(seed=77)
+    clone_model = model_factory(config=model.config)
     clone = PPOLearner(
         clone_model, PPOConfig(global_minibatch_size=4, microbatch_size=4), amp=False
     )

@@ -181,10 +181,11 @@ def test_all_illegal_mask_is_never_sampled_or_used(model_factory):
     # Sampling path: a branch that is marked invalid may carry an all-masked
     # candidate row without producing NaN or consuming an illegal action.
     observation = ObservationBatch.dummy(1)
+    from pa3_test_util import pick_action
     branches = preview_branches()
     first_size = len(branches[0].tuples())
     illegal = CandidateSet.from_tuples(
-        [move_action(0, index) for index in range(first_size)],
+        [pick_action(0, index) for index in range(first_size)],
         [False] * first_size,
     )
     request = make_request(observation, (illegal,) + tuple(branches[1:]), kind=RequestKind.PREVIEW)
@@ -202,7 +203,7 @@ def test_model_regularizers_reach_scorer_and_keep_scalar_parity(model_factory):
     model = model_factory(seed=11)
     observation = ObservationBatch.dummy(1)
     first = CandidateSet.from_tuples(
-        [move_action(0, index, index % 3) for index in range(5)]
+        [move_action(0, index % 4, (-2, -1, 1, 2, 1)[index], mega=index == 4) for index in range(5)]
     )
     second = CandidateSet.from_tuples(
         [move_action(1, index, index) for index in range(3)]

@@ -31,8 +31,10 @@ def test_atomic_schema_and_full_identity(tmp_path):
  p=tmp_path/'x.json';atomic(p,{'seed':3});assert read(p)=={'seed':3}
  assert digest({'seed':1,'opponent':'a','fixtures':'x'})!=digest({'seed':2,'opponent':'a','fixtures':'x'})
 
-def test_no_milestone_clock_relabel(tmp_path):
+def test_no_milestone_clock_relabel(tmp_path, monkeypatch):
  from scripts.a10_league_discover import discover
+ from types import SimpleNamespace
+ monkeypatch.setattr('shutil.disk_usage',lambda p:SimpleNamespace(free=100*2**30))
  run=tmp_path/'run';(run/'rolling/generations').mkdir(parents=True)
  r=discover(run); assert r['policies']=={};assert read(run/'evaluation/league_v2/milestones.json')['anchor']==0
 

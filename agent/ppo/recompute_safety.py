@@ -31,10 +31,16 @@ def compact_hash(fields):
 
 
 def row_contract_hash(rows):
+    from collections.abc import Sequence
+    from agent.types.action_mapping import CanonicalCandidateSequence
+    def canonical(value):
+        if isinstance(value, (Sequence, CanonicalCandidateSequence)) and not isinstance(value, (str, bytes)):
+            return [canonical(item) for item in value]
+        return value
     fields = ("action_ids", "candidate_mask", "entity_token", "move_token",
               "selected", "selected_actions", "branch_slots", "old_logprob")
     return hashlib.sha256(json.dumps(
-        [[getattr(row, field) for field in fields] for row in rows],
+        [[canonical(getattr(row, field)) for field in fields] for row in rows],
         separators=(",", ":"), allow_nan=False,
     ).encode()).hexdigest()
 
@@ -59,7 +65,7 @@ def evidence_passes(row, tolerance):
 
 
 def secondary_audit(model, buffer, sampled, batched_logprobs, device,
-                    tolerance, *, force=False, max_outliers=8):
+                    tolerance, *, force=False, max_outliers=8, max_group_rows=2048):
     """Replay at most eight flagged rows; budget exhaustion fails closed."""
     if len(sampled) != len(batched_logprobs) or max_outliers < 1:
         return {"required": True, "accepted": False, "rows": [],
@@ -78,6 +84,20 @@ def secondary_audit(model, buffer, sampled, batched_logprobs, device,
         return result
     groups = getattr(buffer, "actor_groups", [])
     original_precision = model.precision_contract
+    # Bounds precede slicing or GPU replay; malformed/overlapping ranges must
+    # never acquire different group membership through Python slice clipping.
+    ranges = []
+    for group in groups:
+        start, stop = group.get("start"), group.get("stop")
+        if (type(start) is not int or type(stop) is not int or
+                not 0 <= start < stop <= len(buffer.rows) or stop-start > max_group_rows):
+            result["reason"] = "invalid original actor group bounds"
+            return result
+        ranges.append((start, stop))
+    ordered = sorted(ranges)
+    if any(a[1] > b[0] for a,b in zip(ordered, ordered[1:])):
+        result["reason"] = "overlapping original actor groups"
+        return result
 
     def evaluate(batch, fp32=False):
         model.configure_precision("A" if fp32 else original_precision.mode)
@@ -110,7 +130,8 @@ def secondary_audit(model, buffer, sampled, batched_logprobs, device,
             if key not in cache:
                 rows = buffer.rows[group["start"]:group["stop"]]
                 observations = buffer.observation_store.stacked_indices([r.observation_ref for r in rows])
-                verified = (compact_hash(observations.to_compact_numpy()) == group["observation_hash"]
+                verified = (all(math.isfinite(r.old_logprob) for r in rows)
+                            and compact_hash(observations.to_compact_numpy()) == group["observation_hash"]
                             and row_contract_hash(rows) == group["row_contract_hash"])
                 legal = all(all(0 <= pick < len(mask) and mask[pick]
                                 and r.selected_actions[level] == r.action_ids[level][pick]

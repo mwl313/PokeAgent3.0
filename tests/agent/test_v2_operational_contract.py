@@ -77,3 +77,12 @@ def test_secondary_restore_contract_cannot_silently_change():
             module.validate_secondary_restore({'recompute_secondary':saved}, SimpleNamespace(recompute_secondary=not saved))
     with pytest.raises(RuntimeError,match='secondary contract mismatch'):
         module.validate_secondary_restore({}, SimpleNamespace(recompute_secondary=True))
+
+
+def test_rank_dependent_recompute_rejection_stops_every_rank(monkeypatch):
+    import torch
+    _,module=launcher()
+    monkeypatch.setattr(torch.distributed,'all_reduce',lambda value,op:value.zero_())
+    result=module.verify_recompute_ranks({'within_gate':True,'primary_within_gate':True},torch.device('cpu'))
+    assert not result['within_gate'] and not result['all_ranks_accepted']
+    assert result['primary_within_gate']  # local evidence is never relabeled

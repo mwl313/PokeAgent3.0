@@ -1,0 +1,22 @@
+........................................................................ [ 18%]
+.......................................................................s [ 37%]
+sssssss.s..s.s.s.s.s.s.s.s.s.s.s........................................ [ 55%]
+..............................................s.s.s.s.s.s.s.s...s.s.s.s. [ 74%]
+...................................s......F............................. [ 93%]
+...........................                                              [100%]
+=================================== FAILURES ===================================
+___________ test_rank_dependent_recompute_rejection_stops_every_rank ___________
+tests/agent/test_v2_operational_contract.py:85: in test_rank_dependent_recompute_rejection_stops_every_rank
+    monkeypatch.setattr(module.dist,'all_reduce',lambda value,op:value.zero_())
+                        ^^^^^^^^^^^
+E   AttributeError: module 'v2_operational_launcher' has no attribute 'dist'
+=============================== warnings summary ===============================
+tests/agent/test_entropy_kl.py::test_uniform_policy_has_normalized_entropy_one_and_zero_kl
+  /home/minidc/Desktop/PokeAgent3.0-V2-integration/tests/agent/test_entropy_kl.py:39: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+  Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+    assert abs(float(evaluation.entropy_normalized[0, 0]) - 1.0) < 1e-5
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/agent/test_v2_operational_contract.py::test_rank_dependent_recompute_rejection_stops_every_rank
+1 failed, 353 passed, 33 skipped, 1 warning in 41.88s

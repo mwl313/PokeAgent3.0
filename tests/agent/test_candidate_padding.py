@@ -50,9 +50,49 @@ def test_candidate_padding_preserves_objective_and_all_gradients(
     compact_grads = torch.autograd.grad(
         compact_loss, tuple(learner.model.parameters()), allow_unused=True,
     )
+    # Independent FP64 reduction reference for the cancellation-sensitive
+    # policy statistic: preserve FP32 per-row ratio semantics, sum in double.
+    for variant, terms in [(batch,full_terms),(compact,compact_terms)]:
+        with torch.no_grad():
+            _, evaluation=learner.model.evaluate(variant.observation,variant.candidates,selected=variant.candidates.selected)
+            ratio=(evaluation.request_logprob.float()-variant.old_logprob.float()).clamp(-20,20).exp()
+            advantage=variant.advantages if variant.advantages is not None else variant.raw_advantages
+            mask=variant.actor_mask & variant.row_valid
+            per_row=torch.minimum(ratio*advantage,ratio.clamp(.8,1.2)*advantage)
+            reference=-per_row[mask].double().mean()
+            torch.testing.assert_close(terms['policy_mean'].double(),reference,rtol=2e-5,atol=2e-7)
+    # Adam's nonlinear normalization is also checked, not just raw gradients.
+    initial={name:p.detach().clone() for name,p in learner.model.named_parameters()}
+    updated=[]
+    for gradients in (full_grads,compact_grads):
+        with torch.no_grad():
+            for name,p in learner.model.named_parameters():p.copy_(initial[name])
+        optimizer=torch.optim.Adam(learner.model.parameters(),lr=3e-4,eps=1e-5)
+        for p,g in zip(learner.model.parameters(),gradients):p.grad=None if g is None else g.clone()
+        optimizer.step()
+        updated.append({name:p.detach().clone() for name,p in learner.model.named_parameters()})
+    for index,name in enumerate(initial):
+        g0,g1=full_grads[index],compact_grads[index]
+        if g0 is None:
+            assert torch.equal(updated[0][name],updated[1][name])
+            continue
+        # First-step Adam is g/(|g|+eps), with derivative bounded by1/eps.
+        # Check against the independent double formula for every parameter.
+        for arm,g in enumerate((g0,g1)):
+            expected=initial[name].double()-3e-4*g.double()/(g.double().abs()+1e-5)
+            torch.testing.assert_close(updated[arm][name].double(),expected,rtol=2e-5,atol=2e-7)
+        bound=(3e-4/1e-5)*(g0-g1).abs()+2*torch.finfo(initial[name].dtype).eps*initial[name].abs()+2e-10
+        assert bool(((updated[0][name]-updated[1][name]).abs()<=bound).all()),name
+        if name == 'scorer.logit_bias':
+            assert max(g0.abs().max(),g1.abs().max()) < 2e-7
     assert full_terms.keys() == compact_terms.keys()
+    # Raw sums scale with row count; apply the existing tolerance to the
+    # corresponding per-row means, rather than demanding mean-level absolute
+    # accuracy from an unnormalized FP32 cancellation sum.
     for key in full_terms:
-        torch.testing.assert_close(full_terms[key], compact_terms[key], rtol=2e-5, atol=2e-7)
+        count = full_terms["value_count"] if key == "value_sum" else full_terms["actor_count"]
+        scale = count.clamp_min(1) if key.endswith("_sum") else 1
+        torch.testing.assert_close(full_terms[key] / scale, compact_terms[key] / scale, rtol=2e-5, atol=2e-7)
     for (name, _), full, compact in zip(
         learner.model.named_parameters(), full_grads, compact_grads,
     ):

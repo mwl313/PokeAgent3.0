@@ -410,10 +410,16 @@ def recompute_check(learner, buffer, device, limit=1024, amp=False, per_stratum=
     if secondary and (audit or not result["within_gate"]):
         from agent.ppo.recompute_safety import secondary_audit
         secondary_started = _time.perf_counter()
-        result["secondary"] = secondary_audit(
-            learner.model, buffer, sampled, evaluation.request_logprob.float().cpu().tolist(),
-            device, tolerance, force=audit,
-        )
+        try:
+            result["secondary"] = secondary_audit(
+                learner.model, buffer, sampled, evaluation.request_logprob.float().cpu().tolist(),
+                device, tolerance, force=audit,
+            )
+        except (ValueError, IndexError, KeyError, RuntimeError) as error:
+            # A diagnostic error is a rejected proof, never permission to
+            # update. Continue to durable failure publication below.
+            result["secondary"] = {"accepted": False, "required": True,
+                                   "reason": "secondary replay failed", "error": str(error)}
         result["timing_seconds"]["secondary_audit"] = _time.perf_counter() - secondary_started
         if not result["within_gate"]:
             result["within_gate"] = result["secondary"]["accepted"]
