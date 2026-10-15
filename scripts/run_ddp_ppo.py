@@ -275,6 +275,8 @@ def parse_args(argv=None):
                 value = raw_argv[index + 1]
             if name in controlled and value and value != controlled[name]:
                 raise ValueError(f"profile conflict: --{name}={value} != {controlled[name]}")
+        if "--experimental-exact-token-lookup" in raw_argv and resolved["profile"]["collector"].get("token_lookup_backend", "gather") != "exact-row-v100-v1":
+            raise ValueError("profile conflict: exact token lookup was not approved")
         if "--no-recompute-gate" in raw_argv:
             raise ValueError("profile conflict: recompute gate cannot be disabled")
         for key, value in launcher_values(resolved).items():
@@ -322,8 +324,9 @@ def parse_args(argv=None):
     if args.experimental_exact_token_lookup:
         if not args.deterministic_diagnostic or args.precision_mode!='D' or args.precision_stability!='fp16-reduction-off':
             parser.error('exact token lookup requires deterministic ModeD/reduction-off')
-        if args.iterations>5 or args.profile and resolved['profile']['version']=='pa3-v2-production-v1':
-            parser.error('exact token lookup is limited to bounded non-production runs')
+        approved_profile = bool(args.profile and resolved['profile']['collector'].get('token_lookup_backend') == 'exact-row-v100-v1')
+        if not approved_profile and args.iterations > 5:
+            parser.error('unprofiled exact token lookup is limited to bounded runs')
     return args
 
 

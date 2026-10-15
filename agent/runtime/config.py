@@ -41,6 +41,8 @@ def resolve_profile(path: str) -> dict:
         teams = d.get("teams", "")
         if not os.path.isfile(teams) or hashlib.sha256(open(teams, "rb").read()).hexdigest() != d.get("teams_sha256"):
             raise ValueError("V2 frozen team hash mismatch")
+    if c.get("token_lookup_backend", "gather") not in {"gather", "exact-row-v100-v1"}:
+        raise ValueError("unsupported token lookup backend")
     if c.get("batch_cache") != "cuda" or c.get("compact_candidates") is not True: raise ValueError("collector profile invariant failed")
     if not os.path.isfile(d["manifest"]): raise ValueError("dataset manifest missing")
     digest = hashlib.sha256(open(d["manifest"], "rb").read()).hexdigest()
@@ -63,6 +65,8 @@ def launcher_values(resolved: dict) -> dict:
             "historical_probability": t["historical_probability"], "precision_mode": p["mode"],
             "precision_stability": p["stability"], "recompute_gate": p["recompute_gate"],
             "batch_cache": c["batch_cache"], "compact_candidates": c["compact_candidates"]}
+    if "token_lookup_backend" in c:
+        values["experimental_exact_token_lookup"] = c["token_lookup_backend"] == "exact-row-v100-v1"
     if "amp_overflow_retries" in p:
         values["amp_overflow_retries"] = p["amp_overflow_retries"]
     if "canonical_encoder_batch_rows" in p:
