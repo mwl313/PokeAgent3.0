@@ -7,12 +7,12 @@ ERROR_WRAPPER_AST='a24af9614ac5542e7c0b377ed88ad6266439d02b03e6a6cd323599ceca887
 LEGACY_SCHEMA='pa3-v2-reviewed-release-migration-v1'
 SCHEMA='pa3-v2-reviewed-release-migration-v2'
 REVIEWED_SOURCE='93ebc1b5086b7a2bf247b779eb6442671bbbdd10'
-REVIEWED_REPAIRS={'agent/ppo/source_migration.py': '540698ee4f62d7b48125721db264d7082eea02f5', 'scripts/run_ddp_ppo.py': '2a693f878a06590c47a9549d053c8e399199ecbb', 'agent/ppo/learner.py': 'e06009a3f2fba15f0e85352bf88848d3717d53d7', 'agent/runtime/config.py': '8c7deb3ba55af5819c42cb5057f369c1f227e22a', 'configs/pa3_v2_production.yaml': '464149253b631548d604be34369972c08004644a'}
-VALIDATOR_AST='2d740f2d0e36a1f34256a584770afad21309f6a1efd2d7d75d697a231bb84b8d'
+REVIEWED_REPAIRS={'agent/ppo/source_migration.py': '540698ee4f62d7b48125721db264d7082eea02f5', 'scripts/run_ddp_ppo.py': 'f6d7eb197deaefd8edb066bb04be2a8cc84ba988', 'agent/ppo/learner.py': 'e06009a3f2fba15f0e85352bf88848d3717d53d7', 'agent/runtime/config.py': '8c7deb3ba55af5819c42cb5057f369c1f227e22a', 'configs/pa3_v2_production.yaml': '464149253b631548d604be34369972c08004644a', 'agent/ppo/telemetry.py': 'f879957a63b9f2a07e487a738fecf1b572c4db1a', 'agent/train/native_collector.py': '9626a27b564602b0293f3aaf0c0ad2bca459e7df', 'scripts/bench_pa3_end_to_end.py': '57b19454db8efa8fdaf36e8033939163e8decf7c'}
+VALIDATOR_AST='1af279f56d6a6504a05a30fbf6483b497983e7daf51790efbc725a78c782f68c'
 MANIFEST='b9539f3a0c426f0878375b61630cb4de9dcd2a5d4a6a59858b4d64f4287fd424'
 ENGINE='8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62'
-# Explicitly reviewed executable surface. Engine/dataset/loss/learner/config
-# architecture/semantic contracts are deliberately absent.
+# Exact reviewed executable surface; objective, architecture, engine and data
+# semantics stay fixed. Learner changes are only bounded collective AMP retry.
 REVIEWED=set('''agent/buffer/rollout_buffer.py agent/model/cuda/exact_lookup.cu
 agent/model/encoder.py agent/model/embeddings.py agent/model/exact_row_lookup.py agent/model/ragged_embeddings.py
 agent/model/scorer.py agent/ppo/recompute_safety.py agent/ppo/source_migration.py
@@ -23,7 +23,7 @@ scripts/bench_pa3_end_to_end.py scripts/analyze_v2_live_bottlenecks.py scripts/b
 scripts/run_ddp_ppo.py scripts/v2_continuation_probe.py scripts/v2_data_path_probe.py
 scripts/v2_gpu_profile.py scripts/v2_reconstruct_boundary.py scripts/v2_recovery_analysis.py
 scripts/v2_throughput_ab.py scripts/validate_v2_source_of_truth.py scripts/v2_release_validation.py
-agent/ppo/learner.py agent/model/pa3_model.py agent/model/precision.py scripts/v2_training_status.py
+agent/ppo/telemetry.py agent/ppo/learner.py agent/model/pa3_model.py agent/model/precision.py scripts/v2_training_status.py
 scripts/v2_evaluation_sidecar.py scripts/v2_recompute_forensics.py'''.split())
 def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 def git(root,*args):return subprocess.check_output(['git','-C',str(root),*args],text=True).strip()
@@ -57,7 +57,10 @@ def validate_contract(receipt,*,source,target,checkpoint_hash,rank_hashes,runtim
         if receipt.get(key)!=value:raise ValueError('migration '+key+' mismatch')
     if profile['training']!=original_profile['training']:raise ValueError('migration PPO hyperparameters changed')
     for section in ('collector','evaluation'):
-        if profile[section]!=original_profile[section]:raise ValueError('migration execution contract changed: '+section)
+        left=dict(profile[section]);right=dict(original_profile[section])
+        if section=='collector':
+            left.pop('token_lookup_backend',None);right.pop('token_lookup_backend',None)
+        if left!=right:raise ValueError('migration execution contract changed: '+section)
     before=dict(original_profile['precision']);after=dict(profile['precision']);after.pop('recompute_secondary',None);before.pop('recompute_secondary',None)
     after.pop('canonical_encoder_batch_rows',None);before.pop('canonical_encoder_batch_rows',None)
     # This is a deliberately narrow numerical migration: Mode D's ragged
@@ -78,7 +81,11 @@ def validate_contract(receipt,*,source,target,checkpoint_hash,rank_hashes,runtim
     if before!=after or profile['precision'].get('recompute_secondary') is not True:raise ValueError('migration precision incompatible')
     for key in ('manifest_sha256','teams_sha256','train_teams','sampling','id','frozen'):
         if profile['dataset'][key]!=original_profile['dataset'][key]:raise ValueError('migration dataset changed')
-    if receipt.get('token_lookup_backend')!='gather' or receipt.get('secondary_activation')!={'historical':False,'future':True}:raise ValueError('unauthorized arithmetic backend or safety transition')
+    backend=profile['collector'].get('token_lookup_backend','gather')
+    if backend not in ('gather','exact-row-v100-v1') or original_profile['collector'].get('token_lookup_backend','gather')!='gather':
+        raise ValueError('unauthorized arithmetic backend')
+    if receipt.get('token_lookup_backend')!=backend or receipt.get('token_lookup_transition')!={'historical':'gather','future':backend} or receipt.get('secondary_activation')!={'historical':False,'future':True}:
+        raise ValueError('unauthorized arithmetic backend or safety transition')
     if not all(parity.get(k) is True for k in ('representation_equal','loss_equal','gradient_equal','adam_equal','model_config_equal','gpu_loss_equal','gpu_gradient_equal','gpu_adam_equal','gpu_model_equal')):raise ValueError('migration independent parity proof incomplete')
     if receipt.get('semantic_contract')!='dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35':raise ValueError('migration semantic contract mismatch')
 
@@ -144,6 +151,9 @@ def validate(receipt,root,source,target):
         raise ValueError('precision proof input mismatch')
     if reference.get('probe_sha256')!=candidate.get('probe_sha256') or candidate.get('probe_sha256')!=sha(root/'tests/validation/v2_precision_probe.py'):
         raise ValueError('precision proof runner mismatch')
+    expected_backend=json.loads((root/'configs/pa3_v2_production.yaml').read_text())['collector'].get('token_lookup_backend','gather')
+    if reference.get('token_lookup_backend')!='gather' or candidate.get('token_lookup_backend')!=expected_backend:
+        raise ValueError('precision proof token backend mismatch')
     if candidate.get('amp_overflow_retries')!=3 or reference.get('amp_overflow_retries')!=0:
         raise ValueError('precision proof AMP retry execution mismatch')
     for key in ('losses','gradient_digest','adam_digest','updated_model_digest','model_config'):
@@ -170,6 +180,7 @@ def validate(receipt,root,source,target):
     reconcile(refs,committed_matches=57344,run_id=receipt['team_stats_lineage_id'])
     if run_identity(receipt['team_stats_origin_root'])!=receipt['team_stats_lineage_id']:raise ValueError('statistics origin identity mismatch')
     return {'source_sha':source,'target_sha':target,'scope':SCHEMA,'secondary_activation':receipt['secondary_activation'],
+            'token_lookup_backend':receipt['token_lookup_backend'],'token_lookup_transition':receipt['token_lookup_transition'],
             'team_stats_lineage_id':receipt['team_stats_lineage_id'],'team_stats_root':receipt['team_stats_root'],
             'receipt_sha256':hashlib.sha256(json.dumps(receipt,sort_keys=True).encode()).hexdigest()}
 
@@ -191,7 +202,9 @@ def prepare(root,checkpoint,parity_report,team_stats_root,output):
         'amp_overflow_retry_transition':{'historical':0,'future':3},
         'canonical_encoder_transition':{'historical':0,'future':1024},
         'ragged_effects_precision_transition':{'historical':'fp16','future':'fp32'},
-        'token_lookup_backend':'gather','secondary_activation':{'historical':False,'future':True},
+        'token_lookup_backend':json.loads((root/'configs/pa3_v2_production.yaml').read_text())['collector'].get('token_lookup_backend','gather'),
+        'token_lookup_transition':{'historical':'gather','future':json.loads((root/'configs/pa3_v2_production.yaml').read_text())['collector'].get('token_lookup_backend','gather')},
+        'secondary_activation':{'historical':False,'future':True},
         'team_stats_origin_root':str(origin/'team_stats'),'team_stats_lineage_id':run_identity(origin/'team_stats'),
         'team_stats_root':str(Path(team_stats_root).resolve()),'parity_report':str(proof),'parity_report_sha256':sha(proof)}
     validate(receipt,root,BASE,target);Path(output).parent.mkdir(parents=True,exist_ok=True);Path(output).write_text(json.dumps(receipt,indent=2)+'\n');return receipt

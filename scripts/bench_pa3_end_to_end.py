@@ -411,6 +411,14 @@ def _recompute_check_impl(learner, buffer, device, limit=1024, amp=False, per_st
         entry = stratum_report.setdefault(key, {"rows": 0, "max_abs_diff": 0.0})
         entry["rows"] += 1
         entry["max_abs_diff"] = max(entry["max_abs_diff"], float(per_row[index]))
+    grouped_errors = {}
+    for index,row in enumerate(sampled):
+        key=f"kind{int(row.request_kind)}_branches{int(row.branch_count)}_actor{int(bool(row.actor_active))}"
+        grouped_errors.setdefault(key,[]).append(per_row[index])
+    for key,values in grouped_errors.items():
+        errors=torch.tensor(values,dtype=torch.float32)
+        stratum_report[key]['mean_abs_diff']=float(errors.mean())
+        stratum_report[key]['p99_abs_diff']=float(torch.quantile(errors,.99))
     tolerance = 1e-3 if amp else 1e-4
     result = {
         "rows": len(sampled),
@@ -421,6 +429,7 @@ def _recompute_check_impl(learner, buffer, device, limit=1024, amp=False, per_st
         "mean_abs_diff": float(difference.mean().item()) if len(sampled) else 0.0,
         "median_abs_diff": float(difference.median().item()) if len(sampled) else 0.0,
         "p95_abs_diff": float(torch.quantile(difference.float(), 0.95).item()) if len(sampled) else 0.0,
+        "p99_abs_diff": float(torch.quantile(difference.float(), 0.99).item()) if len(sampled) else 0.0,
         "audit_enabled": bool(audit),
         "isolated_max_abs_diff": max(isolated) if isolated else None,
         "isolated_mean_abs_diff": sum(isolated) / len(isolated) if isolated else None,

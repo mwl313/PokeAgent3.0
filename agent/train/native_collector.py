@@ -118,6 +118,13 @@ class NativeCollectorStats:
     spec_seconds: float = 0.0
     assemble_seconds: float = 0.0
     model_seconds: float = 0.0
+    encoder_seconds: float = 0.0
+    encoder_calls: int = 0
+    encoder_physical_calls: int = 0
+    encoder_useful_rows: int = 0
+    encoder_physical_rows: int = 0
+    encoder_batch_histogram: dict = field(default_factory=dict)
+    encoder_ragged_records: dict = field(default_factory=dict)
     step_seconds: float = 0.0
     record_seconds: float = 0.0
     reset_seconds: float = 0.0
@@ -574,7 +581,21 @@ class NativeCollector:
                 hidden = policy_model.scorer.initial_state(
                     encoded.tokens.shape[0], device=encoded.tokens.device, dtype=encoded.tokens.dtype
                 )
-            self.stats.model_seconds += time.perf_counter() - start
+            encoder_elapsed=time.perf_counter() - start
+            self.stats.model_seconds += encoder_elapsed
+            self.stats.encoder_seconds += encoder_elapsed
+            actual=len(indices)
+            canonical=policy_model.encoder.canonical_batch_rows
+            canonical_active=canonical and self.device.type=='cuda' and self.precision_contract.encoder_amp
+            physical_calls=(actual+canonical-1)//canonical if canonical_active else 1
+            physical=physical_calls*canonical if canonical_active else actual
+            self.stats.encoder_calls += 1
+            self.stats.encoder_physical_calls += physical_calls
+            self.stats.encoder_useful_rows += actual
+            self.stats.encoder_physical_rows += physical
+            self.stats.encoder_batch_histogram[actual]=self.stats.encoder_batch_histogram.get(actual,0)+1
+            for family,section in subset_obs.ragged.items():
+                self.stats.encoder_ragged_records.setdefault(family,[]).append(int(section.host_counts.sum()))
             steps = []
             picks_by_level: list[list[int]] = []
             packed_by_level: list = []

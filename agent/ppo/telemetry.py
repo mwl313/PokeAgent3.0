@@ -49,6 +49,7 @@ def append_training_update(path, *, iteration, committed_matches, rank,
     if missing:
         raise ValueError(f"learner report missing telemetry fields: {missing}")
     ppo = {key: data[key] for key in keys}
+    ppo["optimizer_step_retries"]=int(data.get("optimizer_step_retries",0))
     record = {
         "schema": "pa3-ppo-training-metrics-v1",
         "observed_at_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),

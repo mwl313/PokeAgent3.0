@@ -331,8 +331,14 @@ def lookup_backend(args):
     return 'exact-row-v100-v1' if args.experimental_exact_token_lookup else 'gather'
 
 
-def validate_lookup_restore(experiment,args):
-    if experiment.get('token_lookup_backend','gather')!=lookup_backend(args):
+def validate_lookup_restore(experiment,args,migration=None):
+    saved=experiment.get('token_lookup_backend','gather');requested=lookup_backend(args)
+    if migration and migration.get('scope')=='pa3-v2-reviewed-release-migration-v2':
+        if requested!=migration.get('token_lookup_backend'):
+            raise RuntimeError('requested token backend differs from reviewed migration')
+        if saved=='gather' and migration.get('token_lookup_transition')=={'historical':'gather','future':requested}:
+            return
+    if saved!=requested:
         raise RuntimeError('checkpoint token lookup backend mismatch')
 
 
@@ -732,7 +738,6 @@ def worker(args) -> None:
         if args.precision_stability == "fp16-reduction-off" and effective_reduction:
             raise RuntimeError("effective CUDA FP16 reduction setting does not match D1 contract")
         saved_experiment=resume_envelope.get('experiment',{})
-        validate_lookup_restore(saved_experiment,args)
         if 'cublas_workspace_config' in saved_experiment:
             if saved_experiment['cublas_workspace_config']!=os.environ.get('CUBLAS_WORKSPACE_CONFIG'):
                 raise RuntimeError('checkpoint CUDA workspace execution contract mismatch')
@@ -764,6 +769,7 @@ def worker(args) -> None:
                 raise RuntimeError("source SHA mismatch; pass --experimental-allow-source-sha only for the recorded A3 source")
             expected_source_sha = recorded_source_sha
             note(f"explicit checkpoint migration: {recorded_source_sha} -> {source_sha}")
+        validate_lookup_restore(saved_experiment,args,source_migration)
         validate_secondary_restore(saved_experiment,args,source_migration)
         saved_retries=saved_experiment.get('amp_overflow_retries',0)
         if saved_retries != args.amp_overflow_retries:

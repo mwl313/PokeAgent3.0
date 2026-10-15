@@ -24,6 +24,8 @@ if a.reference:
  def explicit_fp32(x):
   with torch.autocast('cuda',enabled=False):return F.linear(x.float(),layer.weight.float(),None if layer.bias is None else layer.bias.float())
  layer.forward=explicit_fp32
+backend='gather' if a.reference else json.loads(Path('configs/pa3_v2_production.yaml').read_text())['collector'].get('token_lookup_backend','gather')
+model.scorer.experimental_exact_row_lookup=backend=='exact-row-v100-v1'
 learner=PPOLearner(model,PPOConfig(ppo_epochs=2),device='cuda:0')
 learner.amp_overflow_retries=0 if a.reference else 3
 learner.optimizer.zero_grad(set_to_none=True);terms=learner._forward_terms(batch)
@@ -31,5 +33,5 @@ loss=terms['loss_unscaled']+learner.config.value_coefficient*terms['value_mean']
 grads={n:p.grad.detach().cpu() for n,p in model.named_parameters() if p.grad is not None}
 assert all(torch.isfinite(g).all() for g in grads.values())
 torch.nn.utils.clip_grad_norm_(model.parameters(),learner.config.max_grad_norm);learner.scaler.step(learner.optimizer);learner.scaler.update()
-result={'source_sha':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'reference':a.reference,'amp_overflow_retries':learner.amp_overflow_retries,'rows':1024,'precision':'D/FP16-effects-FP32','workspace':os.environ['CUBLAS_WORKSPACE_CONFIG'],'model_config':model.config.to_dict(),'losses':{k:float(v.detach()) for k,v in terms.items()},'gradient_digest':_compact_digest(grads),'adam_digest':_compact_digest(learner.optimizer.state_dict()),'updated_model_digest':_compact_digest(model.state_dict()),'captured_artifact_sha256':hashlib.sha256(Path(a.artifact).read_bytes()).hexdigest(),'probe_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
+result={'source_sha':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'reference':a.reference,'token_lookup_backend':backend,'amp_overflow_retries':learner.amp_overflow_retries,'rows':1024,'precision':'D/FP16-effects-FP32','workspace':os.environ['CUBLAS_WORKSPACE_CONFIG'],'model_config':model.config.to_dict(),'losses':{k:float(v.detach()) for k,v in terms.items()},'gradient_digest':_compact_digest(grads),'adam_digest':_compact_digest(learner.optimizer.state_dict()),'updated_model_digest':_compact_digest(model.state_dict()),'captured_artifact_sha256':hashlib.sha256(Path(a.artifact).read_bytes()).hexdigest(),'probe_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
 Path(a.output).write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result,indent=2))
