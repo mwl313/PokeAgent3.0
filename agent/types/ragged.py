@@ -42,8 +42,8 @@ class RaggedBatch:
             raise ValueError("ragged row count/width mismatch or nonfinite data")
         return cls(torch.from_numpy(values),torch.from_numpy(counts.copy()),counts)
 
-    def to(self,device):
-        return RaggedBatch(self.values.to(device),self.counts.to(device),self.host_counts.copy())
+    def to(self,device,*,non_blocking=False):
+        return RaggedBatch(self.values.to(device,non_blocking=non_blocking),self.counts.to(device,non_blocking=non_blocking),self.host_counts.copy())
 
     def rows(self):
         values=self.values.detach().cpu().numpy()

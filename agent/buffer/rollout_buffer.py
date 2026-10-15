@@ -450,17 +450,18 @@ class RolloutBuffer:
         masks = []
         resolved_entities=[];resolved_moves=[]
         for branch_index,level in enumerate(branch_records):
-            from agent.types.action_mapping import canonical_records, CanonicalCandidateRow
-            resolved_entities.append(level.entity if isinstance(level,CanonicalCandidateRow) else entity_token[branch_index])
-            resolved_moves.append(level.move if isinstance(level,CanonicalCandidateRow) else move_token[branch_index])
-            level=level.records if isinstance(level,CanonicalCandidateRow) else canonical_records(level)
-            records = tuple(map(tuple, level.tolist())) if hasattr(level, "tolist") else tuple(
-                tuple(int(v) for v in record) for record in level
-            )
+            from agent.types.action_mapping import canonical_records, CanonicalCandidateRow, CanonicalCandidateSequence
+            if isinstance(level,CanonicalCandidateRow):
+                records=CanonicalCandidateSequence(level)
+                resolved_entities.append(CanonicalCandidateSequence(level,'entity'))
+                resolved_moves.append(CanonicalCandidateSequence(level,'move'))
+            else:
+                resolved_entities.append(entity_token[branch_index]);resolved_moves.append(move_token[branch_index])
+                records=tuple(map(tuple,canonical_records(level).tolist()))
             if not records:
                 raise ValueError("packed branch without a legal candidate")
             action_ids.append(records)
-            masks.append(tuple([True] * len(records)))
+            masks.append((True,) * len(records))
         if len(selected) != len(action_ids):
             raise ValueError(
                 f"selected prefix has {len(selected)} entries for {len(action_ids)} branches"
@@ -501,8 +502,8 @@ class RolloutBuffer:
             branch_slots=tuple(int(slot) for slot in branch_slots),
             action_ids=tuple(action_ids),
             candidate_mask=tuple(masks),
-            entity_token=tuple(tuple(int(v) for v in level) for level in resolved_entities),
-            move_token=tuple(tuple(int(v) for v in level) for level in resolved_moves),
+            entity_token=tuple(level if isinstance(level,CanonicalCandidateSequence) else tuple(int(v) for v in level) for level in resolved_entities),
+            move_token=tuple(level if isinstance(level,CanonicalCandidateSequence) else tuple(int(v) for v in level) for level in resolved_moves),
             selected=selected,
             selected_actions=tuple(action_ids[level][selected[level]] for level in range(len(selected))),
             old_logprob=float(old_logprob),
@@ -721,15 +722,17 @@ class RolloutBatch:
         return int(self.old_logprob.shape[0])
 
     def to(self, device: torch.device | str) -> "RolloutBatch":
+        target=torch.device(device)
+        bundle = self.observation.device.type=='cpu' and target.type=='cuda'
         def _move(value):
             if isinstance(value, torch.Tensor):
-                return value.to(device)
+                return value.to(device,non_blocking=bundle)
             return value
 
-        return replace(
+        result = replace(
             self,
-            observation=self.observation.to(device),
-            candidates=self.candidates.to(device),
+            observation=self.observation.to(device,non_blocking=bundle),
+            candidates=self.candidates.to(device,non_blocking=bundle),
             old_logprob=_move(self.old_logprob),
             values=_move(self.values),
             raw_advantages=_move(self.raw_advantages),
@@ -745,6 +748,12 @@ class RolloutBatch:
             request_kind=_move(self.request_kind),
             advantages=_move(self.advantages) if self.advantages is not None else None,
         )
+        if bundle:
+            # One fence after the complete transfer, rather than one per
+            # field. Preserve the blocking public contract: host buffers may
+            # be mutated immediately after this call returns.
+            torch.cuda.current_stream(target).synchronize()
+        return result
 
     def select(self, indices: torch.Tensor, row_valid: Optional[torch.Tensor] = None) -> "RolloutBatch":
         # Minibatch indices are produced on the CPU while the batch may live on

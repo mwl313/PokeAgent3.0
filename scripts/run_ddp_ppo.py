@@ -222,6 +222,8 @@ def parse_args(argv=None):
     )
     parser.add_argument("--precision-mode", choices=("A", "B", "C", "D"), default="A",
                         help="experimental policy precision contract; A is the A9 FP32 reference")
+    parser.add_argument('--experimental-exact-token-lookup',action='store_true',
+                        help='opt-in V100 exact-order CUDA backward; bounded non-production diagnostics only')
     parser.add_argument("--precision-stability", choices=("default", "fp16-reduction-off"), default="default",
                         help="opt-in numerical stability setting for precision experiments")
     parser.add_argument("--recompute-audit", action="store_true",
@@ -304,7 +306,21 @@ def parse_args(argv=None):
         if latest is None:
             parser.error("--resume-latest-from has no complete verified generation")
         args.experimental_resume = str(latest)
+    if args.experimental_exact_token_lookup:
+        if not args.deterministic_diagnostic or args.precision_mode!='D' or args.precision_stability!='fp16-reduction-off':
+            parser.error('exact token lookup requires deterministic ModeD/reduction-off')
+        if args.iterations>5 or args.profile and resolved['profile']['version']=='pa3-v2-production-v1':
+            parser.error('exact token lookup is limited to bounded non-production runs')
     return args
+
+
+def lookup_backend(args):
+    return 'exact-row-v100-v1' if args.experimental_exact_token_lookup else 'gather'
+
+
+def validate_lookup_restore(experiment,args):
+    if experiment.get('token_lookup_backend','gather')!=lookup_backend(args):
+        raise RuntimeError('checkpoint token lookup backend mismatch')
 
 
 def free_port() -> int:
@@ -544,6 +560,10 @@ def worker(args) -> None:
     np.random.seed((args.seed + rank) % (2**32))
     engine = pa3_engine.NativeEngine(args.data, args.teams, workers=args.workers)
     model = build_model(PA3Config())
+    if args.experimental_exact_token_lookup:
+        from agent.model.exact_row_lookup import prepare_exact_lookup
+        prepare_exact_lookup(device)
+        model.scorer.experimental_exact_row_lookup=True
     model.configure_precision(args.precision_mode)
     model.encoder.trim_padding = args.trim_observation_padding
     historical_models = {}
@@ -658,6 +678,7 @@ def worker(args) -> None:
         if args.precision_stability == "fp16-reduction-off" and effective_reduction:
             raise RuntimeError("effective CUDA FP16 reduction setting does not match D1 contract")
         saved_experiment=resume_envelope.get('experiment',{})
+        validate_lookup_restore(saved_experiment,args)
         if 'cublas_workspace_config' in saved_experiment:
             if saved_experiment['cublas_workspace_config']!=os.environ.get('CUBLAS_WORKSPACE_CONFIG'):
                 raise RuntimeError('checkpoint CUDA workspace execution contract mismatch')
@@ -950,6 +971,7 @@ def worker(args) -> None:
                     "recompute_secondary": bool(args.recompute_secondary),
                     "precision_mode": args.precision_mode,
                     "cublas_workspace_config": os.environ.get('CUBLAS_WORKSPACE_CONFIG'),
+                    "token_lookup_backend": lookup_backend(args),
                     "deterministic_diagnostic": bool(args.deterministic_diagnostic),
                     "precision_stability": args.precision_stability,
                     "precision_contract_version": f"pa3-precision-{args.precision_mode}-v2",
@@ -1012,6 +1034,7 @@ def worker(args) -> None:
             "executor": args.executor,
             "execution_options": {
                 "batch_cache": args.batch_cache,
+                "token_lookup_backend": lookup_backend(args),
                 "compact_candidates": args.compact_candidates,
                 "trim_observation_padding": args.trim_observation_padding,
                 "microbatch": args.microbatch,
@@ -1143,6 +1166,8 @@ def parent(args) -> None:
                 command.append("--experimental-allow-source-sha")
             if args.deterministic_diagnostic:
                 command.append("--deterministic-diagnostic")
+            if args.experimental_exact_token_lookup:
+                command.append('--experimental-exact-token-lookup')
             if args.checkpoint_first_iteration:
                 command.append('--checkpoint-first-iteration')
             if args.experimental_allow_opponent_migration:

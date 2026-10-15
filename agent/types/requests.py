@@ -156,14 +156,14 @@ class BranchCandidatesBatch:
         valid = self.branch_valid & (k >= 2)
         return valid.any(dim=-1)
 
-    def to(self, device: torch.device | str) -> "BranchCandidatesBatch":
+    def to(self, device: torch.device | str, *, non_blocking=False) -> "BranchCandidatesBatch":
         return BranchCandidatesBatch(
-            action_ids=self.action_ids.to(device),
-            mask=self.mask.to(device),
-            entity_token=self.entity_token.to(device),
-            move_token=self.move_token.to(device),
-            branch_valid=self.branch_valid.to(device),
-            selected=self.selected.to(device),
+            action_ids=self.action_ids.to(device,non_blocking=non_blocking),
+            mask=self.mask.to(device,non_blocking=non_blocking),
+            entity_token=self.entity_token.to(device,non_blocking=non_blocking),
+            move_token=self.move_token.to(device,non_blocking=non_blocking),
+            branch_valid=self.branch_valid.to(device,non_blocking=non_blocking),
+            selected=self.selected.to(device,non_blocking=non_blocking),
         )
 
     def select(self, index: torch.Tensor | Sequence[int]) -> "BranchCandidatesBatch":

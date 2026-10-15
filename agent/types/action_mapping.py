@@ -109,3 +109,44 @@ class CanonicalCandidateRow:
     @property
     def move(self):
         return self.block.move[int(self.block.offsets[self.index]):int(self.block.offsets[self.index+1])]
+
+
+@dataclass(frozen=True,repr=False,eq=False)
+class CanonicalCandidateSequence:
+    """Tuple-compatible lazy view over trusted immutable candidate storage.
+
+    NumPy materialization reads the typed array directly. Legacy iteration,
+    indexing and repr produce the same Python integers/tuples as before.
+    """
+    row: CanonicalCandidateRow
+    field: str = 'records'
+
+    def __post_init__(self):
+        if not isinstance(self.row,CanonicalCandidateRow) or self.field not in ('records','entity','move'):
+            raise ValueError('candidate sequence requires a trusted immutable row')
+
+    @property
+    def _array(self):return getattr(self.row,self.field)
+
+    def __len__(self):return len(self._array)
+
+    def __getitem__(self,index):
+        import operator
+        if isinstance(index,slice):
+            return tuple(tuple(v) if isinstance(v,list) else int(v) for v in self._array[index].tolist())
+        value=self._array[operator.index(index)].tolist()
+        return tuple(value) if isinstance(value,list) else int(value)
+
+    def __iter__(self):
+        for value in self._array.tolist():yield tuple(value) if isinstance(value,list) else int(value)
+
+    def __array__(self,dtype=None,copy=None):
+        array=self._array
+        if dtype is not None:array=array.astype(dtype,copy=False)
+        return array.copy() if copy else array
+
+    def __repr__(self):return repr(tuple(self))
+
+    def __eq__(self,other):
+        if not hasattr(other,'__iter__'):return NotImplemented
+        return tuple(self)==tuple(other)

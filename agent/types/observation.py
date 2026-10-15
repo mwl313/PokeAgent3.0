@@ -420,25 +420,25 @@ class ObservationBatch:
     def device(self) -> torch.device:
         return self.token_mask.device
 
-    def to(self, device: torch.device | str) -> "ObservationBatch":
+    def to(self, device: torch.device | str, *, non_blocking=False) -> "ObservationBatch":
         # Always inspect the actual host mask at the transfer boundary. A
         # NumPy alias can change storage without changing its tensor version.
         limit = self._cpu_token_limit() if self.device.type == "cpu" else self.validated_token_limit
-        token_mask = self.token_mask.to(device)
+        token_mask = self.token_mask.to(device,non_blocking=non_blocking)
         return ObservationBatch(
             token_mask=token_mask,
-            categories=self.categories.to(device),
-            category_known=self.category_known.to(device),
-            floats=self.floats.to(device),
-            float_known=self.float_known.to(device),
-            flags=self.flags.to(device),
-            flag_known=self.flag_known.to(device),
-            role_ids=self.role_ids.to(device),
-            side_ids=self.side_ids.to(device),
+            categories=self.categories.to(device,non_blocking=non_blocking),
+            category_known=self.category_known.to(device,non_blocking=non_blocking),
+            floats=self.floats.to(device,non_blocking=non_blocking),
+            float_known=self.float_known.to(device,non_blocking=non_blocking),
+            flags=self.flags.to(device,non_blocking=non_blocking),
+            flag_known=self.flag_known.to(device,non_blocking=non_blocking),
+            role_ids=self.role_ids.to(device,non_blocking=non_blocking),
+            side_ids=self.side_ids.to(device,non_blocking=non_blocking),
             layout=self.layout,
             schema_version=self.schema_version,
             contract_hash=self.contract_hash,
-            ragged={name:section.to(device) for name,section in self.ragged.items()},
+            ragged={name:section.to(device,non_blocking=non_blocking) for name,section in self.ragged.items()},
         )._remember_token_limit(limit)
 
     def select(self, index: torch.Tensor | Sequence[int]) -> "ObservationBatch":

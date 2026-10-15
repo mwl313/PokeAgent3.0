@@ -58,6 +58,7 @@ class ConditionalPrefixScorer(nn.Module):
         # Experimental arithmetic backend; not a serialized model parameter.
         # Launchers retain gather until the mixed-precision delta is accepted.
         self.experimental_row_lookup = False
+        self.experimental_exact_row_lookup = False
         d = config.d_model
 
         self.field_embed_dims = {
@@ -183,10 +184,17 @@ class ConditionalPrefixScorer(nn.Module):
         # deterministic CUDA, gather's backward sorts that expanded index;
         # embedding accumulates complete rows instead. Keep the two lookups
         # separate so entity/move gradient contributions retain their graph.
-        if self.experimental_row_lookup:
+        row_lookup = self.experimental_row_lookup or (self.experimental_exact_row_lookup and encoded_tokens.is_cuda)
+        if row_lookup:
             table = encoded_tokens.reshape(tokens * token_count, d)
             row_base = torch.arange(tokens, device=encoded_tokens.device).unsqueeze(1) * token_count
-            entity_ref = torch.nn.functional.embedding(flat_entity.clamp_min(0) + row_base, table)
+            if self.experimental_exact_row_lookup:
+                from agent.model.exact_row_lookup import exact_rows
+                lookup=exact_rows
+            else:
+                # embedding's public argument order is index,table.
+                lookup=lambda table,index:torch.nn.functional.embedding(index,table)
+            entity_ref = lookup(table,flat_entity.clamp_min(0) + row_base)
         else:
             entity_ref = encoded_tokens.gather(1,flat_entity.clamp_min(0).unsqueeze(-1).expand(-1,-1,d))
         entity_ref=torch.where(has_entity.unsqueeze(-1),entity_ref,self.null_entity.view(1,1,d))
@@ -195,8 +203,8 @@ class ConditionalPrefixScorer(nn.Module):
         if bool(((flat_move < -1)|(flat_move>=token_count)).any()):
             raise ValueError('invalid move token reference')
         has_move = flat_move >= 0
-        if self.experimental_row_lookup:
-            move_ref = torch.nn.functional.embedding(flat_move.clamp_min(0) + row_base, table)
+        if row_lookup:
+            move_ref = lookup(table,flat_move.clamp_min(0) + row_base)
         else:
             move_ref = encoded_tokens.gather(1,flat_move.clamp_min(0).unsqueeze(-1).expand(-1,-1,d))
         move_ref = torch.where(

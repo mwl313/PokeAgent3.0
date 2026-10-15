@@ -24,7 +24,7 @@ def digest(items):
             h.update(name.encode());h.update(tensor.detach().cpu().contiguous().numpy().tobytes())
     return h.hexdigest()
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--reference',action='store_true');p.add_argument('--fp32',action='store_true');p.add_argument('--artifact',required=True);p.add_argument('--output',required=True)
+    p=argparse.ArgumentParser();p.add_argument('--reference',action='store_true');p.add_argument('--fp32',action='store_true');p.add_argument('--exact',action='store_true');p.add_argument('--artifact',required=True);p.add_argument('--output',required=True)
     a=p.parse_args();out=pathlib.Path(a.output);out.mkdir(parents=True,exist_ok=False)
     from types import SimpleNamespace
     from scripts.run_ddp_ppo import pin_deterministic_workspace
@@ -33,7 +33,8 @@ def main():
     torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction=False
     if a.reference:
         ConditionalPrefixScorer.token_references=install_reference('agent/model/scorer.py').ConditionalPrefixScorer.token_references
-        RaggedBatch.from_rows=install_reference('agent/types/ragged.py').RaggedBatch.from_rows
+        old_ragged=install_reference('agent/types/ragged.py').RaggedBatch
+        RaggedBatch.from_rows=classmethod(old_ragged.__dict__['from_rows'].__func__)
         NativeCollector._prefix_actions=staticmethod(install_reference('agent/train/native_collector.py').NativeCollector._prefix_actions)
     saved=load_envelope(str(pathlib.Path(a.artifact).resolve()))
     # Actual captured family rows, repeated solely for bounded timing.
@@ -58,7 +59,9 @@ def main():
     start=time.perf_counter();batch=buffer.to_batch(device='cuda:0');torch.cuda.synchronize();prepare=time.perf_counter()-start
     batch.raw_advantages=torch.linspace(-1,1,1024,device='cuda:0');batch.returns=torch.linspace(-.5,.5,1024,device='cuda:0')
     model=build_model(PA3Config(**saved['model_config']),device='cuda:0');model.load_state_dict(saved['model']);model.configure_precision('A' if a.fp32 else 'D')
-    model.scorer.experimental_row_lookup=not a.reference
+    if a.reference and a.exact:raise ValueError('reference and exact backend are mutually exclusive')
+    model.scorer.experimental_row_lookup=not a.reference and not a.exact
+    model.scorer.experimental_exact_row_lookup=a.exact
     learner=PPOLearner(model,PPOConfig(ppo_epochs=2),device='cuda:0',**({'amp':False} if a.fp32 else {}))
     def step(proof=False):
         learner.optimizer.zero_grad(set_to_none=True);terms=learner._forward_terms(batch)
@@ -80,7 +83,7 @@ def main():
       'runtime_file_sha256':{name:hashlib.sha256(pathlib.Path(name).read_bytes()).hexdigest() for name in ['agent/model/scorer.py','agent/types/ragged.py','agent/train/native_collector.py']},
       'CUBLAS_WORKSPACE_CONFIG':__import__('os').environ.get('CUBLAS_WORKSPACE_CONFIG'),'rows':1024,'local_seconds':local,'ragged_hashes':ragged_hashes,
       'prefix_actions':actions,'prepare_with_H2D_s':prepare,'full_gpu_step_ms':times,'full_gpu_step_median_ms':statistics.median(times),**proof,
-      'precision':'A/FP32' if a.fp32 else 'D/FP16','experimental_row_lookup':not a.reference,
+      'precision':'A/FP32' if a.fp32 else 'D/FP16','experimental_row_lookup':not a.reference and not a.exact,'experimental_exact_row_lookup':a.exact,
       'scope':'real captured observations/candidates and model, synthetic advantage/return; single-process update, not DDP/self-play or games/s; local CPU operations each five post-warmup samples'}
     (out/'SUMMARY.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result,indent=2))
 if __name__=='__main__':main()

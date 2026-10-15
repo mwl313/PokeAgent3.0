@@ -37,3 +37,15 @@ def test_deterministic_workspace_is_pinned_and_conflicts_rejected(monkeypatch):
     assert os.environ['CUBLAS_WORKSPACE_CONFIG']==':4096:8'
     monkeypatch.setenv('CUBLAS_WORKSPACE_CONFIG',':16:8')
     with pytest.raises(RuntimeError,match='requires'):module.pin_deterministic_workspace(args)
+
+
+def test_exact_lookup_requires_bounded_explicit_contract_and_resume_parity():
+    _,module=launcher()
+    assert not module.parse_args([]).experimental_exact_token_lookup
+    with pytest.raises(SystemExit):module.parse_args(['--experimental-exact-token-lookup'])
+    flags=['--experimental-exact-token-lookup','--deterministic-diagnostic','--precision-mode','D','--precision-stability','fp16-reduction-off']
+    args=module.parse_args(flags)
+    module.validate_lookup_restore({'token_lookup_backend':'exact-row-v100-v1'},args)
+    with pytest.raises(RuntimeError,match='backend mismatch'):module.validate_lookup_restore({},args)
+    with pytest.raises(RuntimeError,match='backend mismatch'):module.validate_lookup_restore({'token_lookup_backend':'exact-row-v100-v1'},module.parse_args([]))
+    with pytest.raises(SystemExit):module.parse_args(flags+['--iterations','6'])
