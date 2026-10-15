@@ -1,0 +1,12 @@
+{
+  "payload_sha256": {
+    "run.py": "6d05653a148db714d0eeacf490a36c96b96b4540a79cdc69a85d22554d7f18b5",
+    "process.rank0.log": "c1169a80444e3a05d8ab6d2f10af5ee05c9e5efb149155ce06b5d81ba0fc1645",
+    "report.json.rank1.json": "f8d5e833ef47a355fb9ca8851261b6031fc618d930c10c92d4ebf563cf1a32a1",
+    "SUMMARY.json": "87cabd720eba9f5126d65b59559438893ea79aed927316b73b44dd85650ca873",
+    "report.json.rank0.json": "02bf221d57225336698c9ccfeb15e55816f26d6a88069f8ff49ae71e246c1bee",
+    "process.rank1.log": "e363a642deaf0ab3f332794a2a0ca9fd101095d433d0648a846cd927f1910561"
+  },
+  "checkpoint_publication_files": [],
+  "original_campaign_latest": "iter-000000004096-1791958101732995099"
+}
