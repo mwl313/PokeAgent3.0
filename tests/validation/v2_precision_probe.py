@@ -22,7 +22,7 @@ if a.reference:
  # Historical executable, independent autocast boundary on the original layer.
  layer=model.encoder.embedding.ragged_embedding.numeric['effects']
  def explicit_fp32(x):
-  with torch.autocast('cuda',enabled=False):return F.linear(x.float(),layer.weight.float(),None)
+  with torch.autocast('cuda',enabled=False):return F.linear(x.float(),layer.weight.float(),None if layer.bias is None else layer.bias.float())
  layer.forward=explicit_fp32
 learner=PPOLearner(model,PPOConfig(ppo_epochs=2),device='cuda:0')
 learner.optimizer.zero_grad(set_to_none=True);terms=learner._forward_terms(batch)
