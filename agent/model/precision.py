@@ -10,6 +10,11 @@ class PrecisionContract:
     encoder_amp: bool
     scorer_amp: bool
     gru_amp: bool
+    # The effects ragged projection is the only known batch-composition
+    # sensitive FP16 GEMM on the V100 Mode-D path.  Keeping this narrow
+    # projection in FP32 preserves AMP for the much larger dense encoder while
+    # making its result independent of the number of packed ragged rows.
+    ragged_effects_fp32: bool = False
     @property
     def identity(self) -> str:
         return f"pa3-precision-{self.mode}-v2"
@@ -34,7 +39,7 @@ _CONTRACTS = {
     "A": PrecisionContract("A", False, False, False, False),
     "B": PrecisionContract("B", False, True, True, True),
     "C": PrecisionContract("C", True, True, True, True),
-    "D": PrecisionContract("D", True, True, False, False),
+    "D": PrecisionContract("D", True, True, False, False, True),
 }
 def get_precision_contract(mode: str) -> PrecisionContract:
     try:

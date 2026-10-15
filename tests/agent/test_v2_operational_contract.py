@@ -57,10 +57,10 @@ def test_v2_secondary_is_resolved_and_configuration_drift_rejected(tmp_path, mon
     profile=json.loads((root/'configs/pa3_v2_production.yaml').read_text())
     resolved=resolve_profile(str(root/'configs/pa3_v2_production.yaml'))
     assert launcher_values(resolved)['recompute_secondary'] is True
-    for field,value in [('recompute_secondary',False),('tolerance',.002)]:
+    for field,value in [('recompute_secondary',False),('tolerance',.002),('ragged_effects_fp32',False)]:
         bad=json.loads(json.dumps(profile));bad['precision'][field]=value
         path=tmp_path/'bad.json';path.write_text(json.dumps(bad))
-        with pytest.raises(ValueError,match='secondary safety'):resolve_profile(str(path))
+        with pytest.raises(ValueError,match='secondary safety|stable ragged-effects'):resolve_profile(str(path))
     args=module.parse_args(['--profile','configs/pa3_v2_production.yaml',
         '--team-stats-root',str(tmp_path/'stats'),'--rolling-checkpoint-root',str(tmp_path/'rolling'),
         '--experimental-checkpoint',str(tmp_path/'boundary')])

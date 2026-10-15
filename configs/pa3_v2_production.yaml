@@ -34,6 +34,7 @@
     "stability": "fp16-reduction-off",
     "observation": "fp16-round-continuous-then-fp32",
     "encoder_amp": true,
+    "ragged_effects_fp32": true,
     "scorer_fp32": true,
     "gru_fp32": true,
     "recompute_gate": true,

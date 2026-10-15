@@ -54,7 +54,16 @@ def validate_contract(receipt,*,source,target,checkpoint_hash,rank_hashes,runtim
         if profile[section]!=original_profile[section]:raise ValueError('migration execution contract changed: '+section)
     before=dict(original_profile['precision']);after=dict(profile['precision']);after.pop('recompute_secondary',None);before.pop('recompute_secondary',None)
     after.pop('canonical_encoder_batch_rows',None);before.pop('canonical_encoder_batch_rows',None)
+    # This is a deliberately narrow numerical migration: Mode D's ragged
+    # effects projection is forced to FP32 after the preserved V100 failure
+    # replay proved its FP16 GEMM was batch-composition dependent.  The
+    # receipt must name the transition; no checkpoint may silently acquire it.
+    after.pop('ragged_effects_fp32',None);before.pop('ragged_effects_fp32',None)
     if original_profile['precision'].get('canonical_encoder_batch_rows',0)!=0 or profile['precision'].get('canonical_encoder_batch_rows')!=1024 or receipt.get('canonical_encoder_transition')!={'historical':0,'future':1024}:raise ValueError('canonical encoder contract mismatch')
+    if (original_profile['precision'].get('ragged_effects_fp32',False)
+            or profile['precision'].get('ragged_effects_fp32') is not True
+            or receipt.get('ragged_effects_precision_transition') != {'historical':'fp16','future':'fp32'}):
+        raise ValueError('ragged effects precision migration mismatch')
     if before!=after or profile['precision'].get('recompute_secondary') is not True:raise ValueError('migration precision incompatible')
     for key in ('manifest_sha256','teams_sha256','train_teams','sampling','id'):
         if profile['dataset'][key]!=original_profile['dataset'][key]:raise ValueError('migration dataset changed')
@@ -138,6 +147,7 @@ def prepare(root,checkpoint,parity_report,team_stats_root,output):
         'action_schema_hash':state['action_schema_hash'],'model_config_hash':state['model_config_hash'],'ppo_config_hash':state['ppo_config_hash'],
         'verified_rank_digests':state['rank_digests'],'engine_sha256':sha(root/'engine/python/pa3_engine/pa3_engine.so'),
         'canonical_encoder_transition':{'historical':0,'future':1024},
+        'ragged_effects_precision_transition':{'historical':'fp16','future':'fp32'},
         'token_lookup_backend':'gather','secondary_activation':{'historical':False,'future':True},
         'team_stats_origin_root':str(origin/'team_stats'),'team_stats_lineage_id':run_identity(origin/'team_stats'),
         'team_stats_root':str(Path(team_stats_root).resolve()),'parity_report':str(proof),'parity_report_sha256':sha(proof)}

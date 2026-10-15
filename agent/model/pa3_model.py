@@ -227,6 +227,9 @@ class PA3Model(nn.Module):
     def configure_precision(self, mode: str) -> None:
         self.precision_contract = get_precision_contract(mode)
         self.scorer.precision_contract = self.precision_contract
+        self.encoder.embedding.ragged_embedding.fp32_effects = (
+            self.precision_contract.ragged_effects_fp32
+        )
 
     def value(self, encoded: EncodedState) -> torch.Tensor:
         return self.value_head(encoded.global_repr).squeeze(-1)

@@ -30,6 +30,8 @@ def resolve_profile(path: str) -> dict:
     if data["version"] == "pa3-v2-production-v1":
         if p.get("recompute_secondary") is not True or p.get("tolerance") != 1e-3:
             raise ValueError("V2 requires secondary safety and unchanged primary tolerance")
+        if p.get("ragged_effects_fp32") is not True:
+            raise ValueError("V2 requires the verified stable ragged-effects projection")
         if p.get("canonical_encoder_batch_rows") != 1024:
             raise ValueError("V2 requires canonical1024 ModeD encoder batches")
         if c.get("world_size") != 2 or c.get("executor") != "ddp":
