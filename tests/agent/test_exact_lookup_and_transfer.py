@@ -36,6 +36,9 @@ def test_lazy_candidates_keep_tuple_repr_numpy_and_immutable_ownership():
         seq=CanonicalCandidateSequence(row,field)
         expected=tuple(tuple(v) if isinstance(v,list) else int(v) for v in getattr(row,field).tolist())
         assert seq==expected and expected==seq and repr(seq)==repr(expected)
+        import pickle,copy
+        assert type(pickle.loads(pickle.dumps(seq))) is tuple
+        assert pickle.loads(pickle.dumps(seq))==expected and copy.deepcopy(seq)==expected
         assert seq[-1]==expected[-1] and seq[:1]==expected[:1]
         np.testing.assert_array_equal(np.asarray(seq),np.asarray(expected))
         with pytest.raises(ValueError):np.asarray(seq).setflags(write=True)

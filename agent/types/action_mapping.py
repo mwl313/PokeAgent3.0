@@ -1,6 +1,6 @@
 """Shared canonical decode/token references for typed, packed and stored rows."""
 import numpy as np
-from dataclasses import dataclass
+from dataclasses import dataclass, field as dataclass_field
 
 
 def canonical_records(records):
@@ -120,13 +120,15 @@ class CanonicalCandidateSequence:
     """
     row: CanonicalCandidateRow
     field: str = 'records'
+    _data: np.ndarray = dataclass_field(init=False,repr=False)
 
     def __post_init__(self):
         if not isinstance(self.row,CanonicalCandidateRow) or self.field not in ('records','entity','move'):
             raise ValueError('candidate sequence requires a trusted immutable row')
+        object.__setattr__(self,'_data',getattr(self.row,self.field))
 
     @property
-    def _array(self):return getattr(self.row,self.field)
+    def _array(self):return self._data
 
     def __len__(self):return len(self._array)
 
@@ -146,6 +148,11 @@ class CanonicalCandidateSequence:
         return array.copy() if copy else array
 
     def __repr__(self):return repr(tuple(self))
+
+    def __reduce__(self):
+        # Failure diagnostics/legacy serializers must retain the old tuple
+        # wire; do not pickle a block that could lose NumPy immutability.
+        return tuple,(tuple(self),)
 
     def __eq__(self,other):
         if not hasattr(other,'__iter__'):return NotImplemented
