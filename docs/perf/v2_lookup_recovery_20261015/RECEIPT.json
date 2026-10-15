@@ -1,0 +1,21 @@
+{
+  "executed_final_runtime_sha": "1b4be6f23a82df77f4c359e4842b2e847a2e6b7d",
+  "mode_D_executed_sha": "1d89863fcf1053ca054e5fb4f10f79ddb8841c1b",
+  "migration_blocked": "V2 migration changed protected runtime",
+  "default_gpu_backend": "original gather; new row lookup opt-in only",
+  "evidence_sha256": {
+    "COMPARISON.json": "d73dbe6c9f486a537366de5490e71b1439ea118edc2170b79035ea44875fe7c6",
+    "NUMERICAL_COMPARISON.json": "076deb9d03ebfbdeaa98437185da640f7478e07d86ee615f142b2ef4f3b1c53d",
+    "candidate.json": "4b9fc3d68c979e0389d9a0e62f74249e8e5d579ef3fdae586442e99a74a79dca",
+    "candidate_fp32.json": "f2f45c3794447403f8c5cff51e5058e54510bff603ff4151419619aab40f554a",
+    "cpu_safe_paths.json": "fe2a1ce7a03f42e5684c520869b9de84f10b81e59f9bc86af2875d22cede987b",
+    "focused_tests.log": "8b1c16dcb6dcf20fab75c7f2f3d2d28e303a0ebf992dced5cd920cf6140fd817",
+    "reference.json": "fccd4cbb192a820ebfbac86e5058f59bb7b2f9dc4e05d01e1a13834a06408a84",
+    "reference_fp32.json": "a1107c3bc120887862bc04c163a5e8267400323eb64ad163e4d83f00a0fb340a",
+    "regressions.log": "f1178cfd1d2b74cc1c33a1faccbc21035b6e73576b8032357c739d4204943b4a"
+  },
+  "microbatch": 1024,
+  "production_restarted": false,
+  "full_stack_AB": "skipped by user",
+  "note": "Gradient and model tensors remain local; no bit-exact FP16 promotion. Receipt excludes itself."
+}

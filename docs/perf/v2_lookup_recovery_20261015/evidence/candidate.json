@@ -1,0 +1,112 @@
+{
+  "source_sha": "1d89863fcf1053ca054e5fb4f10f79ddb8841c1b",
+  "reference_methods_sha": null,
+  "runtime_file_sha256": {
+    "agent/model/scorer.py": "cb03d4434337a6f35f7b9852514aae5356ac70e34e0c548b1b6029eaef9761b0",
+    "agent/types/ragged.py": "6da93445888f435704922f953b9956a85ec44f17921080dfac8743871e8332eb",
+    "agent/train/native_collector.py": "fc3aa227eeacf74c490d4f77fa79a2b4c4c77f34c2857ade871e43e82a31e48e"
+  },
+  "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+  "rows": 1024,
+  "local_seconds": {
+    "ragged_effects": [
+      0.0005143459998180333,
+      0.000522249999903579,
+      0.0005116970000926813,
+      0.00051704499992411,
+      0.0005103169999074453
+    ],
+    "ragged_repertoire": [
+      0.0005070650001925969,
+      0.0005121369999869785,
+      0.000506550999944011,
+      0.0005097490000025573,
+      0.0005017140001655207
+    ],
+    "ragged_types": [
+      0.0005190379999930883,
+      0.000504936999959682,
+      0.0005144550000295567,
+      0.0005027570000493142,
+      0.000518189999866081
+    ],
+    "ragged_base_moves": [
+      0.000753418999920541,
+      0.0005814250000639731,
+      0.0006441980001454795,
+      0.0006152779999410996,
+      0.0005902020000121411
+    ],
+    "ragged_move_effects": [
+      0.0006828489999861631,
+      0.0006772270000965364,
+      0.000673168000048463,
+      0.0006761449999430624,
+      0.0006777060000331403
+    ],
+    "prefix_10000": [
+      0.01077886000007311,
+      0.010083828999995603,
+      0.010409065999965605,
+      0.010379026000009617,
+      0.009391334000156348
+    ]
+  },
+  "ragged_hashes": {
+    "effects": "9e1b0dd45da4cd9f9ba23d2c73da8e060dfee20a3de2586b350e69658705e82c",
+    "repertoire": "09c856f79e0dccae2fd3c9be56047e350a65b764beffa2d728d85bc6adb7d0a0",
+    "types": "31cbf3347240c1220aabab0506631b0225e2b7a8d80f8241c3b67325de2b3e4f",
+    "base_moves": "553db21bfd94e0d036c7d6f60fe9ad95e7fd784d5e89cee4bfd8c48bece9286a",
+    "move_effects": "8ae8d8e26447a3a6609b556545e05ab7c553d7a86d0e7369aa0e3039ac111cc2"
+  },
+  "prefix_actions": [
+    [
+      1,
+      0,
+      2,
+      -1,
+      255,
+      1
+    ],
+    [
+      1,
+      1,
+      0,
+      -2,
+      255,
+      0
+    ]
+  ],
+  "prepare_with_H2D_s": 0.4542497149998326,
+  "full_gpu_step_ms": [
+    385.2103576660156,
+    381.744140625,
+    381.48602294921875,
+    388.0601501464844,
+    380.1190490722656
+  ],
+  "full_gpu_step_median_ms": 381.744140625,
+  "losses": {
+    "loss_unscaled": 0.01000647246837616,
+    "value_mean": 0.13749152421951294,
+    "policy_mean": 0.018768472597002983,
+    "value_mean_detached": 0.13749152421951294,
+    "entropy_mean": 0.8933889269828796,
+    "uniform_kl_mean": 0.17188814282417297,
+    "approx_kl_mean": 2.0979737946902333e-09,
+    "ratio_mean": 0.9999950528144836,
+    "clip_fraction": 0.0,
+    "actor_count": 640.0,
+    "value_count": 1024.0,
+    "policy_sum": 12.011822700500488,
+    "value_sum": 140.79132080078125,
+    "entropy_sum": 571.7689208984375,
+    "uniform_kl_sum": 110.00840759277344,
+    "kl_sum": 1.3427032854451681e-06,
+    "ratio_sum": 639.996826171875,
+    "clip_sum": 0.0
+  },
+  "gradient_digest": "63ea374e82e457420e6819ad937957d3546906bdb6d1e4b5a9a37d005741ef62",
+  "updated_model_digest": "9fb13e1196f8cf118063386d5e0393e6e337a564ac43ffaf1480c7c69d43cb21",
+  "scope": "real captured observations/candidates and model, synthetic advantage/return; single-process update, not DDP/self-play or games/s; local CPU operations each five post-warmup samples"
+}

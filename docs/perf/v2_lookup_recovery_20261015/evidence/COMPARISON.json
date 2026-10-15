@@ -1,0 +1,48 @@
+{
+  "reference": {
+    "losses_equal": true,
+    "gpu_median_ms": [
+      533.3196411132812,
+      381.744140625
+    ],
+    "gradients.pt": {
+      "bitwise_equal": false,
+      "max_abs": 3.0517578125e-05,
+      "relative_l2": 0.00015707644420888872,
+      "allclose_rtol1e4_atol1e6": false
+    },
+    "updated_model.pt": {
+      "bitwise_equal": false,
+      "max_abs": 3.7066638469696045e-07,
+      "relative_l2": 4.2582933213785756e-08,
+      "allclose_rtol1e4_atol1e6": true
+    }
+  },
+  "reference_fp32": {
+    "losses_equal": true,
+    "gpu_median_ms": [
+      924.7928466796875,
+      771.5921630859375
+    ],
+    "gradients.pt": {
+      "bitwise_equal": false,
+      "max_abs": 1.862645149230957e-08,
+      "relative_l2": 1.642092010300156e-07,
+      "allclose_rtol1e4_atol1e6": true
+    },
+    "updated_model.pt": {
+      "bitwise_equal": false,
+      "max_abs": 1.4901161193847656e-08,
+      "relative_l2": 1.1270877849993232e-09,
+      "allclose_rtol1e4_atol1e6": true
+    }
+  },
+  "safe_cpu_paths": {
+    "representation": true,
+    "losses": true,
+    "gradient_digest": true,
+    "adam_digest": true,
+    "updated_model_digest": true
+  },
+  "cpu_materialize_median_s": 0.05001176599989776
+}

@@ -1,0 +1,8 @@
+...............................                                          [100%]
+=============================== warnings summary ===============================
+tests/agent/test_token_lookup_optimization.py::test_lookup_output_input_and_parameter_gradients[False-False-cuda]
+  /home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/lib/python3.12/site-packages/torch/autograd/graph.py:1072: UserWarning: Attempting to run cuBLAS, but there was no current CUDA context! Attempting to set the primary context... (Triggered internally at /__w/pytorch/pytorch/aten/src/ATen/cuda/CublasHandlePool.cpp:410.)
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+31 passed, 1 warning in 3.75s

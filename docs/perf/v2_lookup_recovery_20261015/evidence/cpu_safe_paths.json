@@ -1,0 +1,105 @@
+{
+  "source_sha": "1b4be6f23a82df77f4c359e4842b2e847a2e6b7d",
+  "runtime_file_hashes": {
+    "agent/types/action_mapping.py": "c84e7b485f5f0fea746448872d79eb1ba002164295351d12206b739e3108b1f7",
+    "agent/types/ragged.py": "6da93445888f435704922f953b9956a85ec44f17921080dfac8743871e8332eb",
+    "agent/buffer/rollout_buffer.py": "a5e414344021f785e1417f1ac111c6157b9c75f8dccc866136691459372e3ff7",
+    "agent/train/native_collector.py": "fc3aa227eeacf74c490d4f77fa79a2b4c4c77f34c2857ade871e43e82a31e48e"
+  },
+  "dirty": false,
+  "rows": 576,
+  "candidate_records": 4233,
+  "times": [
+    {
+      "candidate_s": 0.013143545000048107,
+      "record_s": 0.03772019799998816,
+      "materialize_s": 0.06616614099993967
+    },
+    {
+      "candidate_s": 0.007951311999931931,
+      "record_s": 0.02651269900002262,
+      "materialize_s": 0.06328238300011435
+    },
+    {
+      "candidate_s": 0.00761079900007644,
+      "record_s": 0.02836520100004236,
+      "materialize_s": 0.04872381299992412
+    },
+    {
+      "candidate_s": 0.007863366000037786,
+      "record_s": 0.026545004999888988,
+      "materialize_s": 0.05001176599989776
+    },
+    {
+      "candidate_s": 0.008034452999936548,
+      "record_s": 0.02723830100012492,
+      "materialize_s": 0.041674720999935744
+    }
+  ],
+  "representation": {
+    "observation": "5a3dd8b28c17ebc589053380b9521cb7fd8cc191209704313fd26304392b11c9",
+    "candidates": "2ce4660807d1934516ce13e23a4edd136aaf439f71f595b09271f5c212a90ba7",
+    "rows": "30bfc69e2db5168cb4e96edc3325aff0d96e96ea31eb889409385e1ce53d9447"
+  },
+  "losses": {
+    "loss_unscaled": -0.008719177916646004,
+    "value_mean": 0.09376110881567001,
+    "policy_mean": -0.00016780693840701133,
+    "value_mean_detached": 0.09376110881567001,
+    "entropy_mean": 0.8778391480445862,
+    "uniform_kl_mean": 0.2270200401544571,
+    "approx_kl_mean": 1.4013911595611717e-06,
+    "ratio_mean": 0.9995996952056885,
+    "clip_fraction": 0.0,
+    "actor_count": 48.0,
+    "value_count": 48.0,
+    "policy_sum": -0.008054733276367188,
+    "value_sum": 4.500533103942871,
+    "entropy_sum": 42.13628005981445,
+    "uniform_kl_sum": 10.89696216583252,
+    "kl_sum": 6.726677383994684e-05,
+    "ratio_sum": 47.98078536987305,
+    "clip_sum": 0.0
+  },
+  "gradient_digest": "c761f241bd8c23a35b1645cf581266426c9e7b5570dbef802b78203d60ec1c37",
+  "adam_digest": "102943d8fd93cc7cf15bef03d33c08cf0c6d9c1a4aa1a1749401c9fff7aa1a3e",
+  "updated_model_digest": "c452c1d5156424d403b67be6096ad4c069faccc4e7a73c0c9a407b5328c4d6d7",
+  "max_rss_kib": 1698516,
+  "model_config": {
+    "name": "PA3-8M",
+    "initialization": "random",
+    "observation_contract_hash": "dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35",
+    "target_vocab": 5,
+    "null_entity_reference": true,
+    "encoder_layers": 6,
+    "d_model": 320,
+    "attention_heads": 5,
+    "head_dim": 64,
+    "ffn_dim": 1280,
+    "activation": "gelu",
+    "pre_layernorm": true,
+    "causal_attention": false,
+    "dropout": 0.0,
+    "attention_dropout": 0.0,
+    "tokens": 96,
+    "active_tokens": 88,
+    "category_slots": 32,
+    "float_slots": 50,
+    "flag_slots": 40,
+    "category_vocab": 8192,
+    "category_embed_dim": 16,
+    "role_vocab": 12,
+    "side_vocab": 3,
+    "prefix_decoder": "GRUCell",
+    "prefix_hidden": 320,
+    "max_request_branches": 4,
+    "candidate_padding": 64,
+    "critic_hidden": 256,
+    "critic_output": "linear_scalar",
+    "critic_input": "observation_only",
+    "embedding_init_std": 0.02,
+    "linear_init": "xavier",
+    "policy_output_init_gain": 0.01,
+    "seed": 20261006
+  }
+}
