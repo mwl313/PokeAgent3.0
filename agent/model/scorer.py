@@ -55,6 +55,9 @@ class ConditionalPrefixScorer(nn.Module):
         config.validate()
         self.config = config
         self.precision_contract: PrecisionContract = get_precision_contract("A")
+        # Experimental arithmetic backend; not a serialized model parameter.
+        # Launchers retain gather until the mixed-precision delta is accepted.
+        self.experimental_row_lookup = False
         d = config.d_model
 
         self.field_embed_dims = {
@@ -180,16 +183,22 @@ class ConditionalPrefixScorer(nn.Module):
         # deterministic CUDA, gather's backward sorts that expanded index;
         # embedding accumulates complete rows instead. Keep the two lookups
         # separate so entity/move gradient contributions retain their graph.
-        table = encoded_tokens.reshape(tokens * token_count, d)
-        row_base = torch.arange(tokens, device=encoded_tokens.device).unsqueeze(1) * token_count
-        entity_ref = torch.nn.functional.embedding(flat_entity.clamp_min(0) + row_base, table)
+        if self.experimental_row_lookup:
+            table = encoded_tokens.reshape(tokens * token_count, d)
+            row_base = torch.arange(tokens, device=encoded_tokens.device).unsqueeze(1) * token_count
+            entity_ref = torch.nn.functional.embedding(flat_entity.clamp_min(0) + row_base, table)
+        else:
+            entity_ref = encoded_tokens.gather(1,flat_entity.clamp_min(0).unsqueeze(-1).expand(-1,-1,d))
         entity_ref=torch.where(has_entity.unsqueeze(-1),entity_ref,self.null_entity.view(1,1,d))
 
         flat_move = move_token.reshape(tokens, -1)
         if bool(((flat_move < -1)|(flat_move>=token_count)).any()):
             raise ValueError('invalid move token reference')
         has_move = flat_move >= 0
-        move_ref = torch.nn.functional.embedding(flat_move.clamp_min(0) + row_base, table)
+        if self.experimental_row_lookup:
+            move_ref = torch.nn.functional.embedding(flat_move.clamp_min(0) + row_base, table)
+        else:
+            move_ref = encoded_tokens.gather(1,flat_move.clamp_min(0).unsqueeze(-1).expand(-1,-1,d))
         move_ref = torch.where(
             has_move.unsqueeze(-1), move_ref, self.null_move.view(1, 1, d)
         )

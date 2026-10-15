@@ -26,6 +26,7 @@ def test_lookup_output_input_and_parameter_gradients(device,all_null,noncontiguo
     with torch.random.fork_rng(devices=[0] if device=='cuda' else []):
         torch.manual_seed(77)
         new=ConditionalPrefixScorer(PA3Config()).to(device);old=copy.deepcopy(new)
+        new.experimental_row_lookup=True
         x=torch.randn(3,11,320,device=device)
         if noncontiguous:x=x.transpose(1,2).contiguous().transpose(1,2)
         a=x.detach().requires_grad_();b=x.detach().clone(memory_format=torch.preserve_format).requires_grad_()
