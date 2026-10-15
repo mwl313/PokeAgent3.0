@@ -41,7 +41,8 @@
     "tolerance": 0.001,
     "contract_version": "pa3-precision-D-v2",
     "recompute_secondary": true,
-    "canonical_encoder_batch_rows": 1024
+    "canonical_encoder_batch_rows": 1024,
+    "amp_overflow_retries": 3
   },
   "dataset": {
     "id": "a10-p0-proposed-20261013",

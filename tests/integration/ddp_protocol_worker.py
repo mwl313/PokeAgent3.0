@@ -28,6 +28,9 @@ from tests_integration_helpers import collect_rows, small_config  # noqa: E402
 CASES = [
     {"name": "uneven_trajectories", "mode": "uneven"},
     {"name": "empty_rank", "mode": "empty"},
+    {"name": "retry_uneven", "mode": "uneven", "retry": True},
+    {"name": "retry_empty", "mode": "empty", "retry": True},
+    {"name": "retry_exhausted", "mode": "empty", "retry": True, "exhaust": True},
 ]
 
 
@@ -107,13 +110,34 @@ def run_case(rank: int, world_size: int, case: dict, seed: int, cache_device=Non
     plan = learner.prepare_streaming_ddp(buffer, rows=shard, cache_device=cache_device)
     assert (plan.cached_batch is not None) == (cache_device == "cpu" and bool(shard))
     fallback = buffer.to_batch(rows[:1], device="cpu") if not shard else None
-    report = learner.update_ddp(
-        plan,
-        committed_matches=1_000,
-        generator=torch.Generator().manual_seed(seed + 1),
-        communication=communication,
-        fallback_batch=fallback,
-    )
+    if case.get('retry'):
+        learner.scaler=torch.amp.GradScaler('cpu',enabled=True)
+        learner.amp_overflow_retries=3
+        first_parameter=next(model.parameters())
+        poisoned=[False]
+        def inject(gradient):
+            if rank==0 and (not poisoned[0] or case.get('exhaust')):
+                poisoned[0]=True
+                return gradient*float('inf')
+            return gradient
+        first_parameter.register_hook(inject)
+    initial_digest=hashlib.sha256(torch.cat([v.detach().reshape(-1) for v in model.state_dict().values()]).numpy().tobytes()).hexdigest()
+    try:
+        report = learner.update_ddp(
+            plan,
+            committed_matches=1_000,
+            generator=torch.Generator().manual_seed(seed + 1),
+            communication=communication,
+            fallback_batch=fallback,
+        )
+    except RuntimeError as error:
+        if not case.get('exhaust'):raise
+        assert 'retry exhausted' in str(error)
+        digest=hashlib.sha256(torch.cat([v.detach().reshape(-1) for v in model.state_dict().values()]).numpy().tobytes()).hexdigest()
+        assert digest==initial_digest and learner.optimizer_steps==0 and not learner.optimizer.state
+        return {'rejected':True,'model_unchanged':True,'optimizer_steps':0}
+    if case.get('exhaust'):raise AssertionError('persistent nonfinite gradient was accepted')
+
 
     reference_rows = shard0 + shard1
     reference_learner, reference_report = reference_update(buffer, reference_rows, seed)
@@ -175,6 +199,8 @@ def run_case(rank: int, world_size: int, case: dict, seed: int, cache_device=Non
         "optimizer_steps": learner.optimizer_steps,
         "reference_optimizer_steps": reference_learner.optimizer_steps,
         "skipped": report.optimizer_steps_skipped,
+        "retries": report.optimizer_step_retries,
+        "scaler_scale":report.scaler_scale,
         "epoch_kl": list(report.epoch_approx_kl),
         "reference_epoch_kl": list(reference_report.epoch_approx_kl),
         "learning_rate": learner.scheduler.learning_rate,

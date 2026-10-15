@@ -155,6 +155,7 @@ def parse_args(argv=None):
     # v5 A/B promotion (2026-10-09): dual default is now micro 1024
     # (median 26.25 -> 32.50 games/s, all gates PASS; docs/perf/V5_MICROBATCH_AB.md).
     # PPOConfig and both YAML mirrors now agree with that measured promotion.
+    parser.add_argument("--amp-overflow-retries", type=int, choices=range(4), default=0, help="bounded collective retry of the identical minibatch after scaler backoff")
     parser.add_argument("--microbatch", type=int, default=1024)
     parser.add_argument("--minibatch", type=int, default=4096, help="global minibatch (both ranks)")
     parser.add_argument("--seed", type=int, default=20261009)
@@ -256,6 +257,7 @@ def parse_args(argv=None):
                       "experimental-lr-scale": str(resolved["profile"]["training"]["lr_scale"]),
                       "precision-mode": resolved["profile"]["precision"]["mode"],
                       "precision-stability": resolved["profile"]["precision"]["stability"],
+                      "amp-overflow-retries":str(resolved["profile"]["precision"].get("amp_overflow_retries",0)),
                       "canonical-encoder-batch-rows":str(resolved["profile"]["precision"].get("canonical_encoder_batch_rows",0)),
                       "historical-probability": str(resolved["profile"]["training"]["historical_probability"]),
                       "microbatch": str(resolved["profile"]["training"]["microbatch"]),
@@ -665,6 +667,7 @@ def worker(args) -> None:
         if saved_scale_value is not None and abs(float(saved_scale_value) - lr_scale) > 1e-12:
             raise RuntimeError("experimental resume LR scale mismatch; use an explicit matching arm")
     learner = PPOLearner(model, ppo_config, device=device, lr_scale=lr_scale)
+    learner.amp_overflow_retries=args.amp_overflow_retries
 
     source_sha = source_provenance().get("git_sha")
     source_migration = resume_envelope.get("experiment", {}).get("source_migration") if resume_envelope else None
@@ -762,6 +765,11 @@ def worker(args) -> None:
             expected_source_sha = recorded_source_sha
             note(f"explicit checkpoint migration: {recorded_source_sha} -> {source_sha}")
         validate_secondary_restore(saved_experiment,args,source_migration)
+        saved_retries=saved_experiment.get('amp_overflow_retries',0)
+        if saved_retries != args.amp_overflow_retries:
+            if not (saved_retries==0 and args.amp_overflow_retries==3
+                    and source_migration and source_migration.get('scope')=='pa3-v2-reviewed-release-migration-v2'):
+                raise RuntimeError('AMP retry execution mismatch; reviewed migration required')
         saved_canonical=saved_experiment.get('canonical_encoder_batch_rows',0)
         if saved_canonical!=args.canonical_encoder_batch_rows:
             if not (saved_canonical==0 and args.canonical_encoder_batch_rows==1024
@@ -1031,6 +1039,7 @@ def worker(args) -> None:
                     "canonical_encoder_batch_rows":args.canonical_encoder_batch_rows,
                     "precision_mode": args.precision_mode,
                     "cublas_workspace_config": os.environ.get('CUBLAS_WORKSPACE_CONFIG'),
+                    "amp_overflow_retries":args.amp_overflow_retries,
                     "token_lookup_backend": lookup_backend(args),
                     "deterministic_diagnostic": bool(args.deterministic_diagnostic),
                     "precision_stability": args.precision_stability,
@@ -1195,7 +1204,8 @@ def parent(args) -> None:
                 sys.executable, os.path.abspath(__file__), "--worker",
                 "--games", str(args.games), "--envs", str(args.envs),
                 "--iterations", str(args.iterations), "--batch-cache", args.batch_cache,
-                "--workers", str(args.workers), "--microbatch", str(args.microbatch),
+                "--workers", str(args.workers), "--amp-overflow-retries", str(args.amp_overflow_retries),
+                "--microbatch", str(args.microbatch),
                 "--minibatch", str(args.minibatch), "--seed", str(args.seed),
                 "--canonical-encoder-batch-rows",str(args.canonical_encoder_batch_rows),
                 "--epochs", str(args.epochs), "--timeout", str(args.timeout),

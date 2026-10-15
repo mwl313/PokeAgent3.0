@@ -32,6 +32,8 @@ def resolve_profile(path: str) -> dict:
             raise ValueError("V2 requires secondary safety and unchanged primary tolerance")
         if p.get("ragged_effects_fp32") is not True:
             raise ValueError("V2 requires the verified stable ragged-effects projection")
+        if p.get("amp_overflow_retries") != 3:
+            raise ValueError("V2 requires bounded collective AMP overflow retry")
         if p.get("canonical_encoder_batch_rows") != 1024:
             raise ValueError("V2 requires canonical1024 ModeD encoder batches")
         if c.get("world_size") != 2 or c.get("executor") != "ddp":
@@ -61,6 +63,8 @@ def launcher_values(resolved: dict) -> dict:
             "historical_probability": t["historical_probability"], "precision_mode": p["mode"],
             "precision_stability": p["stability"], "recompute_gate": p["recompute_gate"],
             "batch_cache": c["batch_cache"], "compact_candidates": c["compact_candidates"]}
+    if "amp_overflow_retries" in p:
+        values["amp_overflow_retries"] = p["amp_overflow_retries"]
     if "canonical_encoder_batch_rows" in p:
         values["canonical_encoder_batch_rows"] = p["canonical_encoder_batch_rows"]
     if "recompute_secondary" in p:

@@ -57,6 +57,7 @@ class UpdateReport:
     rows: int = 0
     actor_rows: int = 0
     optimizer_steps: int = 0
+    optimizer_step_retries: int = 0
     optimizer_steps_skipped: int = 0
     scaler_scale: float = 1.0
     committed_matches: int = 0
@@ -112,6 +113,8 @@ class PPOLearner:
             self.device.type, enabled=self.amp and self.config.amp_grad_scaler
         )
         self.optimizer_steps = 0
+        # Execution-only opt-in; checkpoint/profile migration pins activation.
+        self.amp_overflow_retries = 0
         # Set by `attach_ddp`; when present the learner routes the forward
         # through the DDP entry and uses the global-denominator objective.
         self.ddp_model = None
@@ -696,72 +699,97 @@ class PPOLearner:
                 value_total = float(counts[1].item())
                 profile["h2d"] += time.perf_counter() - start
                 start = time.perf_counter()
-                self.optimizer.zero_grad(set_to_none=True)
-                if communication is not None:
-                    communication.reset()
-                for micro_index in range(micro_steps):
-                    micro_begin = micro_index * microbatch
-                    micro_end = min(micro_begin + microbatch, batch_size)
-                    micro = minibatch.narrow(micro_begin, micro_end)
-                    is_last = micro_index == micro_steps - 1
-                    context = (
-                        communication.context(synchronize=is_last)
-                        if communication is not None
-                        else nullcontext()
-                    )
-                    with context:
-                        forward_start = time.perf_counter()
-                        terms = self._forward_terms(micro)
-                        profile["forward"] += time.perf_counter() - forward_start
-                        backward_start = time.perf_counter()
-                        loss = ddp_rank_loss(
-                            terms["loss_unscaled"] * terms["actor_count"],
-                            terms["value_mean"] * terms["value_count"],
-                            actor_total,
-                            value_total,
-                            world_size,
-                            self.config.value_coefficient,
-                        )
-                        if not loss.requires_grad:  # pragma: no cover - defensive
-                            raise RuntimeError(
-                                "DDP micro loss lost its graph; padding-only micros "
-                                "must stay graph-connected for the reducer"
-                            )
-                        self.scaler.scale(loss).backward()
-                        profile["backward"] += time.perf_counter() - backward_start
-                    metrics_start = time.perf_counter()
-                    for key in sum_keys:
-                        epoch_sums[key] = epoch_sums[key] + terms[key].float()
-                    profile["metrics"] += time.perf_counter() - metrics_start
-                if communication is not None:
-                    profile["ddp_sync_steps"] = float(communication.sync_calls)
-
-                optimizer_start = time.perf_counter()
-                self.scaler.unscale_(self.optimizer)
-                # The L2 norm already visits every gradient for clipping.
-                # A finite norm certifies finite elements; checking it avoids
-                # a second per-parameter scan and hundreds of tiny kernels.
-                # Non-representable norms also skip safely instead of applying
-                # a zero/nan-clipped update to Adam's moments.
-                grad_norm = torch.nn.utils.clip_grad_norm_(
-                    self.model.parameters(), self.config.max_grad_norm
-                )
-                finite = torch.isfinite(grad_norm).float()
-                all_reduce_flag(finite)
-                has_rows = actor_total > 0.0 or value_total > 0.0
-                globally_finite = bool(finite.item())
-                do_step = globally_finite and has_rows
-                if do_step:
-                    self.scaler.step(self.optimizer)
-                else:
-                    grad_norm = torch.zeros((), device=self.device)
+                retry_limit=int(self.amp_overflow_retries)
+                if retry_limit and (not self.scaler.is_enabled() or self.model.config.dropout or self.model.config.attention_dropout):
+                    raise ValueError('AMP retry requires an enabled scaler and deterministic dropout-free model')
+                if not 0 <= retry_limit <= 3:
+                    raise ValueError('AMP retry budget must be between zero and three')
+                attempt=0
+                sums_before_attempt=epoch_sums.copy()
+                while True:
                     self.optimizer.zero_grad(set_to_none=True)
-                self._update_distributed_scaler(globally_finite)
-                profile["optimizer"] += time.perf_counter() - optimizer_start
-                if do_step:
-                    self.optimizer_steps += 1
-                else:
-                    report.optimizer_steps_skipped += 1
+                    if communication is not None:
+                        communication.reset()
+                    losses_for_finite_check = []
+                    for micro_index in range(micro_steps):
+                        micro_begin = micro_index * microbatch
+                        micro_end = min(micro_begin + microbatch, batch_size)
+                        micro = minibatch.narrow(micro_begin, micro_end)
+                        is_last = micro_index == micro_steps - 1
+                        context = (
+                            communication.context(synchronize=is_last)
+                            if communication is not None
+                            else nullcontext()
+                        )
+                        with context:
+                            forward_start = time.perf_counter()
+                            terms = self._forward_terms(micro)
+                            profile["forward"] += time.perf_counter() - forward_start
+                            backward_start = time.perf_counter()
+                            loss = ddp_rank_loss(
+                                terms["loss_unscaled"] * terms["actor_count"],
+                                terms["value_mean"] * terms["value_count"],
+                                actor_total,
+                                value_total,
+                                world_size,
+                                self.config.value_coefficient,
+                            )
+                            if not loss.requires_grad:  # pragma: no cover - defensive
+                                raise RuntimeError(
+                                    "DDP micro loss lost its graph; padding-only micros "
+                                    "must stay graph-connected for the reducer"
+                                )
+                            losses_for_finite_check.append(loss.detach())
+                            self.scaler.scale(loss).backward()
+                            profile["backward"] += time.perf_counter() - backward_start
+                        metrics_start = time.perf_counter()
+                        for key in sum_keys:
+                            epoch_sums[key] = epoch_sums[key] + terms[key].float()
+                        profile["metrics"] += time.perf_counter() - metrics_start
+                    if communication is not None:
+                        profile["ddp_sync_steps"] = float(communication.sync_calls)
+
+                    optimizer_start = time.perf_counter()
+                    self.scaler.unscale_(self.optimizer)
+                    # The L2 norm already visits every gradient for clipping.
+                    # A finite norm certifies finite elements; checking it avoids
+                    # a second per-parameter scan and hundreds of tiny kernels.
+                    # Non-representable norms also skip safely instead of applying
+                    # a zero/nan-clipped update to Adam's moments.
+                    grad_norm = torch.nn.utils.clip_grad_norm_(
+                        self.model.parameters(), self.config.max_grad_norm
+                    )
+                    finite = torch.isfinite(grad_norm).float()
+                    all_reduce_flag(finite)
+                    has_rows = actor_total > 0.0 or value_total > 0.0
+                    globally_finite = bool(finite.item())
+                    do_step = globally_finite and has_rows
+                    if not globally_finite and has_rows and retry_limit:
+                        forward_finite=torch.stack(losses_for_finite_check).isfinite().all().float()
+                        all_reduce_flag(forward_finite)
+                        if not bool(forward_finite.item()) or attempt >= retry_limit:
+                            raise RuntimeError('DDP AMP overflow retry exhausted or nonfinite forward; refusing update')
+                        # The failed backward never reaches Adam. Back off every
+                        # rank together and recompute the same selected minibatch.
+                        # Restore sums so repeated forwards contribute exactly once.
+                        self._update_distributed_scaler(False)
+                        report.optimizer_step_retries += 1
+                        attempt += 1
+                        epoch_sums = sums_before_attempt.copy()
+                        profile["optimizer"] += time.perf_counter() - optimizer_start
+                        continue
+                    if do_step:
+                        self.scaler.step(self.optimizer)
+                    else:
+                        grad_norm = torch.zeros((), device=self.device)
+                        self.optimizer.zero_grad(set_to_none=True)
+                    self._update_distributed_scaler(globally_finite)
+                    profile["optimizer"] += time.perf_counter() - optimizer_start
+                    if do_step:
+                        self.optimizer_steps += 1
+                    else:
+                        report.optimizer_steps_skipped += 1
+                    break
                 report.grad_norm = float(grad_norm.detach())
                 report.grad_norm_max = max(report.grad_norm_max, report.grad_norm)
                 report.scaler_scale = float(self.scaler.get_scale())

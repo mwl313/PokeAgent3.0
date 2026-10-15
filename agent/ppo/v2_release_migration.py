@@ -7,8 +7,8 @@ ERROR_WRAPPER_AST='a24af9614ac5542e7c0b377ed88ad6266439d02b03e6a6cd323599ceca887
 LEGACY_SCHEMA='pa3-v2-reviewed-release-migration-v1'
 SCHEMA='pa3-v2-reviewed-release-migration-v2'
 REVIEWED_SOURCE='93ebc1b5086b7a2bf247b779eb6442671bbbdd10'
-DISPATCH_BLOBS={'agent/ppo/source_migration.py': '540698ee4f62d7b48125721db264d7082eea02f5', 'scripts/run_ddp_ppo.py': 'b6779b91156d394006cd652ee914f4152ef18a52'}
-VALIDATOR_AST='79e4229b78663554bf0958d23c7608dd72f5a03854a4250af5ba9d6cfa006855'
+REVIEWED_REPAIRS={'agent/ppo/source_migration.py': '540698ee4f62d7b48125721db264d7082eea02f5', 'scripts/run_ddp_ppo.py': '2a693f878a06590c47a9549d053c8e399199ecbb', 'agent/ppo/learner.py': 'e06009a3f2fba15f0e85352bf88848d3717d53d7', 'agent/runtime/config.py': '8c7deb3ba55af5819c42cb5057f369c1f227e22a', 'configs/pa3_v2_production.yaml': '464149253b631548d604be34369972c08004644a'}
+VALIDATOR_AST='2d740f2d0e36a1f34256a584770afad21309f6a1efd2d7d75d697a231bb84b8d'
 MANIFEST='b9539f3a0c426f0878375b61630cb4de9dcd2a5d4a6a59858b4d64f4287fd424'
 ENGINE='8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62'
 # Explicitly reviewed executable surface. Engine/dataset/loss/learner/config
@@ -23,7 +23,7 @@ scripts/bench_pa3_end_to_end.py scripts/analyze_v2_live_bottlenecks.py scripts/b
 scripts/run_ddp_ppo.py scripts/v2_continuation_probe.py scripts/v2_data_path_probe.py
 scripts/v2_gpu_profile.py scripts/v2_reconstruct_boundary.py scripts/v2_recovery_analysis.py
 scripts/v2_throughput_ab.py scripts/validate_v2_source_of_truth.py scripts/v2_release_validation.py
-agent/model/pa3_model.py agent/model/precision.py scripts/v2_training_status.py
+agent/ppo/learner.py agent/model/pa3_model.py agent/model/precision.py scripts/v2_training_status.py
 scripts/v2_evaluation_sidecar.py scripts/v2_recompute_forensics.py'''.split())
 def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 def git(root,*args):return subprocess.check_output(['git','-C',str(root),*args],text=True).strip()
@@ -31,7 +31,11 @@ def blobs(root,target):
     files=git(root,'diff','--name-only',BASE,target,'--','agent','engine','configs','data','scripts').splitlines()
     if not set(files)<=REVIEWED:raise ValueError('unreviewed executable source delta: '+str(set(files)-REVIEWED))
     result={name:git(root,'rev-parse',f'{target}:{name}') for name in files}
-    for name,blob in result.items():
+    # Also inspect reversions to BASE: those disappear from the BASE diff.
+    audit_files=set(files)|set(git(root,'diff','--name-only',REVIEWED_SOURCE,target,'--','agent','engine','configs','data','scripts').splitlines())
+    if not audit_files<=REVIEWED:raise ValueError('unreviewed executable source delta: '+str(audit_files-REVIEWED))
+    for name in audit_files:
+        blob=git(root,'rev-parse',f'{target}:{name}')
         if name == 'agent/ppo/v2_release_migration.py':
             # Seal the validator AST with only its digest literal blanked.
             # This avoids a commit hashing itself while rejecting other edits.
@@ -42,7 +46,7 @@ def blobs(root,target):
                     node.value=ast.Constant('')
             if hashlib.sha256(ast.dump(tree,include_attributes=False).encode()).hexdigest()!=VALIDATOR_AST:
                 raise ValueError('unreviewed migration validator')
-        elif blob != (DISPATCH_BLOBS[name] if name in DISPATCH_BLOBS else git(root,'rev-parse',f'{REVIEWED_SOURCE}:{name}')):
+        elif blob != (REVIEWED_REPAIRS[name] if name in REVIEWED_REPAIRS else git(root,'rev-parse',f'{REVIEWED_SOURCE}:{name}')):
             raise ValueError('runtime differs from independently audited code: '+name)
     return result
 def validate_contract(receipt,*,source,target,checkpoint_hash,rank_hashes,runtime_blobs,profile,original_profile,engine_hash,parity):
@@ -61,6 +65,11 @@ def validate_contract(receipt,*,source,target,checkpoint_hash,rank_hashes,runtim
     # replay proved its FP16 GEMM was batch-composition dependent.  The
     # receipt must name the transition; no checkpoint may silently acquire it.
     after.pop('ragged_effects_fp32',None);before.pop('ragged_effects_fp32',None)
+    after.pop('amp_overflow_retries',None);before.pop('amp_overflow_retries',None)
+    if (original_profile['precision'].get('amp_overflow_retries',0)!=0
+            or profile['precision'].get('amp_overflow_retries')!=3
+            or receipt.get('amp_overflow_retry_transition')!={'historical':0,'future':3}):
+        raise ValueError('AMP retry precision migration mismatch')
     if original_profile['precision'].get('canonical_encoder_batch_rows',0)!=0 or profile['precision'].get('canonical_encoder_batch_rows')!=1024 or receipt.get('canonical_encoder_transition')!={'historical':0,'future':1024}:raise ValueError('canonical encoder contract mismatch')
     if (original_profile['precision'].get('ragged_effects_fp32',False)
             or profile['precision'].get('ragged_effects_fp32') is not True
@@ -129,6 +138,14 @@ def validate(receipt,root,source,target):
     for artifact in (reference,candidate):
         if artifact.get('rows')!=1024 or artifact.get('precision')!='D/FP16-effects-FP32' or artifact.get('workspace')!=':4096:8':
             raise ValueError('precision proof execution mismatch')
+    if reference.get('reference') is not True or candidate.get('reference') is not False:
+        raise ValueError('precision proof independent execution missing')
+    if reference.get('captured_artifact_sha256')!=candidate.get('captured_artifact_sha256'):
+        raise ValueError('precision proof input mismatch')
+    if reference.get('probe_sha256')!=candidate.get('probe_sha256') or candidate.get('probe_sha256')!=sha(root/'tests/validation/v2_precision_probe.py'):
+        raise ValueError('precision proof runner mismatch')
+    if candidate.get('amp_overflow_retries')!=3 or reference.get('amp_overflow_retries')!=0:
+        raise ValueError('precision proof AMP retry execution mismatch')
     for key in ('losses','gradient_digest','adam_digest','updated_model_digest','model_config'):
         if reference[key]!=candidate[key]:raise ValueError('independent precision transition parity failed: '+key)
 
@@ -171,6 +188,7 @@ def prepare(root,checkpoint,parity_report,team_stats_root,output):
         'semantic_contract':'dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35',
         'action_schema_hash':state['action_schema_hash'],'model_config_hash':state['model_config_hash'],'ppo_config_hash':state['ppo_config_hash'],
         'verified_rank_digests':state['rank_digests'],'engine_sha256':sha(root/'engine/python/pa3_engine/pa3_engine.so'),
+        'amp_overflow_retry_transition':{'historical':0,'future':3},
         'canonical_encoder_transition':{'historical':0,'future':1024},
         'ragged_effects_precision_transition':{'historical':'fp16','future':'fp32'},
         'token_lookup_backend':'gather','secondary_activation':{'historical':False,'future':True},

@@ -109,3 +109,17 @@ def test_ranks_execute_the_same_collective_sequence(protocol_results):
         assert {entry["sync_calls"] for entry in ranks} == {expected_batches}
         assert {entry["no_sync_calls"] for entry in ranks} == {expected_batches}
         assert {entry["profile_sync_steps"] for entry in ranks} == {float(expected_batches)}
+
+
+def test_amp_retry_is_collective_exact_and_bounded(protocol_results):
+    for case in ['retry_uneven','retry_empty']:
+        ranks=[r[case] for r in protocol_results]
+        assert len({r['state_sha'] for r in ranks})==1
+        for r in ranks:
+            assert r['retries']==1 and r['skipped']==0
+            assert r['scaler_scale']==32768.0
+            assert r['optimizer_steps']==r['reference_optimizer_steps']
+            assert r['max_weight_delta']<=1e-6 and r['max_optimizer_delta']<=1e-6
+            assert r['epoch_kl']==pytest.approx(r['reference_epoch_kl'],abs=1e-6)
+    for rank in protocol_results:
+        assert rank['retry_exhausted']=={'rejected':True,'model_unchanged':True,'optimizer_steps':0}
