@@ -162,3 +162,16 @@ def test_primary_structural_error_is_durably_rejected(model_factory,tmp_path,cor
         assert receipt['kind']=='ppo_recompute_input_error_v1' and receipt['result']['error']
         assert not result['measurement_available']
     else:assert receipt['kind']=='ppo_recompute_failure_evidence_v1' and not receipt['result']['within_gate']
+
+
+def test_forced_secondary_rejection_overrides_passing_primary(model_factory,tmp_path):
+    from agent.ppo import PPOLearner,PPOConfig
+    from scripts.bench_pa3_end_to_end import recompute_check
+    model=model_factory(seed=11);buffer=recorded(model)
+    # Actor values and observations are valid; only provenance is missing.
+    buffer.actor_groups=[]
+    learner=PPOLearner(model,PPOConfig(ppo_epochs=2),device='cpu',amp=False)
+    path=tmp_path/'forced_secondary_failure.pt'
+    result=recompute_check(learner,buffer,torch.device('cpu'),amp=False,audit=True,secondary=True,evidence_path=str(path))
+    assert result['primary_within_gate'] and not result['secondary']['accepted']
+    assert not result['within_gate'] and path.exists() and learner.optimizer_steps==0

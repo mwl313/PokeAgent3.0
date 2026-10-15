@@ -460,18 +460,24 @@ def _recompute_check_impl(learner, buffer, device, limit=1024, amp=False, per_st
         result["timing_seconds"]["secondary_audit"] = _time.perf_counter() - secondary_started
         if not result["within_gate"]:
             result["within_gate"] = result["secondary"]["accepted"]
+        elif audit and not result["secondary"]["accepted"]:
+            result["within_gate"] = False
         if audit and isolated:
             worst = sorted(range(len(isolated)), key=lambda i: isolated[i], reverse=True)[:4]
             result["isolated_outlier_diagnosis"] = secondary_audit(
                 learner.model, buffer, [sampled[i] for i in worst],
                 [isolated_logprobs[i] for i in worst], device, tolerance, force=True)
+            if not result["isolated_outlier_diagnosis"]["accepted"]:
+                result["within_gate"] = False
     # Persist detailed diagnostics immediately, including rejected results.
     # Failure evidence contains immutable CPU copies of sampled rows and their
     # original actor groups plus model weights, enough for offline replay.
-    if evidence_path and not result["primary_within_gate"]:
+    if evidence_path and (not result["primary_within_gate"] or not result["within_gate"]):
         from agent.ppo.experimental_checkpoint import save_envelope
         groups = getattr(buffer, "actor_groups", [])
         flagged = [row for row, diff in zip(sampled, per_row) if not math_isfinite(diff) or diff > tolerance]
+        if audit and not flagged:
+            flagged = sorted(sampled,key=lambda row: abs(row.old_logprob),reverse=True)[:8]
         ids = {id(row): i for i, row in enumerate(buffer.rows)}
         chosen_groups = [g for g in groups if any(g["start"] <= ids[id(row)] < g["stop"] for row in flagged)]
         group_rows = [buffer.rows[g["start"]:g["stop"]] for g in chosen_groups[:8]]
