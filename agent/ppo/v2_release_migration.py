@@ -2,6 +2,8 @@
 import hashlib,json,subprocess
 from pathlib import Path
 BASE='5ccc51b0cd4a49efb93018258b9750d5e804ae32'
+AUDITED='0b7253cfd915ff61c88248b1979bd8e254285ef0'
+ERROR_WRAPPER_AST='a24af9614ac5542e7c0b377ed88ad6266439d02b03e6a6cd323599ceca887a22'
 SCHEMA='pa3-v2-reviewed-release-migration-v1'
 MANIFEST='b9539f3a0c426f0878375b61630cb4de9dcd2a5d4a6a59858b4d64f4287fd424'
 ENGINE='8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62'
@@ -22,7 +24,25 @@ def git(root,*args):return subprocess.check_output(['git','-C',str(root),*args],
 def blobs(root,target):
     files=git(root,'diff','--name-only',BASE,target,'--','agent','engine','configs','data','scripts').splitlines()
     if not set(files)<=REVIEWED:raise ValueError('unreviewed executable source delta: '+str(set(files)-REVIEWED))
-    return {name:git(root,'rev-parse',f'{target}:{name}') for name in files}
+    result={name:git(root,'rev-parse',f'{target}:{name}') for name in files}
+    for name,blob in result.items():
+        if name=='agent/ppo/v2_release_migration.py':
+            continue  # the validator itself is reviewed and pinned by targetSHA
+        if blob==git(root,'rev-parse',f'{AUDITED}:{name}'):
+            continue
+        if name!='scripts/bench_pa3_end_to_end.py':
+            raise ValueError('runtime differs from independently audited code: '+name)
+        import ast,copy
+        old=ast.parse(git(root,'show',f'{AUDITED}:{name}'))
+        current=ast.parse(git(root,'show',f'{target}:{name}'))
+        wrapper=next(n for n in current.body if isinstance(n,ast.FunctionDef) and n.name=='recompute_check')
+        if hashlib.sha256(ast.dump(wrapper,include_attributes=False).encode()).hexdigest()!=ERROR_WRAPPER_AST:
+            raise ValueError('unreviewed primary error wrapper')
+        current.body.remove(wrapper)
+        impl=next(n for n in current.body if isinstance(n,ast.FunctionDef) and n.name=='_recompute_check_impl');impl.name='recompute_check'
+        if ast.dump(old,include_attributes=False)!=ast.dump(current,include_attributes=False):
+            raise ValueError('normal recompute implementation changed')
+    return result
 def validate_contract(receipt,*,source,target,checkpoint_hash,rank_hashes,runtime_blobs,profile,original_profile,engine_hash,parity):
     if receipt.get('schema')!=SCHEMA or (source,target)!=(BASE,receipt.get('target_sha')) or receipt.get('source_sha')!=source:raise ValueError('migration source identity mismatch')
     expected={'checkpoint_manifest_sha256':checkpoint_hash,'rank_artifact_hashes':rank_hashes,

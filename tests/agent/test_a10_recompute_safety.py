@@ -141,3 +141,24 @@ def test_immutable_candidate_views_preserve_provenance_hash(model_factory):
     assert row_contract_hash(buffer.rows)==before
     result=secondary_audit(model,buffer,buffer.rows,[r.old_logprob for r in buffer.rows],torch.device('cpu'),.001,force=True)
     assert result['accepted']
+
+@pytest.mark.parametrize('corruption',['observation_category','selected_index'])
+def test_primary_structural_error_is_durably_rejected(model_factory,tmp_path,corruption):
+    from agent.ppo import PPOLearner,PPOConfig
+    from scripts.bench_pa3_end_to_end import recompute_check
+    from agent.ppo.experimental_checkpoint import load_envelope
+    model=model_factory(seed=11);buffer=recorded(model)
+    if corruption=='observation_category':
+        buffer.observation_store._rows[0]['categories'][0,0,0]=65535
+        buffer.observation_store._rows[0]['category_known'][0,0,0]=True
+    else:buffer.rows[0].selected=(999,)+buffer.rows[0].selected[1:]
+    learner=PPOLearner(model,PPOConfig(ppo_epochs=2),device='cpu',amp=False)
+    path=tmp_path/'structural.pt';before=torch.get_rng_state().clone()
+    result=recompute_check(learner,buffer,torch.device('cpu'),secondary=True,evidence_path=str(path))
+    assert not result['within_gate']
+    assert learner.optimizer_steps==0 and torch.equal(before,torch.get_rng_state())
+    receipt=load_envelope(str(path))
+    if corruption=='observation_category':
+        assert receipt['kind']=='ppo_recompute_input_error_v1' and receipt['result']['error']
+        assert not result['measurement_available']
+    else:assert receipt['kind']=='ppo_recompute_failure_evidence_v1' and not receipt['result']['within_gate']

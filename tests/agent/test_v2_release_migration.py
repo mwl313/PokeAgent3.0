@@ -27,3 +27,15 @@ def test_matched_but_unauthorized_configuration_rejected(section,key,value):
 def test_missing_or_failed_independent_proof(key):
     receipt,values=contract();values['parity'][key]=False
     with pytest.raises(ValueError):validate_contract(receipt,**values)
+
+
+def test_even_allowlisted_file_requires_audited_content(tmp_path,monkeypatch):
+    import subprocess
+    import agent.ppo.v2_release_migration as migration
+    def git(*args):return subprocess.check_output(['git',*args],cwd=tmp_path,text=True).strip()
+    git('init','-q');git('config','user.name','Migration Test');git('config','user.email','test@example.invalid')
+    path=tmp_path/'agent/model/scorer.py';path.parent.mkdir(parents=True);path.write_text('audited = True\n')
+    git('add','.');git('commit','-qm','audited');baseline=git('rev-parse','HEAD')
+    monkeypatch.setattr(migration,'BASE',baseline);monkeypatch.setattr(migration,'AUDITED',baseline)
+    path.write_text('audited = False\n');git('add','.');git('commit','-qm','unreviewed change');target=git('rev-parse','HEAD')
+    with pytest.raises(ValueError,match='independently audited'):migration.blobs(tmp_path,target)

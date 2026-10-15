@@ -318,6 +318,34 @@ def run_repeat(args, repeat):
 
 def recompute_check(learner, buffer, device, limit=1024, amp=False, per_stratum=96, audit=False,
                     secondary=False, evidence_path=None):
+    """Keep malformed primary inputs fail-closed with a durable error receipt."""
+    try:
+        return _recompute_check_impl(learner,buffer,device,limit,amp,per_stratum,audit,
+                                     secondary,evidence_path)
+    except (ValueError, TypeError, IndexError, KeyError, RuntimeError) as error:
+        result={"rows":0,"total_rollout_rows":len(buffer.rows),"within_gate":False,
+                "primary_within_gate":False,"max_abs_diff":float("inf"),
+                "measurement_available":False,"tolerance":1e-3 if amp else 1e-4,
+                "reason":"malformed primary input or failed diagnostic",
+                "error_type":type(error).__name__,"error":str(error)}
+        if evidence_path:
+            from agent.ppo.experimental_checkpoint import save_envelope
+            observations=[]
+            for row in buffer.rows[:8]:
+                try:
+                    observations.append(buffer.observation_store.get(row.observation_ref).to_compact_numpy())
+                except (ValueError, TypeError, IndexError, KeyError, RuntimeError) as export_error:
+                    observations.append({"export_error":str(export_error)})
+            save_envelope(evidence_path,{"kind":"ppo_recompute_input_error_v1",
+                "result":result,"source_file":__file__,"sample_rows":buffer.rows[:8],
+                "sample_observations":observations,
+                "actor_group_metadata":getattr(buffer,"actor_groups",[])[:8],
+                "model_config":learner.model.config.to_dict()})
+        return result
+
+
+def _recompute_check_impl(learner, buffer, device, limit=1024, amp=False, per_stratum=96, audit=False,
+                    secondary=False, evidence_path=None):
     """Stratified sampled/recomputed log-probability parity gate.
 
     A first-N-rows check cannot be extrapolated to the whole iteration, so rows
