@@ -395,11 +395,13 @@ class NativeCollector:
         """Packed prefix slab row as engine action tuples."""
         import numpy as np
 
-        return [
-            (int(record[0]), int(record[1]), int(record[2]), int(np.int8(record[3])),
-             int(record[4]), int(record[5]))
-            for record in prefix_buf[offset, :branch_count]
-        ]
+        records = prefix_buf[offset, :branch_count].tolist()
+        # Native wire targets are uint8 two's-complement; engine actions need
+        # signed Python integers. Decode without six NumPy scalar conversions.
+        for record in records:
+            if record[3] >= 128:
+                record[3] -= 256
+        return [tuple(record) for record in records]
 
     def _packed_candidates(self, packed, index: int) -> list:
         """All packed records of one request as engine action tuples."""
@@ -649,8 +651,8 @@ class NativeCollector:
                     import numpy as np
 
                     # One bulk D2H per level, then a vectorized prefix update.
-                    picks_np = step.pick.detach().to("cpu").numpy().astype(np.int64)
-                    picks_by_level.append([int(value) for value in picks_np])
+                    picks_np = step.pick.detach().to("cpu").numpy()
+                    picks_by_level.append(picks_np)
                     selected_rows = packed["records"][packed["offsets"][:-1] + picks_np]
                     prefix_buf[:, level, :] = selected_rows
                 else:
@@ -666,9 +668,8 @@ class NativeCollector:
                 values = policy_model.value(encoded)
             self.stats.model_seconds += time.perf_counter() - start_model
             start_readback = time.perf_counter()
-            old_logprobs = [float(value) for value in
-                            sampled.request_logprob.detach().float().cpu().tolist()]
-            value_list = [float(value) for value in values.detach().float().cpu().tolist()]
+            old_logprobs = sampled.request_logprob.detach().float().cpu().tolist()
+            value_list = values.detach().float().cpu().tolist()
             self.stats.readback_seconds += time.perf_counter() - start_readback
             for offset, decision_index in enumerate(indices):
                 env, handle, side, kind, slots = decision[decision_index]

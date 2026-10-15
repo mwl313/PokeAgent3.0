@@ -176,20 +176,20 @@ class ConditionalPrefixScorer(nn.Module):
         if bool(((flat_entity < -1)|(flat_entity>=token_count)).any()):
             raise ValueError('invalid actor token reference')
         has_entity=flat_entity>=0
-        entity_ref = torch.gather(
-            encoded_tokens, 1, flat_entity.clamp_min(0).unsqueeze(-1).expand(-1, -1, d)
-        )
+        # Row lookup avoids expanding each reference over d channels. Under
+        # deterministic CUDA, gather's backward sorts that expanded index;
+        # embedding accumulates complete rows instead. Keep the two lookups
+        # separate so entity/move gradient contributions retain their graph.
+        table = encoded_tokens.reshape(tokens * token_count, d)
+        row_base = torch.arange(tokens, device=encoded_tokens.device).unsqueeze(1) * token_count
+        entity_ref = torch.nn.functional.embedding(flat_entity.clamp_min(0) + row_base, table)
         entity_ref=torch.where(has_entity.unsqueeze(-1),entity_ref,self.null_entity.view(1,1,d))
 
         flat_move = move_token.reshape(tokens, -1)
         if bool(((flat_move < -1)|(flat_move>=token_count)).any()):
             raise ValueError('invalid move token reference')
         has_move = flat_move >= 0
-        move_ref = torch.gather(
-            encoded_tokens,
-            1,
-            flat_move.clamp_min(0).unsqueeze(-1).expand(-1, -1, d),
-        )
+        move_ref = torch.nn.functional.embedding(flat_move.clamp_min(0) + row_base, table)
         move_ref = torch.where(
             has_move.unsqueeze(-1), move_ref, self.null_move.view(1, 1, d)
         )

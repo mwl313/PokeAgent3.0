@@ -31,11 +31,15 @@ class RaggedBatch:
             raise ValueError("invalid ragged counts shape/range")
         checked=[]
         for row,length in zip(rows,counts.sum(1)):
-            row=np.array(row,dtype=np.float32,copy=True)
-            if row.shape!=(int(length),width) or not np.isfinite(row).all():
+            # concatenate below creates the owned output, even for one row.
+            # A preliminary copy per row only doubles allocations and writes.
+            row=np.asarray(row,dtype=np.float32)
+            if row.shape!=(int(length),width):
                 raise ValueError("ragged row count/width mismatch or nonfinite data")
             checked.append(row)
         values=np.concatenate(checked,axis=0) if checked else np.zeros((0,width),np.float32)
+        if not np.isfinite(values).all():
+            raise ValueError("ragged row count/width mismatch or nonfinite data")
         return cls(torch.from_numpy(values),torch.from_numpy(counts.copy()),counts)
 
     def to(self,device):
