@@ -17,3 +17,10 @@ The d98b42c run reproduced iteration19 with authenticated actor groups. Rank1 ro
 New execution-only profile/launcher/checkpoint field canonical_encoder_batch_rows=1024 is explicit. Original checkpoint remains0/absent; migration records0→1024 for future execution. Plain gather remains active. FP32 audit reference stays truly grouped/isolated and unpadded. Independent full1024-row ModeD gradient/Adam parity is required before migration accepts this correction.
 
 Isolated diagnostic namespaces may explicitly retain8GiB free reserve to preserve all accumulating failure evidence during bounded tests. This flag is rejected for production profiles and paths outside runs/v2_final_release; production storage's15GiB guard is unchanged. No checkpoint is deleted, no I/O integrity check is bypassed.
+
+
+## Final acceptance
+
+Executed0b7253cfd915ff61c88248b1979bd8e254285ef0: strict receipt validation and actual initial model/Adam/scheduler/scaler/owned RNG restore PASS; baseline CPU and full1024-row ModeD GPU proof bitwise equality; dual-rank continuation and independent restart BIT_EXACT. Both original full57344 artifact/manifest hashes and backup remain unchanged. New source is accepted by exact artifact-bound receipt, not allow-source. Final canonical docs-only HEAD gets a freshly generated receipt before any future cutover.
+
+Historical pre-release proof paths were reused during retries; exact proof bytes were recovered and archived by their original receipt SHA256 under final_evidence/proof_archive. Old receipt files are untouched. Current/future release proofs use separate immutable paths. GPU PROOF.json deliberately omits unmeasured timing placeholders; it is mathematical proof only.

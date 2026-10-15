@@ -1,0 +1,22 @@
+{
+  "classification": "BIT_EXACT",
+  "requested_iterations": 2,
+  "executed_iterations": 1,
+  "checks": {
+    "0": {
+      "learner": true,
+      "rng": true,
+      "accounting": true,
+      "collector_restart": true,
+      "rank_digests": true
+    },
+    "1": {
+      "learner": true,
+      "rng": true,
+      "accounting": true,
+      "collector_restart": true,
+      "rank_digests": true
+    }
+  },
+  "checkpoint": "/home/minidc/Desktop/PokeAgent3.0-V2-integration/runs/v2_final_release/continuation_canonical/cooperative/rolling/generations/iter-000000065536-1792043922385507350"
+}

@@ -1,6 +1,6 @@
 # Current V2 entry point — 2026-10-15
 
-See [Training Source of Truth](TRAINING_SOURCE_OF_TRUTH.md). V2 training has started historically; full recovered progress57,344 matches. Current release status **BLOCKED**, training stopped. Proposed pool1,220 teams,Observation/ActionV2,PPO2. Canonical branch remainsc96c35f pending release gates.
+See [Training Source of Truth](TRAINING_SOURCE_OF_TRUTH.md). Status **READY_FOR_CUTOVER; production STOPPED at user request**. Canonical V2 integration accepted. Existing full-state resume57344; isolated81920 validation is not production progress.1220 teams,Observation/ActionV2,PPO2,primary.001 and secondary ON,canonical encoder1024,gather. Tests369 passed/34 skipped; two-V10015–20 and stop/restore pass.
 
 The content below is **HISTORICAL / NON-NORMATIVE**; old1,137-team,V1,PPO4 and “training not started” statements do not describe current V2.
 

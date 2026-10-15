@@ -1,0 +1,11 @@
+[rank1] process group ready at 1792043810.4
+/home/minidc/Desktop/PokeAgent3.0-V2-integration/scripts/run_ddp_ppo.py:702: FutureWarning: `broadcast_buffers` is deprecated. Use `forward_sync_buffers` instead. IMPORTANT: unlike `broadcast_buffers=False`, `forward_sync_buffers=False` still syncs buffers at init. If you rely on buffers NOT being synced at init (e.g. rank-local buffers), keep using `broadcast_buffers=False` until `init_sync_buffers` is available.
+  ddp_model = torch.nn.parallel.DistributedDataParallel(
+[rank1] resume state verified: matches=61440 optimizer_steps=764 model=338ea992fa0874255cd5ffc88a64f6b347f9d3ac8c6e7db8ad32eb18c7c32a36 optimizer=356bb2d3bcebdf0161b91305d3531d7473c67b6ef59ceecdb530674ccab54dd7
+[rank1] iteration 1/2: collected 2048 games / 44762 rows in 46.9s
+[rank1] recompute gate: 576 rows max|diff|=1.431e-06 (tol 1.0e-03) within=True
+[rank1]:[W1015 14:57:57.250260517 reducer.cpp:1529] Warning: find_unused_parameters=True was specified in DDP constructor, but did not find any unused parameters in the forward pass. This flag results in an extra traversal of the autograd graph every iteration,  which can adversely affect performance. If your model indeed never has any unused parameters in the forward pass, consider turning this flag off. Note that this warning may be a false positive if your model has flow control causing later iterations to have unused parameters. (function operator())
+[rank1] update done in 42.0s (epochs 2, steps 46, cumulative steps 810, skipped 0, global matches 65536)
+[rank1] iteration 1 complete in 107.0s, digests equal
+[rank1] cooperative stop requested; completed boundary saved, exiting both ranks
+[rank1] rank metrics written to /home/minidc/Desktop/PokeAgent3.0-V2-integration/runs/v2_final_release/continuation_canonical/cooperative/report.json.rank1.json

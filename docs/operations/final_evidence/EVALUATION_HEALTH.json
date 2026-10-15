@@ -1,0 +1,146 @@
+{
+  "fixtures": [
+    {
+      "fixture_id": 0,
+      "pair_id": 0,
+      "team_a": 432,
+      "team_b": 406,
+      "seed": [
+        57706,
+        63043,
+        1372,
+        5282
+      ],
+      "policy_side": 0
+    },
+    {
+      "fixture_id": 1,
+      "pair_id": 0,
+      "team_a": 432,
+      "team_b": 406,
+      "seed": [
+        57706,
+        63043,
+        1372,
+        5282
+      ],
+      "policy_side": 1
+    },
+    {
+      "fixture_id": 2,
+      "pair_id": 1,
+      "team_a": 61,
+      "team_b": 397,
+      "seed": [
+        55381,
+        51871,
+        51458,
+        30514
+      ],
+      "policy_side": 0
+    },
+    {
+      "fixture_id": 3,
+      "pair_id": 1,
+      "team_a": 61,
+      "team_b": 397,
+      "seed": [
+        55381,
+        51871,
+        51458,
+        30514
+      ],
+      "policy_side": 1
+    }
+  ],
+  "fixture_manifest_hash": "2a64897febc3dba9d08eee0298fd647a8ac76cd9d4d79f1bd419f0ecb6ad7f7d",
+  "policy": "checkpoint",
+  "opponent": "lexicographic_legal",
+  "matches": 4,
+  "wins": 4,
+  "losses": 0,
+  "draws": 0,
+  "operational_errors": 0,
+  "illegal_actions": 0,
+  "team_group_results": {
+    "432:406": {
+      "team_a": 432,
+      "team_b": 406,
+      "matches": 2,
+      "wins": 2,
+      "losses": 0,
+      "draws": 0,
+      "operational_errors": 0,
+      "illegal_actions": 0
+    },
+    "61:397": {
+      "team_a": 61,
+      "team_b": 397,
+      "matches": 2,
+      "wins": 2,
+      "losses": 0,
+      "draws": 0,
+      "operational_errors": 0,
+      "illegal_actions": 0
+    }
+  },
+  "score_mean": 1.0,
+  "paired_score_mean": 1.0,
+  "paired_fixtures": 2,
+  "score_ci95": [
+    1.0,
+    1.0
+  ],
+  "confidence_status": "descriptive_only",
+  "runtime_seconds": 0.8653358900010062,
+  "outcomes": [
+    {
+      "fixture_id": 0,
+      "pair_id": 0,
+      "policy_side": 0,
+      "outcome": "win",
+      "team_a": 432,
+      "team_b": 406,
+      "winner": 0,
+      "error": null,
+      "illegal_action": false
+    },
+    {
+      "fixture_id": 1,
+      "pair_id": 0,
+      "policy_side": 1,
+      "outcome": "win",
+      "team_a": 432,
+      "team_b": 406,
+      "winner": 1,
+      "error": null,
+      "illegal_action": false
+    },
+    {
+      "fixture_id": 2,
+      "pair_id": 1,
+      "policy_side": 0,
+      "outcome": "win",
+      "team_a": 61,
+      "team_b": 397,
+      "winner": 0,
+      "error": null,
+      "illegal_action": false
+    },
+    {
+      "fixture_id": 3,
+      "pair_id": 1,
+      "policy_side": 1,
+      "outcome": "win",
+      "team_a": 61,
+      "team_b": 397,
+      "winner": 1,
+      "error": null,
+      "illegal_action": false
+    }
+  ],
+  "scope": "4-game functionality check, not competitive strength",
+  "model_immutable": true,
+  "checkpoint_immutable": true,
+  "team_count": 1220
+}

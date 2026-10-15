@@ -1,0 +1,208 @@
+{
+  "0": {
+    "artifact": "/home/minidc/Desktop/PokeAgent3.0-V2-integration/runs/v2_final_release/continuation_fixed/uninterrupted/report.json.rank0.iteration19.recompute.pt",
+    "sha256": "224735cfa2e6899d16f1c79a4c59e97985b51400dcd70572bf509e50e23740b4",
+    "result": {
+      "rows": 576,
+      "total_rollout_rows": 42161,
+      "sampled_fraction": 0.013661915039965845,
+      "strata": {
+        "kind0_branches4_actor1": {
+          "rows": 96,
+          "max_abs_diff": 1.9073486328125e-06
+        },
+        "kind1_branches2_actor0": {
+          "rows": 96,
+          "max_abs_diff": 0.0
+        },
+        "kind1_branches2_actor1": {
+          "rows": 96,
+          "max_abs_diff": 0.0011582374572753906
+        },
+        "kind2_branches1_actor0": {
+          "rows": 96,
+          "max_abs_diff": 0.0
+        },
+        "kind2_branches1_actor1": {
+          "rows": 96,
+          "max_abs_diff": 9.5367431640625e-07
+        },
+        "kind2_branches2_actor1": {
+          "rows": 96,
+          "max_abs_diff": 9.5367431640625e-07
+        }
+      },
+      "max_abs_diff": 0.0011582374572753906,
+      "mean_abs_diff": 3.0765725114179077e-06,
+      "median_abs_diff": 0.0,
+      "p95_abs_diff": 9.5367431640625e-07,
+      "audit_enabled": false,
+      "isolated_max_abs_diff": null,
+      "isolated_mean_abs_diff": null,
+      "timing_seconds": {
+        "row_selection": 0.02736270099921967,
+        "rollout_materialization": 0.06292454100002942,
+        "batched_recompute": 0.073665775000336,
+        "isolated_audit": 0.0,
+        "total_gate": 0.1639530169995851,
+        "secondary_audit": 1.4537445530004334
+      },
+      "tolerance": 0.001,
+      "within_gate": true,
+      "primary_within_gate": false,
+      "secondary": {
+        "required": true,
+        "outliers": 1,
+        "max_outliers": 8,
+        "rows": [
+          {
+            "row_index": 37204,
+            "match_id": 2185,
+            "request_index": 9,
+            "side": 1,
+            "kind": 1,
+            "branches": 2,
+            "selected": [
+              8,
+              2
+            ],
+            "legal_counts": [
+              10,
+              7
+            ],
+            "stored": -3.3068065643310547,
+            "batched_amp": -3.3056483268737793,
+            "inputs_verified": true,
+            "actor_group_size": 1180,
+            "actor_replay": -3.3068065643310547,
+            "actor_repeat": -3.3068065643310547,
+            "fp32_group": -3.30656099319458,
+            "isolated_amp": -3.305911064147949,
+            "fp32_isolated": -3.306562900543213,
+            "accepted": true
+          }
+        ],
+        "accepted": true,
+        "reason": "verified shape/AMP variation"
+      }
+    },
+    "actor_groups": 1,
+    "update_performed": false
+  },
+  "1": {
+    "artifact": "/home/minidc/Desktop/PokeAgent3.0-V2-integration/runs/v2_final_release/continuation_fixed/uninterrupted/report.json.rank1.iteration19.recompute.pt",
+    "sha256": "7834b12be2d536dd5f5233fcd7165741a07849d6d8e5176ecb5c43da01a8d258",
+    "result": {
+      "rows": 576,
+      "total_rollout_rows": 42158,
+      "sampled_fraction": 0.013662887233739741,
+      "strata": {
+        "kind0_branches4_actor1": {
+          "rows": 96,
+          "max_abs_diff": 1.9073486328125e-06
+        },
+        "kind1_branches2_actor0": {
+          "rows": 96,
+          "max_abs_diff": 0.0
+        },
+        "kind1_branches2_actor1": {
+          "rows": 96,
+          "max_abs_diff": 0.0017061233520507812
+        },
+        "kind2_branches1_actor0": {
+          "rows": 96,
+          "max_abs_diff": 0.0
+        },
+        "kind2_branches1_actor1": {
+          "rows": 96,
+          "max_abs_diff": 1.0728836059570312e-06
+        },
+        "kind2_branches2_actor1": {
+          "rows": 96,
+          "max_abs_diff": 2.8014183044433594e-06
+        }
+      },
+      "max_abs_diff": 0.0017061233520507812,
+      "mean_abs_diff": 6.637535989284515e-06,
+      "median_abs_diff": 0.0,
+      "p95_abs_diff": 9.5367431640625e-07,
+      "audit_enabled": false,
+      "isolated_max_abs_diff": null,
+      "isolated_mean_abs_diff": null,
+      "timing_seconds": {
+        "row_selection": 0.022564376000445918,
+        "rollout_materialization": 0.05816000000049826,
+        "batched_recompute": 0.07394009400013601,
+        "isolated_audit": 0.0,
+        "total_gate": 0.1546644700010802,
+        "secondary_audit": 2.3276364549983555
+      },
+      "tolerance": 0.001,
+      "within_gate": false,
+      "primary_within_gate": false,
+      "secondary": {
+        "required": true,
+        "outliers": 2,
+        "max_outliers": 8,
+        "rows": [
+          {
+            "row_index": 16108,
+            "match_id": 296,
+            "request_index": 9,
+            "side": 0,
+            "kind": 1,
+            "branches": 2,
+            "selected": [
+              0,
+              0
+            ],
+            "legal_counts": [
+              8,
+              1
+            ],
+            "stored": -0.9959672689437866,
+            "batched_amp": -0.9971466064453125,
+            "inputs_verified": true,
+            "actor_group_size": 1169,
+            "actor_replay": -0.9959672689437866,
+            "actor_repeat": -0.9959672689437866,
+            "fp32_group": -0.9966914653778076,
+            "isolated_amp": -0.9988245964050293,
+            "fp32_isolated": -0.996692955493927,
+            "accepted": false
+          },
+          {
+            "row_index": 34753,
+            "match_id": 2725,
+            "request_index": 7,
+            "side": 0,
+            "kind": 1,
+            "branches": 2,
+            "selected": [
+              7,
+              2
+            ],
+            "legal_counts": [
+              10,
+              12
+            ],
+            "stored": -4.0071868896484375,
+            "batched_amp": -4.008893013000488,
+            "inputs_verified": true,
+            "actor_group_size": 1263,
+            "actor_replay": -4.0071868896484375,
+            "actor_repeat": -4.0071868896484375,
+            "fp32_group": -4.008108139038086,
+            "isolated_amp": -4.007941246032715,
+            "fp32_isolated": -4.008110046386719,
+            "accepted": true
+          }
+        ],
+        "accepted": false,
+        "reason": "unexplained discrepancy"
+      }
+    },
+    "actor_groups": 2,
+    "update_performed": false
+  }
+}

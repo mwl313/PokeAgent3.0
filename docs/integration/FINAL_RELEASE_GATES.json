@@ -1,44 +1,46 @@
 {
-  "status": "BLOCKED",
-  "canonical_sha": "c96c35f12d3f3aff32b072b48e32ac243a7b0425",
-  "candidate_base": "9e685b701f170436f9b9dd82162c8e192e4e6904",
+  "status": "READY_FOR_CUTOVER",
   "production_started": false,
-  "canonical_integrated": false,
-  "track_c": "DEFERRED_INDEFINITELY",
+  "stop_reason": "explicit latest user instruction: stop before actual production training",
+  "canonical_integrated": true,
+  "validated_executable_sha": "0b7253cfd915ff61c88248b1979bd8e254285ef0",
+  "final_canonical_sha": "recorded in Git HEAD and local cutover manifest (documentation-only successor)",
+  "track_c": "DEFERRED_INDEFINITELY_UNCHANGED",
   "main_changed": false,
-  "experimental_lookups": "OFF",
+  "primary_recompute": true,
   "primary_tolerance": 0.001,
-  "secondary": "candidate profile ON; old campaign OFF; migration BLOCKED",
-  "historical_outliers": "BLOCKED_MISSING_ACTOR_PROVENANCE",
-  "production_A_B": "NOT_EXECUTED",
-  "new_source_resume": "BLOCKED",
-  "cleanup_executed": false,
-  "disk_space": "OUT_OF_SCOPE_BY_USER",
-  "broad_suite": {
-    "passed": 304,
-    "failed": 9,
-    "skipped": 33
+  "secondary_recompute": true,
+  "canonical_encoder_batch_rows": 1024,
+  "gpu_lookup": "gather; both experiments OFF",
+  "full_suite": {
+    "passed": 369,
+    "skipped": 34,
+    "failed": 0
   },
-  "targeted_initial": {
-    "passed": 89
+  "dedicated_cuda_contract_tests": 35,
+  "strict_original_migration": "PASS",
+  "original_state_restore": "BIT_EXACT",
+  "main_diagnostic_clock": 81920,
+  "main_diagnostic_games": 24576,
+  "production_games_added": 0,
+  "approved_production_resume_clock": 57344,
+  "restart_equivalence": "BIT_EXACT",
+  "cooperative_stop": "BIT_EXACT",
+  "team_ledgers": "PASS",
+  "evaluation_health": {
+    "games": 4,
+    "wins": 4,
+    "losses": 0,
+    "errors": 0,
+    "illegal": 0,
+    "immutable": true
   },
-  "checkpoint_matches": 57344,
-  "final_focused_tests": {
-    "passed": 23,
-    "failed": 0,
-    "seconds": 1.83
+  "evaluation_effective_plan": "CPU checkpoint-driven256pairs/batch32; exact50k/200k cadence DEFERRED explicitly",
+  "performance": {
+    "games_s": 41.28452832012357,
+    "rows_s": 888.6991962946913,
+    "steps_s": 0.4434861440638274
   },
-  "serialized_state_load": "PASS; sequential CUDA0, not DDP/collector continuation",
-  "dataset": "PASS:1220 exact hashes",
-  "historical_baseline_subset": {
-    "failed": 8,
-    "passed": 47
-  },
-  "candidate_padding_failure": "UNRESOLVED_ORDER_SENSITIVE",
-  "executed_clean_candidate_sha": "e9dc1d20141986d9e0e19234d26240a7d933d5d0",
-  "clean_head_focused_tests": {
-    "passed": 23,
-    "failed": 0,
-    "seconds": 1.92
-  }
+  "disk_space": "outside blocker scope per user; production storage guard unchanged",
+  "cleanup_executed": false
 }

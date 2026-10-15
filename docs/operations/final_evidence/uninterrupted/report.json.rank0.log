@@ -1,0 +1,33 @@
+[rank0] process group ready at 1792042545.4
+/home/minidc/Desktop/PokeAgent3.0-V2-integration/scripts/run_ddp_ppo.py:702: FutureWarning: `broadcast_buffers` is deprecated. Use `forward_sync_buffers` instead. IMPORTANT: unlike `broadcast_buffers=False`, `forward_sync_buffers=False` still syncs buffers at init. If you rely on buffers NOT being synced at init (e.g. rank-local buffers), keep using `broadcast_buffers=False` until `init_sync_buffers` is available.
+  ddp_model = torch.nn.parallel.DistributedDataParallel(
+[rank0] explicit checkpoint migration: 5ccc51b0cd4a49efb93018258b9750d5e804ae32 -> 0b7253cfd915ff61c88248b1979bd8e254285ef0
+[rank0] resume state verified: matches=57344 optimizer_steps=718 model=6a01f14dfeec378f9577df94f5d97cf155924615cca3a000ae4b2108c134bb5d optimizer=ca358b33d33d8008fdd77ae94223b83bc0b5fa9f41f16182101f00b96750e3cc
+/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/lib/python3.12/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0] iteration 1/6: collected 2048 games / 45849 rows in 48.4s
+[rank0] recompute gate: 576 rows max|diff|=1.907e-06 (tol 1.0e-03) within=True
+[rank0]:[W1015 14:36:53.507114725 reducer.cpp:1529] Warning: find_unused_parameters=True was specified in DDP constructor, but did not find any unused parameters in the forward pass. This flag results in an extra traversal of the autograd graph every iteration,  which can adversely affect performance. If your model indeed never has any unused parameters in the forward pass, consider turning this flag off. Note that this warning may be a false positive if your model has flow control causing later iterations to have unused parameters. (function operator())
+[rank0] update done in 41.5s (epochs 2, steps 46, cumulative steps 764, skipped 0, global matches 61440)
+[rank0] iteration 1 complete in 103.6s, digests equal
+[rank0] iteration 2/6: collected 2048 games / 45170 rows in 52.3s
+[rank0] recompute gate: 576 rows max|diff|=1.431e-06 (tol 1.0e-03) within=True
+[rank0] update done in 41.5s (epochs 2, steps 46, cumulative steps 810, skipped 0, global matches 65536)
+[rank0] iteration 2 complete in 106.9s, digests equal
+[rank0] iteration 3/6: collected 2048 games / 44635 rows in 43.3s
+[rank0] recompute gate: 576 rows max|diff|=1.431e-06 (tol 1.0e-03) within=True
+[rank0] update done in 39.7s (epochs 2, steps 44, cumulative steps 854, skipped 0, global matches 69632)
+[rank0] iteration 3 complete in 99.3s, digests equal
+[rank0] iteration 4/6: collected 2048 games / 43544 rows in 46.3s
+[rank0] recompute gate: 576 rows max|diff|=1.907e-06 (tol 1.0e-03) within=True
+[rank0] update done in 39.6s (epochs 2, steps 44, cumulative steps 898, skipped 0, global matches 73728)
+[rank0] iteration 4 complete in 98.5s, digests equal
+[rank0] iteration 5/6: collected 2048 games / 42834 rows in 42.6s
+[rank0] recompute gate: 576 rows max|diff|=1.907e-06 (tol 1.0e-03) within=True
+[rank0] update done in 37.7s (epochs 2, steps 42, cumulative steps 940, skipped 0, global matches 77824)
+[rank0] iteration 5 complete in 92.4s, digests equal
+[rank0] iteration 6/6: collected 2048 games / 42136 rows in 44.6s
+[rank0] recompute gate: 576 rows max|diff|=1.431e-06 (tol 1.0e-03) within=True
+[rank0] update done in 37.9s (epochs 2, steps 42, cumulative steps 982, skipped 0, global matches 81920)
+[rank0] iteration 6 complete in 94.4s, digests equal
+[rank0] rank metrics written to /home/minidc/Desktop/PokeAgent3.0-V2-integration/runs/v2_final_release/continuation_canonical/uninterrupted/report.json.rank0.json

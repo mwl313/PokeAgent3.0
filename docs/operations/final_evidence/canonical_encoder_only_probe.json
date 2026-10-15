@@ -1,0 +1,29 @@
+[
+  {
+    "rank": 0,
+    "row_index": 37204,
+    "canonical_group": -3.3068065643310547,
+    "canonical_isolated": -3.30680775642395,
+    "fp32": -3.306562900543213,
+    "group_isolated_diff": 1.1920928955078125e-06,
+    "isolated_fp32_diff": 0.0002448558807373047
+  },
+  {
+    "rank": 1,
+    "row_index": 16108,
+    "canonical_group": -0.9959672689437866,
+    "canonical_isolated": -0.9959663152694702,
+    "fp32": -0.996692955493927,
+    "group_isolated_diff": 9.5367431640625e-07,
+    "isolated_fp32_diff": 0.0007266402244567871
+  },
+  {
+    "rank": 1,
+    "row_index": 34753,
+    "canonical_group": -4.0071868896484375,
+    "canonical_isolated": -4.007184982299805,
+    "fp32": -4.008110046386719,
+    "group_isolated_diff": 1.9073486328125e-06,
+    "isolated_fp32_diff": 0.0009250640869140625
+  }
+]

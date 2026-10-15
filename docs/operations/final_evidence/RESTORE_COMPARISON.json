@@ -1,0 +1,31 @@
+{
+  "source_sha": "0b7253cfd915ff61c88248b1979bd8e254285ef0",
+  "classification": "BIT_EXACT",
+  "checks": {
+    "0": {
+      "learner": true,
+      "rng": true,
+      "accounting": true,
+      "collector_restart": true,
+      "rank_digests": true,
+      "dataset_manifest_hash": true,
+      "opponent_manifest": true,
+      "rollout_digest": true
+    },
+    "1": {
+      "learner": true,
+      "rng": true,
+      "accounting": true,
+      "collector_restart": true,
+      "rank_digests": true,
+      "dataset_manifest_hash": true,
+      "opponent_manifest": true,
+      "rollout_digest": true
+    }
+  },
+  "final_checkpoint": "/home/minidc/Desktop/PokeAgent3.0-V2-integration/runs/v2_final_release/continuation_canonical/uninterrupted/rolling/generations/iter-000000081920-1792043149726370535",
+  "diagnostic_matches": 24576,
+  "final_diagnostic_clock": 81920,
+  "production_matches_added": 0,
+  "scope": "same-source,hardware/runtime,full4096-game iterations; subprocess exit/recreated DDP and restored state; not universal reproducibility"
+}
