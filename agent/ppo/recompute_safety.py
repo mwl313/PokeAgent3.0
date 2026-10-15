@@ -16,6 +16,9 @@ import torch
 
 def compact_hash(fields):
     digest = hashlib.sha256()
+    # Cache metadata encodings only within this call; every payload byte is
+    # still copied and hashed, including repeats and mutable input arrays.
+    headers = {}
     for key, value in sorted(fields.items()):
         digest.update(key.encode())
         digest.update(str((value.shape, value.dtype)).encode())
@@ -23,7 +26,10 @@ def compact_hash(fields):
             # Object arrays contain dynamic ragged rows; pointer bytes are not
             # a content identity and change across process/restoration.
             for row in value:
-                digest.update(str((row.shape,row.dtype)).encode())
+                identity = (row.shape, row.dtype)
+                if identity not in headers:
+                    headers[identity] = str(identity).encode()
+                digest.update(headers[identity])
                 digest.update(row.tobytes())
         else:
             digest.update(value.tobytes())
@@ -34,6 +40,13 @@ def row_contract_hash(rows):
     from collections.abc import Sequence
     from agent.types.action_mapping import CanonicalCandidateSequence
     def canonical(value):
+        if type(value) in (int, float, bool, str, bytes, type(None)):
+            return value
+        # Exact trusted type only: arbitrary subclasses retain legacy iteration.
+        # ndarray.tolist emits the same nested Python integers in C, avoiding
+        # per-element tuple construction and recursive ABC checks.
+        if type(value) is CanonicalCandidateSequence:
+            return value._array.tolist()
         if isinstance(value, (Sequence, CanonicalCandidateSequence)) and not isinstance(value, (str, bytes)):
             return [canonical(item) for item in value]
         return value
