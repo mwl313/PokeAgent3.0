@@ -183,6 +183,8 @@ def parse_args(argv=None):
     parser.add_argument("--teams", default=os.path.join(ROOT, "engine", "data", "training-teams.json"))
     parser.add_argument("--report", default=os.path.join(ROOT, "runs", "perf", "v4_ddp.json"))
     parser.add_argument("--checkpoint", default="")
+    parser.add_argument("--canonical-encoder-batch-rows",type=int,choices=[0,1024],default=0)
+    parser.add_argument("--isolated-validation-storage",action="store_true",help="bounded isolated validation only:8GiB reserve; production remains15GiB")
     parser.add_argument("--rolling-keep-generations", type=int, default=3, help="retain at least three full generations; increase to preserve diagnostic history")
     parser.add_argument("--team-stats-root", default="", help="opt-in checkpoint-bound V2 natural-match statistics")
     parser.add_argument("--checkpoint-first-iteration", action="store_true",
@@ -254,6 +256,7 @@ def parse_args(argv=None):
                       "experimental-lr-scale": str(resolved["profile"]["training"]["lr_scale"]),
                       "precision-mode": resolved["profile"]["precision"]["mode"],
                       "precision-stability": resolved["profile"]["precision"]["stability"],
+                      "canonical-encoder-batch-rows":str(resolved["profile"]["precision"].get("canonical_encoder_batch_rows",0)),
                       "historical-probability": str(resolved["profile"]["training"]["historical_probability"]),
                       "microbatch": str(resolved["profile"]["training"]["microbatch"]),
                       "minibatch": str(resolved["profile"]["training"]["global_minibatch"]),
@@ -280,6 +283,12 @@ def parse_args(argv=None):
             raise SystemExit(0)
     elif args.print_effective_config:
         parser.error("--print-effective-config requires --profile")
+    if args.isolated_validation_storage:
+        allowed=(Path(ROOT)/"runs/v2_final_release").resolve()
+        paths=[args.rolling_checkpoint_root,args.team_stats_root,args.experimental_checkpoint]
+        if (args.profile or args.iterations>6 or args.games>2048 or not args.experimental_resume
+                or any(not p or allowed not in Path(p).resolve().parents for p in paths)):
+            parser.error('isolated storage requires a bounded nonproduction continuation under runs/v2_final_release')
     if args.iterations < 1:
         parser.error("--iterations must be at least 1")
     if args.checkpoint_interval_matches < 1:
@@ -327,6 +336,7 @@ def validate_lookup_restore(experiment,args):
 
 def execution_options(args, *, lr_scale=None):
     return {"batch_cache":args.batch_cache, "token_lookup_backend":lookup_backend(args),
+            "canonical_encoder_batch_rows":args.canonical_encoder_batch_rows,
             "compact_candidates":args.compact_candidates,
             "trim_observation_padding":args.trim_observation_padding,
             "microbatch":args.microbatch,
@@ -605,6 +615,7 @@ def worker(args) -> None:
         prepare_exact_lookup(device)
         model.scorer.experimental_exact_row_lookup=True
     model.configure_precision(args.precision_mode)
+    model.encoder.canonical_batch_rows=args.canonical_encoder_batch_rows
     model.encoder.trim_padding = args.trim_observation_padding
     historical_models = {}
     historical_manifest = []
@@ -751,6 +762,11 @@ def worker(args) -> None:
             expected_source_sha = recorded_source_sha
             note(f"explicit checkpoint migration: {recorded_source_sha} -> {source_sha}")
         validate_secondary_restore(saved_experiment,args,source_migration)
+        saved_canonical=saved_experiment.get('canonical_encoder_batch_rows',0)
+        if saved_canonical!=args.canonical_encoder_batch_rows:
+            if not (saved_canonical==0 and args.canonical_encoder_batch_rows==1024
+                    and source_migration and source_migration.get('scope')=='pa3-v2-reviewed-release-migration-v1'):
+                raise RuntimeError('canonical encoder execution mismatch; reviewed migration required')
         restore_opponents = opponent_manifest
         if resume_envelope.get("opponent_manifest") != opponent_manifest:
             old_manifest = resume_envelope.get("opponent_manifest", {})
@@ -1012,6 +1028,7 @@ def worker(args) -> None:
                     "source_migration_allowed": bool(args.experimental_allow_source_sha),
                     "source_migration": source_migration,
                     "recompute_secondary": bool(args.recompute_secondary),
+                    "canonical_encoder_batch_rows":args.canonical_encoder_batch_rows,
                     "precision_mode": args.precision_mode,
                     "cublas_workspace_config": os.environ.get('CUBLAS_WORKSPACE_CONFIG'),
                     "token_lookup_backend": lookup_backend(args),
@@ -1180,6 +1197,7 @@ def parent(args) -> None:
                 "--iterations", str(args.iterations), "--batch-cache", args.batch_cache,
                 "--workers", str(args.workers), "--microbatch", str(args.microbatch),
                 "--minibatch", str(args.minibatch), "--seed", str(args.seed),
+                "--canonical-encoder-batch-rows",str(args.canonical_encoder_batch_rows),
                 "--epochs", str(args.epochs), "--timeout", str(args.timeout),
                 "--experimental-lr-scale", str(args.experimental_lr_scale),
                 "--historical-probability", str(args.historical_probability),
@@ -1252,7 +1270,7 @@ def parent(args) -> None:
             if not args.experimental_checkpoint:
                 raise RuntimeError("--rolling-checkpoint-root requires --experimental-checkpoint")
             from agent.ppo.storage_manager import CheckpointGenerationStore
-            rolling_store = CheckpointGenerationStore(os.path.abspath(args.rolling_checkpoint_root),keep_generations=args.rolling_keep_generations)
+            rolling_store = CheckpointGenerationStore(os.path.abspath(args.rolling_checkpoint_root),keep_generations=args.rolling_keep_generations,reserve_bytes=(8 if args.isolated_validation_storage else 15)*2**30)
         while any(proc.poll() is None for _, proc in procs):
             # A failed correctness gate must not leave its peer blocked in a
             # collective until the full process-group timeout expires.
@@ -1295,7 +1313,7 @@ def parent(args) -> None:
             results.append(json.load(handle))
     if args.rolling_checkpoint_root:
         from agent.ppo.storage_manager import CheckpointGenerationStore
-        store = CheckpointGenerationStore(os.path.abspath(args.rolling_checkpoint_root),keep_generations=args.rolling_keep_generations)
+        store = CheckpointGenerationStore(os.path.abspath(args.rolling_checkpoint_root),keep_generations=args.rolling_keep_generations,reserve_bytes=(8 if args.isolated_validation_storage else 15)*2**30)
         _publish_completed_rolling_boundary(args, store, set())
     expected_execution = execution_options(args)
     if any(result["execution_options"] != expected_execution for result in results):

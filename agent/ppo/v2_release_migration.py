@@ -8,7 +8,7 @@ ENGINE='8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62'
 # Explicitly reviewed executable surface. Engine/dataset/loss/learner/config
 # architecture/semantic contracts are deliberately absent.
 REVIEWED=set('''agent/buffer/rollout_buffer.py agent/model/cuda/exact_lookup.cu
-agent/model/embeddings.py agent/model/exact_row_lookup.py agent/model/ragged_embeddings.py
+agent/model/encoder.py agent/model/embeddings.py agent/model/exact_row_lookup.py agent/model/ragged_embeddings.py
 agent/model/scorer.py agent/ppo/recompute_safety.py agent/ppo/source_migration.py
 agent/ppo/v2_source_migration.py agent/ppo/v2_release_migration.py agent/runtime/config.py
 agent/train/native_collector.py agent/types/action_mapping.py agent/types/observation.py
@@ -33,11 +33,13 @@ def validate_contract(receipt,*,source,target,checkpoint_hash,rank_hashes,runtim
     for section in ('collector','evaluation'):
         if profile[section]!=original_profile[section]:raise ValueError('migration execution contract changed: '+section)
     before=dict(original_profile['precision']);after=dict(profile['precision']);after.pop('recompute_secondary',None);before.pop('recompute_secondary',None)
+    after.pop('canonical_encoder_batch_rows',None);before.pop('canonical_encoder_batch_rows',None)
+    if original_profile['precision'].get('canonical_encoder_batch_rows',0)!=0 or profile['precision'].get('canonical_encoder_batch_rows')!=1024 or receipt.get('canonical_encoder_transition')!={'historical':0,'future':1024}:raise ValueError('canonical encoder contract mismatch')
     if before!=after or profile['precision'].get('recompute_secondary') is not True:raise ValueError('migration precision incompatible')
     for key in ('manifest_sha256','teams_sha256','train_teams','sampling','id'):
         if profile['dataset'][key]!=original_profile['dataset'][key]:raise ValueError('migration dataset changed')
     if receipt.get('token_lookup_backend')!='gather' or receipt.get('secondary_activation')!={'historical':False,'future':True}:raise ValueError('unauthorized arithmetic backend or safety transition')
-    if not all(parity.get(k) is True for k in ('representation_equal','loss_equal','gradient_equal','adam_equal','model_config_equal')):raise ValueError('migration independent parity proof incomplete')
+    if not all(parity.get(k) is True for k in ('representation_equal','loss_equal','gradient_equal','adam_equal','model_config_equal','gpu_loss_equal','gpu_gradient_equal','gpu_adam_equal','gpu_model_equal')):raise ValueError('migration independent parity proof incomplete')
     if receipt.get('semantic_contract')!='dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35':raise ValueError('migration semantic contract mismatch')
 
 def validate(receipt,root,source,target):
@@ -63,6 +65,18 @@ def validate(receipt,root,source,target):
         if left[key]!=right[key]:raise ValueError('independent math/data parity failed: '+key)
     for name,digest in right['runtime_file_hashes'].items():
         if sha(root/name)!=digest:raise ValueError('data-path parity code changed: '+name)
+    gpu=[]
+    for key in ('gpu_baseline','gpu_candidate'):
+        path=Path(parity[key+'_artifact'])
+        if sha(path)!=parity[key+'_sha256']:raise ValueError('GPU parity artifact changed')
+        gpu.append(json.loads(path.read_text()))
+    for artifact in gpu:
+        if artifact.get('experimental_row_lookup') or artifact.get('experimental_exact_row_lookup') or artifact.get('rows')!=1024 or artifact.get('precision')!='D/FP16':raise ValueError('unauthorized GPU proof execution')
+    if gpu[0]['source_sha']!=BASE:raise ValueError('GPU baseline source mismatch')
+    for key in ('losses','gradient_digest','adam_digest','updated_model_digest'):
+        if gpu[0][key]!=gpu[1][key]:raise ValueError('GPU same-microbatch parity failed: '+key)
+    for name,digest in gpu[1]['runtime_file_sha256'].items():
+        if sha(root/name)!=digest:raise ValueError('GPU parity source changed: '+name)
     if parity.get('target_runtime_blobs')!=blobs(root,target):raise ValueError('parity target executable identity mismatch')
     old_path=Path(receipt['original_profile_path'])
     if sha(old_path)!=receipt['original_profile_sha256']:raise ValueError('original profile changed')
@@ -103,6 +117,7 @@ def prepare(root,checkpoint,parity_report,team_stats_root,output):
         'semantic_contract':'dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35',
         'action_schema_hash':state['action_schema_hash'],'model_config_hash':state['model_config_hash'],'ppo_config_hash':state['ppo_config_hash'],
         'verified_rank_digests':state['rank_digests'],'engine_sha256':sha(root/'engine/python/pa3_engine/pa3_engine.so'),
+        'canonical_encoder_transition':{'historical':0,'future':1024},
         'token_lookup_backend':'gather','secondary_activation':{'historical':False,'future':True},
         'team_stats_origin_root':str(origin/'team_stats'),'team_stats_lineage_id':run_identity(origin/'team_stats'),
         'team_stats_root':str(Path(team_stats_root).resolve()),'parity_report':str(proof),'parity_report_sha256':sha(proof)}

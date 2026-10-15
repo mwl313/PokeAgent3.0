@@ -9,7 +9,7 @@ def main():
     root=Path(__file__).resolve().parents[1];out=Path(args.output).resolve();out.mkdir(parents=True,exist_ok=True)
     campaign=Path('/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z')
     profile=json.loads((campaign/'release/runtime_profile.json').read_text());data=profile['dataset']
-    common=['--games','2048','--seed','20261014','--epochs','2','--experimental-lr-scale','0.5','--precision-mode','D','--precision-stability','fp16-reduction-off','--deterministic-diagnostic','--recompute-secondary','--envs','1024','--workers','16','--microbatch','1024','--minibatch','4096','--data',data['data'],'--teams',data['teams'],'--dataset-manifest',data['manifest'],'--rolling-keep-generations','20','--timeout','1800']
+    common=['--games','2048','--seed','20261014','--epochs','2','--experimental-lr-scale','0.5','--precision-mode','D','--precision-stability','fp16-reduction-off','--deterministic-diagnostic','--recompute-secondary','--canonical-encoder-batch-rows','1024','--isolated-validation-storage','--envs','1024','--workers','16','--microbatch','1024','--minibatch','4096','--data',data['data'],'--teams',data['teams'],'--dataset-manifest',data['manifest'],'--rolling-keep-generations','20','--timeout','1800']
     def run(name,count,checkpoint,migrate=False,interval=4096):
         path=out/name;path.mkdir(exist_ok=False)
         command=[sys.executable,str(root/'scripts/run_ddp_ppo.py'),*common,'--iterations',str(count),'--experimental-resume',str(checkpoint),'--checkpoint-interval-matches',str(interval),'--experimental-checkpoint',str(path/'boundary'),'--rolling-checkpoint-root',str(path/'rolling'),'--team-stats-root',str(out/('first' if name=='resumed' else name)/'team_stats'),'--report',str(path/'report.json')]

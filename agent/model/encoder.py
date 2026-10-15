@@ -120,6 +120,7 @@ class TokenEncoder(nn.Module):
         # Experimental execution-only option; architecture/checkpoints and the
         # full padded-token public API stay unchanged. Enable only after an A/B.
         self.trim_padding = False
+        self.canonical_batch_rows = 0
 
     @property
     def forward_calls(self) -> int:
@@ -131,6 +132,25 @@ class TokenEncoder(nn.Module):
 
     def forward(self, observation: ObservationBatch) -> torch.Tensor:
         self._forward_calls += 1
+        size = self.canonical_batch_rows
+        if (size and observation.device.type == "cuda"
+                and torch.is_autocast_enabled("cuda") and len(observation) != size
+                and len(observation)):
+            # Tensor-Core GEMM selection depends on M. Always encode physical
+            # groups of1024 for ModeD behavior/recompute, matching the unchanged
+            # learner microbatch. Rows never attend across battles. Duplicate
+            # padding is internal and discarded before scoring/accounting.
+            outputs = []
+            for begin in range(0, len(observation), size):
+                part = observation.narrow(begin,min(begin+size,len(observation)))
+                count = len(part)
+                if count < size:
+                    part = part.cat([part.select([0]*(size-count))])
+                outputs.append(self._forward_impl(part)[:count])
+            return torch.cat(outputs,0)
+        return self._forward_impl(observation)
+
+    def _forward_impl(self, observation: ObservationBatch) -> torch.Tensor:
         hidden = self.embedding(observation)
         valid = observation.token_mask
         tokens = hidden.shape[1]

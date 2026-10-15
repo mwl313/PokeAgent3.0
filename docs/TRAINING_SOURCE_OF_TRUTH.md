@@ -2,7 +2,7 @@
 
 **2026-10-15 KST — BLOCKED; PPO not restarted.** Canonical branch remains `codex/pa3-v2-correctness @ c96c35f12d3f3aff32b072b48e32ac243a7b0425`. Integration candidate is `codex/pa3-v2-integration-release`, based on frozen throughput `9e685b701f170436f9b9dd82162c8e192e4e6904`. No canonical fast-forward is authorized by failed release gates. Main and Track C unchanged.
 
-This index describes actual state and the proposed executable release separately. Authority: immutable run manifest → verified checkpoint metadata → versioned production profile → frozen observation/action contract → this index → historical research. Proposed profile config hash: `6677f035c3ac855233af018116a81c455ba32fde4beab927496d3bd11f110884`. Original runtime JSON remains under `/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/release/`; do not rewrite its history.
+This index describes actual state and the proposed executable release separately. Authority: immutable run manifest → verified checkpoint metadata → versioned production profile → frozen observation/action contract → this index → historical research. Proposed profile config hash: `7eec659435f3eacf6f9f0396c925f181eb107fb924b16c3da103420e3b46e5ec`. Original runtime JSON remains under `/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/release/`; do not rewrite its history.
 
 Mission: train a strong Pokémon Champions Regulation M-C VGC doubles policy using native Rust/PyO3 engine, player-visible Observation V2/Action V2,9,889,755-parameter Entity Transformer, synchronous dual-V100 DDP PPO, per-team ledgers and an independent evaluation league. Scratch-origin training has already occurred; continuation must preserve existing weights and full state. Target100,000,000 naturally completed matches.
 
@@ -113,3 +113,5 @@ Track C: **DEFERRED_INDEFINITELY**, protected06dbb31, no merge/import/teacher ac
 
 
 Tested clean integration candidate source: `e9dc1d20141986d9e0e19234d26240a7d933d5d0`;23 focused tests PASS. Final documentation receipt commit follows. This does not supersede unchanged canonical correctness source or approve cutover.
+
+Prospective ModeD execution correction: encoder physical batches fixed at1024 rows (same learner microbatch), internal duplicate padding discarded before scoring. FP32 diagnostic references remain unpadded. No change to model parameters, attention semantics, PPO objective, primary.001 or secondary acceptance. Canonical execution is checkpoint-bound and migration-only for the original state.

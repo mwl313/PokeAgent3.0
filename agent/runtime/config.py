@@ -30,6 +30,8 @@ def resolve_profile(path: str) -> dict:
     if data["version"] == "pa3-v2-production-v1":
         if p.get("recompute_secondary") is not True or p.get("tolerance") != 1e-3:
             raise ValueError("V2 requires secondary safety and unchanged primary tolerance")
+        if p.get("canonical_encoder_batch_rows") != 1024:
+            raise ValueError("V2 requires canonical1024 ModeD encoder batches")
         if c.get("world_size") != 2 or c.get("executor") != "ddp":
             raise ValueError("V2 requires two-rank DDP")
         teams = d.get("teams", "")
@@ -57,6 +59,8 @@ def launcher_values(resolved: dict) -> dict:
             "historical_probability": t["historical_probability"], "precision_mode": p["mode"],
             "precision_stability": p["stability"], "recompute_gate": p["recompute_gate"],
             "batch_cache": c["batch_cache"], "compact_candidates": c["compact_candidates"]}
+    if "canonical_encoder_batch_rows" in p:
+        values["canonical_encoder_batch_rows"] = p["canonical_encoder_batch_rows"]
     if "recompute_secondary" in p:
         values["recompute_secondary"] = p["recompute_secondary"]
     if "teams" in d:

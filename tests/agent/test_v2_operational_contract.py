@@ -95,3 +95,9 @@ def test_parent_worker_execution_identity_includes_lookup_backend():
     assert module.execution_options(args,lr_scale=args.experimental_lr_scale)==expected
     args.experimental_exact_token_lookup=True
     assert module.execution_options(args)['token_lookup_backend']=='exact-row-v100-v1'
+
+
+def test_isolated_validation_storage_cannot_target_production(tmp_path):
+    _,module=launcher()
+    with pytest.raises(SystemExit):module.parse_args(['--isolated-validation-storage'])
+    with pytest.raises(SystemExit):module.parse_args(['--isolated-validation-storage','--experimental-resume',str(tmp_path),'--rolling-checkpoint-root',str(tmp_path),'--experimental-checkpoint',str(tmp_path/'boundary'),'--team-stats-root',str(tmp_path/'stats')])
