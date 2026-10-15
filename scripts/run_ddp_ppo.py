@@ -363,7 +363,7 @@ def verify_recompute_ranks(result, device):
 
 def migration_statistics_identity(args, migration):
     from agent.analysis.team_stats import run_identity
-    if migration and migration.get('scope')=='pa3-v2-reviewed-release-migration-v1':
+    if migration and migration.get('scope')in ('pa3-v2-reviewed-release-migration-v1','pa3-v2-reviewed-release-migration-v2'):
         if os.path.abspath(args.team_stats_root)!=migration['team_stats_root']:
             raise RuntimeError('statistics migration namespace mismatch')
         return migration['team_stats_lineage_id']
@@ -373,7 +373,7 @@ def migration_statistics_identity(args, migration):
 def validate_secondary_restore(experiment, args, migration=None):
     if bool(experiment.get("recompute_secondary", False)) != bool(args.recompute_secondary):
         if (not experiment.get("recompute_secondary", False) and args.recompute_secondary
-                and migration and migration.get('scope')=='pa3-v2-reviewed-release-migration-v1'
+                and migration and migration.get('scope')in ('pa3-v2-reviewed-release-migration-v1','pa3-v2-reviewed-release-migration-v2')
                 and migration.get('secondary_activation')=={'historical':False,'future':True}):
             return
         raise RuntimeError("checkpoint recompute-secondary contract mismatch; reviewed migration required")
@@ -765,7 +765,7 @@ def worker(args) -> None:
         saved_canonical=saved_experiment.get('canonical_encoder_batch_rows',0)
         if saved_canonical!=args.canonical_encoder_batch_rows:
             if not (saved_canonical==0 and args.canonical_encoder_batch_rows==1024
-                    and source_migration and source_migration.get('scope')=='pa3-v2-reviewed-release-migration-v1'):
+                    and source_migration and source_migration.get('scope')in ('pa3-v2-reviewed-release-migration-v1','pa3-v2-reviewed-release-migration-v2')):
                 raise RuntimeError('canonical encoder execution mismatch; reviewed migration required')
         restore_opponents = opponent_manifest
         if resume_envelope.get("opponent_manifest") != opponent_manifest:

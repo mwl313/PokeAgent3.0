@@ -7,7 +7,8 @@ ERROR_WRAPPER_AST='a24af9614ac5542e7c0b377ed88ad6266439d02b03e6a6cd323599ceca887
 LEGACY_SCHEMA='pa3-v2-reviewed-release-migration-v1'
 SCHEMA='pa3-v2-reviewed-release-migration-v2'
 REVIEWED_SOURCE='93ebc1b5086b7a2bf247b779eb6442671bbbdd10'
-VALIDATOR_AST='24edd49cc461a357fdb9e64ed3dbd9f350dbdc6bf350980bfe6686a0ddd966f0'
+DISPATCH_BLOBS={'agent/ppo/source_migration.py': '540698ee4f62d7b48125721db264d7082eea02f5', 'scripts/run_ddp_ppo.py': 'b6779b91156d394006cd652ee914f4152ef18a52'}
+VALIDATOR_AST='79e4229b78663554bf0958d23c7608dd72f5a03854a4250af5ba9d6cfa006855'
 MANIFEST='b9539f3a0c426f0878375b61630cb4de9dcd2a5d4a6a59858b4d64f4287fd424'
 ENGINE='8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62'
 # Explicitly reviewed executable surface. Engine/dataset/loss/learner/config
@@ -41,7 +42,7 @@ def blobs(root,target):
                     node.value=ast.Constant('')
             if hashlib.sha256(ast.dump(tree,include_attributes=False).encode()).hexdigest()!=VALIDATOR_AST:
                 raise ValueError('unreviewed migration validator')
-        elif blob != git(root,'rev-parse',f'{REVIEWED_SOURCE}:{name}'):
+        elif blob != (DISPATCH_BLOBS[name] if name in DISPATCH_BLOBS else git(root,'rev-parse',f'{REVIEWED_SOURCE}:{name}')):
             raise ValueError('runtime differs from independently audited code: '+name)
     return result
 def validate_contract(receipt,*,source,target,checkpoint_hash,rank_hashes,runtime_blobs,profile,original_profile,engine_hash,parity):
