@@ -19,14 +19,16 @@ def reference(scorer, encoded, entity, move):
 
 
 @pytest.mark.parametrize('device',['cpu','cuda'])
+@pytest.mark.parametrize('backend',['embedding','exact'])
 @pytest.mark.parametrize('all_null',[False,True])
 @pytest.mark.parametrize('noncontiguous',[False,True])
-def test_lookup_output_input_and_parameter_gradients(device,all_null,noncontiguous):
+def test_lookup_output_input_and_parameter_gradients(device,backend,all_null,noncontiguous):
     if device=='cuda' and not torch.cuda.is_available():pytest.skip('CUDA unavailable')
     with torch.random.fork_rng(devices=[0] if device=='cuda' else []):
         torch.manual_seed(77)
         new=ConditionalPrefixScorer(PA3Config()).to(device);old=copy.deepcopy(new)
-        new.experimental_row_lookup=True
+        new.experimental_row_lookup=backend=='embedding'
+        new.experimental_exact_row_lookup=backend=='exact'
         x=torch.randn(3,11,320,device=device)
         if noncontiguous:x=x.transpose(1,2).contiguous().transpose(1,2)
         a=x.detach().requires_grad_();b=x.detach().clone(memory_format=torch.preserve_format).requires_grad_()
@@ -57,3 +59,13 @@ def test_bulk_prefix_signed_wire_decode_and_source_ownership():
     expected=[(1,0,2,-1,255,1),(1,1,0,-2,255,0),(0,0,255,0,3,0)]
     actual=NativeCollector._prefix_actions(wire,0,3);assert actual==expected
     wire[:]=0;assert actual==expected
+
+
+@pytest.mark.parametrize('device',['cpu','cuda'])
+@pytest.mark.parametrize('field,value',[('entity',-2),('entity',11),('move',-2),('move',11)])
+def test_combined_reference_checks_reject_bad_indices_before_lookup(device,field,value):
+    if device=='cuda' and not torch.cuda.is_available():pytest.skip('requires CUDA')
+    scorer=ConditionalPrefixScorer(PA3Config()).to(device);scorer.experimental_exact_row_lookup=True
+    encoded=torch.zeros(1,11,320,device=device);entity=torch.zeros(1,2,dtype=torch.long,device=device);move=entity.clone()
+    (entity if field=='entity' else move)[0,0]=value
+    with pytest.raises(ValueError):scorer.token_references(encoded,entity,move)

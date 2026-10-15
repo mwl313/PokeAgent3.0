@@ -541,12 +541,16 @@ class NativeCollector:
         submissions: dict[int, list[tuple[int, list]]] = {}
         # Batch-level compact observation (one conversion for the whole round)
         # for the packed rollout fast path.
-        compact_batch = batch_observations.to_compact_numpy() if batch_observations is not None else None
+        compact_batch = None
         observation_block_ref=None
-        if compact_batch is not None and hasattr(self.buffer.observation_store,'own_block'):
+        if batch_observations is not None and hasattr(self.buffer.observation_store,'own_observation'):
             start_record=time.perf_counter()
-            observation_block_ref=self.buffer.observation_store.own_block(compact_batch)
+            observation_block_ref=self.buffer.observation_store.own_observation(batch_observations)
             self.stats.record_seconds+=time.perf_counter()-start_record
+            if self.config.recompute_provenance:
+                compact_batch=batch_observations.to_compact_numpy()
+        elif batch_observations is not None:
+            compact_batch=batch_observations.to_compact_numpy()
         for (policy_id, branch_count), indices in sorted(groups.items()):
             group_row_start = len(self.buffer.rows)
             group_observation_hash = None
@@ -680,7 +684,7 @@ class NativeCollector:
                 if self._records_side(side, roles[env], env):
                     start_record = time.perf_counter()
                     selected_prefix = [picks_by_level[level][offset] for level in range(branch_count)]
-                    if packed_by_level[0] is not None and compact_batch is not None:
+                    if packed_by_level[0] is not None and (compact_batch is not None or observation_block_ref is not None):
                         # Fast path: no typed ActionRef/CandidateSet objects and
                         # no per-row torch copy — compact numpy rows only.
                         records, entities, moves = self._packed_row_inputs(
@@ -692,7 +696,7 @@ class NativeCollector:
                         # with another request's observation.
                         decision_offset = indices[offset]
                         self.buffer.record_packed(
-                            compact_batch,
+                            compact_batch if compact_batch is not None else {},
                             observation_index=decision_offset,
                             observation_block_ref=observation_block_ref,
                             branch_records=records,

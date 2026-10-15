@@ -130,6 +130,20 @@ class BlockObservationStore(InlineObservationStore):
         index=len(self._blocks);self._blocks.append(owned)
         return index
 
+    def own_observation(self,observation):
+        """Private export: keep freshly allocated payloads, copy borrowed ones.
+
+        The concrete serializer owns ragged rows/counts and integer casts;
+        tensor-backed fixed NumPy arrays have OWNDATA=False and need a copy.
+        No exported dictionary/array is returned to the caller or cached by
+        source identity. The generic own_block boundary still deep-copies.
+        """
+        if not isinstance(observation,ObservationBatch):raise ValueError('expected typed observation')
+        compact=ObservationBatch.to_compact_numpy(observation)
+        owned={key:value if value.flags.owndata else value.copy() for key,value in compact.items()}
+        index=len(self._blocks);self._blocks.append(owned)
+        return index
+
     def add_block_row(self, block_index, index):
         block=self._blocks[block_index]
         if not 0<=index<len(next(iter(block.values()))):raise IndexError(index)

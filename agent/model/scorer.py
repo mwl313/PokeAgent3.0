@@ -177,8 +177,17 @@ class ConditionalPrefixScorer(nn.Module):
         """Gather entity/move references and project them into key space."""
         tokens, token_count, d = encoded_tokens.shape
         flat_entity = entity_token.reshape(tokens, -1)
-        if bool(((flat_entity < -1)|(flat_entity>=token_count)).any()):
+        flat_move = move_token.reshape(tokens, -1)
+        invalid_entity=((flat_entity < -1)|(flat_entity>=token_count)).any()
+        invalid_move=((flat_move < -1)|(flat_move>=token_count)).any()
+        if encoded_tokens.is_cuda:
+            bad_entity,bad_move=torch.stack([invalid_entity,invalid_move]).cpu().tolist()
+        else:
+            bad_entity,bad_move=bool(invalid_entity),bool(invalid_move)
+        if bad_entity:
             raise ValueError('invalid actor token reference')
+        if bad_move:
+            raise ValueError('invalid move token reference')
         has_entity=flat_entity>=0
         # Row lookup avoids expanding each reference over d channels. Under
         # deterministic CUDA, gather's backward sorts that expanded index;
@@ -199,9 +208,6 @@ class ConditionalPrefixScorer(nn.Module):
             entity_ref = encoded_tokens.gather(1,flat_entity.clamp_min(0).unsqueeze(-1).expand(-1,-1,d))
         entity_ref=torch.where(has_entity.unsqueeze(-1),entity_ref,self.null_entity.view(1,1,d))
 
-        flat_move = move_token.reshape(tokens, -1)
-        if bool(((flat_move < -1)|(flat_move>=token_count)).any()):
-            raise ValueError('invalid move token reference')
         has_move = flat_move >= 0
         if row_lookup:
             move_ref = lookup(table,flat_move.clamp_min(0) + row_base)

@@ -7,6 +7,7 @@ from agent.types.observation import ObservationLayout,ObservationBatch
 from agent.types.requests import BranchCandidatesBatch
 from agent.types.ragged import RaggedBatch,FIELDS
 from agent.buffer.rollout_buffer import RolloutBatch
+from agent.buffer.rollout_buffer import BlockObservationStore,InlineObservationStore
 
 
 @pytest.mark.parametrize('count',[0,1,31,32,33,64,65,128])
@@ -65,3 +66,67 @@ def test_bundled_H2D_is_complete_and_isolated_when_public_call_returns():
         batch.observation.ragged[name].values.fill_(99);batch.observation.ragged[name].host_counts[:]=0
         assert not bool(actual.observation.ragged[name].values.eq(99).any())
         assert actual.observation.ragged[name].host_counts[:,0].tolist()==[1,1]
+
+
+def test_private_observation_export_owns_every_fixed_and_ragged_source():
+    obs=ObservationBatch.dummy(2)
+    obs.floats[:,:,0]=.25;obs.flags[:,:,0]=1
+    for name,fields in FIELDS.items():
+        counts=np.zeros((2,96),np.int64);counts[:,0]=1
+        obs.ragged[name]=RaggedBatch.from_rows([np.zeros((1,len(fields)),np.float32)]*2,counts,len(fields))
+    reference=InlineObservationStore();store=BlockObservationStore()
+    compact=obs.to_compact_numpy()
+    for i in range(2):reference.add_compact_at(compact,i)
+    block=store.own_observation(obs)
+    for i in range(2):store.add_block_row(block,i)
+    for field in dataclasses.fields(obs):
+        value=getattr(obs,field.name)
+        if isinstance(value,torch.Tensor):value.fill_(0)
+    for section in obs.ragged.values():
+        section.values.fill_(99);section.counts.fill_(0);section.host_counts[:]=0
+    for i in range(2):
+        a=store.get(i).to_compact_numpy();b=reference.get(i).to_compact_numpy()
+        for key in a:
+            if a[key].dtype.hasobject:np.testing.assert_array_equal(a[key][0],b[key][0])
+            else:np.testing.assert_array_equal(a[key],b[key])
+
+
+def _rich_small(device):
+    obs=ObservationBatch.dummy(1)
+    for name,fields in FIELDS.items():
+        counts=np.zeros((1,96),np.int64);counts[0,4]=1
+        obs.ragged[name]=RaggedBatch.from_rows([np.zeros((1,len(fields)),np.float32)],counts,len(fields))
+    return obs.to(device)
+
+
+@pytest.mark.parametrize('device',['cpu','cuda'])
+@pytest.mark.parametrize('corruption',['category','kind','reserved','namespace','known_nan','csr','masked_count','ragged_nan','boolean','fractional_id'])
+def test_batched_validation_still_fails_closed(device,corruption):
+    if device=='cuda' and not torch.cuda.is_available():pytest.skip('requires CUDA')
+    from agent.model.embeddings import TokenEmbedding
+    from agent.model import PA3Config
+    from agent.contracts import SPEC
+    obs=_rich_small(device)
+    if corruption=='category':obs.category_known[0,4,11]=True;obs.categories[0,4,11]=8191
+    elif corruption=='kind':obs.category_known[0,64,16]=True;obs.categories[0,64,16]=99999
+    elif corruption=='reserved':obs.category_known[0,4,SPEC['reserved_slots']['categories'][0]]=True
+    elif corruption=='namespace':
+        obs.category_known[0,64,16:18]=True;obs.categories[0,64,16]=0;obs.categories[0,64,17]=1
+    elif corruption=='known_nan':obs.float_known[0,4,31]=True;obs.floats[0,4,31]=float('nan')
+    elif corruption=='csr':obs.ragged['effects'].counts[0,4]+=1
+    elif corruption=='masked_count':obs.token_mask[0,4]=False
+    elif corruption=='ragged_nan':obs.ragged['effects'].values[0,0]=float('nan')
+    elif corruption=='boolean':obs.ragged['effects'].values[0,1]=2
+    elif corruption=='fractional_id':obs.ragged['types'].values[0,0]=1.5
+    model=TokenEmbedding(PA3Config()).to(device)
+    with pytest.raises(ValueError):model(obs)
+
+
+@pytest.mark.parametrize('device',['cpu','cuda'])
+def test_batched_ragged_validation_keeps_unknown_payload_masking(device):
+    if device=='cuda' and not torch.cuda.is_available():pytest.skip('requires CUDA')
+    from agent.model.embeddings import TokenEmbedding
+    from agent.model import PA3Config
+    a=_rich_small(device);b=a.clone();b.ragged['effects'].values[0,6]=9999
+    model=TokenEmbedding(PA3Config()).to(device)
+    torch.testing.assert_close(model(a),model(b),rtol=0,atol=0)

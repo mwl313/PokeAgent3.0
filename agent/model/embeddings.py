@@ -56,14 +56,13 @@ class TokenEmbedding(nn.Module):
         token_mask = observation.token_mask
         role_ids = observation.role_ids
         side_ids = observation.side_ids
-        if bool(((role_ids<0)|(role_ids>=cfg.role_vocab)).any()) or bool(((side_ids<0)|(side_ids>=cfg.side_vocab)).any()):
+        if bool(((role_ids<0)|(role_ids>=cfg.role_vocab)).any() | ((side_ids<0)|(side_ids>=cfg.side_vocab)).any()):
             raise ValueError("invalid role/side category ID")
 
         # Continuous features: mask unknown entries and flush non-finite values.
         floats = observation.floats
         float_known = observation.float_known
-        if bool((~torch.isfinite(floats)&float_known).any()):
-            raise ValueError("nonfinite known observation value")
+        # validate_semantics just checked known floats on this exact batch.
         floats = torch.where(float_known,floats,0.)
 
         flags = observation.flags.to(floats.dtype) * observation.flag_known.to(floats.dtype)

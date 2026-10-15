@@ -21,6 +21,8 @@ class RaggedEmbedding(nn.Module):
 
     def forward(self,observation):
         output=observation.floats.new_zeros((*observation.token_mask.shape,self.config.d_model))
+        gpu_validated=output.is_cuda
+        if gpu_validated:self._validate_cuda_values(observation)
         for name,section in observation.ragged.items():
             values=section.values
             if values.shape[0]==0:
@@ -33,7 +35,7 @@ class RaggedEmbedding(nn.Module):
                 continue
             numeric=values.clone()
             boolean_columns={'effects':(1,3,5,7),'base_moves':(3,4),'move_effects':(12,)}.get(name,())
-            if boolean_columns and bool(((values[:,boolean_columns]!=0)&(values[:,boolean_columns]!=1)).any()):
+            if not gpu_validated and boolean_columns and bool(((values[:,boolean_columns]!=0)&(values[:,boolean_columns]!=1)).any()):
                 raise ValueError(f'invalid ragged boolean {name}')
             if name=='effects':
                 numeric[:,2]=torch.where(values[:,3].bool(),values[:,2],0.)
@@ -48,7 +50,7 @@ class RaggedEmbedding(nn.Module):
                     'move_effects':{0:4,2:catalogue['conditions'],3:catalogue['conditions']}}
             for column in CATEGORICAL[name]:
                 raw=numeric[:,column]
-                if bool(((raw<0)|(raw>limits[name][column])|(raw>=self.config.category_vocab)|(raw!=raw.floor())).any()):
+                if not gpu_validated and bool(((raw<0)|(raw>limits[name][column])|(raw>=self.config.category_vocab)|(raw!=raw.floor())).any()):
                     raise ValueError(f'invalid known ragged category {name}:{column}')
                 ids.append(self.ids[f'{name}_{column}'](raw.long()))
                 numeric[:,column]=0.
@@ -59,3 +61,23 @@ class RaggedEmbedding(nn.Module):
             counts=section.counts.to(output.dtype).log1p().unsqueeze(-1)
             output=output+pooled+self.count[name](counts)
         return output
+
+    def _validate_cuda_values(self,observation):
+        catalogue=SPEC['catalogue_max_ids']
+        limits={'effects':{0:catalogue['conditions'],6:255},'repertoire':{0:catalogue['moves']},
+                'types':{0:catalogue['types']},'base_moves':{0:catalogue['moves']},
+                'move_effects':{0:4,2:catalogue['conditions'],3:catalogue['conditions']}}
+        checks=[]
+        for name,section in observation.ragged.items():
+            values=section.values
+            if not len(values):continue
+            columns={'effects':(1,3,5,7),'base_moves':(3,4),'move_effects':(12,)}.get(name,())
+            if columns:checks.append((((values[:,columns]!=0)&(values[:,columns]!=1)).any(),f'invalid ragged boolean {name}'))
+            for column in CATEGORICAL[name]:
+                raw=values[:,column]
+                if name=='effects' and column==6:raw=torch.where(values[:,7].bool(),raw,0.)
+                checks.append((((raw<0)|(raw>limits[name][column])|(raw>=self.config.category_vocab)|(raw!=raw.floor())).any(),f'invalid known ragged category {name}:{column}'))
+        if checks:
+            bad=torch.stack([flag for flag,_ in checks]).cpu().tolist()
+            for failed,(_,message) in zip(bad,checks):
+                if failed:raise ValueError(message)

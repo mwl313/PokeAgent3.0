@@ -196,6 +196,8 @@ class ObservationBatch:
         categories=torch.where(self.category_known,self.categories,0)
         if bool(((categories<0)|(categories>maximum)).any()):
             raise ValueError('known category outside its catalogue/enum namespace')
+        if self.device.type=='cuda':
+            return self._validate_cuda_tail(categories)
         for column in SPEC['reserved_slots']['categories']:
             if bool(self.category_known[:,:,column].any()):
                 raise ValueError('reserved category marked known')
@@ -215,6 +217,34 @@ class ObservationBatch:
                 raise ValueError(f'invalid CSR counts/token mask for {name}')
             if not bool(torch.isfinite(section.values).all()):
                 raise ValueError(f'nonfinite ragged feature {name}')
+
+    def _validate_cuda_tail(self,categories):
+        # The category-range fence above must precede namespace indexing.
+        # Validate fresh values every call; no permanent/cached validity flag.
+        checks=[(self.category_known[:,:,column].any(),'reserved category marked known')
+                for column in SPEC['reserved_slots']['categories']]
+        checks.append((self.float_known[:,:,49].any(),'reserved float marked known'))
+        limits=torch.tensor([0,SPEC['catalogue_max_ids']['moves'],SPEC['catalogue_max_ids']['abilities'],
+            SPEC['catalogue_max_ids']['items'],SPEC['catalogue_max_ids']['conditions'],SPEC['catalogue_max_ids']['species'],7],device=self.device)
+        kinds=categories[:,:,16].long()
+        checks.append(((self.category_known[:,:,17]&(~self.category_known[:,:,16]|(categories[:,:,17]>limits[kinds]))).any(),'event effect ID/namespace mismatch'))
+        checks.append(((~torch.isfinite(self.floats)&self.float_known).any(),'nonfinite known numeric feature'))
+        prefix=len(checks)
+        for name,section in self.ragged.items():
+            checks.append((~torch.isfinite(section.values).all(),f'nonfinite ragged feature {name}'))
+        flags=torch.stack([flag for flag,_ in checks]).to('cpu',non_blocking=True)
+        mask=self.token_mask.detach().to('cpu',non_blocking=True)
+        counts=[section.counts.detach().to('cpu',non_blocking=True) for section in self.ragged.values()]
+        torch.cuda.current_stream(self.device).synchronize()
+        bad=flags.tolist()
+        for i in range(prefix):
+            if bad[i]:raise ValueError(checks[i][1])
+        mask=mask.numpy()
+        for i,((name,section),tensor) in enumerate(zip(self.ragged.items(),counts)):
+            actual=tensor.numpy()
+            if not np.array_equal(actual,section.host_counts) or np.any(actual[~mask]) or int(actual.sum())!=len(section.values):
+                raise ValueError(f'invalid CSR counts/token mask for {name}')
+            if bad[prefix+i]:raise ValueError(checks[prefix+i][1])
 
     def active_to_roster(self):
         """Player-known active positions → stable own roster, -1 if absent."""
