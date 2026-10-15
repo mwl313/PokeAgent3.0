@@ -27,6 +27,14 @@ def resolve_profile(path: str) -> dict:
                 "envs": 1024, "workers": 16, "historical_probability": 0.0}
     if any(t.get(k) != v for k, v in required.items()): raise ValueError("validated training profile invariant failed")
     if p.get("mode") != "D" or p.get("stability") != "fp16-reduction-off" or not p.get("recompute_gate"): raise ValueError("precision profile invariant failed")
+    if data["version"] == "pa3-v2-production-v1":
+        if p.get("recompute_secondary") is not True or p.get("tolerance") != 1e-3:
+            raise ValueError("V2 requires secondary safety and unchanged primary tolerance")
+        if c.get("world_size") != 2 or c.get("executor") != "ddp":
+            raise ValueError("V2 requires two-rank DDP")
+        teams = d.get("teams", "")
+        if not os.path.isfile(teams) or hashlib.sha256(open(teams, "rb").read()).hexdigest() != d.get("teams_sha256"):
+            raise ValueError("V2 frozen team hash mismatch")
     if c.get("batch_cache") != "cuda" or c.get("compact_candidates") is not True: raise ValueError("collector profile invariant failed")
     if not os.path.isfile(d["manifest"]): raise ValueError("dataset manifest missing")
     digest = hashlib.sha256(open(d["manifest"], "rb").read()).hexdigest()
@@ -49,6 +57,8 @@ def launcher_values(resolved: dict) -> dict:
             "historical_probability": t["historical_probability"], "precision_mode": p["mode"],
             "precision_stability": p["stability"], "recompute_gate": p["recompute_gate"],
             "batch_cache": c["batch_cache"], "compact_candidates": c["compact_candidates"]}
+    if "recompute_secondary" in p:
+        values["recompute_secondary"] = p["recompute_secondary"]
     if "teams" in d:
         values["teams"] = d["teams"]
     if "data" in d:

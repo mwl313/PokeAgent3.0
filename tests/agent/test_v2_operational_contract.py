@@ -49,3 +49,31 @@ def test_exact_lookup_requires_bounded_explicit_contract_and_resume_parity():
     with pytest.raises(RuntimeError,match='backend mismatch'):module.validate_lookup_restore({},args)
     with pytest.raises(RuntimeError,match='backend mismatch'):module.validate_lookup_restore({'token_lookup_backend':'exact-row-v100-v1'},module.parse_args([]))
     with pytest.raises(SystemExit):module.parse_args(flags+['--iterations','6'])
+
+
+def test_v2_secondary_is_resolved_and_configuration_drift_rejected(tmp_path, monkeypatch):
+    from agent.runtime.config import resolve_profile, launcher_values
+    root,module=launcher();monkeypatch.chdir(root)
+    profile=json.loads((root/'configs/pa3_v2_production.yaml').read_text())
+    resolved=resolve_profile(str(root/'configs/pa3_v2_production.yaml'))
+    assert launcher_values(resolved)['recompute_secondary'] is True
+    for field,value in [('recompute_secondary',False),('tolerance',.002)]:
+        bad=json.loads(json.dumps(profile));bad['precision'][field]=value
+        path=tmp_path/'bad.json';path.write_text(json.dumps(bad))
+        with pytest.raises(ValueError,match='secondary safety'):resolve_profile(str(path))
+    args=module.parse_args(['--profile','configs/pa3_v2_production.yaml',
+        '--team-stats-root',str(tmp_path/'stats'),'--rolling-checkpoint-root',str(tmp_path/'rolling'),
+        '--experimental-checkpoint',str(tmp_path/'boundary')])
+    assert args.recompute_secondary and args.recompute_gate
+    assert not args.experimental_exact_token_lookup
+
+
+def test_secondary_restore_contract_cannot_silently_change():
+    from types import SimpleNamespace
+    _, module = launcher()
+    for saved in (False, True):
+        module.validate_secondary_restore({'recompute_secondary':saved}, SimpleNamespace(recompute_secondary=saved))
+        with pytest.raises(RuntimeError,match='secondary contract mismatch'):
+            module.validate_secondary_restore({'recompute_secondary':saved}, SimpleNamespace(recompute_secondary=not saved))
+    with pytest.raises(RuntimeError,match='secondary contract mismatch'):
+        module.validate_secondary_restore({}, SimpleNamespace(recompute_secondary=True))

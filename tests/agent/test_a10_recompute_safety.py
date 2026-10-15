@@ -71,3 +71,18 @@ def test_secondary_budget_fails_closed(model_factory):
                              torch.device('cpu'), 1e-3, max_outliers=1)
     assert not result['accepted']
     assert result['reason'] == 'secondary audit budget exceeded'
+
+@pytest.mark.parametrize('logs,budget', [([], 8), ([0., 0., 0.], 0)])
+def test_secondary_input_shape_and_budget_fail_closed(model_factory, logs, budget):
+    model = model_factory(seed=11); buffer = recorded(model)
+    result = secondary_audit(model, buffer, buffer.rows, logs, torch.device('cpu'), 1e-3, max_outliers=budget)
+    assert not result['accepted']
+    assert result['reason'] == 'invalid secondary audit input or budget'
+
+
+def test_missing_group_on_real_outlier_never_accepted(model_factory):
+    model = model_factory(seed=11); buffer = recorded(model); buffer.actor_groups = []
+    logs = [r.old_logprob + .0015 for r in buffer.rows]
+    result = secondary_audit(model, buffer, buffer.rows, logs, torch.device('cpu'), 1e-3)
+    assert result['required'] and not result['accepted']
+    assert all(r['reason'] == 'original actor group unavailable' for r in result['rows'])

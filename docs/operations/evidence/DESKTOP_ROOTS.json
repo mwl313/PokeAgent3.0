@@ -1,0 +1,154 @@
+[
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0",
+    "realpath": "/home/minidc/Desktop/PokeAgent3.0",
+    "symlink": false,
+    "git_root": "/home/minidc/Desktop/PokeAgent3.0",
+    "common_dir": ".git",
+    "disk_kib": "15708384\t/home/minidc/Desktop/PokeAgent3.0"
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-A",
+    "realpath": "/home/minidc/Desktop/PokeAgent3.0-A",
+    "symlink": false,
+    "git_root": "/home/minidc/Desktop/PokeAgent3.0-A",
+    "common_dir": "/home/minidc/Desktop/PokeAgent3.0/.git",
+    "disk_kib": "13794392\t/home/minidc/Desktop/PokeAgent3.0-A"
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-A-diagnosis",
+    "realpath": "/home/minidc/Desktop/PokeAgent3.0-A-diagnosis",
+    "symlink": false,
+    "git_root": "/home/minidc/Desktop/PokeAgent3.0-A-diagnosis",
+    "common_dir": "/home/minidc/Desktop/PokeAgent3.0/.git",
+    "disk_kib": "387316\t/home/minidc/Desktop/PokeAgent3.0-A-diagnosis"
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-A-eval",
+    "realpath": "/home/minidc/Desktop/PokeAgent3.0-A-eval",
+    "symlink": false,
+    "git_root": "/home/minidc/Desktop/PokeAgent3.0-A-eval",
+    "common_dir": "/home/minidc/Desktop/PokeAgent3.0/.git",
+    "disk_kib": "384324\t/home/minidc/Desktop/PokeAgent3.0-A-eval"
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-A-evaluation-league",
+    "realpath": "/home/minidc/Desktop/PokeAgent3.0-A-evaluation-league",
+    "symlink": false,
+    "git_root": "/home/minidc/Desktop/PokeAgent3.0-A-evaluation-league",
+    "common_dir": "/home/minidc/Desktop/PokeAgent3.0/.git",
+    "disk_kib": "387320\t/home/minidc/Desktop/PokeAgent3.0-A-evaluation-league"
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-A-monitoring",
+    "realpath": "/home/minidc/Desktop/PokeAgent3.0-A-monitoring",
+    "symlink": false,
+    "git_root": "/home/minidc/Desktop/PokeAgent3.0-A-monitoring",
+    "common_dir": "/home/minidc/Desktop/PokeAgent3.0/.git",
+    "disk_kib": "383812\t/home/minidc/Desktop/PokeAgent3.0-A-monitoring"
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-A-recovery",
+    "realpath": "/home/minidc/Desktop/PokeAgent3.0-A-recovery",
+    "symlink": false,
+    "git_root": "/home/minidc/Desktop/PokeAgent3.0-A-recovery",
+    "common_dir": "/home/minidc/Desktop/PokeAgent3.0/.git",
+    "disk_kib": "386752\t/home/minidc/Desktop/PokeAgent3.0-A-recovery"
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-A-runtime",
+    "realpath": "/home/minidc/Desktop/PokeAgent3.0-A-runtime",
+    "symlink": false,
+    "git_root": "/home/minidc/Desktop/PokeAgent3.0-A-runtime",
+    "common_dir": "/home/minidc/Desktop/PokeAgent3.0/.git",
+    "disk_kib": "342852\t/home/minidc/Desktop/PokeAgent3.0-A-runtime"
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-A-telemetry",
+    "realpath": "/home/minidc/Desktop/PokeAgent3.0-A-telemetry",
+    "symlink": false,
+    "git_root": "/home/minidc/Desktop/PokeAgent3.0-A-telemetry",
+    "common_dir": "/home/minidc/Desktop/PokeAgent3.0/.git",
+    "disk_kib": "385068\t/home/minidc/Desktop/PokeAgent3.0-A-telemetry"
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2",
+    "realpath": "/home/minidc/Desktop/PokeAgent3.0-V2",
+    "symlink": false,
+    "git_root": "/home/minidc/Desktop/PokeAgent3.0-V2",
+    "common_dir": "/home/minidc/Desktop/PokeAgent3.0/.git",
+    "disk_kib": "9955512\t/home/minidc/Desktop/PokeAgent3.0-V2"
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2-integration",
+    "realpath": "/home/minidc/Desktop/PokeAgent3.0-V2-integration",
+    "symlink": false,
+    "git_root": "/home/minidc/Desktop/PokeAgent3.0-V2-integration",
+    "common_dir": "/home/minidc/Desktop/PokeAgent3.0/.git",
+    "disk_kib": "407576\t/home/minidc/Desktop/PokeAgent3.0-V2-integration"
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput",
+    "realpath": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput",
+    "symlink": false,
+    "git_root": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput",
+    "common_dir": "/home/minidc/Desktop/PokeAgent3.0/.git",
+    "disk_kib": "4117392\t/home/minidc/Desktop/PokeAgent3.0-V2-throughput"
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3_AC_Codex_Design_Pack_2026-10-11 (2)",
+    "realpath": "/home/minidc/Desktop/PokeAgent3_AC_Codex_Design_Pack_2026-10-11 (2)",
+    "symlink": false,
+    "git_root": null,
+    "common_dir": null,
+    "disk_kib": "96\t/home/minidc/Desktop/PokeAgent3_AC_Codex_Design_Pack_2026-10-11 (2)"
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3_Final_Audit_Repair_Package_2026-10-13",
+    "realpath": "/home/minidc/Desktop/PokeAgent3_Final_Audit_Repair_Package_2026-10-13",
+    "symlink": false,
+    "git_root": null,
+    "common_dir": null,
+    "disk_kib": "148\t/home/minidc/Desktop/PokeAgent3_Final_Audit_Repair_Package_2026-10-13"
+  },
+  {
+    "path": "/home/minidc/Desktop/pa3-c-search",
+    "realpath": "/home/minidc/Desktop/pa3-c-search",
+    "symlink": false,
+    "git_root": "/home/minidc/Desktop/pa3-c-search",
+    "common_dir": "/home/minidc/Desktop/PokeAgent3.0/.git",
+    "disk_kib": "2143772\t/home/minidc/Desktop/pa3-c-search"
+  },
+  {
+    "path": "/home/minidc/Desktop/pa3-legacy-evidence-20261013",
+    "realpath": "/home/minidc/Desktop/pa3-legacy-evidence-20261013",
+    "symlink": false,
+    "git_root": null,
+    "common_dir": null,
+    "disk_kib": "2144724\t/home/minidc/Desktop/pa3-legacy-evidence-20261013"
+  },
+  {
+    "path": "/home/minidc/Desktop/pa3-par-movebatch2",
+    "realpath": "/home/minidc/Desktop/pa3-par-movebatch2",
+    "symlink": false,
+    "git_root": "/home/minidc/Desktop/pa3-par-movebatch2",
+    "common_dir": "/home/minidc/Desktop/PokeAgent3.0/.git",
+    "disk_kib": "1076760\t/home/minidc/Desktop/pa3-par-movebatch2"
+  },
+  {
+    "path": "/home/minidc/Desktop/pa3-v2-p2-wip-20261014",
+    "realpath": "/home/minidc/Desktop/pa3-v2-p2-wip-20261014",
+    "symlink": false,
+    "git_root": null,
+    "common_dir": null,
+    "disk_kib": "2652\t/home/minidc/Desktop/pa3-v2-p2-wip-20261014"
+  },
+  {
+    "path": "/home/minidc/Desktop/pokeagent_backups",
+    "realpath": "/home/minidc/Desktop/pokeagent_backups",
+    "symlink": false,
+    "git_root": null,
+    "common_dir": null,
+    "disk_kib": "126272\t/home/minidc/Desktop/pokeagent_backups"
+  }
+]

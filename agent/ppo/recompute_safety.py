@@ -61,6 +61,9 @@ def evidence_passes(row, tolerance):
 def secondary_audit(model, buffer, sampled, batched_logprobs, device,
                     tolerance, *, force=False, max_outliers=8):
     """Replay at most eight flagged rows; budget exhaustion fails closed."""
+    if len(sampled) != len(batched_logprobs) or max_outliers < 1:
+        return {"required": True, "accepted": False, "rows": [],
+                "reason": "invalid secondary audit input or budget"}
     by_identity = {id(row): index for index, row in enumerate(buffer.rows)}
     flagged = [index for index, row in enumerate(sampled)
                if not math.isfinite(batched_logprobs[index])

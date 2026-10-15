@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "scope": "read-only proposed configuration/SoT/dataset parity; NOT production readiness",
+  "config_hash": "6677f035c3ac855233af018116a81c455ba32fde4beab927496d3bd11f110884",
+  "teams": 1220,
+  "contract_file_sha256": "a4f7c057f17e583859287adf0fc337ef92a225fb9d4a4a950117f704e3a615d4",
+  "launcher_values": {
+    "epochs": 2,
+    "experimental_lr_scale": 0.5,
+    "minibatch": 4096,
+    "microbatch": 1024,
+    "envs": 1024,
+    "workers": 16,
+    "historical_probability": 0.0,
+    "precision_mode": "D",
+    "precision_stability": "fp16-reduction-off",
+    "recompute_gate": true,
+    "batch_cache": "cuda",
+    "compact_candidates": true,
+    "recompute_secondary": true,
+    "teams": "engine/data/a10-training-teams.json",
+    "data": "engine/data",
+    "dataset_manifest": "data/teams/a10-p0-proposed-20261013/manifest.json",
+    "checkpoint_interval_matches": 100000,
+    "deterministic_diagnostic": true
+  }
+}

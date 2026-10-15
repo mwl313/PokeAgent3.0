@@ -1,0 +1,38 @@
+{
+  "status": "BLOCKED",
+  "canonical_sha": "c96c35f12d3f3aff32b072b48e32ac243a7b0425",
+  "candidate_base": "9e685b701f170436f9b9dd82162c8e192e4e6904",
+  "production_started": false,
+  "canonical_integrated": false,
+  "track_c": "DEFERRED_INDEFINITELY",
+  "main_changed": false,
+  "experimental_lookups": "OFF",
+  "primary_tolerance": 0.001,
+  "secondary": "candidate profile ON; old campaign OFF; migration BLOCKED",
+  "historical_outliers": "BLOCKED_MISSING_ACTOR_PROVENANCE",
+  "production_A_B": "NOT_EXECUTED",
+  "new_source_resume": "BLOCKED",
+  "cleanup_executed": false,
+  "disk_space": "OUT_OF_SCOPE_BY_USER",
+  "broad_suite": {
+    "passed": 304,
+    "failed": 9,
+    "skipped": 33
+  },
+  "targeted_initial": {
+    "passed": 89
+  },
+  "checkpoint_matches": 57344,
+  "final_focused_tests": {
+    "passed": 23,
+    "failed": 0,
+    "seconds": 1.83
+  },
+  "serialized_state_load": "PASS; sequential CUDA0, not DDP/collector continuation",
+  "dataset": "PASS:1220 exact hashes",
+  "historical_baseline_subset": {
+    "failed": 8,
+    "passed": 47
+  },
+  "candidate_padding_failure": "UNRESOLVED_ORDER_SENSITIVE"
+}

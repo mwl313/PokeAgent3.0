@@ -38,7 +38,8 @@
     "gru_fp32": true,
     "recompute_gate": true,
     "tolerance": 0.001,
-    "contract_version": "pa3-precision-D-v2"
+    "contract_version": "pa3-precision-D-v2",
+    "recompute_secondary": true
   },
   "dataset": {
     "id": "a10-p0-proposed-20261013",

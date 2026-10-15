@@ -1,0 +1,28 @@
+{
+  "0": {
+    "model_digest": "6a01f14dfeec378f9577df94f5d97cf155924615cca3a000ae4b2108c134bb5d",
+    "optimizer_digest": "ca358b33d33d8008fdd77ae94223b83bc0b5fa9f41f16182101f00b96750e3cc",
+    "scheduler": {
+      "matches": 57344,
+      "lr": 3.825951999999999e-05,
+      "lr_scale": 0.5
+    },
+    "optimizer_steps": 718,
+    "scaler_equal": true,
+    "rng_equal": true,
+    "scope": "serialized state load on cuda0, sequential ranks; no DDP recreation or rollout continuation"
+  },
+  "1": {
+    "model_digest": "6a01f14dfeec378f9577df94f5d97cf155924615cca3a000ae4b2108c134bb5d",
+    "optimizer_digest": "ca358b33d33d8008fdd77ae94223b83bc0b5fa9f41f16182101f00b96750e3cc",
+    "scheduler": {
+      "matches": 57344,
+      "lr": 3.825951999999999e-05,
+      "lr_scale": 0.5
+    },
+    "optimizer_steps": 718,
+    "scaler_equal": true,
+    "rng_equal": true,
+    "scope": "serialized state load on cuda0, sequential ranks; no DDP recreation or rollout continuation"
+  }
+}

@@ -1,0 +1,170 @@
+[
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/rolling/generations/iter-000000004096-1791958101732995099/manifest.json",
+    "matches": 4096,
+    "source": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_release_replay/reference/rolling/generations/iter-000000000128-1791957459782898668/manifest.json",
+    "matches": 128,
+    "source": "cc8cd97c57d342394be95e2c74baa50a2cc59e77",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_release_replay/reference/rolling/generations/iter-000000000064-1791957446617660275/manifest.json",
+    "matches": 64,
+    "source": "cc8cd97c57d342394be95e2c74baa50a2cc59e77",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_release_replay/first/rolling/generations/iter-000000000064-1791957476789844025/manifest.json",
+    "matches": 64,
+    "source": "cc8cd97c57d342394be95e2c74baa50a2cc59e77",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_release_replay/resumed/rolling/generations/iter-000000000128-1791957497031997140/manifest.json",
+    "matches": 128,
+    "source": "cc8cd97c57d342394be95e2c74baa50a2cc59e77",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_stats_rolling/generations/iter-000000000128-1791955338180851860/manifest.json",
+    "matches": 128,
+    "source": "fcbfa91155398a3446651df6b1c5483591864efa",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_stats_rolling/generations/iter-000000000064-1791955320192655880/manifest.json",
+    "matches": 64,
+    "source": "fcbfa91155398a3446651df6b1c5483591864efa",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_replay_v2/reference/rolling/generations/iter-000000000128-1791956164430320701/manifest.json",
+    "matches": 128,
+    "source": "65f866266746ef4be8bbb3c0356d2e84ec606ba0",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_replay_v2/reference/rolling/generations/iter-000000000064-1791956152354413136/manifest.json",
+    "matches": 64,
+    "source": "65f866266746ef4be8bbb3c0356d2e84ec606ba0",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_replay_v2/first/rolling/generations/iter-000000000064-1791956186458560558/manifest.json",
+    "matches": 64,
+    "source": "65f866266746ef4be8bbb3c0356d2e84ec606ba0",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_replay_v2/resumed/rolling/generations/iter-000000000128-1791956207413474974/manifest.json",
+    "matches": 128,
+    "source": "65f866266746ef4be8bbb3c0356d2e84ec606ba0",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_full/rolling/generations/iter-000000004096-1791955790243373996/manifest.json",
+    "matches": 4096,
+    "source": "41ffe9b52afd6c405a3e31961d3e091c018ce9e1",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_full_v2/rolling/generations/iter-000000004096-1791956408975619075/manifest.json",
+    "matches": 4096,
+    "source": "65f866266746ef4be8bbb3c0356d2e84ec606ba0",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_release_smoke/rolling/generations/iter-000000004096-1791957036162217600/manifest.json",
+    "matches": 4096,
+    "source": "328f5160bbf7191c5a3a3d010ca6d22d1b5b4653",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_replay/reference/rolling/generations/iter-000000000064-1791955818350048106/manifest.json",
+    "matches": 64,
+    "source": "41ffe9b52afd6c405a3e31961d3e091c018ce9e1",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_replay/reference/rolling/generations/iter-000000000128-1791955829806599318/manifest.json",
+    "matches": 128,
+    "source": "41ffe9b52afd6c405a3e31961d3e091c018ce9e1",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_replay/first/rolling/generations/iter-000000000064-1791955847619580542/manifest.json",
+    "matches": 64,
+    "source": "41ffe9b52afd6c405a3e31961d3e091c018ce9e1",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/v2_validation/p4_replay/resumed/rolling/generations/iter-000000000128-1791955867627445420/manifest.json",
+    "matches": 128,
+    "source": "41ffe9b52afd6c405a3e31961d3e091c018ce9e1",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/runs/perf/v2_recovery/continuation/split_first/rolling/generations/iter-000000008192-1791984459084000609/manifest.json",
+    "matches": 8192,
+    "source": "8a743adb1b55d3940fa593d4ac196a91a572d3a0",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/runs/perf/v2_recovery/continuation/split_restored/rolling/generations/iter-000000012288-1791984570897105087/manifest.json",
+    "matches": 12288,
+    "source": "8a743adb1b55d3940fa593d4ac196a91a572d3a0",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/runs/perf/v2_recovery/continuation/uninterrupted/rolling/generations/iter-000000008192-1791984245902824469/manifest.json",
+    "matches": 8192,
+    "source": "8a743adb1b55d3940fa593d4ac196a91a572d3a0",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/runs/perf/v2_recovery/continuation/uninterrupted/rolling/generations/iter-000000012288-1791984339876767690/manifest.json",
+    "matches": 12288,
+    "source": "8a743adb1b55d3940fa593d4ac196a91a572d3a0",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/runs/perf/v2_recovery/reconstruction_contract/probe/rolling/generations/iter-000000008192-1791985009283608915/manifest.json",
+    "matches": 8192,
+    "source": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+    "complete": true,
+    "ranks": 2
+  },
+  {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/runs/perf/v2_recovery/reconstruction_contract/reconstructed/rolling/generations/iter-000000057344-1791986684864852699/manifest.json",
+    "matches": 57344,
+    "source": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+    "complete": true,
+    "ranks": 2
+  }
+]

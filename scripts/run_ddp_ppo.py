@@ -329,6 +329,11 @@ def free_port() -> int:
         return handle.getsockname()[1]
 
 
+def validate_secondary_restore(experiment, args):
+    if bool(experiment.get("recompute_secondary", False)) != bool(args.recompute_secondary):
+        raise RuntimeError("checkpoint recompute-secondary contract mismatch; reviewed migration required")
+
+
 def state_digest(model, optimizer) -> tuple[str, str]:
     """Full named-tensor SHA256 for the model and the Adam moments."""
     model_hash = hashlib.sha256()
@@ -679,6 +684,7 @@ def worker(args) -> None:
             raise RuntimeError("effective CUDA FP16 reduction setting does not match D1 contract")
         saved_experiment=resume_envelope.get('experiment',{})
         validate_lookup_restore(saved_experiment,args)
+        validate_secondary_restore(saved_experiment,args)
         if 'cublas_workspace_config' in saved_experiment:
             if saved_experiment['cublas_workspace_config']!=os.environ.get('CUBLAS_WORKSPACE_CONFIG'):
                 raise RuntimeError('checkpoint CUDA workspace execution contract mismatch')

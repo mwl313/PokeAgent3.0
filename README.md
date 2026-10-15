@@ -1,3 +1,11 @@
+# Current V2 entry point — 2026-10-15
+
+See [Training Source of Truth](docs/TRAINING_SOURCE_OF_TRUTH.md). V2 training has started historically; full recovered progress57,344 matches. Current release status **BLOCKED**, training stopped. Proposed pool1,220 teams,Observation/ActionV2,PPO2. Canonical branch remainsc96c35f pending release gates.
+
+The content below is **HISTORICAL / NON-NORMATIVE**; old1,137-team,V1,PPO4 and “training not started” statements do not describe current V2.
+
+---
+
 # PokeAgent 3.0
 
 PokeAgent 3.0 aims to train a strong Pokémon VGC doubles policy through a full-scope Rust battle engine, scratch self-play reinforcement learning, and evaluation. The supplied Full Spec 1.1 defines the intended design.

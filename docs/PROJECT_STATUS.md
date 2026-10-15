@@ -1,3 +1,11 @@
+# Current V2 entry point — 2026-10-15
+
+See [Training Source of Truth](TRAINING_SOURCE_OF_TRUTH.md). V2 training has started historically; full recovered progress57,344 matches. Current release status **BLOCKED**, training stopped. Proposed pool1,220 teams,Observation/ActionV2,PPO2. Canonical branch remainsc96c35f pending release gates.
+
+The content below is **HISTORICAL / NON-NORMATIVE**; old1,137-team,V1,PPO4 and “training not started” statements do not describe current V2.
+
+---
+
 # PokeAgent 3.0 — 프로젝트 현황판
 
 > 갱신 규칙: 체크포인트(머지/게이트/측정)마다 갱신하고, 작성 시점 기준 SHA를 항상 기록한다.

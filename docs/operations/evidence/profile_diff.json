@@ -1,0 +1,22 @@
+[
+  {
+    "field": "precision.recompute_secondary",
+    "original": null,
+    "candidate": true
+  },
+  {
+    "field": "dataset.data",
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2/engine/data",
+    "candidate": "engine/data"
+  },
+  {
+    "field": "dataset.manifest",
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2/data/teams/a10-p0-proposed-20261013/manifest.json",
+    "candidate": "data/teams/a10-p0-proposed-20261013/manifest.json"
+  },
+  {
+    "field": "dataset.teams",
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2/engine/data/a10-training-teams.json",
+    "candidate": "engine/data/a10-training-teams.json"
+  }
+]

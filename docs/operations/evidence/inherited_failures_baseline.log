@@ -1,0 +1,117 @@
+....F.....F.F..........................F...F.....FF..F.                  [100%]
+=================================== FAILURES ===================================
+_______________________ test_no_milestone_clock_relabel ________________________
+tests/agent/test_a10_2_league.py:37: in test_no_milestone_clock_relabel
+    r=discover(run); assert r['policies']=={};assert read(run/'evaluation/league_v2/milestones.json')['anchor']==0
+      ^^^^^^^^^^^^^
+scripts/a10_league_discover.py:15: in discover
+    if shutil.disk_usage(own).free < 20*2**30:raise ValueError('evaluation archive resource deferred: less than 20GiB headroom')
+                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: evaluation archive resource deferred: less than 20GiB headroom
+_______________ test_precision_modes_are_explicit_and_versioned ________________
+tests/agent/test_a91_precision.py:9: in test_precision_modes_are_explicit_and_versioned
+    assert get_precision_contract("A").identity == "pa3-precision-A-v1"
+E   AssertionError: assert 'pa3-precision-A-v2' == 'pa3-precision-A-v1'
+E     
+E     - pa3-precision-A-v1
+E     ?                  ^
+E     + pa3-precision-A-v2
+E     ?                  ^
+_______________ test_model_precision_configuration_is_reversible _______________
+tests/agent/test_a91_precision.py:30: in test_model_precision_configuration_is_reversible
+    assert model.precision_contract.identity == "pa3-precision-C-v1"
+E   AssertionError: assert 'pa3-precision-C-v2' == 'pa3-precision-C-v1'
+E     
+E     - pa3-precision-C-v1
+E     ?                  ^
+E     + pa3-precision-C-v2
+E     ?                  ^
+_________ test_token_bounds_propagate_without_entering_the_wire_schema _________
+tests/agent/test_encoder_padding.py:125: in test_token_bounds_propagate_without_entering_the_wire_schema
+    assert ObservationBatch.from_native_payload(payload).validated_token_limit == 88
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+agent/types/observation.py:319: in from_native_payload
+    _validate_identity(payload)
+agent/types/observation.py:635: in _validate_identity
+    raise ValueError("missing observation schema/semantic hash (V1 is incompatible)")
+E   ValueError: missing observation schema/semantic hash (V1 is incompatible)
+_____ test_numpy_payload_and_compact_exports_cannot_mutate_verified_masks ______
+tests/agent/test_encoder_padding.py:165: in test_numpy_payload_and_compact_exports_cannot_mutate_verified_masks
+    adapted = ObservationBatch.from_native_payload(payload)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+agent/types/observation.py:388: in from_native_payload
+    ragged={name:section.to(token_mask.device) for name,section in ragged_contract.from_native(payload,batch).items()},
+                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+agent/types/ragged.py:117: in from_native
+    raise ValueError(f"missing V2 ragged family {name}")
+E   ValueError: missing V2 ragged family effects
+________________ test_all_illegal_mask_is_never_sampled_or_used ________________
+tests/agent/test_policy_regularizer_gradients.py:190: in test_all_illegal_mask_is_never_sampled_or_used
+    request = make_request(observation, (illegal,) + tuple(branches[1:]), kind=RequestKind.PREVIEW)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/agent/pa3_test_util.py:111: in make_request
+    return RequestRow(
+<string>:9: in __init__
+    ???
+agent/types/requests.py:102: in __post_init__
+    self.refs = tuple(
+agent/types/requests.py:103: in <genexpr>
+    tuple(ActionRef.resolve(self.layout, action,mapping) for action in branch.actions)
+agent/types/requests.py:103: in <genexpr>
+    tuple(ActionRef.resolve(self.layout, action,mapping) for action in branch.actions)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+agent/types/requests.py:70: in resolve
+    entity, move = resolve_action_tokens(layout, action, active_to_roster)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+agent/types/requests.py:54: in resolve_action_tokens
+    _,entity,move=token_refs([action.as_tuple()],active_to_roster,layout)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+agent/types/action_mapping.py:22: in token_refs
+    return _mapped_records(records, active, layout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+agent/types/action_mapping.py:39: in _mapped_records
+    raise ValueError('invalid move slot')
+E   ValueError: invalid move slot
+_________ test_model_regularizers_reach_scorer_and_keep_scalar_parity __________
+tests/agent/test_policy_regularizer_gradients.py:210: in test_model_regularizers_reach_scorer_and_keep_scalar_parity
+    request = make_request(observation, (first, second))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/agent/pa3_test_util.py:111: in make_request
+    return RequestRow(
+<string>:9: in __init__
+    ???
+agent/types/requests.py:102: in __post_init__
+    self.refs = tuple(
+agent/types/requests.py:103: in <genexpr>
+    tuple(ActionRef.resolve(self.layout, action,mapping) for action in branch.actions)
+agent/types/requests.py:103: in <genexpr>
+    tuple(ActionRef.resolve(self.layout, action,mapping) for action in branch.actions)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+agent/types/requests.py:70: in resolve
+    entity, move = resolve_action_tokens(layout, action, active_to_roster)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+agent/types/requests.py:54: in resolve_action_tokens
+    _,entity,move=token_refs([action.as_tuple()],active_to_roster,layout)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+agent/types/action_mapping.py:22: in token_refs
+    return _mapped_records(records, active, layout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+agent/types/action_mapping.py:39: in _mapped_records
+    raise ValueError('invalid move slot')
+E   ValueError: invalid move slot
+________ test_learner_state_dict_round_trip_restores_identical_outputs _________
+tests/agent/test_schedule_and_checkpoint.py:58: in test_learner_state_dict_round_trip_restores_identical_outputs
+    clone.load_state_dict(state)
+agent/ppo/learner.py:1160: in load_state_dict
+    raise ValueError('checkpoint model architecture/config mismatch')
+E   ValueError: checkpoint model architecture/config mismatch
+=========================== short test summary info ============================
+FAILED tests/agent/test_a10_2_league.py::test_no_milestone_clock_relabel - Va...
+FAILED tests/agent/test_a91_precision.py::test_precision_modes_are_explicit_and_versioned
+FAILED tests/agent/test_a91_precision.py::test_model_precision_configuration_is_reversible
+FAILED tests/agent/test_encoder_padding.py::test_token_bounds_propagate_without_entering_the_wire_schema
+FAILED tests/agent/test_encoder_padding.py::test_numpy_payload_and_compact_exports_cannot_mutate_verified_masks
+FAILED tests/agent/test_policy_regularizer_gradients.py::test_all_illegal_mask_is_never_sampled_or_used
+FAILED tests/agent/test_policy_regularizer_gradients.py::test_model_regularizers_reach_scorer_and_keep_scalar_parity
+FAILED tests/agent/test_schedule_and_checkpoint.py::test_learner_state_dict_round_trip_restores_identical_outputs
+8 failed, 47 passed in 9.38s

@@ -1,0 +1,16 @@
+{
+  "base": "9e685b701f170436f9b9dd82162c8e192e4e6904",
+  "tests_ran_with_uncommitted_candidate_changes": true,
+  "runtime_hashes": {
+    "agent/ppo/recompute_safety.py": "3f28e2883541235e86ae6313f6984d37d70bda8a6eb85a45339b9ccf2fc30c1c",
+    "agent/runtime/config.py": "9d91d40bc6de9d06cfa2991f3fde914d829e423afdecefe70438ff702cc00d05",
+    "configs/pa3_v2_production.yaml": "37055998ca246e6bb43ec49cd597e098e7fec34d32eb4fe93200abdd7b3a46e0",
+    "scripts/run_ddp_ppo.py": "bae5740c694b1cfcf40fdfa841fdb7ee2239adab0c2d8aa80a759a18c7f11452",
+    "tests/agent/test_a10_recompute_safety.py": "f9b9bb727dfe22cb1f8ddeb074bd55b032a1cf027b493166f68ab0612ee16016",
+    "tests/agent/test_v2_operational_contract.py": "6bbc63a4b33fa21dc095571a43d3ee9a7c2127d3f895dedc965e8ee6714d4803",
+    "scripts/validate_v2_source_of_truth.py": "42a5be04a76857de82bc6b7314e6689d30683d9c86a8829e895041833e645a9d",
+    "tests/agent/test_v2_source_of_truth.py": "2293c8b47d3902c31a8e42f9667444724fbcbe975db83d49362c4d4638e564be"
+  },
+  "focused_tests": "23 passed",
+  "broad_tests": "304 passed,9 failed,33 skipped before final helper/drift additions"
+}

@@ -1,0 +1,893 @@
+{
+  "checkpoint": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/runs/perf/v2_recovery/reconstruction_contract/reconstructed/rolling/generations/iter-000000057344-1791986684864852699",
+  "manifest": {
+    "committed_matches": 57344,
+    "complete": true,
+    "dataset_manifest": "/home/minidc/Desktop/PokeAgent3.0-V2/data/teams/a10-p0-proposed-20261013/manifest.json",
+    "dataset_manifest_hash": "1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb",
+    "generation": "iter-000000057344",
+    "iteration": 14,
+    "iteration_complete": true,
+    "ppo_epochs": 2,
+    "precision_mode": "D",
+    "published_at": 1791986686.4813063,
+    "ranks": {
+      "0": {
+        "bytes": 118881493,
+        "path": "rank0.pt",
+        "sha256": "242783259d942c3847764c966cac1f3e077ae062a326bb702b7866330fcf5efc"
+      },
+      "1": {
+        "bytes": 118881493,
+        "path": "rank1.pt",
+        "sha256": "c8aff16cd22b0264d067872c3d8df457bba30f1008815765c2cb999a5216aaf8"
+      }
+    },
+    "schema": "ppo-experimental-envelope-v1",
+    "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+    "team_stats_receipts": [
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/8c3fd9bb4d24884c73012e3a0d94075ef7dec6397c4fd36e2af09e506e753b0c.json.gz",
+        "sha256": "8c3fd9bb4d24884c73012e3a0d94075ef7dec6397c4fd36e2af09e506e753b0c"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/71f70661064505b822d52559aeb3a0db441f12645eeb55a25d05fa3547aa8ea0.json.gz",
+        "sha256": "71f70661064505b822d52559aeb3a0db441f12645eeb55a25d05fa3547aa8ea0"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/ac89f8bd9885bf57b046d3c8dd233e5a95c78fa8a249a6295520dabdb6d52b21.json.gz",
+        "sha256": "ac89f8bd9885bf57b046d3c8dd233e5a95c78fa8a249a6295520dabdb6d52b21"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/8f1be15720ae108eb61c014dcb2b75d29a8359e85ef5e0d53cde83e8fc1ab009.json.gz",
+        "sha256": "8f1be15720ae108eb61c014dcb2b75d29a8359e85ef5e0d53cde83e8fc1ab009"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/e02d23350e6e254ad4999b23a9003554e34bf8f8e8db22357fe9fb377611e3ae.json.gz",
+        "sha256": "e02d23350e6e254ad4999b23a9003554e34bf8f8e8db22357fe9fb377611e3ae"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/a101805a11c16ddbf9d0ac6652419947f5ea6c7ad150b1cc66fa67bacd72b10e.json.gz",
+        "sha256": "a101805a11c16ddbf9d0ac6652419947f5ea6c7ad150b1cc66fa67bacd72b10e"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/adce08e97cf2fb2a57af25feee875426c9c8f8d99abe3756222a832fdd259dae.json.gz",
+        "sha256": "adce08e97cf2fb2a57af25feee875426c9c8f8d99abe3756222a832fdd259dae"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/73e3748eb933ab6fa2b2a97e05b41fdce5f75b6a5800bea8341ba36a459f4d90.json.gz",
+        "sha256": "73e3748eb933ab6fa2b2a97e05b41fdce5f75b6a5800bea8341ba36a459f4d90"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/953dad2d744c478e810d478a5ca8b06ebe7ed0301864071a091634c534a81d7b.json.gz",
+        "sha256": "953dad2d744c478e810d478a5ca8b06ebe7ed0301864071a091634c534a81d7b"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/529716fa9f96b9d4eed30384ae1803d68a046ae7a4167f819c78c74304a319ee.json.gz",
+        "sha256": "529716fa9f96b9d4eed30384ae1803d68a046ae7a4167f819c78c74304a319ee"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/58835881d4b47611176a42ece5794fc22f9e35d6123ccb407de7137dbb2a02e1.json.gz",
+        "sha256": "58835881d4b47611176a42ece5794fc22f9e35d6123ccb407de7137dbb2a02e1"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/dee4abd50f5b38678daa4c95295e6482d3bd00b30401011dbf234406784b9bf0.json.gz",
+        "sha256": "dee4abd50f5b38678daa4c95295e6482d3bd00b30401011dbf234406784b9bf0"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/cc4893f6b5313a0aa55d3224134bfe105968ca3e60e0f9dfaca5e3122e2f3895.json.gz",
+        "sha256": "cc4893f6b5313a0aa55d3224134bfe105968ca3e60e0f9dfaca5e3122e2f3895"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/6951fe8786cf6b838fa9c7e78c4640ac97295073302faa820b46a60dfcb8efe3.json.gz",
+        "sha256": "6951fe8786cf6b838fa9c7e78c4640ac97295073302faa820b46a60dfcb8efe3"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/0b0f80e7a127809f4757ede6154eeab36e1453fed6fe4edf51f161a36943a066.json.gz",
+        "sha256": "0b0f80e7a127809f4757ede6154eeab36e1453fed6fe4edf51f161a36943a066"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/96f027ff997cf0283041b83d12f85b97033a15e0ccc1df56d5c592e954c2439a.json.gz",
+        "sha256": "96f027ff997cf0283041b83d12f85b97033a15e0ccc1df56d5c592e954c2439a"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/976d50430b922e5e0c9838af2cfb8d27cffd2a2b62a82b57db1d207d60322220.json.gz",
+        "sha256": "976d50430b922e5e0c9838af2cfb8d27cffd2a2b62a82b57db1d207d60322220"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/5f86aa761c5455fc15f312086c2b87f41fe17b9deb2effba3634f7c875b7d44b.json.gz",
+        "sha256": "5f86aa761c5455fc15f312086c2b87f41fe17b9deb2effba3634f7c875b7d44b"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/21eeb6c2b2dbcf8cb30e5b02cd9a0f7dbd013b5a6d6dead0d44cecd2d098cc0c.json.gz",
+        "sha256": "21eeb6c2b2dbcf8cb30e5b02cd9a0f7dbd013b5a6d6dead0d44cecd2d098cc0c"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/ea5eca74a2a078c80ef78c2bdef872ba6c79629f8abd89fb21abdb93fdaad5c7.json.gz",
+        "sha256": "ea5eca74a2a078c80ef78c2bdef872ba6c79629f8abd89fb21abdb93fdaad5c7"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/11e2946b34914a35cf608855d71c5e1d4853b4741c5c4031212afa09c48098a7.json.gz",
+        "sha256": "11e2946b34914a35cf608855d71c5e1d4853b4741c5c4031212afa09c48098a7"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/e841493cd56a7c07a77393916df8ad055e30bc95c8f65c2561d24f9ee105aca1.json.gz",
+        "sha256": "e841493cd56a7c07a77393916df8ad055e30bc95c8f65c2561d24f9ee105aca1"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/d12df9832a128ec3fd0c636147837afdd78128aaeb934cfb927373fffc3cd654.json.gz",
+        "sha256": "d12df9832a128ec3fd0c636147837afdd78128aaeb934cfb927373fffc3cd654"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/8d1bfecfbaa6aa9c647970eceff28a71bdad2d598b6478dcac7eeebb5e9785dc.json.gz",
+        "sha256": "8d1bfecfbaa6aa9c647970eceff28a71bdad2d598b6478dcac7eeebb5e9785dc"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/424bead908ec292d13da65448a048419425d1ca186dd1511f4490a6eb14ca02a.json.gz",
+        "sha256": "424bead908ec292d13da65448a048419425d1ca186dd1511f4490a6eb14ca02a"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/e4b623811440f974855dfc56f2afe78c2eab9fbaa05aff8013f7f90494616d1b.json.gz",
+        "sha256": "e4b623811440f974855dfc56f2afe78c2eab9fbaa05aff8013f7f90494616d1b"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/c1629c2ca3dfa1b341d0d3163ffb0442cb55116f062c64ca4738f0468785674a.json.gz",
+        "sha256": "c1629c2ca3dfa1b341d0d3163ffb0442cb55116f062c64ca4738f0468785674a"
+      },
+      {
+        "codec": "gzip-json-v1",
+        "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/a8fdfeb0ef996c256c1fdf58bb7fa0d0bd2a6cb53e4b73dacc5579595a371d41.json.gz",
+        "sha256": "a8fdfeb0ef996c256c1fdf58bb7fa0d0bd2a6cb53e4b73dacc5579595a371d41"
+      }
+    ],
+    "world_size": 2
+  },
+  "manifest_sha256": "b9539f3a0c426f0878375b61630cb4de9dcd2a5d4a6a59858b4d64f4287fd424",
+  "ranks": {
+    "0": {
+      "sha256": "242783259d942c3847764c966cac1f3e077ae062a326bb702b7866330fcf5efc",
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "experiment": {
+        "name": "ddp_ppo_iteration_boundary",
+        "ppo_epochs": 2,
+        "parent_resume": true,
+        "lr_scale": 0.5,
+        "source_migration_allowed": false,
+        "source_migration": null,
+        "recompute_secondary": false,
+        "precision_mode": "D",
+        "deterministic_diagnostic": true,
+        "precision_stability": "fp16-reduction-off",
+        "precision_contract_version": "pa3-precision-D-v2",
+        "fp16_reduced_precision_reduction": false
+      },
+      "rank_digests": {
+        "0": {
+          "model": "6a01f14dfeec378f9577df94f5d97cf155924615cca3a000ae4b2108c134bb5d",
+          "optimizer": "ca358b33d33d8008fdd77ae94223b83bc0b5fa9f41f16182101f00b96750e3cc"
+        },
+        "1": {
+          "model": "6a01f14dfeec378f9577df94f5d97cf155924615cca3a000ae4b2108c134bb5d",
+          "optimizer": "ca358b33d33d8008fdd77ae94223b83bc0b5fa9f41f16182101f00b96750e3cc"
+        }
+      },
+      "keys": [
+        "schema_version",
+        "kind",
+        "source_sha",
+        "dataset_manifest_hash",
+        "action_schema_hash",
+        "opponent_manifest",
+        "experiment",
+        "learner",
+        "rng",
+        "ddp",
+        "accounting",
+        "collector_restart",
+        "collector_drain",
+        "model_config_hash",
+        "ppo_config_hash",
+        "rank_digests",
+        "team_stats_receipts"
+      ],
+      "learner_keys": [
+        "contracts",
+        "model",
+        "optimizer",
+        "scheduler",
+        "scaler",
+        "optimizer_steps",
+        "config"
+      ],
+      "learner_config": {
+        "ppo": {
+          "optimizer": "adam",
+          "learning_rate": 0.0003,
+          "betas": [
+            0.9,
+            0.999
+          ],
+          "eps": 1e-05,
+          "weight_decay": 0.0,
+          "ppo_epochs": 2,
+          "global_minibatch_size": 4096,
+          "microbatch_size": 1024,
+          "per_rank_minibatch_size": 2048,
+          "grad_accumulation_per_rank": 2,
+          "drop_last_minibatch": false,
+          "pad_and_mask_final_minibatch": true,
+          "sample_weighted_ddp_reduction": true,
+          "exact_row_weighted_accumulation": true,
+          "experimental_cached_contiguous_select": false,
+          "clip_epsilon": 0.2,
+          "gamma": 1.0,
+          "gae_lambda": 0.95,
+          "value_coefficient": 0.5,
+          "value_loss": "half_mse",
+          "value_clip": false,
+          "max_grad_norm": 0.5,
+          "advantage_normalization": "iteration_actor_rows",
+          "advantage_std_floor": 1e-08,
+          "entropy_coefficient": 0.01,
+          "uniform_kl_coefficient": 0.001,
+          "target_approx_kl": 0.03,
+          "kl_response": "end_remaining_epochs_only_then_new_rollout",
+          "action_temperature": 1.0,
+          "lr_clock": "committed_natural_training_matches",
+          "warmup_matches": 250000,
+          "warmup_start_lr": 1e-05,
+          "peak_lr": 0.0003,
+          "final_lr": 3e-05,
+          "horizon_matches": 100000000,
+          "mixed_precision": "fp16",
+          "probability_dtype": "float32",
+          "amp_grad_scaler": true,
+          "fp16_autocast": true,
+          "seed": 20261006
+        },
+        "model": {
+          "name": "PA3-8M",
+          "initialization": "random",
+          "observation_contract_hash": "dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35",
+          "target_vocab": 5,
+          "null_entity_reference": true,
+          "encoder_layers": 6,
+          "d_model": 320,
+          "attention_heads": 5,
+          "head_dim": 64,
+          "ffn_dim": 1280,
+          "activation": "gelu",
+          "pre_layernorm": true,
+          "causal_attention": false,
+          "dropout": 0.0,
+          "attention_dropout": 0.0,
+          "tokens": 96,
+          "active_tokens": 88,
+          "category_slots": 32,
+          "float_slots": 50,
+          "flag_slots": 40,
+          "category_vocab": 8192,
+          "category_embed_dim": 16,
+          "role_vocab": 12,
+          "side_vocab": 3,
+          "prefix_decoder": "GRUCell",
+          "prefix_hidden": 320,
+          "max_request_branches": 4,
+          "candidate_padding": 64,
+          "critic_hidden": 256,
+          "critic_output": "linear_scalar",
+          "critic_input": "observation_only",
+          "embedding_init_std": 0.02,
+          "linear_init": "xavier",
+          "policy_output_init_gain": 0.01,
+          "seed": 20261006
+        }
+      },
+      "rng_keys": [
+        "schema_version",
+        "python",
+        "numpy",
+        "torch_cpu",
+        "generators",
+        "torch_cuda"
+      ],
+      "dataset_manifest_hash": "1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb",
+      "action_schema_hash": "57efb5822b05f6e7729a4b5e123628b267292728314337ba451c9232c2c314af",
+      "opponent_manifest": {
+        "current": "current",
+        "historical": [],
+        "historical_probability": 0.0
+      },
+      "accounting": {
+        "iteration": 14,
+        "committed_matches": 57344,
+        "natural_games": 2048,
+        "learner_rows": 47631,
+        "optimizer_steps": 718
+      },
+      "collector_restart": {
+        "seed": 20261014,
+        "iteration": 14,
+        "cohorts": 2,
+        "match_counter": 4096,
+        "slot_counter": 0,
+        "config_hash": "b0e1582e4c870645af463fa2057530a1f37c9b87aca8a594f2bdb2c7e43a4adf"
+      },
+      "collector_drain": {
+        "complete": true,
+        "in_flight_battles": 0,
+        "source": "NativeCollector.collect static drain invariant"
+      }
+    },
+    "1": {
+      "sha256": "c8aff16cd22b0264d067872c3d8df457bba30f1008815765c2cb999a5216aaf8",
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "experiment": {
+        "name": "ddp_ppo_iteration_boundary",
+        "ppo_epochs": 2,
+        "parent_resume": true,
+        "lr_scale": 0.5,
+        "source_migration_allowed": false,
+        "source_migration": null,
+        "recompute_secondary": false,
+        "precision_mode": "D",
+        "deterministic_diagnostic": true,
+        "precision_stability": "fp16-reduction-off",
+        "precision_contract_version": "pa3-precision-D-v2",
+        "fp16_reduced_precision_reduction": false
+      },
+      "rank_digests": {
+        "0": {
+          "model": "6a01f14dfeec378f9577df94f5d97cf155924615cca3a000ae4b2108c134bb5d",
+          "optimizer": "ca358b33d33d8008fdd77ae94223b83bc0b5fa9f41f16182101f00b96750e3cc"
+        },
+        "1": {
+          "model": "6a01f14dfeec378f9577df94f5d97cf155924615cca3a000ae4b2108c134bb5d",
+          "optimizer": "ca358b33d33d8008fdd77ae94223b83bc0b5fa9f41f16182101f00b96750e3cc"
+        }
+      },
+      "keys": [
+        "schema_version",
+        "kind",
+        "source_sha",
+        "dataset_manifest_hash",
+        "action_schema_hash",
+        "opponent_manifest",
+        "experiment",
+        "learner",
+        "rng",
+        "ddp",
+        "accounting",
+        "collector_restart",
+        "collector_drain",
+        "model_config_hash",
+        "ppo_config_hash",
+        "rank_digests",
+        "team_stats_receipts"
+      ],
+      "learner_keys": [
+        "contracts",
+        "model",
+        "optimizer",
+        "scheduler",
+        "scaler",
+        "optimizer_steps",
+        "config"
+      ],
+      "learner_config": {
+        "ppo": {
+          "optimizer": "adam",
+          "learning_rate": 0.0003,
+          "betas": [
+            0.9,
+            0.999
+          ],
+          "eps": 1e-05,
+          "weight_decay": 0.0,
+          "ppo_epochs": 2,
+          "global_minibatch_size": 4096,
+          "microbatch_size": 1024,
+          "per_rank_minibatch_size": 2048,
+          "grad_accumulation_per_rank": 2,
+          "drop_last_minibatch": false,
+          "pad_and_mask_final_minibatch": true,
+          "sample_weighted_ddp_reduction": true,
+          "exact_row_weighted_accumulation": true,
+          "experimental_cached_contiguous_select": false,
+          "clip_epsilon": 0.2,
+          "gamma": 1.0,
+          "gae_lambda": 0.95,
+          "value_coefficient": 0.5,
+          "value_loss": "half_mse",
+          "value_clip": false,
+          "max_grad_norm": 0.5,
+          "advantage_normalization": "iteration_actor_rows",
+          "advantage_std_floor": 1e-08,
+          "entropy_coefficient": 0.01,
+          "uniform_kl_coefficient": 0.001,
+          "target_approx_kl": 0.03,
+          "kl_response": "end_remaining_epochs_only_then_new_rollout",
+          "action_temperature": 1.0,
+          "lr_clock": "committed_natural_training_matches",
+          "warmup_matches": 250000,
+          "warmup_start_lr": 1e-05,
+          "peak_lr": 0.0003,
+          "final_lr": 3e-05,
+          "horizon_matches": 100000000,
+          "mixed_precision": "fp16",
+          "probability_dtype": "float32",
+          "amp_grad_scaler": true,
+          "fp16_autocast": true,
+          "seed": 20261006
+        },
+        "model": {
+          "name": "PA3-8M",
+          "initialization": "random",
+          "observation_contract_hash": "dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35",
+          "target_vocab": 5,
+          "null_entity_reference": true,
+          "encoder_layers": 6,
+          "d_model": 320,
+          "attention_heads": 5,
+          "head_dim": 64,
+          "ffn_dim": 1280,
+          "activation": "gelu",
+          "pre_layernorm": true,
+          "causal_attention": false,
+          "dropout": 0.0,
+          "attention_dropout": 0.0,
+          "tokens": 96,
+          "active_tokens": 88,
+          "category_slots": 32,
+          "float_slots": 50,
+          "flag_slots": 40,
+          "category_vocab": 8192,
+          "category_embed_dim": 16,
+          "role_vocab": 12,
+          "side_vocab": 3,
+          "prefix_decoder": "GRUCell",
+          "prefix_hidden": 320,
+          "max_request_branches": 4,
+          "candidate_padding": 64,
+          "critic_hidden": 256,
+          "critic_output": "linear_scalar",
+          "critic_input": "observation_only",
+          "embedding_init_std": 0.02,
+          "linear_init": "xavier",
+          "policy_output_init_gain": 0.01,
+          "seed": 20261006
+        }
+      },
+      "rng_keys": [
+        "schema_version",
+        "python",
+        "numpy",
+        "torch_cpu",
+        "generators",
+        "torch_cuda"
+      ],
+      "dataset_manifest_hash": "1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb",
+      "action_schema_hash": "57efb5822b05f6e7729a4b5e123628b267292728314337ba451c9232c2c314af",
+      "opponent_manifest": {
+        "current": "current",
+        "historical": [],
+        "historical_probability": 0.0
+      },
+      "accounting": {
+        "iteration": 14,
+        "committed_matches": 57344,
+        "natural_games": 2048,
+        "learner_rows": 47810,
+        "optimizer_steps": 718
+      },
+      "collector_restart": {
+        "seed": 20261014,
+        "iteration": 14,
+        "cohorts": 2,
+        "match_counter": 4096,
+        "slot_counter": 0,
+        "config_hash": "b0e1582e4c870645af463fa2057530a1f37c9b87aca8a594f2bdb2c7e43a4adf"
+      },
+      "collector_drain": {
+        "complete": true,
+        "in_flight_battles": 0,
+        "source": "NativeCollector.collect static drain invariant"
+      }
+    }
+  },
+  "historical_failures": {
+    "0": {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/reports/continuation.json.rank0.iteration19.recompute.pt",
+      "sha256": "bc17c560a465307f58e56d30ea57586fbfee15d68e5708e6b354c6b088151040",
+      "max_abs_diff": 0.0011582374572753906,
+      "actor_groups": 0,
+      "status": "BLOCKED_MISSING_ACTOR_PROVENANCE"
+    },
+    "1": {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/reports/continuation.json.rank1.iteration19.recompute.pt",
+      "sha256": "a30f5c4e34797358ac78136098559db263f61f57756b93df065f5e3d5aeec91d",
+      "max_abs_diff": 0.0017061233520507812,
+      "actor_groups": 0,
+      "status": "BLOCKED_MISSING_ACTOR_PROVENANCE"
+    }
+  },
+  "receipt_reconciliation": [
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 1,
+      "rank": 0,
+      "start_matches": 0,
+      "end_matches": 4096,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "02517c421c244ca08637236264086d3d",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 2,
+      "rank": 0,
+      "start_matches": 4096,
+      "end_matches": 8192,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 3,
+      "rank": 0,
+      "start_matches": 8192,
+      "end_matches": 12288,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 4,
+      "rank": 0,
+      "start_matches": 12288,
+      "end_matches": 16384,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 5,
+      "rank": 0,
+      "start_matches": 16384,
+      "end_matches": 20480,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 6,
+      "rank": 0,
+      "start_matches": 20480,
+      "end_matches": 24576,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 7,
+      "rank": 0,
+      "start_matches": 24576,
+      "end_matches": 28672,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 8,
+      "rank": 0,
+      "start_matches": 28672,
+      "end_matches": 32768,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 9,
+      "rank": 0,
+      "start_matches": 32768,
+      "end_matches": 36864,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 10,
+      "rank": 0,
+      "start_matches": 36864,
+      "end_matches": 40960,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 11,
+      "rank": 0,
+      "start_matches": 40960,
+      "end_matches": 45056,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 12,
+      "rank": 0,
+      "start_matches": 45056,
+      "end_matches": 49152,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 13,
+      "rank": 0,
+      "start_matches": 49152,
+      "end_matches": 53248,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 14,
+      "rank": 0,
+      "start_matches": 53248,
+      "end_matches": 57344,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 1,
+      "rank": 1,
+      "start_matches": 0,
+      "end_matches": 4096,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "02517c421c244ca08637236264086d3d",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 2,
+      "rank": 1,
+      "start_matches": 4096,
+      "end_matches": 8192,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 3,
+      "rank": 1,
+      "start_matches": 8192,
+      "end_matches": 12288,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 4,
+      "rank": 1,
+      "start_matches": 12288,
+      "end_matches": 16384,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 5,
+      "rank": 1,
+      "start_matches": 16384,
+      "end_matches": 20480,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 6,
+      "rank": 1,
+      "start_matches": 20480,
+      "end_matches": 24576,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 7,
+      "rank": 1,
+      "start_matches": 24576,
+      "end_matches": 28672,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 8,
+      "rank": 1,
+      "start_matches": 28672,
+      "end_matches": 32768,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 9,
+      "rank": 1,
+      "start_matches": 32768,
+      "end_matches": 36864,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 10,
+      "rank": 1,
+      "start_matches": 36864,
+      "end_matches": 40960,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 11,
+      "rank": 1,
+      "start_matches": 40960,
+      "end_matches": 45056,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 12,
+      "rank": 1,
+      "start_matches": 45056,
+      "end_matches": 49152,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 13,
+      "rank": 1,
+      "start_matches": 49152,
+      "end_matches": 53248,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    },
+    {
+      "run_id": "team_stats-e11bfa3143699455",
+      "iteration_id": 14,
+      "rank": 1,
+      "start_matches": 53248,
+      "end_matches": 57344,
+      "source_sha": "5ccc51b0cd4a49efb93018258b9750d5e804ae32",
+      "attempt_id": "320be18c963c4a5bbab9e2e2778ad38e",
+      "natural_matches": 2048,
+      "team_count": 1220,
+      "team_file_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+    }
+  ],
+  "backup_rank_files": [
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/backups/throughput-stop-57344-20261014/rank0.pt",
+      "sha256": "242783259d942c3847764c966cac1f3e077ae062a326bb702b7866330fcf5efc",
+      "matches_checkpoint": true
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/backups/throughput-stop-57344-20261014/rank1.pt",
+      "sha256": "c8aff16cd22b0264d067872c3d8df457bba30f1008815765c2cb999a5216aaf8",
+      "matches_checkpoint": true
+    }
+  ],
+  "envelope_validation": "PASS",
+  "new_source_resume": "BLOCKED: protected runtime delta and secondary-safety contract differ; no valid migration receipt"
+}
