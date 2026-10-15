@@ -36,6 +36,30 @@ def test_even_allowlisted_file_requires_audited_content(tmp_path,monkeypatch):
     git('init','-q');git('config','user.name','Migration Test');git('config','user.email','test@example.invalid')
     path=tmp_path/'agent/model/scorer.py';path.parent.mkdir(parents=True);path.write_text('audited = True\n')
     git('add','.');git('commit','-qm','audited');baseline=git('rev-parse','HEAD')
-    monkeypatch.setattr(migration,'BASE',baseline);monkeypatch.setattr(migration,'AUDITED',baseline)
+    monkeypatch.setattr(migration,'BASE',baseline);monkeypatch.setattr(migration,'AUDITED',baseline);monkeypatch.setattr(migration,'REVIEWED_SOURCE',baseline)
     path.write_text('audited = False\n');git('add','.');git('commit','-qm','unreviewed change');target=git('rev-parse','HEAD')
     with pytest.raises(ValueError,match='independently audited'):migration.blobs(tmp_path,target)
+
+@pytest.mark.parametrize('field,value',[
+ ('ragged_effects_precision_transition',None),
+ ('ragged_effects_precision_transition',{'historical':'fp16','future':'fp16'}),
+ ('canonical_encoder_transition',{'historical':0,'future':512})])
+def test_precision_transition_receipt_required(field,value):
+    receipt,values=contract();receipt[field]=value
+    with pytest.raises(ValueError):validate_contract(receipt,**values)
+
+def test_precision_flag_is_mandatory():
+    receipt,values=contract();values['profile']['precision']['ragged_effects_fp32']=False
+    with pytest.raises(ValueError):validate_contract(receipt,**values)
+
+@pytest.mark.parametrize('name',['agent/model/encoder.py','agent/model/precision.py','agent/ppo/learner.py','agent/unexpected.py'])
+def test_source_edits_fail_closed(name,tmp_path,monkeypatch):
+    import subprocess
+    import agent.ppo.v2_release_migration as migration
+    def git(*args):return subprocess.check_output(['git',*args],cwd=tmp_path,text=True).strip()
+    git('init','-q');git('config','user.name','Test');git('config','user.email','test@example.invalid')
+    path=tmp_path/name;path.parent.mkdir(parents=True);path.write_text('approved=True\n')
+    git('add','.');git('commit','-qm','baseline');baseline=git('rev-parse','HEAD')
+    monkeypatch.setattr(migration,'BASE',baseline);monkeypatch.setattr(migration,'REVIEWED_SOURCE',baseline)
+    path.write_text('approved=False\n');git('add','.');git('commit','-qm','tamper')
+    with pytest.raises(ValueError):migration.blobs(tmp_path,git('rev-parse','HEAD'))

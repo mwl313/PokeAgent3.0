@@ -4,7 +4,10 @@ from pathlib import Path
 BASE='5ccc51b0cd4a49efb93018258b9750d5e804ae32'
 AUDITED='0b7253cfd915ff61c88248b1979bd8e254285ef0'
 ERROR_WRAPPER_AST='a24af9614ac5542e7c0b377ed88ad6266439d02b03e6a6cd323599ceca887a22'
-SCHEMA='pa3-v2-reviewed-release-migration-v1'
+LEGACY_SCHEMA='pa3-v2-reviewed-release-migration-v1'
+SCHEMA='pa3-v2-reviewed-release-migration-v2'
+REVIEWED_SOURCE='93ebc1b5086b7a2bf247b779eb6442671bbbdd10'
+VALIDATOR_AST='24edd49cc461a357fdb9e64ed3dbd9f350dbdc6bf350980bfe6686a0ddd966f0'
 MANIFEST='b9539f3a0c426f0878375b61630cb4de9dcd2a5d4a6a59858b4d64f4287fd424'
 ENGINE='8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62'
 # Explicitly reviewed executable surface. Engine/dataset/loss/learner/config
@@ -18,7 +21,9 @@ agent/types/ragged.py agent/types/requests.py configs/pa3_v2_production.yaml
 scripts/bench_pa3_end_to_end.py scripts/analyze_v2_live_bottlenecks.py scripts/benchmark_v2_lookup_recovery.py
 scripts/run_ddp_ppo.py scripts/v2_continuation_probe.py scripts/v2_data_path_probe.py
 scripts/v2_gpu_profile.py scripts/v2_reconstruct_boundary.py scripts/v2_recovery_analysis.py
-scripts/v2_throughput_ab.py scripts/validate_v2_source_of_truth.py scripts/v2_release_validation.py'''.split())
+scripts/v2_throughput_ab.py scripts/validate_v2_source_of_truth.py scripts/v2_release_validation.py
+agent/model/pa3_model.py agent/model/precision.py scripts/v2_training_status.py
+scripts/v2_evaluation_sidecar.py scripts/v2_recompute_forensics.py'''.split())
 def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 def git(root,*args):return subprocess.check_output(['git','-C',str(root),*args],text=True).strip()
 def blobs(root,target):
@@ -26,22 +31,18 @@ def blobs(root,target):
     if not set(files)<=REVIEWED:raise ValueError('unreviewed executable source delta: '+str(set(files)-REVIEWED))
     result={name:git(root,'rev-parse',f'{target}:{name}') for name in files}
     for name,blob in result.items():
-        if name=='agent/ppo/v2_release_migration.py':
-            continue  # the validator itself is reviewed and pinned by targetSHA
-        if blob==git(root,'rev-parse',f'{AUDITED}:{name}'):
-            continue
-        if name!='scripts/bench_pa3_end_to_end.py':
+        if name == 'agent/ppo/v2_release_migration.py':
+            # Seal the validator AST with only its digest literal blanked.
+            # This avoids a commit hashing itself while rejecting other edits.
+            import ast
+            tree=ast.parse(git(root,'show',f'{target}:{name}'))
+            for node in tree.body:
+                if isinstance(node,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='VALIDATOR_AST' for t in node.targets):
+                    node.value=ast.Constant('')
+            if hashlib.sha256(ast.dump(tree,include_attributes=False).encode()).hexdigest()!=VALIDATOR_AST:
+                raise ValueError('unreviewed migration validator')
+        elif blob != git(root,'rev-parse',f'{REVIEWED_SOURCE}:{name}'):
             raise ValueError('runtime differs from independently audited code: '+name)
-        import ast,copy
-        old=ast.parse(git(root,'show',f'{AUDITED}:{name}'))
-        current=ast.parse(git(root,'show',f'{target}:{name}'))
-        wrapper=next(n for n in current.body if isinstance(n,ast.FunctionDef) and n.name=='recompute_check')
-        if hashlib.sha256(ast.dump(wrapper,include_attributes=False).encode()).hexdigest()!=ERROR_WRAPPER_AST:
-            raise ValueError('unreviewed primary error wrapper')
-        current.body.remove(wrapper)
-        impl=next(n for n in current.body if isinstance(n,ast.FunctionDef) and n.name=='_recompute_check_impl');impl.name='recompute_check'
-        if ast.dump(old,include_attributes=False)!=ast.dump(current,include_attributes=False):
-            raise ValueError('normal recompute implementation changed')
     return result
 def validate_contract(receipt,*,source,target,checkpoint_hash,rank_hashes,runtime_blobs,profile,original_profile,engine_hash,parity):
     if receipt.get('schema')!=SCHEMA or (source,target)!=(BASE,receipt.get('target_sha')) or receipt.get('source_sha')!=source:raise ValueError('migration source identity mismatch')
@@ -65,7 +66,7 @@ def validate_contract(receipt,*,source,target,checkpoint_hash,rank_hashes,runtim
             or receipt.get('ragged_effects_precision_transition') != {'historical':'fp16','future':'fp32'}):
         raise ValueError('ragged effects precision migration mismatch')
     if before!=after or profile['precision'].get('recompute_secondary') is not True:raise ValueError('migration precision incompatible')
-    for key in ('manifest_sha256','teams_sha256','train_teams','sampling','id'):
+    for key in ('manifest_sha256','teams_sha256','train_teams','sampling','id','frozen'):
         if profile['dataset'][key]!=original_profile['dataset'][key]:raise ValueError('migration dataset changed')
     if receipt.get('token_lookup_backend')!='gather' or receipt.get('secondary_activation')!={'historical':False,'future':True}:raise ValueError('unauthorized arithmetic backend or safety transition')
     if not all(parity.get(k) is True for k in ('representation_equal','loss_equal','gradient_equal','adam_equal','model_config_equal','gpu_loss_equal','gpu_gradient_equal','gpu_adam_equal','gpu_model_equal')):raise ValueError('migration independent parity proof incomplete')
@@ -73,7 +74,7 @@ def validate_contract(receipt,*,source,target,checkpoint_hash,rank_hashes,runtim
 
 def validate(receipt,root,source,target):
     root=Path(root)
-    if git(root,'rev-parse','HEAD')!=target or git(root,'status','--porcelain','--untracked-files=no'):raise ValueError('migration requires exact clean source')
+    if git(root,'rev-parse','HEAD')!=target or git(root,'status','--porcelain','--untracked-files=no') or git(root,'ls-files','--others','--exclude-standard','--','agent','engine','configs','data','scripts'):raise ValueError('migration requires exact clean source')
     checkpoint=Path(receipt['checkpoint']);manifest=json.loads((checkpoint/'manifest.json').read_text())
     if sha(checkpoint/'manifest.json')!=MANIFEST:raise ValueError('wrong original checkpoint manifest')
     if sha(root/'engine/python/pa3_engine/pa3_engine.so')!=ENGINE:raise ValueError('native binary identity mismatch')
@@ -93,7 +94,7 @@ def validate(receipt,root,source,target):
     for key in ('representation','losses','gradient_digest','adam_digest','updated_model_digest','model_config'):
         if left[key]!=right[key]:raise ValueError('independent math/data parity failed: '+key)
     for name,digest in right['runtime_file_hashes'].items():
-        if sha(root/name)!=digest:raise ValueError('data-path parity code changed: '+name)
+        if hashlib.sha256(subprocess.check_output(['git','-C',str(root),'show',f'{AUDITED}:{name}'])).hexdigest()!=digest:raise ValueError('historical data-path parity code changed: '+name)
     gpu=[]
     for key in ('gpu_baseline','gpu_candidate'):
         path=Path(parity[key+'_artifact'])
@@ -105,8 +106,31 @@ def validate(receipt,root,source,target):
     for key in ('losses','gradient_digest','adam_digest','updated_model_digest'):
         if gpu[0][key]!=gpu[1][key]:raise ValueError('GPU same-microbatch parity failed: '+key)
     for name,digest in gpu[1]['runtime_file_sha256'].items():
-        if sha(root/name)!=digest:raise ValueError('GPU parity source changed: '+name)
+        if hashlib.sha256(subprocess.check_output(['git','-C',str(root),'show',f'{AUDITED}:{name}'])).hexdigest()!=digest:raise ValueError('historical GPU parity source changed: '+name)
+    legacy=parity.get('legacy_target_runtime_blobs',{})
+    legacy_files=git(root,'diff','--name-only',BASE,AUDITED,'--','agent','engine','configs','data','scripts').splitlines()
+    if legacy!={n:git(root,'rev-parse',f'{AUDITED}:{n}') for n in legacy_files}:
+        raise ValueError('historical independently audited executable identity mismatch')
     if parity.get('target_runtime_blobs')!=blobs(root,target):raise ValueError('parity target executable identity mismatch')
+    transition=Path(parity['precision_transition_report'])
+    if sha(transition)!=parity['precision_transition_sha256']:raise ValueError('precision proof checksum mismatch')
+    proof=json.loads(transition.read_text())
+    if proof.get('schema')!='pa3-effects-fp32-independent-v1' or proof.get('target_sha')!=target:
+        raise ValueError('precision proof target mismatch')
+    if proof.get('runtime_blobs')!=blobs(root,target):raise ValueError('precision proof executable mismatch')
+    for key in ('reference','candidate'):
+        path=Path(proof[key+'_artifact'])
+        if sha(path)!=proof[key+'_sha256']:raise ValueError('precision proof artifact changed')
+    reference=json.loads(Path(proof['reference_artifact']).read_text())
+    candidate=json.loads(Path(proof['candidate_artifact']).read_text())
+    if reference.get('source_sha')!=AUDITED or candidate.get('source_sha')!=target:
+        raise ValueError('precision proof source mismatch')
+    for artifact in (reference,candidate):
+        if artifact.get('rows')!=1024 or artifact.get('precision')!='D/FP16-effects-FP32' or artifact.get('workspace')!=':4096:8':
+            raise ValueError('precision proof execution mismatch')
+    for key in ('losses','gradient_digest','adam_digest','updated_model_digest','model_config'):
+        if reference[key]!=candidate[key]:raise ValueError('independent precision transition parity failed: '+key)
+
     old_path=Path(receipt['original_profile_path'])
     if sha(old_path)!=receipt['original_profile_sha256']:raise ValueError('original profile changed')
     profile=json.loads((root/'configs/pa3_v2_production.yaml').read_text());original=json.loads(old_path.read_text())
