@@ -325,6 +325,15 @@ def validate_lookup_restore(experiment,args):
         raise RuntimeError('checkpoint token lookup backend mismatch')
 
 
+def execution_options(args, *, lr_scale=None):
+    return {"batch_cache":args.batch_cache, "token_lookup_backend":lookup_backend(args),
+            "compact_candidates":args.compact_candidates,
+            "trim_observation_padding":args.trim_observation_padding,
+            "microbatch":args.microbatch,
+            "experimental_lr_scale":args.experimental_lr_scale if lr_scale is None else lr_scale,
+            "historical_probability":args.historical_probability}
+
+
 def free_port() -> int:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as handle:
         handle.bind(("127.0.0.1", 0))
@@ -1066,15 +1075,7 @@ def worker(args) -> None:
             "optimizer_digest": optimizer_digest,
             "digests_equal": bool(digests_equal),
             "executor": args.executor,
-            "execution_options": {
-                "batch_cache": args.batch_cache,
-                "token_lookup_backend": lookup_backend(args),
-                "compact_candidates": args.compact_candidates,
-                "trim_observation_padding": args.trim_observation_padding,
-                "microbatch": args.microbatch,
-                "experimental_lr_scale": lr_scale,
-                "historical_probability": args.historical_probability,
-            },
+            "execution_options": execution_options(args,lr_scale=lr_scale),
             "sync_calls": communication.sync_calls if communication is not None else None,
             "no_sync_calls": communication.no_sync_calls if communication is not None else None,
             "report": report.as_dict(),
@@ -1296,14 +1297,7 @@ def parent(args) -> None:
         from agent.ppo.storage_manager import CheckpointGenerationStore
         store = CheckpointGenerationStore(os.path.abspath(args.rolling_checkpoint_root),keep_generations=args.rolling_keep_generations)
         _publish_completed_rolling_boundary(args, store, set())
-    expected_execution = {
-        "batch_cache": args.batch_cache,
-        "compact_candidates": args.compact_candidates,
-        "trim_observation_padding": args.trim_observation_padding,
-        "microbatch": args.microbatch,
-        "experimental_lr_scale": args.experimental_lr_scale,
-        "historical_probability": args.historical_probability,
-    }
+    expected_execution = execution_options(args)
     if any(result["execution_options"] != expected_execution for result in results):
         raise RuntimeError("worker execution options differ from the requested benchmark")
     wall = time.perf_counter() - started

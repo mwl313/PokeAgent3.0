@@ -86,3 +86,12 @@ def test_rank_dependent_recompute_rejection_stops_every_rank(monkeypatch):
     result=module.verify_recompute_ranks({'within_gate':True,'primary_within_gate':True},torch.device('cpu'))
     assert not result['within_gate'] and not result['all_ranks_accepted']
     assert result['primary_within_gate']  # local evidence is never relabeled
+
+
+def test_parent_worker_execution_identity_includes_lookup_backend():
+    _,module=launcher();args=module.parse_args([])
+    expected=module.execution_options(args)
+    assert expected['token_lookup_backend']=='gather'
+    assert module.execution_options(args,lr_scale=args.experimental_lr_scale)==expected
+    args.experimental_exact_token_lookup=True
+    assert module.execution_options(args)['token_lookup_backend']=='exact-row-v100-v1'

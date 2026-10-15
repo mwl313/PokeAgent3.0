@@ -22,7 +22,7 @@ def main():
         pointer=path/'rolling/LATEST';return pointer.parent/'generations'/pointer.read_text().strip()
     # Smoke is also split-arm iteration15. Uninterrupted arm crosses15–20.
     first=run('first',1,args.checkpoint,True)
-    full=run('uninterrupted',6,args.checkpoint,True,8192)
+    full=run('uninterrupted',6,args.checkpoint,True,16384)
     resumed=run('resumed',1,first)
     # Compare uninterrupted iteration16 with fresh communicator resumed16.
     reference=next(p for p in (out/'uninterrupted/rolling/generations').iterdir() if p.name.startswith('iter-000000065536-'))
