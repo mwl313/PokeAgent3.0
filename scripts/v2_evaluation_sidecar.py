@@ -36,13 +36,14 @@ def retain(own,registry,best):
             if path.exists() and path not in keep_paths:path.unlink()
 
 
-def once(run,*,pairs=256,batch_size=32,workers=2):
+def once(run,*,pairs=256,batch_size=32,workers=2,reserve_gib=20):
     if min(pairs,batch_size,workers)<1:raise ValueError('evaluation sizes must be positive')
+    if reserve_gib<0:raise ValueError('evaluation reserve must be nonnegative')
     run=Path(run).resolve();own=run/'evaluation/v2';own.mkdir(parents=True,exist_ok=True)
     with (own/'worker.lock').open('a+') as lock:
         try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
         except BlockingIOError:return {'status':'already_running'}
-        if shutil.disk_usage(own).free < 20*2**30:return {'status':'resource_deferred','reason':'20GiB evaluation reserve'}
+        if shutil.disk_usage(own).free < reserve_gib*2**30:return {'status':'resource_deferred','reason':f'{reserve_gib:g}GiB evaluation reserve'}
         store=CheckpointGenerationStore(run/'rolling')
         registry_path=own/'registry.json'
         old=json.loads(registry_path.read_text()) if registry_path.exists() else None
@@ -105,8 +106,9 @@ def once(run,*,pairs=256,batch_size=32,workers=2):
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--run-root',required=True)
     parser.add_argument('--pairs',type=int,default=256);parser.add_argument('--batch-size',type=int,default=32)
+    parser.add_argument('--reserve-gib',type=float,default=20)
     args=parser.parse_args();torch.set_num_threads(2)
-    print(json.dumps(once(args.run_root,pairs=args.pairs,batch_size=args.batch_size),indent=2))
+    print(json.dumps(once(args.run_root,pairs=args.pairs,batch_size=args.batch_size,reserve_gib=args.reserve_gib),indent=2))
 
 
 if __name__=='__main__':main()
