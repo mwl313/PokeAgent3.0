@@ -7,8 +7,8 @@ ERROR_WRAPPER_AST='a24af9614ac5542e7c0b377ed88ad6266439d02b03e6a6cd323599ceca887
 LEGACY_SCHEMA='pa3-v2-reviewed-release-migration-v1'
 SCHEMA='pa3-v2-reviewed-release-migration-v2'
 REVIEWED_SOURCE='93ebc1b5086b7a2bf247b779eb6442671bbbdd10'
-REVIEWED_REPAIRS={'agent/ppo/source_migration.py': '540698ee4f62d7b48125721db264d7082eea02f5', 'scripts/run_ddp_ppo.py': '3c5b5bf156639dac1be67e6dcfe583fe4563694b', 'agent/ppo/learner.py': 'e06009a3f2fba15f0e85352bf88848d3717d53d7', 'agent/runtime/config.py': '9987603a9270b7ca9ee17a409fbf646d688d837b', 'configs/pa3_v2_production.yaml': '2a182204845244a61acef9aed605d39ba596aef3', 'agent/ppo/telemetry.py': 'f879957a63b9f2a07e487a738fecf1b572c4db1a', 'agent/train/native_collector.py': '9626a27b564602b0293f3aaf0c0ad2bca459e7df', 'scripts/bench_pa3_end_to_end.py': 'bb51079faeffb79b36742861256aa3f84bf443da', 'agent/ppo/recompute_safety.py': '0e1c70370abb7dde94ac570f300f1b7bcd01fa05'}
-VALIDATOR_AST='abc34eda7ffe63fc1689b57e6fd6482e8b24a39e490ddec3dd3c08c22c40e6dc'
+REVIEWED_REPAIRS={'agent/ppo/source_migration.py': '540698ee4f62d7b48125721db264d7082eea02f5', 'scripts/run_ddp_ppo.py': '3c5b5bf156639dac1be67e6dcfe583fe4563694b', 'agent/ppo/learner.py': 'e06009a3f2fba15f0e85352bf88848d3717d53d7', 'agent/runtime/config.py': '9987603a9270b7ca9ee17a409fbf646d688d837b', 'configs/pa3_v2_production.yaml': 'd354223d3db40face7fc5aac41b510f795f7cdde', 'agent/ppo/telemetry.py': 'f879957a63b9f2a07e487a738fecf1b572c4db1a', 'agent/train/native_collector.py': '9626a27b564602b0293f3aaf0c0ad2bca459e7df', 'scripts/bench_pa3_end_to_end.py': 'bb51079faeffb79b36742861256aa3f84bf443da', 'agent/ppo/recompute_safety.py': '0e1c70370abb7dde94ac570f300f1b7bcd01fa05'}
+VALIDATOR_AST='c4afb0c1d824ce18f7e7a012f42c9b953ce9cac67f98513f2a444fb1e82f0cb7'
 MANIFEST='b9539f3a0c426f0878375b61630cb4de9dcd2a5d4a6a59858b4d64f4287fd424'
 ENGINE='8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62'
 # Exact reviewed executable surface; objective, architecture, engine and data

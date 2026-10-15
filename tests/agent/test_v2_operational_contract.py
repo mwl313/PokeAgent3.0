@@ -65,7 +65,7 @@ def test_v2_secondary_is_resolved_and_configuration_drift_rejected(tmp_path, mon
         '--team-stats-root',str(tmp_path/'stats'),'--rolling-checkpoint-root',str(tmp_path/'rolling'),
         '--experimental-checkpoint',str(tmp_path/'boundary')])
     assert args.recompute_secondary and args.recompute_gate
-    assert args.experimental_exact_token_lookup
+    assert not args.experimental_exact_token_lookup
 
 
 def test_secondary_restore_contract_cannot_silently_change():
@@ -107,9 +107,12 @@ def test_lookup_profile_is_explicit_and_rejects_unapproved_override(tmp_path, mo
     from agent.runtime.config import resolve_profile, launcher_values
     root,module=launcher();monkeypatch.chdir(root)
     profile=json.loads((root/'configs/pa3_v2_production.yaml').read_text())
-    assert launcher_values(resolve_profile(str(root/'configs/pa3_v2_production.yaml')))['experimental_exact_token_lookup']
+    assert not launcher_values(resolve_profile(str(root/'configs/pa3_v2_production.yaml')))['experimental_exact_token_lookup']
     paths=['--team-stats-root',str(tmp_path/'stats'),'--rolling-checkpoint-root',str(tmp_path/'rolling'),'--experimental-checkpoint',str(tmp_path/'boundary')]
-    assert module.parse_args(['--profile','configs/pa3_v2_production.yaml','--iterations','10']+paths).experimental_exact_token_lookup
+    assert not module.parse_args(['--profile','configs/pa3_v2_production.yaml','--iterations','10']+paths).experimental_exact_token_lookup
+    profile['collector']['token_lookup_backend']='exact-row-v100-v1'
+    approved=tmp_path/'approved.json';approved.write_text(json.dumps(profile))
+    assert launcher_values(resolve_profile(str(approved)))['experimental_exact_token_lookup']
     profile['collector']['token_lookup_backend']='unknown'
     path=tmp_path/'profile.json';path.write_text(json.dumps(profile))
     with pytest.raises(ValueError,match='unsupported token lookup'):resolve_profile(str(path))

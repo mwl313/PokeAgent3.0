@@ -64,7 +64,7 @@
     "executor": "ddp",
     "world_size": 2,
     "deterministic_diagnostic": true,
-    "token_lookup_backend": "exact-row-v100-v1"
+    "token_lookup_backend": "gather"
   },
   "evaluation": {
     "lightweight_every_matches": 50000,
