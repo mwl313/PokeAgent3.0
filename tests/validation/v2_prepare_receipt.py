@@ -7,7 +7,7 @@ root=Path.cwd();out=Path(a.output).resolve();target=git(root,'rev-parse','HEAD')
 reference=out/'precision_reference.json';candidate=out/'precision_candidate.json'
 l=json.loads(reference.read_text());r=json.loads(candidate.read_text())
 assert l['source_sha']==AUDITED and r['source_sha']==target
-for key in ('losses','gradient_digest','adam_digest','updated_model_digest','model_config'):assert l[key]==r[key],key
+for key in ('captured_artifact_sha256','probe_sha256','losses','gradient_digest','adam_digest','updated_model_digest','model_config'):assert l[key]==r[key],key
 proof={'schema':'pa3-effects-fp32-independent-v1','target_sha':target,'runtime_blobs':blobs(root,target),'reference_artifact':str(reference),'reference_sha256':sha(reference),'candidate_artifact':str(candidate),'candidate_sha256':sha(candidate)}
 (out/'precision_proof.json').write_text(json.dumps(proof,indent=2)+'\n')
 legacy=Path('/home/minidc/Desktop/PokeAgent3.0-V2-integration/runs/v2_final_release/parity.json');parity=json.loads(legacy.read_text())
