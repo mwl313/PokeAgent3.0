@@ -1,0 +1,31 @@
+{
+  "source_sha": "6a2a6930ed65586ff79186d60187a4a942253550",
+  "rows": 576,
+  "output_hashes": {
+    "export_then_deepcopy": "5a3dd8b28c17ebc589053380b9521cb7fd8cc191209704313fd26304392b11c9",
+    "private_owned_export": "5a3dd8b28c17ebc589053380b9521cb7fd8cc191209704313fd26304392b11c9"
+  },
+  "times": {
+    "export_then_deepcopy": {
+      "samples_ms": [
+        20.923377000144683,
+        20.295434999752615,
+        21.377940000093076,
+        21.38277499943797,
+        21.255349000057322
+      ],
+      "median_ms": 21.255349000057322
+    },
+    "private_owned_export": {
+      "samples_ms": [
+        16.852191999532806,
+        19.70499400067638,
+        16.865476000020863,
+        16.39408099981665,
+        18.32415199987736
+      ],
+      "median_ms": 16.865476000020863
+    }
+  },
+  "scope": "same real576-row observation; interleaved five post-warmup CPU samples; export+ownership only, not whole collection"
+}

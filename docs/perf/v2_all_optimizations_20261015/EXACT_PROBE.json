@@ -1,0 +1,39 @@
+[
+  {
+    "batch": 3,
+    "candidates": 7,
+    "exact": true,
+    "max_abs": 0.0
+  },
+  {
+    "batch": 16,
+    "candidates": 32,
+    "exact": true,
+    "max_abs": 0.0
+  },
+  {
+    "batch": 16,
+    "candidates": 33,
+    "exact": true,
+    "max_abs": 0.0
+  },
+  {
+    "batch": 64,
+    "candidates": 128,
+    "exact": true,
+    "max_abs": 0.0
+  },
+  {
+    "batch": 1024,
+    "candidates": 128,
+    "exact": true,
+    "max_abs": 0.0,
+    "backward_ms": [
+      4.589568138122559,
+      4.628479957580566,
+      4.6090240478515625,
+      4.5977277755737305,
+      4.55782413482666
+    ]
+  }
+]

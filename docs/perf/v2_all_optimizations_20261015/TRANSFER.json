@@ -1,0 +1,41 @@
+{
+  "original_blocking": {
+    "samples_ms": [
+      15.79884900002071,
+      15.10305099964171,
+      15.854680000302324,
+      16.831160000037926,
+      17.364199999974517
+    ],
+    "median_ms": 15.854680000302324
+  },
+  "bundled": {
+    "samples_ms": [
+      13.589952999609523,
+      13.39946299958683,
+      14.056928000172775,
+      13.288428999658208,
+      14.020908999555104
+    ],
+    "median_ms": 13.589952999609523
+  },
+  "exact_values": {
+    "old_logprob": true,
+    "values": true,
+    "raw_advantages": true,
+    "returns": true,
+    "rewards": true,
+    "dones": true,
+    "actor_mask": true,
+    "row_valid": true,
+    "match_ids": true,
+    "sides": true,
+    "request_index": true,
+    "turns": true,
+    "request_kind": true,
+    "observations": true,
+    "candidates": true
+  },
+  "scope": "1024 real saved rows, whole blocking public transfer wall, five post-warmup samples; no pinned allocation or games/s claim",
+  "source_sha": "6a2a6930ed65586ff79186d60187a4a942253550"
+}
