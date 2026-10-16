@@ -21,6 +21,9 @@ def test_v2_profile_keeps_ppo_hyperparameters_and_requires_durable_stats(tmp_pat
         '--experimental-checkpoint',str(tmp_path/'boundary'),'--stop-file',str(tmp_path/'STOP')])
     assert args.deterministic_diagnostic and args.epochs==2 and args.checkpoint_interval_matches==100000
     assert args.microbatch==1024 and args.minibatch==4096 and args.experimental_lr_scale==.5
+    assert Path(args.profile)==(root/'configs/pa3_v2_production.yaml').resolve()
+    with pytest.raises(ValueError,match='profile conflict'):
+        module.parse_args(['--profile','configs/pa3_v2_production.yaml','--precision-mode','D'])
 
 
 def test_cooperative_stop_requires_checkpoint_destination():

@@ -253,3 +253,47 @@ def test_execution_flags_reach_workers_including_explicit_fallbacks(
     assert prefix + "compact-candidates" in commands[0]
     value_index = commands[0].index("--batch-cache") + 1
     assert commands[0][value_index] == args.batch_cache
+
+
+def test_absolute_profile_and_effective_execution_contract_reach_both_workers(
+    launcher, monkeypatch, tmp_path,
+):
+    commands = []
+
+    def spawn(command, **kwargs):
+        commands.append(command)
+        return FakeProcess(returncode=1)
+
+    root = Path(__file__).resolve().parents[2]
+    profile = root / "configs/pa3_v2_production.yaml"
+    run = tmp_path / "run"
+    monkeypatch.setattr(launcher, "source_provenance", lambda: {})
+    monkeypatch.setattr(launcher.subprocess, "Popen", spawn)
+    args = launcher.parse_args([
+        "--profile", str(profile.relative_to(root)),
+        "--iterations", "24401",
+        "--report", str(run / "report.json"),
+        "--team-stats-root", str(run / "stats"),
+        "--rolling-checkpoint-root", str(run / "rolling"),
+        "--experimental-checkpoint", str(run / "boundary"),
+    ])
+    assert args.profile == str(profile.resolve())
+    with pytest.raises(SystemExit, match="rank 0 exited with 1"):
+        launcher.parent(args)
+    assert len(commands) == 2
+
+    contract_keys = (
+        "epochs", "experimental_lr_scale", "minibatch", "microbatch",
+        "envs", "workers", "historical_probability", "precision_mode",
+        "precision_stability", "recompute_gate", "batch_cache",
+        "compact_candidates", "amp_overflow_retries",
+        "canonical_encoder_batch_rows", "recompute_secondary",
+        "deterministic_diagnostic", "experimental_exact_token_lookup",
+        "trim_observation_padding", "columnar_store", "rolling_slots",
+    )
+    for command in commands:
+        worker_args = launcher.parse_args(command[command.index("--worker"):])
+        assert worker_args.worker
+        assert worker_args.profile == args.profile
+        assert worker_args.effective_profile == args.effective_profile
+        assert all(getattr(worker_args, key) == getattr(args, key) for key in contract_keys)

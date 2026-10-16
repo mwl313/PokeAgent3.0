@@ -252,6 +252,7 @@ def parse_args(argv=None):
     if args.profile:
         from agent.runtime.config import resolve_profile, launcher_values
         resolved = resolve_profile(args.profile)
+        args.profile = resolved["profile_path"]
         # Reject explicit contradictions instead of silently overwriting them.
         controlled = {"epochs": str(resolved["profile"]["training"]["ppo_epochs"]),
                       "experimental-lr-scale": str(resolved["profile"]["training"]["lr_scale"]),
@@ -1286,6 +1287,8 @@ def parent(args) -> None:
                 "--precision-stability", args.precision_stability,
                 "--experimental-source-migration", args.experimental_source_migration,
             ]
+            if args.profile:
+                command.extend(["--profile", args.profile])
             if args.experimental_allow_source_sha:
                 command.append("--experimental-allow-source-sha")
             if args.deterministic_diagnostic:
