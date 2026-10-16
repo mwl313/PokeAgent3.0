@@ -1,11 +1,22 @@
 import copy
 import math
+from pathlib import Path
 import pytest
 import torch
 from agent.buffer.rollout_buffer import RolloutBuffer
 from agent.types.observation import ObservationBatch
 from agent.ppo.recompute_safety import compact_hash, row_contract_hash, evidence_passes, secondary_audit
 from pa3_test_util import make_request, preview_branches, make_candidate_batch
+
+
+def test_recompute_gate_has_one_canonical_production_import():
+    from agent.ppo.recompute_gate import recompute_check as canonical
+    from scripts import bench_pa3_end_to_end as benchmark
+
+    assert benchmark.recompute_check is canonical
+    launcher = (Path(__file__).parents[2] / 'scripts' / 'run_ddp_ppo.py').read_text()
+    assert 'from agent.ppo.recompute_gate import recompute_check' in launcher
+    assert 'from bench_pa3_end_to_end import recompute_check' not in launcher
 
 
 def evidence():

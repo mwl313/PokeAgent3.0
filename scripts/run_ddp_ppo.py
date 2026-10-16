@@ -879,10 +879,7 @@ def worker(args) -> None:
                 raise RuntimeError("experimental resume collector contract mismatch")
     recompute_check = None
     if args.recompute_gate:
-        scripts_dir = os.path.join(ROOT, "scripts")
-        if scripts_dir not in sys.path:
-            sys.path.insert(0, scripts_dir)
-        from bench_pa3_end_to_end import recompute_check
+        from agent.ppo.recompute_gate import recompute_check
 
     # Keep all expensive resources and the shuffle RNG alive. A fresh collector
     # is lightweight and avoids reusing cumulative stats, completed trajectories,
