@@ -1,0 +1,23 @@
+[Unit]
+Description=PokeAgent V2 CPU evaluation league worker
+After=default.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/minidc/Desktop/PokeAgent3.0-V2-evaluation-league
+Environment=CUDA_VISIBLE_DEVICES=
+Environment=OMP_NUM_THREADS=2
+Environment=MKL_NUM_THREADS=2
+Environment=OPENBLAS_NUM_THREADS=1
+Nice=15
+IOSchedulingClass=idle
+CPUAffinity=4 5 6 7
+CPUQuota=250%
+MemoryHigh=3G
+MemoryMax=4G
+ExecStart=/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python /home/minidc/Desktop/PokeAgent3.0-V2-evaluation-league/scripts/v2_eval_worker.py --eval-root /home/minidc/eval-league/v2 --production-log /home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode_e_da35700_20261016/reports/continuation.json.rank0.log --reserve-gib 12 --batch-size 32 --threads 2 --engine-workers 2 --interval 20
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=default.target

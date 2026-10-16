@@ -1,0 +1,17 @@
+[Unit]
+Description=PokeAgent V2 evaluation checkpoint discovery and scheduling
+After=default.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/minidc/Desktop/PokeAgent3.0-V2-evaluation-league
+Environment=CUDA_VISIBLE_DEVICES=
+Environment=OMP_NUM_THREADS=1
+Environment=MKL_NUM_THREADS=1
+Environment=OPENBLAS_NUM_THREADS=1
+Nice=19
+IOSchedulingClass=idle
+CPUAffinity=4 5 6 7
+CPUQuota=100%
+MemoryMax=2G
+ExecStart=/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python /home/minidc/Desktop/PokeAgent3.0-V2-evaluation-league/scripts/v2_eval_discover.py --eval-root /home/minidc/eval-league/v2 --rolling /home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode_e_da35700_20261016/rolling --reports-dir /home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode_e_da35700_20261016/reports --bootstrap-generation /home/minidc/Desktop/PokeAgent3.0-V2-throughput/runs/perf/v2_recovery/reconstruction_contract/reconstructed/rolling/generations/iter-000000057344-1791986684864852699 --campaign-start 57344 --reserve-gib 12
