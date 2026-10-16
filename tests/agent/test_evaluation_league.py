@@ -14,17 +14,23 @@ from agent.mock_engine import MockNativeEngine
 from agent.model import build_model
 
 
-def _checkpoint(path, *, seed=1, matches=7):
+def _checkpoint(path, *, seed=1, matches=7, precision_mode=None):
     torch.manual_seed(seed)
     from agent.contracts import execution_identity
     from agent.ppo.experimental_checkpoint import hash_json
     model=build_model()
-    torch.save({"learner": {"model": model.state_dict(), "contracts": execution_identity('A'),
+    model.configure_precision(precision_mode or 'A')
+    payload={"learner": {"model": model.state_dict(), "contracts": execution_identity(precision_mode or 'A'),
                           "config": {'model':model.config.to_dict()}}, "source_sha": "a" * 40,
                 "model_config_hash": hash_json(model.config.to_dict()), "action_schema_hash": "c" * 64,
                 "accounting": {"committed_matches": matches},
                 "ddp": {'world_size':2},
-                "rank_digests": {str(i): {"model": "x", "optimizer": "y"} for i in (0,1)}}, path)
+                "rank_digests": {str(i): {"model": "x", "optimizer": "y"} for i in (0,1)}}
+    if precision_mode is not None:
+        payload['experiment'] = {'precision_mode':precision_mode,
+                                 'precision_stability':'fp16-reduction-off',
+                                 'precision_contract_version':model.precision_contract.identity}
+    torch.save(payload, path)
 
 
 def test_schedule_all_cycles_restart_missing_and_idempotent(tmp_path):
@@ -98,3 +104,55 @@ def test_canonical_digest_matches_frozen_policy_and_is_order_independent():
     assert digest == canonical_model_digest(reordered)
     adapter = FrozenPPOPolicy(model, device="cpu")
     assert adapter.identity.model_digest == digest
+
+
+def test_mode_e_archive_and_frozen_loaders_preserve_precision_identity(tmp_path):
+    from agent.evaluation.fixed_policy import load_frozen_model
+
+    checkpoint, registry = tmp_path/'e.pt', tmp_path/'archive.json'
+    _checkpoint(checkpoint, precision_mode='E')
+    entry = register_checkpoint(registry, policy_id='e', label='E', checkpoint_path=checkpoint)
+    assert entry['precision_mode'] == 'E'
+    assert entry['precision_contract_version'] == 'pa3-precision-E-v1'
+    assert verify_entry(registry, entry) == str(checkpoint)
+    reduced = torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction
+    try:
+        adapter = FrozenPPOPolicy.from_checkpoint(checkpoint, device='cpu')
+    finally:
+        torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = reduced
+    model = load_frozen_model(checkpoint, device='cpu')
+    assert adapter.identity.precision_contract == model.precision_contract.identity == 'pa3-precision-E-v1'
+    assert model.precision_contract.quantize_observation and not model.precision_contract.encoder_amp
+    assert all(not parameter.requires_grad for parameter in adapter.model.parameters())
+    assert all(not parameter.requires_grad for parameter in model.parameters())
+    assert adapter.identity.model_digest == canonical_model_digest(model.state_dict())
+    payload = torch.load(checkpoint, map_location='cpu', weights_only=False)
+    payload['experiment']['precision_mode'] = 'D'
+    changed = tmp_path/'mismatched.pt'
+    torch.save(payload, changed)
+    for loader in (FrozenPPOPolicy.from_checkpoint, load_frozen_model):
+        with pytest.raises(ValueError, match='precision contract mismatch'):
+            loader(changed, device='cpu')
+
+
+@pytest.mark.parametrize('mode,quantized', [('A', False), ('B', False), ('C', True),
+                                         ('D', True), ('E', True)])
+def test_evaluation_identity_records_actual_observation_quantization(mode, quantized):
+    from agent.evaluation.league import evaluation_identity
+    from agent.model.precision import get_precision_contract
+
+    fixtures = build_fixture_manifest(pairs=1, team_count=4, seed=3)
+    entry = {'id':'policy', 'file_sha256':'a'*64, 'model_digest':'b'*64,
+             'precision_mode':mode,
+             'precision_contract_version':get_precision_contract(mode).identity}
+    identity, body = evaluation_identity(entry, entry, fixtures, seed=5, max_rounds=20,
+                                         environment={'backend':'batched'})
+    expected = 'fp16-round-continuous-v1' if quantized else 'none'
+    assert body['candidate'][3]['observation_quantization'] == expected
+    assert body['opponent'][3]['observation_quantization'] == expected
+    assert body['candidate'][3]['precision_contract_version'] == get_precision_contract(mode).identity
+    if mode == 'E':
+        historical = dict(entry, precision_mode='D', precision_contract_version='pa3-precision-D-v2')
+        old_identity, _ = evaluation_identity(historical, historical, fixtures, seed=5,
+                                              max_rounds=20, environment={'backend':'batched'})
+        assert identity != old_identity

@@ -30,13 +30,13 @@ E_PROOF_EXECUTION={
     'scorer_amp':False,'gru_amp':False,'value_head_amp':True,'grad_scaler':True,
 }
 REVIEWED_SOURCE='93ebc1b5086b7a2bf247b779eb6442671bbbdd10'
-REVIEWED_REPAIRS={'agent/ppo/source_migration.py': 'f307d4c5883e95853e71887803008dfe36a28846', 'scripts/run_ddp_ppo.py': '04aab31174b4c9258d3fe16351a83ac572990126', 'agent/ppo/learner.py': 'e06009a3f2fba15f0e85352bf88848d3717d53d7', 'agent/runtime/config.py': '55404a55949a466f2207f316e68e060c3e5a9f64', 'configs/pa3_v2_production.yaml': '341b85a798e122b43c1e8b80d422408452f06b79', 'agent/ppo/telemetry.py': 'f879957a63b9f2a07e487a738fecf1b572c4db1a', 'agent/train/native_collector.py': '9626a27b564602b0293f3aaf0c0ad2bca459e7df', 'scripts/bench_pa3_end_to_end.py': '8c4b8bd5a8fd24c7abe4791e4fe294ce6fcd975f', 'agent/ppo/recompute_safety.py': '0e1c70370abb7dde94ac570f300f1b7bcd01fa05', 'agent/contracts.py': '926140b5d48bff21aaa6dbb76f486ff7ec3b4fc3', 'agent/model/precision.py': '3d9909607418ea406faa4e5d001d7c23c7572714', 'agent/model/pa3_model.py': '4e5b2ce8070c1f3af7d8924a56ec3931bc0c3bb4'}
-VALIDATOR_AST='28baad92d3b765a4af9b62b4df71eee362f89a6c0a5811600d3617f923ec5e94'
+REVIEWED_REPAIRS={'agent/ppo/source_migration.py': 'f307d4c5883e95853e71887803008dfe36a28846', 'scripts/run_ddp_ppo.py': '84bb11155bc7815ba130f986255f6a1874010e7e', 'agent/ppo/learner.py': 'e06009a3f2fba15f0e85352bf88848d3717d53d7', 'agent/runtime/config.py': '55404a55949a466f2207f316e68e060c3e5a9f64', 'configs/pa3_v2_production.yaml': '2644bde3023619c9bf61a47897bf08ec4a600095', 'agent/ppo/telemetry.py': 'f879957a63b9f2a07e487a738fecf1b572c4db1a', 'agent/train/native_collector.py': '9626a27b564602b0293f3aaf0c0ad2bca459e7df', 'scripts/bench_pa3_end_to_end.py': '8c4b8bd5a8fd24c7abe4791e4fe294ce6fcd975f', 'agent/ppo/recompute_safety.py': '0e1c70370abb7dde94ac570f300f1b7bcd01fa05', 'agent/contracts.py': '926140b5d48bff21aaa6dbb76f486ff7ec3b4fc3', 'agent/model/precision.py': '3d9909607418ea406faa4e5d001d7c23c7572714', 'agent/model/pa3_model.py': '4e5b2ce8070c1f3af7d8924a56ec3931bc0c3bb4', 'agent/evaluation/league.py': 'e359e9d69070bbdb95c4b10ada98f46bfa1717d1'}
+VALIDATOR_AST='486cbca21d8543b6885d9b869207a88734afa62e408a105f70a7887ae1b13c02'
 MANIFEST='b9539f3a0c426f0878375b61630cb4de9dcd2a5d4a6a59858b4d64f4287fd424'
 ENGINE='8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62'
 # Exact reviewed executable surface; objective, architecture, engine and data
 # semantics stay fixed. Learner changes are only bounded collective AMP retry.
-REVIEWED=set('''agent/contracts.py agent/buffer/rollout_buffer.py agent/model/cuda/exact_lookup.cu
+REVIEWED=set('''agent/evaluation/league.py agent/contracts.py agent/buffer/rollout_buffer.py agent/model/cuda/exact_lookup.cu
 agent/model/encoder.py agent/model/embeddings.py agent/model/exact_row_lookup.py agent/model/ragged_embeddings.py
 agent/model/scorer.py agent/ppo/recompute_safety.py agent/ppo/source_migration.py
 agent/ppo/v2_source_migration.py agent/ppo/v2_release_migration.py agent/runtime/config.py

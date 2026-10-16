@@ -58,11 +58,13 @@ def environment_identity(*, engine_path=None, data_path=None, teams_path=None):
 def evaluation_identity(left, right, fixtures, *, seed, max_rounds, environment):
     from agent.contracts import CONTRACT_HASH
     from agent.evaluation.batched_policy import BATCHED_EVALUATOR_VERSION, SAMPLING_SEMANTICS
+    from agent.model.precision import get_precision_contract
     def contract(entry):
+        precision = get_precision_contract(entry.get("precision_mode", "A"))
         return {"precision_mode": entry.get("precision_mode", "A"),
                 "precision_stability": entry.get("precision_stability", "default"),
                 "precision_contract_version": entry.get("precision_contract_version", "legacy"),
-                "observation_quantization": "fp16-round-continuous-v1" if entry.get("precision_mode", "A") == "D" else "none"}
+                "observation_quantization": "fp16-round-continuous-v1" if precision.quantize_observation else "none"}
     body = {"identity_version": "pa3-evaluation-identity-v4", "semantic_contract": CONTRACT_HASH,
             "candidate": [left["id"], left["file_sha256"], left["model_digest"], contract(left)],
             "opponent": [right["id"], right["file_sha256"], right["model_digest"], contract(right)],

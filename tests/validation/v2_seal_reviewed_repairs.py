@@ -3,7 +3,7 @@ from pathlib import Path
 import ast,hashlib,re,subprocess
 p=Path('agent/ppo/v2_release_migration.py');s=p.read_text();tree=ast.parse(s)
 names=next(ast.literal_eval(n.value) for n in tree.body if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='REVIEWED_REPAIRS' for t in n.targets))
-for name in ('agent/contracts.py','agent/model/precision.py','agent/model/pa3_model.py'):names.setdefault(name,'')
+for name in ('agent/contracts.py','agent/model/precision.py','agent/model/pa3_model.py','agent/evaluation/league.py'):names.setdefault(name,'')
 repairs={n:subprocess.check_output(['git','hash-object',n],text=True).strip() for n in names}
 s=re.sub(r'REVIEWED_REPAIRS=\{[^\n]*\}', 'REVIEWED_REPAIRS='+repr(repairs),s)
 tree=ast.parse(s)

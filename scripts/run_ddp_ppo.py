@@ -346,6 +346,8 @@ def validate_lookup_restore(experiment,args,migration=None):
 
 
 def validate_precision_restore(experiment, args, migration=None):
+    if migration and migration.get('scope')=='pa3-v2-reviewed-release-migration-v3' and args.precision_mode!='E':
+        raise RuntimeError('requested precision differs from reviewed Mode-E migration')
     saved=experiment.get('precision_mode')
     if saved is None and args.precision_mode=='E':
         raise RuntimeError('precision contract metadata missing for Mode E')
@@ -357,6 +359,35 @@ def validate_precision_restore(experiment, args, migration=None):
             and migration.get('policy_encoder_transition')==POLICY_ENCODER_TRANSITION):
         return True
     raise RuntimeError(f'precision contract mismatch: checkpoint={saved} requested={args.precision_mode}')
+
+
+def validate_migration_execution(args, migration, profile):
+    if not migration or migration.get('scope') not in ('pa3-v2-reviewed-release-migration-v2','pa3-v2-reviewed-release-migration-v3'):
+        return
+    from agent.runtime.config import launcher_values
+    expected=launcher_values({'profile':profile})
+    expected.update(trim_observation_padding=bool(profile['collector'].get('trim_observation_padding',False)),
+                    columnar_store=bool(profile['collector'].get('columnar_store',False)),
+                    rolling_slots=bool(profile['collector'].get('rolling_slots',False)))
+    # Publication interval/quota and equivalent dataset paths are operational
+    # choices; the learning and arithmetic contract is fixed by the receipt.
+    keys=('epochs','experimental_lr_scale','minibatch','microbatch','envs','workers',
+          'historical_probability','precision_mode','precision_stability','recompute_gate',
+          'batch_cache','compact_candidates','amp_overflow_retries','canonical_encoder_batch_rows',
+          'recompute_secondary','deterministic_diagnostic','experimental_exact_token_lookup',
+          'trim_observation_padding','columnar_store','rolling_slots')
+    for key in keys:
+        value=expected.get(key,False if key=='experimental_exact_token_lookup' else None)
+        if getattr(args,key,None)!=value:
+            raise RuntimeError(f'reviewed migration runtime conflict: {key}')
+    if hash_file_for_migration(args.teams)!=profile['dataset']['teams_sha256']:
+        raise RuntimeError('reviewed migration runtime teams hash mismatch')
+    if hash_file_for_migration(args.dataset_manifest)!=profile['dataset']['manifest_sha256']:
+        raise RuntimeError('reviewed migration runtime dataset manifest mismatch')
+
+
+def hash_file_for_migration(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
 def execution_options(args, *, lr_scale=None):
@@ -781,6 +812,7 @@ def worker(args) -> None:
                 raise RuntimeError("source SHA mismatch; pass --experimental-allow-source-sha only for the recorded A3 source")
             expected_source_sha = recorded_source_sha
             note(f"explicit checkpoint migration: {recorded_source_sha} -> {source_sha}")
+        validate_migration_execution(args,source_migration,json.loads((Path(ROOT)/'configs/pa3_v2_production.yaml').read_text()))
         precision_transition=validate_precision_restore(saved_experiment,args,source_migration)
         validate_lookup_restore(saved_experiment,args,source_migration)
         validate_secondary_restore(saved_experiment,args,source_migration)

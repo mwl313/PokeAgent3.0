@@ -65,7 +65,7 @@ def test_v2_secondary_is_resolved_and_configuration_drift_rejected(tmp_path, mon
         '--team-stats-root',str(tmp_path/'stats'),'--rolling-checkpoint-root',str(tmp_path/'rolling'),
         '--experimental-checkpoint',str(tmp_path/'boundary')])
     assert args.recompute_secondary and args.recompute_gate
-    assert not args.experimental_exact_token_lookup
+    assert args.experimental_exact_token_lookup == (profile['collector'].get('token_lookup_backend')=='exact-row-v100-v1')
 
 
 def test_secondary_restore_contract_cannot_silently_change():
@@ -107,9 +107,9 @@ def test_lookup_profile_is_explicit_and_rejects_unapproved_override(tmp_path, mo
     from agent.runtime.config import resolve_profile, launcher_values
     root,module=launcher();monkeypatch.chdir(root)
     profile=json.loads((root/'configs/pa3_v2_production.yaml').read_text())
-    assert not launcher_values(resolve_profile(str(root/'configs/pa3_v2_production.yaml')))['experimental_exact_token_lookup']
+    assert launcher_values(resolve_profile(str(root/'configs/pa3_v2_production.yaml')))['experimental_exact_token_lookup'] == (profile['collector'].get('token_lookup_backend')=='exact-row-v100-v1')
     paths=['--team-stats-root',str(tmp_path/'stats'),'--rolling-checkpoint-root',str(tmp_path/'rolling'),'--experimental-checkpoint',str(tmp_path/'boundary')]
-    assert not module.parse_args(['--profile','configs/pa3_v2_production.yaml','--iterations','10']+paths).experimental_exact_token_lookup
+    assert module.parse_args(['--profile','configs/pa3_v2_production.yaml','--iterations','10']+paths).experimental_exact_token_lookup == (profile['collector'].get('token_lookup_backend')=='exact-row-v100-v1')
     profile['collector']['token_lookup_backend']='exact-row-v100-v1'
     approved=tmp_path/'approved.json';approved.write_text(json.dumps(profile))
     assert launcher_values(resolve_profile(str(approved)))['experimental_exact_token_lookup']
@@ -134,3 +134,18 @@ def test_precision_e_restore_requires_exact_reviewed_transition():
     assert execution_identity('E')['precision_contract']=='pa3-precision-E-v1'
     assert require_checkpoint_identity({'contracts':execution_identity('E')},'E')=='E'
     with pytest.raises(ValueError):require_checkpoint_identity({'contracts':execution_identity('D')},'E')
+
+
+def test_reviewed_migration_checks_actual_runtime_not_only_profile(tmp_path):
+    from types import SimpleNamespace
+    from agent.runtime.config import launcher_values
+    root,module=launcher();profile=json.loads((root/'configs/pa3_v2_production.yaml').read_text())
+    args=SimpleNamespace(**launcher_values({'profile':profile}),trim_observation_padding=False,columnar_store=False,rolling_slots=False)
+    args.teams=str(root/profile['dataset']['teams']);args.dataset_manifest=str(root/profile['dataset']['manifest'])
+    migration={'scope':'pa3-v2-reviewed-release-migration-v3'}
+    module.validate_migration_execution(args,migration,profile)
+    args.epochs=4
+    with pytest.raises(RuntimeError,match='epochs'):module.validate_migration_execution(args,migration,profile)
+    args.epochs=2;args.precision_mode='D'
+    with pytest.raises(RuntimeError,match='precision_mode'):module.validate_migration_execution(args,migration,profile)
+    with pytest.raises(RuntimeError,match='requested precision'):module.validate_precision_restore({'precision_mode':'D'},args,migration)
