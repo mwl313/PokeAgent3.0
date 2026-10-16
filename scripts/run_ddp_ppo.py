@@ -335,6 +335,21 @@ def lookup_backend(args):
     return 'exact-row-v100-v1' if args.experimental_exact_token_lookup else 'gather'
 
 
+def reviewed_historical_collector_contract(current, migration_receipt):
+    """Recover the receipt-pinned checkpoint paths for a reviewed relocation."""
+    historical = {**current, "precision_mode": "D"}
+    if not migration_receipt:
+        return historical
+    if migration_receipt.get("schema") != "pa3-v2-reviewed-release-migration-v3":
+        return historical
+    dataset = migration_receipt.get("original_profile", {}).get("dataset", {})
+    paths = {key: dataset.get(key) for key in ("data", "teams")}
+    if not all(value and os.path.isabs(value) for value in paths.values()):
+        raise RuntimeError("reviewed collector relocation paths are missing or non-absolute")
+    historical.update(paths)
+    return historical
+
+
 def validate_lookup_restore(experiment,args,migration=None):
     saved=experiment.get('token_lookup_backend','gather');requested=lookup_backend(args)
     if migration and migration.get('scope') in ('pa3-v2-reviewed-release-migration-v2','pa3-v2-reviewed-release-migration-v3'):
@@ -726,6 +741,7 @@ def worker(args) -> None:
 
     source_sha = source_provenance().get("git_sha")
     source_migration = resume_envelope.get("experiment", {}).get("source_migration") if resume_envelope else None
+    migration_receipt = None
     dataset_manifest_hash = hash_file(args.dataset_manifest)
     from agent.contracts import OBSERVATION_SCHEMA,ACTION_SCHEMA,CONTRACT_HASH
     action_schema_hash = hash_json({
@@ -852,9 +868,11 @@ def worker(args) -> None:
             model.configure_precision(args.precision_mode)
         restart = resume_envelope.get("collector_restart", {})
         if restart.get("config_hash") != collector_config_hash:
-            historical_collector_hash=hash_json({**collector_contract,'precision_mode':'D'})
+            historical_collector_hash = hash_json(
+                reviewed_historical_collector_contract(collector_contract, migration_receipt)
+            )
             if precision_transition and restart.get('config_hash')==historical_collector_hash:
-                note('reviewed D-to-E collector precision transition')
+                note('reviewed D-to-E collector precision/path transition')
             elif restart.get("config_hash") == legacy_collector_contract_hash:
                 note("explicit precision-contract migration from legacy A9/A5 collector envelope")
             else:

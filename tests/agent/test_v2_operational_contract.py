@@ -100,6 +100,43 @@ def test_parent_worker_execution_identity_includes_lookup_backend():
     assert module.execution_options(args)['token_lookup_backend']=='exact-row-v100-v1'
 
 
+def test_reviewed_collector_relocation_uses_receipt_pinned_original_paths():
+    from agent.ppo.experimental_checkpoint import hash_json
+    _,module=launcher()
+    current={
+        'envs':1024,'workers':16,
+        'data':'/release/worktree/engine/data',
+        'teams':'/release/worktree/engine/data/a10-training-teams.json',
+        'observation_mode':'fixed','candidate_wire':'packed',
+        'columnar_store':False,'rolling_slots':False,
+        'both_current_sides':True,'precision_mode':'E',
+    }
+    receipt={'schema':'pa3-v2-reviewed-release-migration-v3','original_profile':{'dataset':{
+        'data':'/home/minidc/Desktop/PokeAgent3.0-V2/engine/data',
+        'teams':'/home/minidc/Desktop/PokeAgent3.0-V2/engine/data/a10-training-teams.json',
+    }}}
+    historical=module.reviewed_historical_collector_contract(current,receipt)
+    assert historical['precision_mode']=='D'
+    assert historical['data']==receipt['original_profile']['dataset']['data']
+    assert historical['teams']==receipt['original_profile']['dataset']['teams']
+    assert hash_json(historical)=='b0e1582e4c870645af463fa2057530a1f37c9b87aca8a594f2bdb2c7e43a4adf'
+    assert current['precision_mode']=='E'
+    assert current['data']=='/release/worktree/engine/data'
+
+
+def test_reviewed_collector_relocation_rejects_untrusted_paths():
+    _,module=launcher()
+    current={'precision_mode':'E','data':'/new/data','teams':'/new/teams.json'}
+    receipt={'schema':'pa3-v2-reviewed-release-migration-v3','original_profile':{'dataset':{
+        'data':'relative/data','teams':'/old/teams.json',
+    }}}
+    with pytest.raises(RuntimeError,match='missing or non-absolute'):
+        module.reviewed_historical_collector_contract(current,receipt)
+    assert module.reviewed_historical_collector_contract(current,None)=={
+        'precision_mode':'D','data':'/new/data','teams':'/new/teams.json',
+    }
+
+
 def test_isolated_validation_storage_cannot_target_production(tmp_path):
     _,module=launcher()
     with pytest.raises(SystemExit):module.parse_args(['--isolated-validation-storage'])
