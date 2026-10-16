@@ -15,11 +15,11 @@ ACTION_SCHEMA = SPEC["action_schema"]
 
 def execution_identity(mode):
     mode=str(mode).upper()
-    if mode not in ('A','B','C','D'):
+    if mode not in ('A','B','C','D','E'):
         raise ValueError('unknown V2 precision mode')
     return {'observation_schema':OBSERVATION_SCHEMA,'action_schema':ACTION_SCHEMA,
             'semantic_hash':CONTRACT_HASH,'ragged_contract_hash':CONTRACT_HASH,
-            'precision_contract':f'pa3-precision-{mode}-v2'}
+            'precision_contract':('pa3-precision-E-v1' if mode=='E' else f'pa3-precision-{mode}-v2')}
 
 
 def require_checkpoint_identity(state,mode=None):
@@ -28,6 +28,7 @@ def require_checkpoint_identity(state,mode=None):
         raise ValueError('checkpoint has no V2 contract identity; V1/raw weights are incompatible')
     precision=identity.get('precision_contract','')
     valid={f'pa3-precision-{m}-v2':m for m in ('A','B','C','D')}
+    valid['pa3-precision-E-v1']='E'
     if precision not in valid or identity!=execution_identity(mode or valid[precision]):
         raise ValueError('checkpoint observation/action/ragged/precision contract mismatch')
     return valid[precision]

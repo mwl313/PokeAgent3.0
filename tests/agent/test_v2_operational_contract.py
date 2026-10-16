@@ -118,3 +118,19 @@ def test_lookup_profile_is_explicit_and_rejects_unapproved_override(tmp_path, mo
     with pytest.raises(ValueError,match='unsupported token lookup'):resolve_profile(str(path))
     profile['collector']['token_lookup_backend']='gather';path.write_text(json.dumps(profile))
     with pytest.raises(ValueError,match='not approved'):module.parse_args(['--profile',str(path),'--experimental-exact-token-lookup']+paths)
+
+
+def test_precision_e_restore_requires_exact_reviewed_transition():
+    from types import SimpleNamespace
+    from agent.ppo.v2_release_migration import EXPERIMENTAL_SCHEMA,POLICY_ENCODER_TRANSITION
+    _,module=launcher();args=SimpleNamespace(precision_mode='E')
+    assert not module.validate_precision_restore({'precision_mode':'E'},args)
+    with pytest.raises(RuntimeError,match='precision contract mismatch'):module.validate_precision_restore({'precision_mode':'D'},args)
+    receipt={'scope':EXPERIMENTAL_SCHEMA,'policy_encoder_transition':dict(POLICY_ENCODER_TRANSITION)}
+    assert module.validate_precision_restore({'precision_mode':'D'},args,receipt)
+    receipt['policy_encoder_transition']['historical_mode']='A'
+    with pytest.raises(RuntimeError):module.validate_precision_restore({'precision_mode':'D'},args,receipt)
+    from agent.contracts import execution_identity,require_checkpoint_identity
+    assert execution_identity('E')['precision_contract']=='pa3-precision-E-v1'
+    assert require_checkpoint_identity({'contracts':execution_identity('E')},'E')=='E'
+    with pytest.raises(ValueError):require_checkpoint_identity({'contracts':execution_identity('D')},'E')

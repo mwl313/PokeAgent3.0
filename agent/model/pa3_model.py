@@ -195,12 +195,10 @@ class PA3Model(nn.Module):
         return encoded, values
 
     def encode(self, observation: ObservationBatch) -> EncodedState:
-        # The encoder output feeds the behavior-policy probability.  Running
-        # it in FP32 keeps the sampled and recomputed policy identical across
-        # the collector's grouped batches and the learner's audit batch.  The
-        # narrower scorer path is FP32 as well; value/update math remains
-        # unchanged.  This is an intentional A9 numerical contract, not a
-        # tolerance relaxation.
+        # The explicit encoder precision overrides ambient autocast. Mode D
+        # retains encoder AMP; experimental E evaluates the same quantized
+        # observations in FP32. The scorer owns its separate precision
+        # boundaries; encoder parameters and public state layout stay fixed.
         with torch.autocast(device_type=observation.device.type, dtype=torch.float16,
                             enabled=self.precision_contract.encoder_amp and observation.device.type == "cuda"):
             tokens = self.encoder(observation)

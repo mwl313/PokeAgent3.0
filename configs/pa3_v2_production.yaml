@@ -30,19 +30,21 @@
     "checkpoint_interval_matches": 100000
   },
   "precision": {
-    "mode": "D",
+    "mode": "E",
     "stability": "fp16-reduction-off",
     "observation": "fp16-round-continuous-then-fp32",
-    "encoder_amp": true,
+    "encoder_amp": false,
     "ragged_effects_fp32": true,
     "scorer_fp32": true,
     "gru_fp32": true,
     "recompute_gate": true,
     "tolerance": 0.001,
-    "contract_version": "pa3-precision-D-v2",
+    "contract_version": "pa3-precision-E-v1",
     "recompute_secondary": true,
     "canonical_encoder_batch_rows": 1024,
-    "amp_overflow_retries": 3
+    "amp_overflow_retries": 3,
+    "policy_encoder_fp32": true,
+    "encoder_physical_batching": "logical-fp32-v1"
   },
   "dataset": {
     "id": "a10-p0-proposed-20261013",
@@ -76,7 +78,7 @@
   },
   "evidence": {
     "derived_from": "configs/a10_production.yaml",
-    "release_gate": "P4 must pass before P5 activation",
+    "release_gate": "Isolated Mode-E candidate; strict forced audits and explicit precision-contract decision required before production",
     "semantic_contract": "dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35",
     "determinism": "Enabled for V2 continuation fidelity; recorded and checked on resume. PPO objective/hyperparameters unchanged."
   }

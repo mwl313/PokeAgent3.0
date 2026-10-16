@@ -17,7 +17,8 @@ class PrecisionContract:
     ragged_effects_fp32: bool = False
     @property
     def identity(self) -> str:
-        return f"pa3-precision-{self.mode}-v2"
+        version = 1 if self.mode == "E" else 2
+        return f"pa3-precision-{self.mode}-v{version}"
     def prepare_observation(self, observation: ObservationBatch) -> ObservationBatch:
         if not self.quantize_observation:
             return observation
@@ -40,9 +41,12 @@ _CONTRACTS = {
     "B": PrecisionContract("B", False, True, True, True),
     "C": PrecisionContract("C", True, True, True, True),
     "D": PrecisionContract("D", True, True, False, False, True),
+    # Isolated comparison candidate: preserve D's quantized observations while
+    # evaluating the encoder, scorer and GRU in FP32. No production activation.
+    "E": PrecisionContract("E", True, False, False, False, True),
 }
 def get_precision_contract(mode: str) -> PrecisionContract:
     try:
         return _CONTRACTS[str(mode).upper()]
     except KeyError as exc:
-        raise ValueError(f"unknown precision mode {mode!r}; expected A, B, C, or D") from exc
+        raise ValueError(f"unknown precision mode {mode!r}; expected A, B, C, D, or E") from exc

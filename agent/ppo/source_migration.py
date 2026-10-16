@@ -20,7 +20,7 @@ def git(root, *args):
 
 def validate_recovery_migration(path, root, source, target):
     receipt = json.loads(Path(path).read_text())
-    if receipt.get('schema')in ('pa3-v2-reviewed-release-migration-v1','pa3-v2-reviewed-release-migration-v2'):
+    if receipt.get('schema')in ('pa3-v2-reviewed-release-migration-v1','pa3-v2-reviewed-release-migration-v2','pa3-v2-reviewed-release-migration-v3'):
         from agent.ppo.v2_release_migration import validate
         return validate(receipt,root,source,target)
     if receipt.get('schema')=='pa3-v2-data-path-migration-v1':

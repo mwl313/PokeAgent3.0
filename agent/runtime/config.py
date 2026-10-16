@@ -26,7 +26,12 @@ def resolve_profile(path: str) -> dict:
     required = {"ppo_epochs": 2, "lr_scale": 0.5, "global_minibatch": 4096, "microbatch": 1024,
                 "envs": 1024, "workers": 16, "historical_probability": 0.0}
     if any(t.get(k) != v for k, v in required.items()): raise ValueError("validated training profile invariant failed")
-    if p.get("mode") != "D" or p.get("stability") != "fp16-reduction-off" or not p.get("recompute_gate"): raise ValueError("precision profile invariant failed")
+    if p.get("mode") not in {"D", "E"} or p.get("stability") != "fp16-reduction-off" or not p.get("recompute_gate"): raise ValueError("precision profile invariant failed")
+    if p.get("mode") == "E":
+        if (p.get("contract_version") != "pa3-precision-E-v1" or p.get("encoder_amp") is not False
+                or p.get("policy_encoder_fp32") is not True
+                or p.get("encoder_physical_batching") != "logical-fp32-v1"):
+            raise ValueError("Mode E requires explicit FP32 policy encoder and logical batching")
     if data["version"] == "pa3-v2-production-v1":
         if p.get("recompute_secondary") is not True or p.get("tolerance") != 1e-3:
             raise ValueError("V2 requires secondary safety and unchanged primary tolerance")
@@ -35,7 +40,7 @@ def resolve_profile(path: str) -> dict:
         if p.get("amp_overflow_retries") != 3:
             raise ValueError("V2 requires bounded collective AMP overflow retry")
         if p.get("canonical_encoder_batch_rows") != 1024:
-            raise ValueError("V2 requires canonical1024 ModeD encoder batches")
+            raise ValueError("V2 requires canonical1024 AMP encoder setting")
         if c.get("world_size") != 2 or c.get("executor") != "ddp":
             raise ValueError("V2 requires two-rank DDP")
         teams = d.get("teams", "")

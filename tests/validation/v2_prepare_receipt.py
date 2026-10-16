@@ -1,7 +1,7 @@
 """Prepare final-SHA migration with preserved legacy and fresh precision proofs."""
 import argparse,json,hashlib
 from pathlib import Path
-from agent.ppo.v2_release_migration import BASE,AUDITED,blobs,git,sha,prepare
+from agent.ppo.v2_release_migration import BASE,AUDITED,blobs,git,sha,prepare,E_PROOF_SCHEMA,E_PROOF_PRECISION,E_PROOF_EXECUTION,POLICY_ENCODER_TRANSITION,ENCODER_EXECUTION_TRANSITION
 p=argparse.ArgumentParser();p.add_argument('--output',required=True);a=p.parse_args()
 root=Path.cwd();out=Path(a.output).resolve();target=git(root,'rev-parse','HEAD')
 reference=out/'precision_reference.json';candidate=out/'precision_candidate.json'
@@ -9,6 +9,11 @@ l=json.loads(reference.read_text());r=json.loads(candidate.read_text())
 assert l['source_sha']==AUDITED and r['source_sha']==target
 for key in ('captured_artifact_sha256','probe_sha256','losses','gradient_digest','adam_digest','updated_model_digest','model_config'):assert l[key]==r[key],key
 proof={'schema':'pa3-effects-fp32-independent-v1','target_sha':target,'runtime_blobs':blobs(root,target),'reference_artifact':str(reference),'reference_sha256':sha(reference),'candidate_artifact':str(candidate),'candidate_sha256':sha(candidate)}
+if json.loads((root/'configs/pa3_v2_production.yaml').read_text())['precision']['mode']=='E':
+ assert l['precision']==r['precision']==E_PROOF_PRECISION
+ assert l['precision_execution']==r['precision_execution']==E_PROOF_EXECUTION
+ assert l['precision_implementation']=='audited-D-independent-encoder-FP32' and r['precision_implementation']=='configured-E'
+ proof.update(schema=E_PROOF_SCHEMA,policy_encoder_transition=POLICY_ENCODER_TRANSITION,encoder_execution_transition=ENCODER_EXECUTION_TRANSITION)
 (out/'precision_proof.json').write_text(json.dumps(proof,indent=2)+'\n')
 legacy=Path('/home/minidc/Desktop/PokeAgent3.0-V2-integration/runs/v2_final_release/parity.json');parity=json.loads(legacy.read_text())
 for key in ('baseline','candidate','gpu_baseline','gpu_candidate'):

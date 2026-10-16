@@ -225,7 +225,7 @@ def parse_args(argv=None):
         default=True,
         help="stratified sampled-vs-recomputed logprob parity gate before the update (v4 gate)",
     )
-    parser.add_argument("--precision-mode", choices=("A", "B", "C", "D"), default="A",
+    parser.add_argument("--precision-mode", choices=("A", "B", "C", "D", "E"), default="A",
                         help="experimental policy precision contract; A is the A9 FP32 reference")
     parser.add_argument('--experimental-exact-token-lookup',action='store_true',
                         help='opt-in V100 exact-order CUDA backward; bounded non-production diagnostics only')
@@ -322,8 +322,8 @@ def parse_args(argv=None):
             parser.error("--resume-latest-from has no complete verified generation")
         args.experimental_resume = str(latest)
     if args.experimental_exact_token_lookup:
-        if not args.deterministic_diagnostic or args.precision_mode!='D' or args.precision_stability!='fp16-reduction-off':
-            parser.error('exact token lookup requires deterministic ModeD/reduction-off')
+        if not args.deterministic_diagnostic or args.precision_mode not in ('D','E') or args.precision_stability!='fp16-reduction-off':
+            parser.error('exact token lookup requires deterministic ModeD/E reduction-off')
         approved_profile = bool(args.profile and resolved['profile']['collector'].get('token_lookup_backend') == 'exact-row-v100-v1')
         if not approved_profile and args.iterations > 5:
             parser.error('unprofiled exact token lookup is limited to bounded runs')
@@ -336,13 +336,27 @@ def lookup_backend(args):
 
 def validate_lookup_restore(experiment,args,migration=None):
     saved=experiment.get('token_lookup_backend','gather');requested=lookup_backend(args)
-    if migration and migration.get('scope')=='pa3-v2-reviewed-release-migration-v2':
+    if migration and migration.get('scope') in ('pa3-v2-reviewed-release-migration-v2','pa3-v2-reviewed-release-migration-v3'):
         if requested!=migration.get('token_lookup_backend'):
             raise RuntimeError('requested token backend differs from reviewed migration')
         if saved=='gather' and migration.get('token_lookup_transition')=={'historical':'gather','future':requested}:
             return
     if saved!=requested:
         raise RuntimeError('checkpoint token lookup backend mismatch')
+
+
+def validate_precision_restore(experiment, args, migration=None):
+    saved=experiment.get('precision_mode')
+    if saved is None and args.precision_mode=='E':
+        raise RuntimeError('precision contract metadata missing for Mode E')
+    if saved is None or saved==args.precision_mode:
+        return False
+    from agent.ppo.v2_release_migration import POLICY_ENCODER_TRANSITION, EXPERIMENTAL_SCHEMA
+    if (saved=='D' and args.precision_mode=='E' and migration
+            and migration.get('scope')==EXPERIMENTAL_SCHEMA
+            and migration.get('policy_encoder_transition')==POLICY_ENCODER_TRANSITION):
+        return True
+    raise RuntimeError(f'precision contract mismatch: checkpoint={saved} requested={args.precision_mode}')
 
 
 def execution_options(args, *, lr_scale=None):
@@ -374,7 +388,7 @@ def verify_recompute_ranks(result, device):
 
 def migration_statistics_identity(args, migration):
     from agent.analysis.team_stats import run_identity
-    if migration and migration.get('scope')in ('pa3-v2-reviewed-release-migration-v1','pa3-v2-reviewed-release-migration-v2'):
+    if migration and migration.get('scope')in ('pa3-v2-reviewed-release-migration-v1','pa3-v2-reviewed-release-migration-v2','pa3-v2-reviewed-release-migration-v3'):
         if os.path.abspath(args.team_stats_root)!=migration['team_stats_root']:
             raise RuntimeError('statistics migration namespace mismatch')
         return migration['team_stats_lineage_id']
@@ -384,7 +398,7 @@ def migration_statistics_identity(args, migration):
 def validate_secondary_restore(experiment, args, migration=None):
     if bool(experiment.get("recompute_secondary", False)) != bool(args.recompute_secondary):
         if (not experiment.get("recompute_secondary", False) and args.recompute_secondary
-                and migration and migration.get('scope')in ('pa3-v2-reviewed-release-migration-v1','pa3-v2-reviewed-release-migration-v2')
+                and migration and migration.get('scope')in ('pa3-v2-reviewed-release-migration-v1','pa3-v2-reviewed-release-migration-v2','pa3-v2-reviewed-release-migration-v3')
                 and migration.get('secondary_activation')=={'historical':False,'future':True}):
             return
         raise RuntimeError("checkpoint recompute-secondary contract mismatch; reviewed migration required")
@@ -718,11 +732,6 @@ def worker(args) -> None:
         learner.attach_ddp(ddp_model, world_size)
         communication = DDPCommunication(ddp_model)
     if resume_envelope is not None:
-        saved_precision = resume_envelope.get("experiment", {}).get("precision_mode")
-        if saved_precision is not None and saved_precision != args.precision_mode:
-            raise RuntimeError(
-                f"precision contract mismatch: checkpoint={saved_precision} requested={args.precision_mode}"
-            )
         saved_stability = resume_envelope.get("experiment", {}).get("precision_stability")
         if saved_stability is None:
             legacy_ok = bool(args.experimental_allow_source_sha and resume_envelope.get("source_sha") in {
@@ -772,17 +781,18 @@ def worker(args) -> None:
                 raise RuntimeError("source SHA mismatch; pass --experimental-allow-source-sha only for the recorded A3 source")
             expected_source_sha = recorded_source_sha
             note(f"explicit checkpoint migration: {recorded_source_sha} -> {source_sha}")
+        precision_transition=validate_precision_restore(saved_experiment,args,source_migration)
         validate_lookup_restore(saved_experiment,args,source_migration)
         validate_secondary_restore(saved_experiment,args,source_migration)
         saved_retries=saved_experiment.get('amp_overflow_retries',0)
         if saved_retries != args.amp_overflow_retries:
             if not (saved_retries==0 and args.amp_overflow_retries==3
-                    and source_migration and source_migration.get('scope')=='pa3-v2-reviewed-release-migration-v2'):
+                    and source_migration and source_migration.get('scope') in ('pa3-v2-reviewed-release-migration-v2','pa3-v2-reviewed-release-migration-v3')):
                 raise RuntimeError('AMP retry execution mismatch; reviewed migration required')
         saved_canonical=saved_experiment.get('canonical_encoder_batch_rows',0)
         if saved_canonical!=args.canonical_encoder_batch_rows:
             if not (saved_canonical==0 and args.canonical_encoder_batch_rows==1024
-                    and source_migration and source_migration.get('scope')in ('pa3-v2-reviewed-release-migration-v1','pa3-v2-reviewed-release-migration-v2')):
+                    and source_migration and source_migration.get('scope')in ('pa3-v2-reviewed-release-migration-v1','pa3-v2-reviewed-release-migration-v2','pa3-v2-reviewed-release-migration-v3')):
                 raise RuntimeError('canonical encoder execution mismatch; reviewed migration required')
         restore_opponents = opponent_manifest
         if resume_envelope.get("opponent_manifest") != opponent_manifest:
@@ -793,6 +803,11 @@ def worker(args) -> None:
             restore_opponents = old_manifest
         if bool(resume_envelope.get('experiment',{}).get('deterministic_diagnostic',False)) != bool(args.deterministic_diagnostic):
             raise RuntimeError('experimental resume deterministic execution contract mismatch')
+        # Validate/load the full immutable historical state under its original
+        # precision identity, then apply only the explicitly reviewed future
+        # arithmetic. No checkpoint metadata or tensor is rewritten.
+        if precision_transition:
+            model.configure_precision('D')
         restore_envelope(
             learner, resume_envelope, dataset_manifest_hash=dataset_manifest_hash,
             action_schema_hash=action_schema_hash, source_sha=expected_source_sha,
@@ -800,9 +815,14 @@ def worker(args) -> None:
             expected_world_size=world_size, expected_executor=args.executor,
             model_config_hash=model_config_hash, generators=None,
         )
+        if precision_transition:
+            model.configure_precision(args.precision_mode)
         restart = resume_envelope.get("collector_restart", {})
         if restart.get("config_hash") != collector_config_hash:
-            if restart.get("config_hash") == legacy_collector_contract_hash:
+            historical_collector_hash=hash_json({**collector_contract,'precision_mode':'D'})
+            if precision_transition and restart.get('config_hash')==historical_collector_hash:
+                note('reviewed D-to-E collector precision transition')
+            elif restart.get("config_hash") == legacy_collector_contract_hash:
                 note("explicit precision-contract migration from legacy A9/A5 collector envelope")
             else:
                 raise RuntimeError("experimental resume collector contract mismatch")
@@ -1052,7 +1072,7 @@ def worker(args) -> None:
                     "token_lookup_backend": lookup_backend(args),
                     "deterministic_diagnostic": bool(args.deterministic_diagnostic),
                     "precision_stability": args.precision_stability,
-                    "precision_contract_version": f"pa3-precision-{args.precision_mode}-v2",
+                    "precision_contract_version": model.precision_contract.identity,
                     "fp16_reduced_precision_reduction": effective_reduction,
                 },
                 rank=rank, world_size=world_size, executor=args.executor,

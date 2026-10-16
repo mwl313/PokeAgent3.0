@@ -6,14 +6,37 @@ AUDITED='0b7253cfd915ff61c88248b1979bd8e254285ef0'
 ERROR_WRAPPER_AST='a24af9614ac5542e7c0b377ed88ad6266439d02b03e6a6cd323599ceca887a22'
 LEGACY_SCHEMA='pa3-v2-reviewed-release-migration-v1'
 SCHEMA='pa3-v2-reviewed-release-migration-v2'
+EXPERIMENTAL_SCHEMA='pa3-v2-reviewed-release-migration-v3'
+POLICY_ENCODER_TRANSITION={
+    'historical_mode':'D','historical_contract':'pa3-precision-D-v2',
+    'future_mode':'E','future_contract':'pa3-precision-E-v1',
+    'historical_encoder_amp':True,'future_encoder_amp':False,
+    'observation_quantization':'fp16-round-continuous-then-fp32',
+    'scorer_fp32':True,'gru_fp32':True,
+    'value_head_amp':'unchanged','grad_scaler':'unchanged',
+}
+ENCODER_EXECUTION_TRANSITION={
+    'historical_checkpoint':'logical-amp-v1',
+    'reviewed_mode_d':'canonical-amp-1024-v1',
+    'future':'logical-fp32-v1','canonical_encoder_batch_rows':1024,
+}
+E_PROOF_SCHEMA='pa3-policy-encoder-fp32-independent-v1'
+E_PROOF_PRECISION='E/FP32-policy-FP16-value'
+E_PROOF_EXECUTION={
+    'target_contract_version':'pa3-precision-E-v1',
+    'observation_quantization':'fp16-round-continuous-then-fp32',
+    'encoder_amp':False,'policy_encoder_fp32':True,
+    'encoder_physical_batching':'logical-fp32-v1',
+    'scorer_amp':False,'gru_amp':False,'value_head_amp':True,'grad_scaler':True,
+}
 REVIEWED_SOURCE='93ebc1b5086b7a2bf247b779eb6442671bbbdd10'
-REVIEWED_REPAIRS={'agent/ppo/source_migration.py': '540698ee4f62d7b48125721db264d7082eea02f5', 'scripts/run_ddp_ppo.py': '3c5b5bf156639dac1be67e6dcfe583fe4563694b', 'agent/ppo/learner.py': 'e06009a3f2fba15f0e85352bf88848d3717d53d7', 'agent/runtime/config.py': '9987603a9270b7ca9ee17a409fbf646d688d837b', 'configs/pa3_v2_production.yaml': 'd354223d3db40face7fc5aac41b510f795f7cdde', 'agent/ppo/telemetry.py': 'f879957a63b9f2a07e487a738fecf1b572c4db1a', 'agent/train/native_collector.py': '9626a27b564602b0293f3aaf0c0ad2bca459e7df', 'scripts/bench_pa3_end_to_end.py': 'bb51079faeffb79b36742861256aa3f84bf443da', 'agent/ppo/recompute_safety.py': '0e1c70370abb7dde94ac570f300f1b7bcd01fa05'}
-VALIDATOR_AST='c4afb0c1d824ce18f7e7a012f42c9b953ce9cac67f98513f2a444fb1e82f0cb7'
+REVIEWED_REPAIRS={'agent/ppo/source_migration.py': 'f307d4c5883e95853e71887803008dfe36a28846', 'scripts/run_ddp_ppo.py': '04aab31174b4c9258d3fe16351a83ac572990126', 'agent/ppo/learner.py': 'e06009a3f2fba15f0e85352bf88848d3717d53d7', 'agent/runtime/config.py': '55404a55949a466f2207f316e68e060c3e5a9f64', 'configs/pa3_v2_production.yaml': '341b85a798e122b43c1e8b80d422408452f06b79', 'agent/ppo/telemetry.py': 'f879957a63b9f2a07e487a738fecf1b572c4db1a', 'agent/train/native_collector.py': '9626a27b564602b0293f3aaf0c0ad2bca459e7df', 'scripts/bench_pa3_end_to_end.py': '8c4b8bd5a8fd24c7abe4791e4fe294ce6fcd975f', 'agent/ppo/recompute_safety.py': '0e1c70370abb7dde94ac570f300f1b7bcd01fa05', 'agent/contracts.py': '926140b5d48bff21aaa6dbb76f486ff7ec3b4fc3', 'agent/model/precision.py': '3d9909607418ea406faa4e5d001d7c23c7572714', 'agent/model/pa3_model.py': '4e5b2ce8070c1f3af7d8924a56ec3931bc0c3bb4'}
+VALIDATOR_AST='28baad92d3b765a4af9b62b4df71eee362f89a6c0a5811600d3617f923ec5e94'
 MANIFEST='b9539f3a0c426f0878375b61630cb4de9dcd2a5d4a6a59858b4d64f4287fd424'
 ENGINE='8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62'
 # Exact reviewed executable surface; objective, architecture, engine and data
 # semantics stay fixed. Learner changes are only bounded collective AMP retry.
-REVIEWED=set('''agent/buffer/rollout_buffer.py agent/model/cuda/exact_lookup.cu
+REVIEWED=set('''agent/contracts.py agent/buffer/rollout_buffer.py agent/model/cuda/exact_lookup.cu
 agent/model/encoder.py agent/model/embeddings.py agent/model/exact_row_lookup.py agent/model/ragged_embeddings.py
 agent/model/scorer.py agent/ppo/recompute_safety.py agent/ppo/source_migration.py
 agent/ppo/v2_source_migration.py agent/ppo/v2_release_migration.py agent/runtime/config.py
@@ -26,6 +49,9 @@ scripts/v2_throughput_ab.py scripts/validate_v2_source_of_truth.py scripts/v2_re
 agent/ppo/telemetry.py agent/ppo/learner.py agent/model/pa3_model.py agent/model/precision.py scripts/v2_training_status.py
 scripts/v2_evaluation_sidecar.py scripts/v2_recompute_forensics.py'''.split())
 def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+def exact_metadata(left,right):
+    # JSON booleans must not be accepted as Python's numerically equal 0/1.
+    return json.dumps(left,sort_keys=True,separators=(',',':'),allow_nan=False)==json.dumps(right,sort_keys=True,separators=(',',':'),allow_nan=False)
 def git(root,*args):return subprocess.check_output(['git','-C',str(root),*args],text=True).strip()
 def blobs(root,target):
     files=git(root,'diff','--name-only',BASE,target,'--','agent','engine','configs','data','scripts').splitlines()
@@ -50,7 +76,9 @@ def blobs(root,target):
             raise ValueError('runtime differs from independently audited code: '+name)
     return result
 def validate_contract(receipt,*,source,target,checkpoint_hash,rank_hashes,runtime_blobs,profile,original_profile,engine_hash,parity):
-    if receipt.get('schema')!=SCHEMA or (source,target)!=(BASE,receipt.get('target_sha')) or receipt.get('source_sha')!=source:raise ValueError('migration source identity mismatch')
+    mode_e=profile['precision'].get('mode')=='E'
+    expected_schema=EXPERIMENTAL_SCHEMA if mode_e else SCHEMA
+    if receipt.get('schema')!=expected_schema or (source,target)!=(BASE,receipt.get('target_sha')) or receipt.get('source_sha')!=source:raise ValueError('migration source identity mismatch')
     expected={'checkpoint_manifest_sha256':checkpoint_hash,'rank_artifact_hashes':rank_hashes,
               'runtime_blobs':runtime_blobs,'target_profile':profile,'original_profile':original_profile,'engine_sha256':engine_hash}
     for key,value in expected.items():
@@ -69,6 +97,23 @@ def validate_contract(receipt,*,source,target,checkpoint_hash,rank_hashes,runtim
     # receipt must name the transition; no checkpoint may silently acquire it.
     after.pop('ragged_effects_fp32',None);before.pop('ragged_effects_fp32',None)
     after.pop('amp_overflow_retries',None);before.pop('amp_overflow_retries',None)
+    if mode_e:
+        if not exact_metadata(receipt.get('policy_encoder_transition'),POLICY_ENCODER_TRANSITION) or not exact_metadata(receipt.get('encoder_execution_transition'),ENCODER_EXECUTION_TRANSITION):
+            raise ValueError('policy encoder precision migration transition mismatch')
+        required_before={'mode':'D','contract_version':'pa3-precision-D-v2','encoder_amp':True,
+                         'observation':'fp16-round-continuous-then-fp32','scorer_fp32':True,'gru_fp32':True}
+        required_after={'mode':'E','contract_version':'pa3-precision-E-v1','encoder_amp':False,
+                        'observation':'fp16-round-continuous-then-fp32','scorer_fp32':True,'gru_fp32':True,
+                        'policy_encoder_fp32':True,'encoder_physical_batching':'logical-fp32-v1'}
+        if any(not exact_metadata(original_profile['precision'].get(k),v) for k,v in required_before.items()) or any(not exact_metadata(profile['precision'].get(k),v) for k,v in required_after.items()):
+            raise ValueError('policy encoder precision contract mismatch')
+        if any(k in before for k in ('policy_encoder_fp32','encoder_physical_batching')):
+            raise ValueError('historical policy encoder contract mismatch')
+        after.pop('policy_encoder_fp32');after.pop('encoder_physical_batching')
+        # Only the named policy encoder transition is authorized. Observation
+        # quantization, scorer/GRU math, PPO and the ambient value-head AMP
+        # contract still compare exactly with the preserved original profile.
+        for key in ('mode','contract_version','encoder_amp'):after[key]=before[key]
     if (original_profile['precision'].get('amp_overflow_retries',0)!=0
             or profile['precision'].get('amp_overflow_retries')!=3
             or receipt.get('amp_overflow_retry_transition')!={'historical':0,'future':3}):
@@ -132,8 +177,14 @@ def validate(receipt,root,source,target):
     transition=Path(parity['precision_transition_report'])
     if sha(transition)!=parity['precision_transition_sha256']:raise ValueError('precision proof checksum mismatch')
     proof=json.loads(transition.read_text())
-    if proof.get('schema')!='pa3-effects-fp32-independent-v1' or proof.get('target_sha')!=target:
+    profile=json.loads((root/'configs/pa3_v2_production.yaml').read_text())
+    mode_e=profile['precision'].get('mode')=='E'
+    proof_schema=E_PROOF_SCHEMA if mode_e else 'pa3-effects-fp32-independent-v1'
+    proof_precision=E_PROOF_PRECISION if mode_e else 'D/FP16-effects-FP32'
+    if proof.get('schema')!=proof_schema or proof.get('target_sha')!=target:
         raise ValueError('precision proof target mismatch')
+    if mode_e and (not exact_metadata(proof.get('policy_encoder_transition'),POLICY_ENCODER_TRANSITION) or not exact_metadata(proof.get('encoder_execution_transition'),ENCODER_EXECUTION_TRANSITION)):
+        raise ValueError('precision proof policy encoder transition mismatch')
     if proof.get('runtime_blobs')!=blobs(root,target):raise ValueError('precision proof executable mismatch')
     for key in ('reference','candidate'):
         path=Path(proof[key+'_artifact'])
@@ -143,15 +194,19 @@ def validate(receipt,root,source,target):
     if reference.get('source_sha')!=AUDITED or candidate.get('source_sha')!=target:
         raise ValueError('precision proof source mismatch')
     for artifact in (reference,candidate):
-        if artifact.get('rows')!=1024 or artifact.get('precision')!='D/FP16-effects-FP32' or artifact.get('workspace')!=':4096:8':
+        if artifact.get('rows')!=1024 or artifact.get('precision')!=proof_precision or artifact.get('workspace')!=':4096:8':
             raise ValueError('precision proof execution mismatch')
+        if mode_e and not exact_metadata(artifact.get('precision_execution'),E_PROOF_EXECUTION):
+            raise ValueError('precision proof policy encoder execution mismatch')
+    if mode_e and (reference.get('precision_implementation')!='audited-D-independent-encoder-FP32' or candidate.get('precision_implementation')!='configured-E'):
+        raise ValueError('precision proof independent policy encoder missing')
     if reference.get('reference') is not True or candidate.get('reference') is not False:
         raise ValueError('precision proof independent execution missing')
     if reference.get('captured_artifact_sha256')!=candidate.get('captured_artifact_sha256'):
         raise ValueError('precision proof input mismatch')
     if reference.get('probe_sha256')!=candidate.get('probe_sha256') or candidate.get('probe_sha256')!=sha(root/'tests/validation/v2_precision_probe.py'):
         raise ValueError('precision proof runner mismatch')
-    expected_backend=json.loads((root/'configs/pa3_v2_production.yaml').read_text())['collector'].get('token_lookup_backend','gather')
+    expected_backend=profile['collector'].get('token_lookup_backend','gather')
     if reference.get('token_lookup_backend')!='gather' or candidate.get('token_lookup_backend')!=expected_backend:
         raise ValueError('precision proof token backend mismatch')
     if candidate.get('amp_overflow_retries')!=3 or reference.get('amp_overflow_retries')!=0:
@@ -161,7 +216,7 @@ def validate(receipt,root,source,target):
 
     old_path=Path(receipt['original_profile_path'])
     if sha(old_path)!=receipt['original_profile_sha256']:raise ValueError('original profile changed')
-    profile=json.loads((root/'configs/pa3_v2_production.yaml').read_text());original=json.loads(old_path.read_text())
+    original=json.loads(old_path.read_text())
     validate_contract(receipt,source=source,target=target,checkpoint_hash=sha(checkpoint/'manifest.json'),rank_hashes=ranks,runtime_blobs=blobs(root,target),profile=profile,original_profile=original,engine_hash=sha(root/'engine/python/pa3_engine/pa3_engine.so'),parity=parity)
     from agent.runtime.config import resolve_profile
     # Relative versioned dataset paths resolve from the exact runtime root.
@@ -179,10 +234,14 @@ def validate(receipt,root,source,target):
     refs=[ref for s in states for ref in s['team_stats_receipts']]
     reconcile(refs,committed_matches=57344,run_id=receipt['team_stats_lineage_id'])
     if run_identity(receipt['team_stats_origin_root'])!=receipt['team_stats_lineage_id']:raise ValueError('statistics origin identity mismatch')
-    return {'source_sha':source,'target_sha':target,'scope':SCHEMA,'secondary_activation':receipt['secondary_activation'],
+    result={'source_sha':source,'target_sha':target,'scope':receipt['schema'],'secondary_activation':receipt['secondary_activation'],
             'token_lookup_backend':receipt['token_lookup_backend'],'token_lookup_transition':receipt['token_lookup_transition'],
             'team_stats_lineage_id':receipt['team_stats_lineage_id'],'team_stats_root':receipt['team_stats_root'],
             'receipt_sha256':hashlib.sha256(json.dumps(receipt,sort_keys=True).encode()).hexdigest()}
+    if mode_e:
+        result['policy_encoder_transition']=receipt['policy_encoder_transition']
+        result['encoder_execution_transition']=receipt['encoder_execution_transition']
+    return result
 
 def prepare(root,checkpoint,parity_report,team_stats_root,output):
     root=Path(root).resolve();checkpoint=Path(checkpoint).resolve();proof=Path(parity_report).resolve()
@@ -191,10 +250,12 @@ def prepare(root,checkpoint,parity_report,team_stats_root,output):
     from agent.analysis.team_stats import run_identity
     state=load_envelope(str(checkpoint/'rank0.pt'));target=git(root,'rev-parse','HEAD')
     origin=Path('/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z');old=origin/'release/runtime_profile.json'
-    receipt={'schema':SCHEMA,'source_sha':BASE,'target_sha':target,'checkpoint':str(checkpoint),
+    profile=json.loads((root/'configs/pa3_v2_production.yaml').read_text())
+    mode_e=profile['precision'].get('mode')=='E'
+    receipt={'schema':EXPERIMENTAL_SCHEMA if mode_e else SCHEMA,'source_sha':BASE,'target_sha':target,'checkpoint':str(checkpoint),
         'checkpoint_manifest_sha256':sha(checkpoint/'manifest.json'),'rank_artifact_hashes':{str(r):sha(checkpoint/f'rank{r}.pt') for r in (0,1)},
         'runtime_blobs':blobs(root,target),'original_profile_path':str(old),'original_profile_sha256':sha(old),
-        'original_profile':json.loads(old.read_text()),'target_profile':json.loads((root/'configs/pa3_v2_production.yaml').read_text()),
+        'original_profile':json.loads(old.read_text()),'target_profile':profile,
         'target_config_hash':resolve_profile(str(root/'configs/pa3_v2_production.yaml'))['config_hash'],
         'semantic_contract':'dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35',
         'action_schema_hash':state['action_schema_hash'],'model_config_hash':state['model_config_hash'],'ppo_config_hash':state['ppo_config_hash'],
@@ -202,9 +263,12 @@ def prepare(root,checkpoint,parity_report,team_stats_root,output):
         'amp_overflow_retry_transition':{'historical':0,'future':3},
         'canonical_encoder_transition':{'historical':0,'future':1024},
         'ragged_effects_precision_transition':{'historical':'fp16','future':'fp32'},
-        'token_lookup_backend':json.loads((root/'configs/pa3_v2_production.yaml').read_text())['collector'].get('token_lookup_backend','gather'),
-        'token_lookup_transition':{'historical':'gather','future':json.loads((root/'configs/pa3_v2_production.yaml').read_text())['collector'].get('token_lookup_backend','gather')},
+        'token_lookup_backend':profile['collector'].get('token_lookup_backend','gather'),
+        'token_lookup_transition':{'historical':'gather','future':profile['collector'].get('token_lookup_backend','gather')},
         'secondary_activation':{'historical':False,'future':True},
         'team_stats_origin_root':str(origin/'team_stats'),'team_stats_lineage_id':run_identity(origin/'team_stats'),
         'team_stats_root':str(Path(team_stats_root).resolve()),'parity_report':str(proof),'parity_report_sha256':sha(proof)}
+    if mode_e:
+        receipt['policy_encoder_transition']=dict(POLICY_ENCODER_TRANSITION)
+        receipt['encoder_execution_transition']=dict(ENCODER_EXECUTION_TRANSITION)
     validate(receipt,root,BASE,target);Path(output).parent.mkdir(parents=True,exist_ok=True);Path(output).write_text(json.dumps(receipt,indent=2)+'\n');return receipt
