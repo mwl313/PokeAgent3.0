@@ -476,10 +476,21 @@ def _recompute_check_impl(learner, buffer, device, limit=1024, amp=False, per_st
         from agent.ppo.experimental_checkpoint import save_envelope
         groups = getattr(buffer, "actor_groups", [])
         flagged = [row for row, diff in zip(sampled, per_row) if not math_isfinite(diff) or diff > tolerance]
-        if audit and not flagged:
-            flagged = sorted(sampled,key=lambda row: abs(row.old_logprob),reverse=True)[:8]
         ids = {id(row): i for i, row in enumerate(buffer.rows)}
-        chosen_groups = [g for g in groups if any(g["start"] <= ids[id(row)] < g["stop"] for row in flagged)]
+        flagged_indices = {ids[id(row)] for row in flagged}
+        # A forced secondary proof can reject while the primary passes. Keep
+        # the original groups of those actual rejected rows, including the
+        # isolated replay diagnosis, rather than unrelated large logprobs.
+        for diagnosis in ("secondary", "isolated_outlier_diagnosis"):
+            for evidence in result.get(diagnosis, {}).get("rows", []):
+                index = evidence.get("row_index")
+                if (not evidence.get("accepted", False) and type(index) is int
+                        and 0 <= index < len(buffer.rows)):
+                    flagged_indices.add(index)
+        if audit and not flagged_indices:
+            flagged = sorted(sampled,key=lambda row: abs(row.old_logprob),reverse=True)[:8]
+            flagged_indices.update(ids[id(row)] for row in flagged)
+        chosen_groups = [g for g in groups if any(g["start"] <= index < g["stop"] for index in flagged_indices)]
         group_rows = [buffer.rows[g["start"]:g["stop"]] for g in chosen_groups[:8]]
         payload = {"kind": "ppo_recompute_failure_evidence_v1", "result": result,
                    "model": {k: v.detach().cpu().clone() for k, v in learner.model.state_dict().items()},

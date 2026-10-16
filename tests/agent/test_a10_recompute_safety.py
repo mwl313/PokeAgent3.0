@@ -27,9 +27,9 @@ def test_secondary_accepts_only_explained_bounded_variation():
     assert not evidence_passes({**row, 'inputs_verified': False}, 1e-3)
 
 
-def recorded(model):
-    obs = ObservationBatch.dummy(3, seed=23)
-    reqs = [make_request(obs.select([i]), preview_branches()) for i in range(3)]
+def recorded(model, count=3):
+    obs = ObservationBatch.dummy(count, seed=23)
+    reqs = [make_request(obs.select([i]), preview_branches()) for i in range(count)]
     with torch.inference_mode():
         sampled = model.sample(obs, make_candidate_batch(reqs), generator=torch.Generator().manual_seed(91))
     buffer = RolloutBuffer()
@@ -38,7 +38,7 @@ def recorded(model):
                       old_logprob=sampled.request_logprob[i].item(), value=0., match_id=i,
                       side=0, policy_id='current', opponent_policy_id='current', team_ids=(0, 1),
                       request_index=0, turn=0)
-    buffer.actor_groups = [dict(start=0, stop=3, observation_hash=compact_hash(obs.to_compact_numpy()),
+    buffer.actor_groups = [dict(start=0, stop=count, observation_hash=compact_hash(obs.to_compact_numpy()),
                                row_contract_hash=row_contract_hash(buffer.rows))]
     return buffer
 
@@ -175,3 +175,54 @@ def test_forced_secondary_rejection_overrides_passing_primary(model_factory,tmp_
     result=recompute_check(learner,buffer,torch.device('cpu'),amp=False,audit=True,secondary=True,evidence_path=str(path))
     assert result['primary_within_gate'] and not result['secondary']['accepted']
     assert not result['within_gate'] and path.exists() and learner.optimizer_steps==0
+
+
+@pytest.mark.parametrize('rejected_diagnosis', ['secondary', 'isolated_outlier_diagnosis'])
+def test_forced_failure_saves_actual_rejected_actor_group(model_factory, tmp_path,
+                                                         monkeypatch, rejected_diagnosis):
+    from agent.ppo import PPOLearner, PPOConfig
+    from agent.ppo.experimental_checkpoint import load_envelope
+    from scripts.bench_pa3_end_to_end import recompute_check
+    import agent.ppo.recompute_safety as safety
+
+    model = model_factory(seed=11)
+    buffer = recorded(model, count=12)
+    buffer.actor_groups = [dict(
+        start=index, stop=index+1,
+        observation_hash=compact_hash(buffer.observation_store.get(row.observation_ref).to_compact_numpy()),
+        row_contract_hash=row_contract_hash([row]),
+    ) for index, row in enumerate(buffer.rows)]
+    # This group was omitted by the previous largest-|old_logprob| fallback.
+    ranked = sorted(range(len(buffer.rows)),
+                    key=lambda index: abs(buffer.rows[index].old_logprob), reverse=True)
+    rejected_index = ranked[-1]
+    assert rejected_index not in ranked[:8]
+    calls = []
+
+    def diagnose(*args, **kwargs):
+        name = 'secondary' if not calls else 'isolated_outlier_diagnosis'
+        calls.append(name)
+        rejected = name == rejected_diagnosis
+        return dict(accepted=not rejected, required=False, rows=[dict(
+            row_index=rejected_index, accepted=not rejected,
+        )], reason='test precision discrepancy' if rejected else 'verified shape/AMP variation')
+
+    monkeypatch.setattr(safety, 'secondary_audit', diagnose)
+    learner = PPOLearner(model, PPOConfig(ppo_epochs=2), device='cpu', amp=False)
+    path = tmp_path/'forced_precision_failure.pt'
+    before = copy.deepcopy(learner.state_dict())
+    rng = torch.get_rng_state().clone()
+    result = recompute_check(learner, buffer, torch.device('cpu'), audit=True,
+                             secondary=True, evidence_path=str(path))
+    assert calls == ['secondary', 'isolated_outlier_diagnosis']
+    assert result['primary_within_gate'] and not result['within_gate']
+    assert not result[rejected_diagnosis]['accepted']
+    assert learner.optimizer_steps == 0 and learner.optimizer.state_dict() == before['optimizer']
+    assert torch.equal(rng, torch.get_rng_state())
+    assert all(torch.equal(value, before['model'][key]) for key, value in model.state_dict().items())
+    saved = load_envelope(str(path))
+    assert [(group['start'], group['stop']) for group in saved['actor_groups']] == [
+        (rejected_index, rejected_index+1)]
+    assert row_contract_hash(saved['group_rows'][0]) == buffer.actor_groups[rejected_index]['row_contract_hash']
+    assert compact_hash(saved['group_observations'][0].to_compact_numpy()) == \
+        buffer.actor_groups[rejected_index]['observation_hash']
