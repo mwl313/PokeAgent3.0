@@ -58,6 +58,7 @@ def status(args):
         "eval_root": str(eval_root),
         "discovery": read_json(eval_root / "state" / "discovery.json"),
         "worker": read_json(eval_root / "state" / "worker_state.json"),
+        "active": read_json(eval_root / "state" / "active.json"),
         "resources": read_json(eval_root / "state" / "resource_state.json"),
         "paused": (eval_root / "PAUSE").exists(),
         "best_policy": read_json(eval_root / "best_policy.json"),

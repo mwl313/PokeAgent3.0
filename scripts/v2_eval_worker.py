@@ -118,7 +118,12 @@ def run_job(*, eval_root, job, args, engine, environment, master, log_path):
 
     started = time.time()
     matchups, bodies = [], []
-    for panel in panels:
+    for index, panel in enumerate(panels):
+        atomic_json(eval_root / "state" / "active.json",
+                    {"status": "running", "job": job["job_id"], "tier": job["tier"],
+                     "candidate": candidate["id"], "panel": index + 1, "panels": len(panels),
+                     "opponent": panel["opponent_id"], "games": panel["games"],
+                     "started_at": started, "pid": os.getpid()})
         fixtures = _slice(master, panel["fixture_start_pair"], panel["games"])
         receipt, cached = run_matchup_cached(
             registry_path, receipts_dir, engine, fixtures, candidate["id"], panel["opponent_id"],
@@ -193,6 +198,10 @@ def run_job(*, eval_root, job, args, engine, environment, master, log_path):
                             "statistics": preliminary, "regression": regression}
             else:
                 confirm_fixtures = master_fixtures(engine, pairs=CONFIRMATORY_GAMES // 2, seed=CONFIRMATORY_SEED)
+                atomic_json(eval_root / "state" / "active.json",
+                            {"status": "confirmatory", "job": job["job_id"], "candidate": candidate["id"],
+                             "opponent": incumbent["policy_id"], "games": CONFIRMATORY_GAMES,
+                             "started_at": started, "pid": os.getpid()})
                 confirm_receipt, _ = run_matchup_cached(
                     registry_path, receipts_dir, engine, confirm_fixtures, candidate["id"],
                     incumbent["policy_id"], seed=CONFIRMATORY_SEED, max_rounds=2000,
@@ -265,6 +274,9 @@ def run_job(*, eval_root, job, args, engine, environment, master, log_path):
     }
     jobs_dir.mkdir(parents=True, exist_ok=True)
     atomic_json(jobs_dir / f"{job['job_id'].replace(':', '_')}.json", job_receipt)
+    atomic_json(eval_root / "state" / "active.json",
+                {"status": "idle", "last_job": job["job_id"], "pid": os.getpid(),
+                 "updated_at": time.time()})
     if baseline_receipt is not None:
         (receipts_dir / "baseline").mkdir(parents=True, exist_ok=True)
         atomic_json(receipts_dir / "baseline" / f"{candidate['id']}.json",
