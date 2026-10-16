@@ -1,0 +1,111 @@
+{
+  "receipts": {
+    "ab2b2d3596a12a6f56e42c78070670a1dee3dcd0c0f437526233ec022c4520a4": {
+      "candidate": [
+        "v2-000000069632-1792138991510650133",
+        "11e812c19cef15460526a0e3414eff1a47cc994ccb49bdf20d36e42ecbe7891a",
+        "a977b11a52e515ceecef04160368dd6962fc975393596ea7b478fb985fca318a",
+        {
+          "observation_quantization": "fp16-round-continuous-v1",
+          "precision_contract_version": "pa3-precision-E-v1",
+          "precision_mode": "E",
+          "precision_stability": "fp16-reduction-off"
+        }
+      ],
+      "candidate_checkpoint_sha256": "11e812c19cef15460526a0e3414eff1a47cc994ccb49bdf20d36e42ecbe7891a",
+      "draws": 0,
+      "engine": "pa3-native-fixed-policy-v2",
+      "environment": {
+        "backend": "batched",
+        "batch_size": 2,
+        "engine_sha256": "8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62",
+        "mechanics_data_sha256": "645350668ab465ec29b8159bea842bf5956cfb6c7f53e7cd6fd797d958cce5f3",
+        "team_dataset_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"
+      },
+      "evaluated_at": "2026-10-16T08:25:27.218995+00:00",
+      "evaluator": "pa3-native-batched-evaluator-v3",
+      "evaluator_version": "pa3-native-batched-evaluator-v3",
+      "fixture_manifest_hash": "0609c8d2db76c6bcc5c7eb68c2342580c0d229cb2cb261a350c3d83ed8bc4390",
+      "gpu_peak_bytes": 0,
+      "identity": "ab2b2d3596a12a6f56e42c78070670a1dee3dcd0c0f437526233ec022c4520a4",
+      "identity_version": "pa3-evaluation-identity-v4",
+      "illegal_actions": 0,
+      "left_id": "v2-000000069632-1792138991510650133",
+      "losses": 0,
+      "matches": 2,
+      "max_rounds": 2000,
+      "operational_errors": 0,
+      "opponent": [
+        "v2-000000061440-1792124026972789954",
+        "0c8eae073187b417004cb5bfba3112b47757ffeba3137d0e37b0fbc471e422d9",
+        "bc71fac5c711365ca3e7443fdd55f0ac28812b0ddba6b5745f0f943daeb0b7fe",
+        {
+          "observation_quantization": "fp16-round-continuous-v1",
+          "precision_contract_version": "pa3-precision-E-v1",
+          "precision_mode": "E",
+          "precision_stability": "fp16-reduction-off"
+        }
+      ],
+      "opponent_checkpoint_sha256": "0c8eae073187b417004cb5bfba3112b47757ffeba3137d0e37b0fbc471e422d9",
+      "outcomes": [
+        {
+          "error": null,
+          "fixture_id": 0,
+          "illegal_action": false,
+          "outcome": "win",
+          "pair_id": 0,
+          "policy_side": 0,
+          "team_a": 1117,
+          "team_b": 358,
+          "winner": 0
+        },
+        {
+          "error": null,
+          "fixture_id": 1,
+          "illegal_action": false,
+          "outcome": "win",
+          "pair_id": 0,
+          "policy_side": 1,
+          "team_a": 1117,
+          "team_b": 358,
+          "winner": 1
+        }
+      ],
+      "paired_fixtures": 1,
+      "paired_score_mean": 1.0,
+      "right_id": "v2-000000061440-1792124026972789954",
+      "runtime_seconds": 1.3378125540000383,
+      "sampling": "fixture-seat-decision-branch-keyed-valid-cdf-v3",
+      "sampling_semantics": "fixture-seat-decision-branch-keyed-valid-cdf-v3",
+      "score_ci95": [
+        1.0,
+        1.0
+      ],
+      "score_mean": 1.0,
+      "seed": 20261014,
+      "semantic_contract": "dd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35",
+      "status": "success",
+      "team_group_results": {
+        "1117:358": {
+          "draws": 0,
+          "illegal_actions": 0,
+          "losses": 0,
+          "matches": 2,
+          "operational_errors": 0,
+          "team_a": 1117,
+          "team_b": 358,
+          "wins": 2
+        }
+      },
+      "timing_seconds": {
+        "candidates": 0.005310912000368262,
+        "model": 1.2038006590003079,
+        "observation": 0.04106539600002179,
+        "request_info": 0.00019363399985650176,
+        "step": 0.0045737629998257034
+      },
+      "wins": 2
+    }
+  },
+  "schema": "pa3-evaluation-league-v2"
+}

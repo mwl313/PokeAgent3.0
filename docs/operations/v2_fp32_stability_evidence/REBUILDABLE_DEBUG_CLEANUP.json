@@ -1,0 +1,4851 @@
+{
+  "timestamp_utc": "2026-10-16T03:28:59Z",
+  "authorization": "Parent transmitted explicit user authorization for rebuildable debug compiler output cleanup.",
+  "removed_compiled_files": [
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/either-a2a1e1e8237dc905.d",
+      "bytes": 1028
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libpa3_engine-fe71f1f6fd8cb8cd.rmeta",
+      "bytes": 2645442
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/legality-47572cd861be88b3",
+      "bytes": 17230400
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/observation_leakage-58e21624a3547269.d",
+      "bytes": 620
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libgeneric_array-7f5ca66574c57b88.rlib",
+      "bytes": 875976
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/search_core-3ad761512c91f166.d",
+      "bytes": 448
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libtypenum-9eec5b1faf8a6e67.rlib",
+      "bytes": 2701738
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libmove_hooks-b4218788171824f4.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/search_world-32b7367eca1b02ad.d",
+      "bytes": 453
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libcrossbeam_epoch-2cd4d5b7190667cc.rmeta",
+      "bytes": 317738
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/batch_observation-a969a78b7ef45c79.d",
+      "bytes": 478
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libcfg_if-6d5c01eec2b94bd9.rmeta",
+      "bytes": 5669
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libobservation-2be08b40e54c6588.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/memchr-06d5b5c02fe069da.d",
+      "bytes": 8507
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libserde-b64f3397b4a61309.rmeta",
+      "bytes": 818525
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/pa3_engine.d",
+      "bytes": 3309
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/flash_fire-aec416d730df2f84.d",
+      "bytes": 437
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libversion_check-ea6887218707dfc6.rmeta",
+      "bytes": 73659
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libquote-c8c1b268e59d94dd.rmeta",
+      "bytes": 272071
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libcfg_if-6d5c01eec2b94bd9.rlib",
+      "bytes": 7174
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libproc_macro2-a2e947a5b34a0a0c.rmeta",
+      "bytes": 338040
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libgeneric_array-7f5ca66574c57b88.rmeta",
+      "bytes": 867701
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libsha2-dfbafe5f28d527a5.rmeta",
+      "bytes": 637384
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/syn-050951c209b49d68.d",
+      "bytes": 15895
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/poltergeist-8c035bc265201697",
+      "bytes": 21630200
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/snapshot_phases-14c51dd4efeccc4e",
+      "bytes": 21583824
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libeither-355f1f39e1e848d3.rmeta",
+      "bytes": 222956
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libitoa-fe33f83b2703f2a0.rmeta",
+      "bytes": 51675
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/liblegality-e8268e0da1de2ee1.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/itoa-fe33f83b2703f2a0.d",
+      "bytes": 714
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/effect_sources-4526153cdac28318",
+      "bytes": 15723072
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libcpufeatures-ef131f9bfe4b90f9.rlib",
+      "bytes": 40440
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/serde_core-6b88864126176efe.d",
+      "bytes": 6142
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/state_batch-932fb0766d57ef7b.d",
+      "bytes": 722
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/search_information_set-260b7d4a50d84289.d",
+      "bytes": 503
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/observation-1ab407be5434364a.d",
+      "bytes": 586
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/serde-b64f3397b4a61309.d",
+      "bytes": 2659
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libpa3_engine-05a245ebdf0b76e9.rmeta",
+      "bytes": 2645400
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/contracts-e001cf1fc4fe00cf",
+      "bytes": 20203264
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/snapshot_phases-2c52b3f8acbbc677.d",
+      "bytes": 600
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libbatch_observation-c8c08ebc1a0e7c1a.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/effect_order-59a1d3cf4da9241e.d",
+      "bytes": 453
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libsmallvec-0d1fc6e486a07e03.rmeta",
+      "bytes": 154552
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/memory_scale-8f02368751457f1c.d",
+      "bytes": 397
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/search_test_oracle-14170a137f25128a.d",
+      "bytes": 621
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/zmij-d9436db0d90adebe.d",
+      "bytes": 1000
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/snapshot_effect_shapes-9f029700e576eafd.d",
+      "bytes": 635
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/frisk-504ec3041411ce08.d",
+      "bytes": 550
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libdigest-7abd700077a7b176.rmeta",
+      "bytes": 112525
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/contracts-519cd81c97803dc1.d",
+      "bytes": 685
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libzmij-100adcb8e3de0e56.rmeta",
+      "bytes": 413605
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libsearch_belief-fbf0d40511e51bd6.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/effect_order-787e7ba566a92bbe.d",
+      "bytes": 591
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libturns-f141457e489927f6.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/poltergeist-1c97469672370331.d",
+      "bytes": 830
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libcpufeatures-ef131f9bfe4b90f9.rmeta",
+      "bytes": 38919
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/either-355f1f39e1e848d3.d",
+      "bytes": 1400
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/batch_observation-c8c08ebc1a0e7c1a.d",
+      "bytes": 616
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libthiserror-fce9187ebd45b167.rlib",
+      "bytes": 30468
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/sha2-dfbafe5f28d527a5.d",
+      "bytes": 2707
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/state_batch-7ebe65eeea42318a.d",
+      "bytes": 584
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libbatch_observation-87b804511e7fdff5.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/snapshot_effect_shapes-672d83df6256e34a.d",
+      "bytes": 497
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libsearch_information_set-87a4d208ccf5b758.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libdigest-71c570c252b92329.rmeta",
+      "bytes": 166704
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/memchr-e60a3c02d05d360b.d",
+      "bytes": 11364
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libflash_fire-11298d549aff9033.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libeffect_order-787e7ba566a92bbe.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/generic_array-7f5ca66574c57b88.d",
+      "bytes": 3085
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libobservation_leakage-e27d25414919a7ed.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/flash_fire-77a2b3ec9c8eec56.d",
+      "bytes": 575
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/typenum-0babcd175260e9f2.d",
+      "bytes": 3929
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/generic_array-34554ad5f7438291.d",
+      "bytes": 2291
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/rayon-6a46869fe0895c45.d",
+      "bytes": 29894
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/quote-c8c1b268e59d94dd.d",
+      "bytes": 2889
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libcrossbeam_epoch-180a669f281c0228.rmeta",
+      "bytes": 244391
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/version_check-ea6887218707dfc6.d",
+      "bytes": 1866
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/pa3_engine-055d47ed7bb57384.d",
+      "bytes": 3307
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/move_hooks-91bf4d6335e1fdbe",
+      "bytes": 20761736
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libability_contact-a6ba4867ca78bd59.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/librayon_core-122c4ba9e926e296.rlib",
+      "bytes": 2149460
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/crossbeam_epoch-2cd4d5b7190667cc.d",
+      "bytes": 5316
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/ability_interactions-5501befeb9ca6876.d",
+      "bytes": 791
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libmemchr-06d5b5c02fe069da.rmeta",
+      "bytes": 958657
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/effect_order-59a1d3cf4da9241e",
+      "bytes": 23683232
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/typenum-9eec5b1faf8a6e67.d",
+      "bytes": 5265
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libstate_batch-238b0432187d8b2d.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libcontracts-f4652dc7ff8537c5.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libthiserror-2c0bbd7d401e771a.rmeta",
+      "bytes": 27186
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/rayon_core-51e8eb4921aac9a2.d",
+      "bytes": 7485
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/block_buffer-29375d12cbb7c456.d",
+      "bytes": 772
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/rayon-6f07ea9653beb510.d",
+      "bytes": 39856
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/crypto_common-bc6ddf14074de09e.d",
+      "bytes": 473
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/flash_fire-11298d549aff9033.d",
+      "bytes": 575
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libunicode_ident-57409dd8a30c081c.rmeta",
+      "bytes": 34664
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libmemchr-e60a3c02d05d360b.rmeta",
+      "bytes": 1267382
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/pa3_engine-8714cde6cc496014.d",
+      "bytes": 2636
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libfrisk-70cbaca5fb17be34.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libability_contact-e9c332c4452e9262.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/serde_json-99a363fc68c26647.d",
+      "bytes": 6653
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libcrossbeam_deque-25697fc0dded3978.rlib",
+      "bytes": 181648
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/turns-339e8f60d421a5ac.d",
+      "bytes": 656
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libsearch_world-5647fd927419a346.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libblock_buffer-29375d12cbb7c456.rmeta",
+      "bytes": 27542
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libitoa-83d469fe5aaa7ce7.rmeta",
+      "bytes": 62220
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libsearch_test_oracle-7f13fb089d0f2a8d.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/search_information_set-ff75458954e04023.d",
+      "bytes": 641
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/state_batch-238b0432187d8b2d.d",
+      "bytes": 722
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/snapshot_phases-651ee35c02acf635.d",
+      "bytes": 600
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/search_world-32b7367eca1b02ad",
+      "bytes": 24624104
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/search_belief-fbf0d40511e51bd6.d",
+      "bytes": 596
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/search_test_oracle-e3d31ac3c7b02112.d",
+      "bytes": 483
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libcontracts-519cd81c97803dc1.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/search_core-f19b1e0058d80c06.d",
+      "bytes": 586
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libdigest-71c570c252b92329.rlib",
+      "bytes": 173116
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libability_interactions-caef1d90ca560d27.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/observation-c3db8b537e4e4e34.d",
+      "bytes": 448
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libserde_core-6b88864126176efe.rmeta",
+      "bytes": 2629233
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/crossbeam_deque-25697fc0dded3978.d",
+      "bytes": 1082
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/serde_core-c57fe432673e6622.d",
+      "bytes": 8180
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/serde_derive-7b2ae98a6f19b18f.d",
+      "bytes": 9153
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/librayon-6f07ea9653beb510.rmeta",
+      "bytes": 4012239
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/turns-f141457e489927f6.d",
+      "bytes": 656
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libcrossbeam_deque-25697fc0dded3978.rmeta",
+      "bytes": 180115
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libsearch_core-f19b1e0058d80c06.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libquote-c8c1b268e59d94dd.rlib",
+      "bytes": 498004
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libobservation_completeness-fac3db13837a9a07.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libblock_buffer-f8fbb490a343c4dc.rlib",
+      "bytes": 52514
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/effect_sources-904619a1b25dc6f0.d",
+      "bytes": 407
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/pa3_engine-fe71f1f6fd8cb8cd.d",
+      "bytes": 2636
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/ability_contact-a6ba4867ca78bd59.d",
+      "bytes": 588
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/proc_macro2-a2e947a5b34a0a0c.d",
+      "bytes": 4851
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/crossbeam_epoch-180a669f281c0228.d",
+      "bytes": 3965
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/move_hooks-91bf4d6335e1fdbe.d",
+      "bytes": 431
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libsearch_world-9699ea55629ed806.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/unicode_ident-57409dd8a30c081c.d",
+      "bytes": 1072
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libserde_json-2154a0c034f2b590.rmeta",
+      "bytes": 934006
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libillusion-07ae62eaf6a447bf.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/pa3_engine-82c9718762a72ec4.d",
+      "bytes": 3169
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/crossbeam_deque-12ae66d8da68b287.d",
+      "bytes": 787
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/cfg_if-d378cffd466b054c.d",
+      "bytes": 438
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libeither-355f1f39e1e848d3.rlib",
+      "bytes": 224462
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/snapshot_phases-14c51dd4efeccc4e.d",
+      "bytes": 462
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/ability_contact-5eb03a565ca385e0",
+      "bytes": 20461064
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libcrypto_common-ebb38aaa0d75ef3c.rmeta",
+      "bytes": 27417
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libcrossbeam_deque-12ae66d8da68b287.rmeta",
+      "bytes": 68366
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libcpufeatures-cb7cbdf7ec71562c.rmeta",
+      "bytes": 38919
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/search_test_oracle-7f13fb089d0f2a8d.d",
+      "bytes": 621
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libserde-eae08e68c162f6a9.rmeta",
+      "bytes": 510809
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libtypenum-0babcd175260e9f2.rmeta",
+      "bytes": 2461355
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/frisk-afd0f71c6354ca17",
+      "bytes": 19898496
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libeither-a2a1e1e8237dc905.rmeta",
+      "bytes": 146731
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/cpufeatures-ef131f9bfe4b90f9.d",
+      "bytes": 1038
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libsearch_information_set-ff75458954e04023.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libeffect_sources-97585bf8ee59cf31.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libfixture_coverage-c6564f5a1bc424e2.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libthiserror-fce9187ebd45b167.rmeta",
+      "bytes": 28947
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libpa3_engine.rlib",
+      "bytes": 37870460
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/serde-eae08e68c162f6a9.d",
+      "bytes": 1998
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libsnapshot_phases-2c52b3f8acbbc677.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libcfg_if-d378cffd466b054c.rmeta",
+      "bytes": 5669
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/illusion-07ae62eaf6a447bf.d",
+      "bytes": 568
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/ability_interactions-caef1d90ca560d27.d",
+      "bytes": 791
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/crossbeam_utils-1aec4b9320e92954.d",
+      "bytes": 5937
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/observation_completeness-fac3db13837a9a07.d",
+      "bytes": 645
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/search_core-e90e807a623544e8.d",
+      "bytes": 586
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libserde_core-c57fe432673e6622.rlib",
+      "bytes": 5034892
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/legality-47572cd861be88b3.d",
+      "bytes": 433
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/ability_interactions-942537082750e127",
+      "bytes": 22473984
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/librayon-6f07ea9653beb510.rlib",
+      "bytes": 4544250
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libpoltergeist-772c9c33d158ade6.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libpoltergeist-1c97469672370331.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libzmij-100adcb8e3de0e56.rlib",
+      "bytes": 601876
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libzmij-d9436db0d90adebe.rmeta",
+      "bytes": 404556
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/move_hooks-b4218788171824f4.d",
+      "bytes": 569
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/move_hooks-8510f767339ededb.d",
+      "bytes": 569
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/librayon-6a46869fe0895c45.rmeta",
+      "bytes": 3014567
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libfrisk-504ec3041411ce08.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/search_information_set-260b7d4a50d84289",
+      "bytes": 21403072
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/observation-2be08b40e54c6588.d",
+      "bytes": 586
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libserde_json-99a363fc68c26647.rmeta",
+      "bytes": 1402174
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libcrossbeam_epoch-2cd4d5b7190667cc.rlib",
+      "bytes": 706504
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/legality-e8268e0da1de2ee1.d",
+      "bytes": 571
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libsmallvec-c52599fcb585f183.rlib",
+      "bytes": 261864
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/librayon_core-51e8eb4921aac9a2.rmeta",
+      "bytes": 332491
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/frisk-70cbaca5fb17be34.d",
+      "bytes": 550
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libsha2-822dbf0f5090789c.rlib",
+      "bytes": 1021220
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/search_test_oracle-e3d31ac3c7b02112",
+      "bytes": 24927384
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libobservation-1ab407be5434364a.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libsyn-050951c209b49d68.rlib",
+      "bytes": 6123926
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libsearch_belief-cd5c8c790bc806e6.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/search_information_set-87a4d208ccf5b758.d",
+      "bytes": 641
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/search_world-9699ea55629ed806.d",
+      "bytes": 591
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libability_interactions-5501befeb9ca6876.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libcrossbeam_utils-1aec4b9320e92954.rmeta",
+      "bytes": 761423
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libpa3_engine-7c83811ec744fe23.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/block_buffer-f8fbb490a343c4dc.d",
+      "bytes": 1061
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libsyn-050951c209b49d68.rmeta",
+      "bytes": 2226260
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/smallvec-c52599fcb585f183.d",
+      "bytes": 632
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libstate_batch-932fb0766d57ef7b.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libflash_fire-77a2b3ec9c8eec56.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/search_belief-31f3b53501f4e50d",
+      "bytes": 21018368
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/ability_contact-e9c332c4452e9262.d",
+      "bytes": 588
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libcrossbeam_utils-89d1dd7333d8f222.rmeta",
+      "bytes": 290467
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/illusion-80ed5b237d85c6ab.d",
+      "bytes": 568
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/crypto_common-ebb38aaa0d75ef3c.d",
+      "bytes": 663
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/pa3_engine-82c9718762a72ec4",
+      "bytes": 25980920
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libcrossbeam_utils-1aec4b9320e92954.rlib",
+      "bytes": 1083286
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/state_batch-7ebe65eeea42318a",
+      "bytes": 23426720
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libturns-339e8f60d421a5ac.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/fixture_coverage-32e06b1df67e64d0",
+      "bytes": 18195104
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libserde-b64f3397b4a61309.rlib",
+      "bytes": 1041996
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libobservation_completeness-5e033c50ead929ed.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/digest-71c570c252b92329.d",
+      "bytes": 3092
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/pa3_engine-05a245ebdf0b76e9.d",
+      "bytes": 2506
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/search_world-5647fd927419a346.d",
+      "bytes": 591
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libsha2-822dbf0f5090789c.rmeta",
+      "bytes": 657429
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/liblegality-9a4fc3610c1355ab.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libblock_buffer-f8fbb490a343c4dc.rmeta",
+      "bytes": 48419
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/cfg_if-6d5c01eec2b94bd9.d",
+      "bytes": 614
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/zmij-100adcb8e3de0e56.d",
+      "bytes": 1362
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/observation_leakage-3212573ab8c2b996.d",
+      "bytes": 482
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libpa3_engine-8714cde6cc496014.rmeta",
+      "bytes": 2696456
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libobservation_leakage-58e21624a3547269.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/observation_leakage-e27d25414919a7ed.d",
+      "bytes": 620
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libmemory_scale-8f02368751457f1c.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/contracts-e001cf1fc4fe00cf.d",
+      "bytes": 547
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libeffect_sources-904619a1b25dc6f0.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/fixture_coverage-c6564f5a1bc424e2.d",
+      "bytes": 829
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/memory_scale-6a0e132ef368e863",
+      "bytes": 15423664
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libfixture_coverage-b1627481db952b18.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/turns-e8c0e583635bd622",
+      "bytes": 24410520
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/thiserror_impl-41affb6479533387.d",
+      "bytes": 3571
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libsearch_core-e90e807a623544e8.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libgeneric_array-34554ad5f7438291.rmeta",
+      "bytes": 714005
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libsnapshot_effect_shapes-9f029700e576eafd.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libcrypto_common-bc6ddf14074de09e.rmeta",
+      "bytes": 22841
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/search_belief-31f3b53501f4e50d.d",
+      "bytes": 458
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/poltergeist-772c9c33d158ade6.d",
+      "bytes": 830
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libsearch_test_oracle-14170a137f25128a.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/observation_completeness-5e033c50ead929ed.d",
+      "bytes": 645
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libtypenum-9eec5b1faf8a6e67.rmeta",
+      "bytes": 2688127
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libsnapshot_effect_shapes-b176f6bde9d2921f.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/ability_contact-5eb03a565ca385e0.d",
+      "bytes": 450
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/itoa-83d469fe5aaa7ce7.d",
+      "bytes": 981
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libillusion-80ed5b237d85c6ab.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/poltergeist-8c035bc265201697.d",
+      "bytes": 692
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/illusion-09616360307e6f25.d",
+      "bytes": 430
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libmemchr-e60a3c02d05d360b.rlib",
+      "bytes": 2188278
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/thiserror-2c0bbd7d401e771a.d",
+      "bytes": 2013
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libsmallvec-c52599fcb585f183.rmeta",
+      "bytes": 242981
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/fixture_coverage-32e06b1df67e64d0.d",
+      "bytes": 691
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libserde_core-c57fe432673e6622.rmeta",
+      "bytes": 4678847
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/turns-e8c0e583635bd622.d",
+      "bytes": 518
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/serde_json-2154a0c034f2b590.d",
+      "bytes": 4970
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/digest-7abd700077a7b176.d",
+      "bytes": 2298
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/pa3_engine-7c83811ec744fe23.d",
+      "bytes": 3307
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/snapshot_effect_shapes-b176f6bde9d2921f.d",
+      "bytes": 635
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/legality-9a4fc3610c1355ab.d",
+      "bytes": 571
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/effect_sources-4526153cdac28318.d",
+      "bytes": 268
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libmemory_scale-b9b6c91d15cb798a.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/observation_leakage-3212573ab8c2b996",
+      "bytes": 21603760
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/memory_scale-6a0e132ef368e863.d",
+      "bytes": 258
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/cpufeatures-cb7cbdf7ec71562c.d",
+      "bytes": 755
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/thiserror-fce9187ebd45b167.d",
+      "bytes": 2679
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/frisk-afd0f71c6354ca17.d",
+      "bytes": 412
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libproc_macro2-a2e947a5b34a0a0c.rlib",
+      "bytes": 1223978
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/snapshot_effect_shapes-672d83df6256e34a",
+      "bytes": 21731888
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/search_core-3ad761512c91f166",
+      "bytes": 24870240
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libpa3_engine-055d47ed7bb57384.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/contracts-f4652dc7ff8537c5.d",
+      "bytes": 685
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libitoa-83d469fe5aaa7ce7.rlib",
+      "bytes": 172168
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/batch_observation-a969a78b7ef45c79",
+      "bytes": 19767872
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libserde_json-99a363fc68c26647.rlib",
+      "bytes": 3262634
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/smallvec-0d1fc6e486a07e03.d",
+      "bytes": 451
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/rayon_core-122c4ba9e926e296.d",
+      "bytes": 10004
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/batch_observation-87b804511e7fdff5.d",
+      "bytes": 616
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libunicode_ident-57409dd8a30c081c.rlib",
+      "bytes": 56452
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/memory_scale-b9b6c91d15cb798a.d",
+      "bytes": 397
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/fixture_coverage-b1627481db952b18.d",
+      "bytes": 829
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/observation_completeness-c1801249961eabab.d",
+      "bytes": 507
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/search_belief-cd5c8c790bc806e6.d",
+      "bytes": 596
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libmove_hooks-8510f767339ededb.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/flash_fire-aec416d730df2f84",
+      "bytes": 21927488
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/observation-c3db8b537e4e4e34",
+      "bytes": 19285888
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/illusion-09616360307e6f25",
+      "bytes": 19817560
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/effect_order-bb85ae7fdf8f7a72.d",
+      "bytes": 591
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/librayon_core-122c4ba9e926e296.rmeta",
+      "bytes": 474932
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/effect_sources-97585bf8ee59cf31.d",
+      "bytes": 407
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libversion_check-ea6887218707dfc6.rlib",
+      "bytes": 485866
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/ability_interactions-942537082750e127.d",
+      "bytes": 653
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libeffect_order-bb85ae7fdf8f7a72.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/observation_completeness-c1801249961eabab",
+      "bytes": 21729864
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/crossbeam_utils-89d1dd7333d8f222.d",
+      "bytes": 4431
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libcrypto_common-ebb38aaa0d75ef3c.rlib",
+      "bytes": 31542
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libsnapshot_phases-651ee35c02acf635.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/deps/sha2-822dbf0f5090789c.d",
+      "bytes": 3636
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libpool_run_report-2429a0143c4870bc.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libability_fixture_report-302a5f38fcf63e93.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/pool_run_report-2429a0143c4870bc.d",
+      "bytes": 499
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/readiness_check-8f6cdc9e7c803268.d",
+      "bytes": 626
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/observation_bench-9ff1ba3cc58caf73.d",
+      "bytes": 642
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libtmp_force_switch_probe-d1d8c9c03fc30ebd.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libability_fixture_report-b568aebe9212ccae.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/team_probe-118fceb6d8d3ea5d.d",
+      "bytes": 474
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/port_gaps-a948438db68dbc65.d",
+      "bytes": 469
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libdebug_fixture-84e29cbd4e28aa16.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/port_gaps.d",
+      "bytes": 1598
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/team_probe-0ef30beb204106b1.d",
+      "bytes": 336
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/tmp_force_switch_probe.d",
+      "bytes": 1624
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/hot_path_bench-359dd60e316eaefe.d",
+      "bytes": 799
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/ability_fixture_report.d",
+      "bytes": 1624
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/coverage_report-d99410d4bed60fcb.d",
+      "bytes": 488
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/blocker_priority-42e02fcdee7b0af3.d",
+      "bytes": 504
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/readiness_check",
+      "bytes": 15756728
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/readiness_check-e566d9479b22d8d3.d",
+      "bytes": 626
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/snapshot_probe-3cf529a4cd1c29b6.d",
+      "bytes": 621
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/port_gaps",
+      "bytes": 14791560
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/hot_path_bench-8a9d8efe5f4a8ca1",
+      "bytes": 19179248
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libhot_path_components-51eda76d630897bd.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/blocker_priority-f257129d289cc119.d",
+      "bytes": 366
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libblocker_priority-42e02fcdee7b0af3.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libtmp_force_switch_probe-4d26f9f8c75992f7.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/readiness_check-9cd501944c4aa420.d",
+      "bytes": 488
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/blocker_priority-7a4dae4ab3fb16ab.d",
+      "bytes": 504
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/readiness_check.d",
+      "bytes": 1674
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/team_probe.d",
+      "bytes": 1600
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/team_probe",
+      "bytes": 17239336
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/port_gaps-655f64314518af16.d",
+      "bytes": 331
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/debug_fixture.d",
+      "bytes": 2628
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/pool_run_report",
+      "bytes": 17480376
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/hot_path_bench-dfee2b9523a06d8c.d",
+      "bytes": 799
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/hot_path_bench",
+      "bytes": 19179248
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/pool_run_report-c2bf1f43c66a4a5e.d",
+      "bytes": 499
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/readiness_check-9cd501944c4aa420",
+      "bytes": 15756728
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libcoverage_report-886cd82e90587b49.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libhot_path_components-1eacd2c288a81042.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libreadiness_check-e566d9479b22d8d3.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libdebug_fixture-254a0c1d03c0e90b.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/hot_path_components.d",
+      "bytes": 1682
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/debug_fixture-84e29cbd4e28aa16.d",
+      "bytes": 2580
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/ability_fixture_report-302a5f38fcf63e93.d",
+      "bytes": 534
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/coverage_report",
+      "bytes": 15642144
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/debug_fixture",
+      "bytes": 58887888
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/tmp_force_switch_probe-2013ed718090f0ba.d",
+      "bytes": 396
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/tmp_force_switch_probe-4d26f9f8c75992f7.d",
+      "bytes": 534
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/observation_bench.d",
+      "bytes": 1680
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/hot_path_components",
+      "bytes": 18801480
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/hot_path_components-51eda76d630897bd.d",
+      "bytes": 646
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/tmp_force_switch_probe-2013ed718090f0ba",
+      "bytes": 17779984
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/pool_run_report-ff5efcdc59fbe0a2",
+      "bytes": 17480376
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/hot_path_components-ca31d395fb132d54.d",
+      "bytes": 508
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/blocker_priority",
+      "bytes": 15924568
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/port_gaps-655f64314518af16",
+      "bytes": 14791560
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libpool_run_report-c2bf1f43c66a4a5e.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/coverage_report.d",
+      "bytes": 1674
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/observation_bench-5f354faf01dfa53f.d",
+      "bytes": 504
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/ability_fixture_report",
+      "bytes": 15311080
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libteam_probe-118fceb6d8d3ea5d.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/port_gaps-0187a89558021b9c.d",
+      "bytes": 469
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/pool_run_report.d",
+      "bytes": 1610
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/snapshot_probe-486081eb2363467a.d",
+      "bytes": 621
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/observation_bench-27062678dead1431.d",
+      "bytes": 642
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/team_probe-a84e8f219ce7f199.d",
+      "bytes": 474
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/debug_fixture-39dc4dbbf0446894",
+      "bytes": 58887888
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/ability_fixture_report-b568aebe9212ccae.d",
+      "bytes": 534
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/hot_path_bench.d",
+      "bytes": 1753
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libobservation_bench-27062678dead1431.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/team_probe-0ef30beb204106b1",
+      "bytes": 17239336
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/blocker_priority-f257129d289cc119",
+      "bytes": 15924568
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libteam_probe-a84e8f219ce7f199.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/blocker_priority.d",
+      "bytes": 1612
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/snapshot_probe",
+      "bytes": 19149656
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/snapshot_probe-cdbb19b211b068de.d",
+      "bytes": 483
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libsnapshot_probe-486081eb2363467a.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/coverage_report-79afe73000e6c57e.d",
+      "bytes": 626
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libsnapshot_probe-3cf529a4cd1c29b6.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/tmp_force_switch_probe-d1d8c9c03fc30ebd.d",
+      "bytes": 534
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libreadiness_check-8f6cdc9e7c803268.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/pool_run_report-ff5efcdc59fbe0a2.d",
+      "bytes": 361
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/debug_fixture-39dc4dbbf0446894.d",
+      "bytes": 2442
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/debug_fixture-254a0c1d03c0e90b.d",
+      "bytes": 2580
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/ability_fixture_report-ad3bdaad5c3263a1",
+      "bytes": 15311080
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libport_gaps-a948438db68dbc65.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/hot_path_components-1eacd2c288a81042.d",
+      "bytes": 646
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/snapshot_probe-cdbb19b211b068de",
+      "bytes": 19149656
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/hot_path_bench-8a9d8efe5f4a8ca1.d",
+      "bytes": 661
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/observation_bench-5f354faf01dfa53f",
+      "bytes": 17370216
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/coverage_report-886cd82e90587b49.d",
+      "bytes": 626
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libblocker_priority-7a4dae4ab3fb16ab.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/snapshot_probe.d",
+      "bytes": 1672
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/tmp_force_switch_probe",
+      "bytes": 17779984
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/hot_path_components-ca31d395fb132d54",
+      "bytes": 18801480
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libport_gaps-0187a89558021b9c.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libhot_path_bench-359dd60e316eaefe.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libobservation_bench-9ff1ba3cc58caf73.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/observation_bench",
+      "bytes": 17370216
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libhot_path_bench-dfee2b9523a06d8c.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/libcoverage_report-79afe73000e6c57e.rmeta",
+      "bytes": 0
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/coverage_report-d99410d4bed60fcb",
+      "bytes": 15642144
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/examples/ability_fixture_report-ad3bdaad5c3263a1.d",
+      "bytes": 396
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/thiserror-ebcc4fdc2fd6d3a0/build_script_build-ebcc4fdc2fd6d3a0",
+      "bytes": 4061448
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/thiserror-ebcc4fdc2fd6d3a0/build-script-build",
+      "bytes": 4061448
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/thiserror-ebcc4fdc2fd6d3a0/build_script_build-ebcc4fdc2fd6d3a0.d",
+      "bytes": 515
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/zmij-9913e6071b301b42/build_script_build-9913e6071b301b42",
+      "bytes": 3990824
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/zmij-9913e6071b301b42/build-script-build",
+      "bytes": 3990824
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/zmij-9913e6071b301b42/build_script_build-9913e6071b301b42.d",
+      "bytes": 490
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/serde-e6de4229c42ea7cd/build_script_build-e6de4229c42ea7cd.d",
+      "bytes": 498
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/serde-e6de4229c42ea7cd/build_script_build-e6de4229c42ea7cd",
+      "bytes": 4015008
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/serde-e6de4229c42ea7cd/build-script-build",
+      "bytes": 4015008
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/serde_core-5aaa16e80a3bc3b2/build_script_build-5aaa16e80a3bc3b2",
+      "bytes": 4017984
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/serde_core-5aaa16e80a3bc3b2/build_script_build-5aaa16e80a3bc3b2.d",
+      "bytes": 523
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/serde_core-5aaa16e80a3bc3b2/build-script-build",
+      "bytes": 4017984
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/quote-4e615830854c1463/build_script_build-4e615830854c1463.d",
+      "bytes": 495
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/quote-4e615830854c1463/build_script_build-4e615830854c1463",
+      "bytes": 3985112
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/quote-4e615830854c1463/build-script-build",
+      "bytes": 3985112
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/crossbeam-deque-ee346f589faae9ef/build_script_build-ee346f589faae9ef.d",
+      "bytes": 542
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/crossbeam-deque-ee346f589faae9ef/build_script_build-ee346f589faae9ef",
+      "bytes": 3910464
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/crossbeam-deque-ee346f589faae9ef/build-script-build",
+      "bytes": 3910464
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/rayon-core-62753ae4fc53848b/build_script_build-62753ae4fc53848b.d",
+      "bytes": 520
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/rayon-core-62753ae4fc53848b/build_script_build-62753ae4fc53848b",
+      "bytes": 3872888
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/rayon-core-62753ae4fc53848b/build-script-build",
+      "bytes": 3872888
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/crossbeam-epoch-75634e7a0c864058/build_script_build-75634e7a0c864058.d",
+      "bytes": 545
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/crossbeam-epoch-75634e7a0c864058/build_script_build-75634e7a0c864058",
+      "bytes": 3910464
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/crossbeam-epoch-75634e7a0c864058/build-script-build",
+      "bytes": 3910464
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/generic-array-f2f2607b090a65d5/build_script_build-f2f2607b090a65d5",
+      "bytes": 4050104
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/generic-array-f2f2607b090a65d5/build_script_build-f2f2607b090a65d5.d",
+      "bytes": 535
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/generic-array-f2f2607b090a65d5/build-script-build",
+      "bytes": 4050104
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/crossbeam-utils-e3a5864f8bee1c73/build_script_build-e3a5864f8bee1c73",
+      "bytes": 3942040
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/crossbeam-utils-e3a5864f8bee1c73/build_script_build-e3a5864f8bee1c73.d",
+      "bytes": 1210
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/crossbeam-utils-e3a5864f8bee1c73/build-script-build",
+      "bytes": 3942040
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/proc-macro2-58e3e4b6b0a9eaad/build_script_build-58e3e4b6b0a9eaad",
+      "bytes": 4041080
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/proc-macro2-58e3e4b6b0a9eaad/build_script_build-58e3e4b6b0a9eaad.d",
+      "bytes": 528
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/proc-macro2-58e3e4b6b0a9eaad/build-script-build",
+      "bytes": 4041080
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/serde_json-bbf3f93297bafd9b/build_script_build-bbf3f93297bafd9b.d",
+      "bytes": 523
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/serde_json-bbf3f93297bafd9b/build_script_build-bbf3f93297bafd9b",
+      "bytes": 3877976
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/build/serde_json-bbf3f93297bafd9b/build-script-build",
+      "bytes": 3877976
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/version_check-ea6887218707dfc6/dep-lib-version_check",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/version_check-ea6887218707dfc6/lib-version_check.json",
+      "bytes": 360
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/version_check-ea6887218707dfc6/lib-version_check",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/version_check-ea6887218707dfc6/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-904619a1b25dc6f0/test-integration-test-effect_sources",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-904619a1b25dc6f0/test-integration-test-effect_sources.json",
+      "bytes": 821
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-904619a1b25dc6f0/dep-test-integration-test-effect_sources",
+      "bytes": 179
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-904619a1b25dc6f0/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-359dd60e316eaefe/example-hot_path_bench",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-359dd60e316eaefe/dep-example-hot_path_bench",
+      "bytes": 255
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-359dd60e316eaefe/example-hot_path_bench.json",
+      "bytes": 809
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-359dd60e316eaefe/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-260b7d4a50d84289/test-integration-test-search_information_set",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-260b7d4a50d84289/test-integration-test-search_information_set.json",
+      "bytes": 830
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-260b7d4a50d84289/dep-test-integration-test-search_information_set",
+      "bytes": 81
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-260b7d4a50d84289/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/itoa-83d469fe5aaa7ce7/dep-lib-itoa",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/itoa-83d469fe5aaa7ce7/lib-itoa",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/itoa-83d469fe5aaa7ce7/lib-itoa.json",
+      "bytes": 355
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/itoa-83d469fe5aaa7ce7/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/quote-e249264bc461e7ba/run-build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/quote-e249264bc461e7ba/run-build-script-build-script-build.json",
+      "bytes": 324
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/sha2-822dbf0f5090789c/lib-sha2.json",
+      "bytes": 683
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/sha2-822dbf0f5090789c/lib-sha2",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/sha2-822dbf0f5090789c/dep-lib-sha2",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/sha2-822dbf0f5090789c/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-3cf529a4cd1c29b6/dep-example-snapshot_probe",
+      "bytes": 210
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-3cf529a4cd1c29b6/example-snapshot_probe.json",
+      "bytes": 808
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-3cf529a4cd1c29b6/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-3cf529a4cd1c29b6/example-snapshot_probe",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-f141457e489927f6/dep-test-integration-test-turns",
+      "bytes": 222
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-f141457e489927f6/test-integration-test-turns.json",
+      "bytes": 812
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-f141457e489927f6/test-integration-test-turns",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-f141457e489927f6/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_json-5625e43ef73f4738/run-build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_json-5625e43ef73f4738/run-build-script-build-script-build.json",
+      "bytes": 330
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/rayon-6a46869fe0895c45/dep-lib-rayon",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/rayon-6a46869fe0895c45/lib-rayon",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/rayon-6a46869fe0895c45/lib-rayon.json",
+      "bytes": 481
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/rayon-6a46869fe0895c45/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/block-buffer-f8fbb490a343c4dc/lib-block_buffer.json",
+      "bytes": 422
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/block-buffer-f8fbb490a343c4dc/dep-lib-block_buffer",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/block-buffer-f8fbb490a343c4dc/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/block-buffer-f8fbb490a343c4dc/lib-block_buffer",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-5647fd927419a346/test-integration-test-search_world.json",
+      "bytes": 818
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-5647fd927419a346/dep-test-integration-test-search_world",
+      "bytes": 207
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-5647fd927419a346/test-integration-test-search_world",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-5647fd927419a346/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-51eda76d630897bd/example-hot_path_components.json",
+      "bytes": 813
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-51eda76d630897bd/dep-example-hot_path_components",
+      "bytes": 215
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-51eda76d630897bd/example-hot_path_components",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-51eda76d630897bd/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-1c97469672370331/test-integration-test-poltergeist",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-1c97469672370331/test-integration-test-poltergeist.json",
+      "bytes": 818
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-1c97469672370331/dep-test-integration-test-poltergeist",
+      "bytes": 326
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-1c97469672370331/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-utils-1aec4b9320e92954/lib-crossbeam_utils",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-utils-1aec4b9320e92954/dep-lib-crossbeam_utils",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-utils-1aec4b9320e92954/lib-crossbeam_utils.json",
+      "bytes": 496
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-utils-1aec4b9320e92954/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-932fb0766d57ef7b/test-integration-test-state_batch.json",
+      "bytes": 819
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-932fb0766d57ef7b/test-integration-test-state_batch",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-932fb0766d57ef7b/dep-test-integration-test-state_batch",
+      "bytes": 240
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-932fb0766d57ef7b/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/memchr-e60a3c02d05d360b/lib-memchr.json",
+      "bytes": 464
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/memchr-e60a3c02d05d360b/dep-lib-memchr",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/memchr-e60a3c02d05d360b/lib-memchr",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/memchr-e60a3c02d05d360b/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-787e7ba566a92bbe/test-integration-test-effect_order.json",
+      "bytes": 819
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-787e7ba566a92bbe/test-integration-test-effect_order",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-787e7ba566a92bbe/dep-test-integration-test-effect_order",
+      "bytes": 216
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-787e7ba566a92bbe/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-302a5f38fcf63e93/example-ability_fixture_report.json",
+      "bytes": 815
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-302a5f38fcf63e93/dep-example-ability_fixture_report",
+      "bytes": 190
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-302a5f38fcf63e93/example-ability_fixture_report",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-302a5f38fcf63e93/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-80ed5b237d85c6ab/test-integration-test-illusion",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-80ed5b237d85c6ab/test-integration-test-illusion.json",
+      "bytes": 816
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-80ed5b237d85c6ab/dep-test-integration-test-illusion",
+      "bytes": 202
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-80ed5b237d85c6ab/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/rayon-core-122c4ba9e926e296/dep-lib-rayon_core",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/rayon-core-122c4ba9e926e296/lib-rayon_core",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/rayon-core-122c4ba9e926e296/lib-rayon_core.json",
+      "bytes": 574
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/rayon-core-122c4ba9e926e296/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-655f64314518af16/dep-example-port_gaps",
+      "bytes": 41
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-655f64314518af16/example-port_gaps.json",
+      "bytes": 802
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-655f64314518af16/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-655f64314518af16/example-port_gaps",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/thiserror-ebcc4fdc2fd6d3a0/dep-build-script-build-script-build",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/thiserror-ebcc4fdc2fd6d3a0/build-script-build-script-build.json",
+      "bytes": 410
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/thiserror-ebcc4fdc2fd6d3a0/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/thiserror-ebcc4fdc2fd6d3a0/build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/generic-array-7f5ca66574c57b88/lib-generic_array.json",
+      "bytes": 544
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/generic-array-7f5ca66574c57b88/dep-lib-generic_array",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/generic-array-7f5ca66574c57b88/lib-generic_array",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/generic-array-7f5ca66574c57b88/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e8268e0da1de2ee1/test-integration-test-legality",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e8268e0da1de2ee1/test-integration-test-legality.json",
+      "bytes": 816
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e8268e0da1de2ee1/dep-test-integration-test-legality",
+      "bytes": 203
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e8268e0da1de2ee1/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/thiserror-impl-41affb6479533387/lib-thiserror_impl.json",
+      "bytes": 536
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/thiserror-impl-41affb6479533387/dep-lib-thiserror_impl",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/thiserror-impl-41affb6479533387/lib-thiserror_impl",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/thiserror-impl-41affb6479533387/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-f4652dc7ff8537c5/test-integration-test-contracts.json",
+      "bytes": 816
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-f4652dc7ff8537c5/dep-test-integration-test-contracts",
+      "bytes": 229
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-f4652dc7ff8537c5/test-integration-test-contracts",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-f4652dc7ff8537c5/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-b1627481db952b18/test-integration-test-fixture_coverage.json",
+      "bytes": 824
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-b1627481db952b18/dep-test-integration-test-fixture_coverage",
+      "bytes": 261
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-b1627481db952b18/test-integration-test-fixture_coverage",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-b1627481db952b18/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-f257129d289cc119/dep-example-blocker_priority",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-f257129d289cc119/example-blocker_priority.json",
+      "bytes": 809
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-f257129d289cc119/example-blocker_priority",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-f257129d289cc119/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-a948438db68dbc65/dep-example-port_gaps",
+      "bytes": 177
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-a948438db68dbc65/example-port_gaps.json",
+      "bytes": 803
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-a948438db68dbc65/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-a948438db68dbc65/example-port_gaps",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-2429a0143c4870bc/dep-example-pool_run_report",
+      "bytes": 183
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-2429a0143c4870bc/example-pool_run_report.json",
+      "bytes": 809
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-2429a0143c4870bc/example-pool_run_report",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-2429a0143c4870bc/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-deque-25697fc0dded3978/lib-crossbeam_deque.json",
+      "bytes": 606
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-deque-25697fc0dded3978/lib-crossbeam_deque",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-deque-25697fc0dded3978/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-deque-25697fc0dded3978/dep-lib-crossbeam_deque",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-27062678dead1431/dep-example-observation_bench",
+      "bytes": 215
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-27062678dead1431/example-observation_bench",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-27062678dead1431/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-27062678dead1431/example-observation_bench.json",
+      "bytes": 809
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/quote-c8c1b268e59d94dd/lib-quote.json",
+      "bytes": 529
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/quote-c8c1b268e59d94dd/dep-lib-quote",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/quote-c8c1b268e59d94dd/lib-quote",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/quote-c8c1b268e59d94dd/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-2c52b3f8acbbc677/dep-test-integration-test-snapshot_phases",
+      "bytes": 208
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-2c52b3f8acbbc677/test-integration-test-snapshot_phases",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-2c52b3f8acbbc677/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-2c52b3f8acbbc677/test-integration-test-snapshot_phases.json",
+      "bytes": 823
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/cfg-if-6d5c01eec2b94bd9/lib-cfg_if",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/cfg-if-6d5c01eec2b94bd9/lib-cfg_if.json",
+      "bytes": 377
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/cfg-if-6d5c01eec2b94bd9/dep-lib-cfg_if",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/cfg-if-6d5c01eec2b94bd9/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/zmij-9913e6071b301b42/dep-build-script-build-script-build",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/zmij-9913e6071b301b42/build-script-build-script-build.json",
+      "bytes": 376
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/zmij-9913e6071b301b42/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/zmij-9913e6071b301b42/build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-d99410d4bed60fcb/example-coverage_report.json",
+      "bytes": 807
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-d99410d4bed60fcb/example-coverage_report",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-d99410d4bed60fcb/dep-example-coverage_report",
+      "bytes": 75
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-d99410d4bed60fcb/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-772c9c33d158ade6/test-integration-test-poltergeist",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-772c9c33d158ade6/test-integration-test-poltergeist.json",
+      "bytes": 818
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-772c9c33d158ade6/dep-test-integration-test-poltergeist",
+      "bytes": 326
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-772c9c33d158ade6/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/cpufeatures-cb7cbdf7ec71562c/lib-cpufeatures",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/cpufeatures-cb7cbdf7ec71562c/dep-lib-cpufeatures",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/cpufeatures-cb7cbdf7ec71562c/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/cpufeatures-cb7cbdf7ec71562c/lib-cpufeatures.json",
+      "bytes": 355
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-07ae62eaf6a447bf/test-integration-test-illusion",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-07ae62eaf6a447bf/test-integration-test-illusion.json",
+      "bytes": 816
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-07ae62eaf6a447bf/dep-test-integration-test-illusion",
+      "bytes": 202
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-07ae62eaf6a447bf/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-7c83811ec744fe23/test-lib-pa3_engine",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-7c83811ec744fe23/dep-test-lib-pa3_engine",
+      "bytes": 997
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-7c83811ec744fe23/test-lib-pa3_engine.json",
+      "bytes": 743
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-7c83811ec744fe23/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crypto-common-bc6ddf14074de09e/dep-lib-crypto_common",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crypto-common-bc6ddf14074de09e/lib-crypto_common.json",
+      "bytes": 527
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crypto-common-bc6ddf14074de09e/lib-crypto_common",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crypto-common-bc6ddf14074de09e/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/thiserror-0a2ea650f3d375eb/run-build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/thiserror-0a2ea650f3d375eb/run-build-script-build-script-build.json",
+      "bytes": 394
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-0ef30beb204106b1/example-team_probe.json",
+      "bytes": 803
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-0ef30beb204106b1/example-team_probe",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-0ef30beb204106b1/dep-example-team_probe",
+      "bytes": 42
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-0ef30beb204106b1/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-118fceb6d8d3ea5d/example-team_probe.json",
+      "bytes": 804
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-118fceb6d8d3ea5d/example-team_probe",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-118fceb6d8d3ea5d/dep-example-team_probe",
+      "bytes": 178
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-118fceb6d8d3ea5d/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-epoch-180a669f281c0228/lib-crossbeam_epoch.json",
+      "bytes": 587
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-epoch-180a669f281c0228/lib-crossbeam_epoch",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-epoch-180a669f281c0228/dep-lib-crossbeam_epoch",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-epoch-180a669f281c0228/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/thiserror-fce9187ebd45b167/dep-lib-thiserror",
+      "bytes": 73
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/thiserror-fce9187ebd45b167/lib-thiserror",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/thiserror-fce9187ebd45b167/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/thiserror-fce9187ebd45b167/lib-thiserror.json",
+      "bytes": 524
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-9699ea55629ed806/test-integration-test-search_world.json",
+      "bytes": 818
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-9699ea55629ed806/dep-test-integration-test-search_world",
+      "bytes": 207
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-9699ea55629ed806/test-integration-test-search_world",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-9699ea55629ed806/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e566d9479b22d8d3/example-readiness_check",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e566d9479b22d8d3/example-readiness_check.json",
+      "bytes": 809
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e566d9479b22d8d3/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e566d9479b22d8d3/dep-example-readiness_check",
+      "bytes": 211
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e90e807a623544e8/test-integration-test-search_core.json",
+      "bytes": 816
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e90e807a623544e8/test-integration-test-search_core",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e90e807a623544e8/dep-test-integration-test-search_core",
+      "bytes": 206
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e90e807a623544e8/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/generic-array-ea05eb7ed6b4b479/run-build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/generic-array-ea05eb7ed6b4b479/run-build-script-build-script-build.json",
+      "bytes": 258
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-31f3b53501f4e50d/test-integration-test-search_belief.json",
+      "bytes": 819
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-31f3b53501f4e50d/dep-test-integration-test-search_belief",
+      "bytes": 72
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-31f3b53501f4e50d/test-integration-test-search_belief",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-31f3b53501f4e50d/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-aec416d730df2f84/dep-test-integration-test-flash_fire",
+      "bytes": 67
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-aec416d730df2f84/test-integration-test-flash_fire",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-aec416d730df2f84/test-integration-test-flash_fire.json",
+      "bytes": 817
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-aec416d730df2f84/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-deque-722b4803822109bb/run-build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-deque-722b4803822109bb/run-build-script-build-script-build.json",
+      "bytes": 337
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde-b64f3397b4a61309/dep-lib-serde",
+      "bytes": 69
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde-b64f3397b4a61309/lib-serde",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde-b64f3397b4a61309/lib-serde.json",
+      "bytes": 674
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde-b64f3397b4a61309/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-b4218788171824f4/dep-test-integration-test-move_hooks",
+      "bytes": 210
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-b4218788171824f4/test-integration-test-move_hooks.json",
+      "bytes": 818
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-b4218788171824f4/test-integration-test-move_hooks",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-b4218788171824f4/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crypto-common-ebb38aaa0d75ef3c/dep-lib-crypto_common",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crypto-common-ebb38aaa0d75ef3c/lib-crypto_common.json",
+      "bytes": 529
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crypto-common-ebb38aaa0d75ef3c/lib-crypto_common",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crypto-common-ebb38aaa0d75ef3c/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-utils-d1c21fa926c171bc/run-build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-utils-d1c21fa926c171bc/run-build-script-build-script-build.json",
+      "bytes": 340
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/zmij-28e2988bf445087e/run-build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/zmij-28e2988bf445087e/run-build-script-build-script-build.json",
+      "bytes": 326
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/smallvec-c52599fcb585f183/lib-smallvec",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/smallvec-c52599fcb585f183/lib-smallvec.json",
+      "bytes": 592
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/smallvec-c52599fcb585f183/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/smallvec-c52599fcb585f183/dep-lib-smallvec",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-87a4d208ccf5b758/test-integration-test-search_information_set",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-87a4d208ccf5b758/test-integration-test-search_information_set.json",
+      "bytes": 829
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-87a4d208ccf5b758/dep-test-integration-test-search_information_set",
+      "bytes": 217
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-87a4d208ccf5b758/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/sha2-dfbafe5f28d527a5/lib-sha2.json",
+      "bytes": 684
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/sha2-dfbafe5f28d527a5/lib-sha2",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/sha2-dfbafe5f28d527a5/dep-lib-sha2",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/sha2-dfbafe5f28d527a5/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-11298d549aff9033/dep-test-integration-test-flash_fire",
+      "bytes": 203
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-11298d549aff9033/test-integration-test-flash_fire",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-11298d549aff9033/test-integration-test-flash_fire.json",
+      "bytes": 816
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-11298d549aff9033/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8510f767339ededb/dep-test-integration-test-move_hooks",
+      "bytes": 210
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8510f767339ededb/test-integration-test-move_hooks.json",
+      "bytes": 818
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8510f767339ededb/test-integration-test-move_hooks",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8510f767339ededb/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-2be08b40e54c6588/dep-test-integration-test-observation",
+      "bytes": 206
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-2be08b40e54c6588/test-integration-test-observation",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-2be08b40e54c6588/test-integration-test-observation.json",
+      "bytes": 818
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-2be08b40e54c6588/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde-e6de4229c42ea7cd/dep-build-script-build-script-build",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde-e6de4229c42ea7cd/build-script-build-script-build.json",
+      "bytes": 499
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde-e6de4229c42ea7cd/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde-e6de4229c42ea7cd/build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8a9d8efe5f4a8ca1/example-hot_path_bench",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8a9d8efe5f4a8ca1/dep-example-hot_path_bench",
+      "bytes": 119
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8a9d8efe5f4a8ca1/example-hot_path_bench.json",
+      "bytes": 808
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8a9d8efe5f4a8ca1/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-0187a89558021b9c/dep-example-port_gaps",
+      "bytes": 177
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-0187a89558021b9c/example-port_gaps.json",
+      "bytes": 803
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-0187a89558021b9c/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-0187a89558021b9c/example-port_gaps",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-dfee2b9523a06d8c/example-hot_path_bench",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-dfee2b9523a06d8c/dep-example-hot_path_bench",
+      "bytes": 255
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-dfee2b9523a06d8c/example-hot_path_bench.json",
+      "bytes": 809
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-dfee2b9523a06d8c/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-39dc4dbbf0446894/example-debug_fixture",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-39dc4dbbf0446894/dep-example-debug_fixture",
+      "bytes": 527
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-39dc4dbbf0446894/example-debug_fixture.json",
+      "bytes": 806
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-39dc4dbbf0446894/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-70cbaca5fb17be34/test-integration-test-frisk.json",
+      "bytes": 813
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-70cbaca5fb17be34/test-integration-test-frisk",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-70cbaca5fb17be34/dep-test-integration-test-frisk",
+      "bytes": 198
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-70cbaca5fb17be34/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-cdbb19b211b068de/dep-example-snapshot_probe",
+      "bytes": 74
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-cdbb19b211b068de/example-snapshot_probe.json",
+      "bytes": 807
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-cdbb19b211b068de/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-cdbb19b211b068de/example-snapshot_probe",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-5eb03a565ca385e0/dep-test-integration-test-ability_contact",
+      "bytes": 77
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-5eb03a565ca385e0/test-integration-test-ability_contact.json",
+      "bytes": 824
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-5eb03a565ca385e0/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-5eb03a565ca385e0/test-integration-test-ability_contact",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-afd0f71c6354ca17/test-integration-test-frisk.json",
+      "bytes": 814
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-afd0f71c6354ca17/test-integration-test-frisk",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-afd0f71c6354ca17/dep-test-integration-test-frisk",
+      "bytes": 62
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-afd0f71c6354ca17/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-caef1d90ca560d27/test-integration-test-ability_interactions",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-caef1d90ca560d27/dep-test-integration-test-ability_interactions",
+      "bytes": 266
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-caef1d90ca560d27/test-integration-test-ability_interactions.json",
+      "bytes": 827
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-caef1d90ca560d27/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-254a0c1d03c0e90b/example-debug_fixture",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-254a0c1d03c0e90b/dep-example-debug_fixture",
+      "bytes": 663
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-254a0c1d03c0e90b/example-debug_fixture.json",
+      "bytes": 807
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-254a0c1d03c0e90b/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-c3db8b537e4e4e34/dep-test-integration-test-observation",
+      "bytes": 70
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-c3db8b537e4e4e34/test-integration-test-observation",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-c3db8b537e4e4e34/test-integration-test-observation.json",
+      "bytes": 819
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-c3db8b537e4e4e34/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/either-a2a1e1e8237dc905/lib-either.json",
+      "bytes": 390
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/either-a2a1e1e8237dc905/lib-either",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/either-a2a1e1e8237dc905/dep-lib-either",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/either-a2a1e1e8237dc905/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-05a245ebdf0b76e9/dep-lib-pa3_engine",
+      "bytes": 721
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-05a245ebdf0b76e9/lib-pa3_engine.json",
+      "bytes": 739
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-05a245ebdf0b76e9/lib-pa3_engine",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-05a245ebdf0b76e9/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/proc-macro2-a2e947a5b34a0a0c/dep-lib-proc_macro2",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/proc-macro2-a2e947a5b34a0a0c/lib-proc_macro2",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/proc-macro2-a2e947a5b34a0a0c/lib-proc_macro2.json",
+      "bytes": 577
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/proc-macro2-a2e947a5b34a0a0c/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/generic-array-34554ad5f7438291/lib-generic_array.json",
+      "bytes": 543
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/generic-array-34554ad5f7438291/dep-lib-generic_array",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/generic-array-34554ad5f7438291/lib-generic_array",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/generic-array-34554ad5f7438291/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-epoch-2cd4d5b7190667cc/lib-crossbeam_epoch.json",
+      "bytes": 586
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-epoch-2cd4d5b7190667cc/lib-crossbeam_epoch",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-epoch-2cd4d5b7190667cc/dep-lib-crossbeam_epoch",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-epoch-2cd4d5b7190667cc/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e9c332c4452e9262/dep-test-integration-test-ability_contact",
+      "bytes": 213
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e9c332c4452e9262/test-integration-test-ability_contact.json",
+      "bytes": 823
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e9c332c4452e9262/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e9c332c4452e9262/test-integration-test-ability_contact",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-5e033c50ead929ed/test-integration-test-observation_completeness",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-5e033c50ead929ed/test-integration-test-observation_completeness.json",
+      "bytes": 831
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-5e033c50ead929ed/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-5e033c50ead929ed/dep-test-integration-test-observation_completeness",
+      "bytes": 217
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-5f354faf01dfa53f/dep-example-observation_bench",
+      "bytes": 79
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-5f354faf01dfa53f/example-observation_bench",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-5f354faf01dfa53f/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-5f354faf01dfa53f/example-observation_bench.json",
+      "bytes": 808
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-b176f6bde9d2921f/test-integration-test-snapshot_effect_shapes",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-b176f6bde9d2921f/dep-test-integration-test-snapshot_effect_shapes",
+      "bytes": 215
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-b176f6bde9d2921f/test-integration-test-snapshot_effect_shapes.json",
+      "bytes": 828
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-b176f6bde9d2921f/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8714cde6cc496014/dep-lib-pa3_engine",
+      "bytes": 857
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8714cde6cc496014/lib-pa3_engine.json",
+      "bytes": 739
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8714cde6cc496014/lib-pa3_engine",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8714cde6cc496014/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde-eae08e68c162f6a9/dep-lib-serde",
+      "bytes": 69
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde-eae08e68c162f6a9/lib-serde",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde-eae08e68c162f6a9/lib-serde.json",
+      "bytes": 675
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde-eae08e68c162f6a9/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-c1801249961eabab/test-integration-test-observation_completeness",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-c1801249961eabab/test-integration-test-observation_completeness.json",
+      "bytes": 832
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-c1801249961eabab/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-c1801249961eabab/dep-test-integration-test-observation_completeness",
+      "bytes": 81
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_json-2154a0c034f2b590/lib-serde_json",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_json-2154a0c034f2b590/lib-serde_json.json",
+      "bytes": 823
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_json-2154a0c034f2b590/dep-lib-serde_json",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_json-2154a0c034f2b590/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8f02368751457f1c/dep-test-integration-test-memory_scale",
+      "bytes": 177
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8f02368751457f1c/test-integration-test-memory_scale",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8f02368751457f1c/test-integration-test-memory_scale.json",
+      "bytes": 820
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8f02368751457f1c/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/syn-050951c209b49d68/lib-syn",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/syn-050951c209b49d68/lib-syn.json",
+      "bytes": 763
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/syn-050951c209b49d68/dep-lib-syn",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/syn-050951c209b49d68/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-97585bf8ee59cf31/test-integration-test-effect_sources",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-97585bf8ee59cf31/test-integration-test-effect_sources.json",
+      "bytes": 821
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-97585bf8ee59cf31/dep-test-integration-test-effect_sources",
+      "bytes": 179
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-97585bf8ee59cf31/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-b568aebe9212ccae/example-ability_fixture_report.json",
+      "bytes": 815
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-b568aebe9212ccae/dep-example-ability_fixture_report",
+      "bytes": 190
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-b568aebe9212ccae/example-ability_fixture_report",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-b568aebe9212ccae/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e001cf1fc4fe00cf/test-integration-test-contracts.json",
+      "bytes": 817
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e001cf1fc4fe00cf/dep-test-integration-test-contracts",
+      "bytes": 93
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e001cf1fc4fe00cf/test-integration-test-contracts",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e001cf1fc4fe00cf/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/block-buffer-29375d12cbb7c456/lib-block_buffer.json",
+      "bytes": 421
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/block-buffer-29375d12cbb7c456/dep-lib-block_buffer",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/block-buffer-29375d12cbb7c456/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/block-buffer-29375d12cbb7c456/lib-block_buffer",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-4526153cdac28318/test-integration-test-effect_sources",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-4526153cdac28318/test-integration-test-effect_sources.json",
+      "bytes": 822
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-4526153cdac28318/dep-test-integration-test-effect_sources",
+      "bytes": 43
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-4526153cdac28318/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/thiserror-2c0bbd7d401e771a/dep-lib-thiserror",
+      "bytes": 73
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/thiserror-2c0bbd7d401e771a/lib-thiserror",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/thiserror-2c0bbd7d401e771a/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/thiserror-2c0bbd7d401e771a/lib-thiserror.json",
+      "bytes": 524
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_core-e80a4b0ebc9f98da/run-build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_core-e80a4b0ebc9f98da/run-build-script-build-script-build.json",
+      "bytes": 331
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-7ebe65eeea42318a/test-integration-test-state_batch.json",
+      "bytes": 820
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-7ebe65eeea42318a/test-integration-test-state_batch",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-7ebe65eeea42318a/dep-test-integration-test-state_batch",
+      "bytes": 104
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-7ebe65eeea42318a/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/zmij-d9436db0d90adebe/lib-zmij",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/zmij-d9436db0d90adebe/lib-zmij.json",
+      "bytes": 423
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/zmij-d9436db0d90adebe/dep-lib-zmij",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/zmij-d9436db0d90adebe/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-b9b6c91d15cb798a/dep-test-integration-test-memory_scale",
+      "bytes": 177
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-b9b6c91d15cb798a/test-integration-test-memory_scale",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-b9b6c91d15cb798a/test-integration-test-memory_scale.json",
+      "bytes": 820
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-b9b6c91d15cb798a/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-deque-12ae66d8da68b287/lib-crossbeam_deque.json",
+      "bytes": 608
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-deque-12ae66d8da68b287/lib-crossbeam_deque",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-deque-12ae66d8da68b287/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-deque-12ae66d8da68b287/dep-lib-crossbeam_deque",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-504ec3041411ce08/test-integration-test-frisk.json",
+      "bytes": 813
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-504ec3041411ce08/test-integration-test-frisk",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-504ec3041411ce08/dep-test-integration-test-frisk",
+      "bytes": 198
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-504ec3041411ce08/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-14170a137f25128a/dep-test-integration-test-search_test_oracle",
+      "bytes": 213
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-14170a137f25128a/test-integration-test-search_test_oracle.json",
+      "bytes": 824
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-14170a137f25128a/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-14170a137f25128a/test-integration-test-search_test_oracle",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-9f029700e576eafd/test-integration-test-snapshot_effect_shapes",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-9f029700e576eafd/dep-test-integration-test-snapshot_effect_shapes",
+      "bytes": 215
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-9f029700e576eafd/test-integration-test-snapshot_effect_shapes.json",
+      "bytes": 828
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-9f029700e576eafd/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-d1d8c9c03fc30ebd/example-tmp_force_switch_probe",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-d1d8c9c03fc30ebd/dep-example-tmp_force_switch_probe",
+      "bytes": 190
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-d1d8c9c03fc30ebd/example-tmp_force_switch_probe.json",
+      "bytes": 817
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-d1d8c9c03fc30ebd/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-5501befeb9ca6876/test-integration-test-ability_interactions",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-5501befeb9ca6876/dep-test-integration-test-ability_interactions",
+      "bytes": 266
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-5501befeb9ca6876/test-integration-test-ability_interactions.json",
+      "bytes": 827
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-5501befeb9ca6876/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/typenum-9eec5b1faf8a6e67/lib-typenum.json",
+      "bytes": 419
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/typenum-9eec5b1faf8a6e67/dep-lib-typenum",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/typenum-9eec5b1faf8a6e67/lib-typenum",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/typenum-9eec5b1faf8a6e67/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-c6564f5a1bc424e2/test-integration-test-fixture_coverage.json",
+      "bytes": 824
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-c6564f5a1bc424e2/dep-test-integration-test-fixture_coverage",
+      "bytes": 261
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-c6564f5a1bc424e2/test-integration-test-fixture_coverage",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-c6564f5a1bc424e2/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-59a1d3cf4da9241e/test-integration-test-effect_order.json",
+      "bytes": 820
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-59a1d3cf4da9241e/test-integration-test-effect_order",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-59a1d3cf4da9241e/dep-test-integration-test-effect_order",
+      "bytes": 80
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-59a1d3cf4da9241e/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_core-5aaa16e80a3bc3b2/dep-build-script-build-script-build",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_core-5aaa16e80a3bc3b2/build-script-build-script-build.json",
+      "bytes": 454
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_core-5aaa16e80a3bc3b2/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_core-5aaa16e80a3bc3b2/build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8f6cdc9e7c803268/example-readiness_check",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8f6cdc9e7c803268/example-readiness_check.json",
+      "bytes": 809
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8f6cdc9e7c803268/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8f6cdc9e7c803268/dep-example-readiness_check",
+      "bytes": 211
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/digest-71c570c252b92329/lib-digest",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/digest-71c570c252b92329/lib-digest.json",
+      "bytes": 678
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/digest-71c570c252b92329/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/digest-71c570c252b92329/dep-lib-digest",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/quote-4e615830854c1463/dep-build-script-build-script-build",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/quote-4e615830854c1463/build-script-build-script-build.json",
+      "bytes": 420
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/quote-4e615830854c1463/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/quote-4e615830854c1463/build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_json-99a363fc68c26647/lib-serde_json",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_json-99a363fc68c26647/lib-serde_json.json",
+      "bytes": 820
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_json-99a363fc68c26647/dep-lib-serde_json",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_json-99a363fc68c26647/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/rayon-core-fcb1a7f3ec4facf2/run-build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/rayon-core-fcb1a7f3ec4facf2/run-build-script-build-script-build.json",
+      "bytes": 330
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-486081eb2363467a/dep-example-snapshot_probe",
+      "bytes": 210
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-486081eb2363467a/example-snapshot_probe.json",
+      "bytes": 808
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-486081eb2363467a/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-486081eb2363467a/example-snapshot_probe",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-1eacd2c288a81042/example-hot_path_components.json",
+      "bytes": 813
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-1eacd2c288a81042/dep-example-hot_path_components",
+      "bytes": 215
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-1eacd2c288a81042/example-hot_path_components",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-1eacd2c288a81042/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-fe71f1f6fd8cb8cd/dep-lib-pa3_engine",
+      "bytes": 857
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-fe71f1f6fd8cb8cd/lib-pa3_engine.json",
+      "bytes": 739
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-fe71f1f6fd8cb8cd/lib-pa3_engine",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-fe71f1f6fd8cb8cd/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-7a4dae4ab3fb16ab/dep-example-blocker_priority",
+      "bytes": 184
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-7a4dae4ab3fb16ab/example-blocker_priority.json",
+      "bytes": 810
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-7a4dae4ab3fb16ab/example-blocker_priority",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-7a4dae4ab3fb16ab/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-672d83df6256e34a/test-integration-test-snapshot_effect_shapes",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-672d83df6256e34a/dep-test-integration-test-snapshot_effect_shapes",
+      "bytes": 79
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-672d83df6256e34a/test-integration-test-snapshot_effect_shapes.json",
+      "bytes": 829
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-672d83df6256e34a/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/rayon-6f07ea9653beb510/dep-lib-rayon",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/rayon-6f07ea9653beb510/lib-rayon",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/rayon-6f07ea9653beb510/lib-rayon.json",
+      "bytes": 479
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/rayon-6f07ea9653beb510/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-utils-89d1dd7333d8f222/lib-crossbeam_utils",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-utils-89d1dd7333d8f222/dep-lib-crossbeam_utils",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-utils-89d1dd7333d8f222/lib-crossbeam_utils.json",
+      "bytes": 496
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-utils-89d1dd7333d8f222/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-3ad761512c91f166/test-integration-test-search_core.json",
+      "bytes": 817
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-3ad761512c91f166/test-integration-test-search_core",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-3ad761512c91f166/dep-test-integration-test-search_core",
+      "bytes": 70
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-3ad761512c91f166/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-519cd81c97803dc1/test-integration-test-contracts.json",
+      "bytes": 816
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-519cd81c97803dc1/dep-test-integration-test-contracts",
+      "bytes": 229
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-519cd81c97803dc1/test-integration-test-contracts",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-519cd81c97803dc1/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-09616360307e6f25/test-integration-test-illusion",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-09616360307e6f25/test-integration-test-illusion.json",
+      "bytes": 817
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-09616360307e6f25/dep-test-integration-test-illusion",
+      "bytes": 66
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-09616360307e6f25/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-14c51dd4efeccc4e/dep-test-integration-test-snapshot_phases",
+      "bytes": 72
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-14c51dd4efeccc4e/test-integration-test-snapshot_phases",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-14c51dd4efeccc4e/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-14c51dd4efeccc4e/test-integration-test-snapshot_phases.json",
+      "bytes": 824
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_core-c57fe432673e6622/lib-serde_core",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_core-c57fe432673e6622/dep-lib-serde_core",
+      "bytes": 74
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_core-c57fe432673e6622/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_core-c57fe432673e6622/lib-serde_core.json",
+      "bytes": 507
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-bb85ae7fdf8f7a72/test-integration-test-effect_order.json",
+      "bytes": 819
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-bb85ae7fdf8f7a72/test-integration-test-effect_order",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-bb85ae7fdf8f7a72/dep-test-integration-test-effect_order",
+      "bytes": 216
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-bb85ae7fdf8f7a72/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-ca31d395fb132d54/example-hot_path_components.json",
+      "bytes": 812
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-ca31d395fb132d54/dep-example-hot_path_components",
+      "bytes": 79
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-ca31d395fb132d54/example-hot_path_components",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-ca31d395fb132d54/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-ff75458954e04023/test-integration-test-search_information_set",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-ff75458954e04023/test-integration-test-search_information_set.json",
+      "bytes": 829
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-ff75458954e04023/dep-test-integration-test-search_information_set",
+      "bytes": 217
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-ff75458954e04023/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-9a4fc3610c1355ab/test-integration-test-legality",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-9a4fc3610c1355ab/test-integration-test-legality.json",
+      "bytes": 816
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-9a4fc3610c1355ab/dep-test-integration-test-legality",
+      "bytes": 203
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-9a4fc3610c1355ab/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-c2bf1f43c66a4a5e/dep-example-pool_run_report",
+      "bytes": 183
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-c2bf1f43c66a4a5e/example-pool_run_report.json",
+      "bytes": 809
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-c2bf1f43c66a4a5e/example-pool_run_report",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-c2bf1f43c66a4a5e/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-942537082750e127/test-integration-test-ability_interactions",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-942537082750e127/dep-test-integration-test-ability_interactions",
+      "bytes": 130
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-942537082750e127/test-integration-test-ability_interactions.json",
+      "bytes": 828
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-942537082750e127/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/cpufeatures-ef131f9bfe4b90f9/lib-cpufeatures",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/cpufeatures-ef131f9bfe4b90f9/dep-lib-cpufeatures",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/cpufeatures-ef131f9bfe4b90f9/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/cpufeatures-ef131f9bfe4b90f9/lib-cpufeatures.json",
+      "bytes": 355
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-651ee35c02acf635/dep-test-integration-test-snapshot_phases",
+      "bytes": 208
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-651ee35c02acf635/test-integration-test-snapshot_phases",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-651ee35c02acf635/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-651ee35c02acf635/test-integration-test-snapshot_phases.json",
+      "bytes": 823
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-fbf0d40511e51bd6/test-integration-test-search_belief.json",
+      "bytes": 818
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-fbf0d40511e51bd6/dep-test-integration-test-search_belief",
+      "bytes": 208
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-fbf0d40511e51bd6/test-integration-test-search_belief",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-fbf0d40511e51bd6/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-32b7367eca1b02ad/test-integration-test-search_world.json",
+      "bytes": 819
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-32b7367eca1b02ad/dep-test-integration-test-search_world",
+      "bytes": 71
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-32b7367eca1b02ad/test-integration-test-search_world",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-32b7367eca1b02ad/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-7f13fb089d0f2a8d/dep-test-integration-test-search_test_oracle",
+      "bytes": 213
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-7f13fb089d0f2a8d/test-integration-test-search_test_oracle.json",
+      "bytes": 824
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-7f13fb089d0f2a8d/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-7f13fb089d0f2a8d/test-integration-test-search_test_oracle",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-238b0432187d8b2d/test-integration-test-state_batch.json",
+      "bytes": 819
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-238b0432187d8b2d/test-integration-test-state_batch",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-238b0432187d8b2d/dep-test-integration-test-state_batch",
+      "bytes": 240
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-238b0432187d8b2d/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8c035bc265201697/test-integration-test-poltergeist",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8c035bc265201697/test-integration-test-poltergeist.json",
+      "bytes": 819
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8c035bc265201697/dep-test-integration-test-poltergeist",
+      "bytes": 190
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-8c035bc265201697/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-a6ba4867ca78bd59/dep-test-integration-test-ability_contact",
+      "bytes": 213
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-a6ba4867ca78bd59/test-integration-test-ability_contact.json",
+      "bytes": 823
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-a6ba4867ca78bd59/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-a6ba4867ca78bd59/test-integration-test-ability_contact",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-deque-ee346f589faae9ef/dep-build-script-build-script-build",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-deque-ee346f589faae9ef/build-script-build-script-build.json",
+      "bytes": 416
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-deque-ee346f589faae9ef/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-deque-ee346f589faae9ef/build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-339e8f60d421a5ac/dep-test-integration-test-turns",
+      "bytes": 222
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-339e8f60d421a5ac/test-integration-test-turns.json",
+      "bytes": 812
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-339e8f60d421a5ac/test-integration-test-turns",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-339e8f60d421a5ac/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-ad3bdaad5c3263a1/example-ability_fixture_report.json",
+      "bytes": 814
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-ad3bdaad5c3263a1/dep-example-ability_fixture_report",
+      "bytes": 54
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-ad3bdaad5c3263a1/example-ability_fixture_report",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-ad3bdaad5c3263a1/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-47572cd861be88b3/test-integration-test-legality",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-47572cd861be88b3/test-integration-test-legality.json",
+      "bytes": 817
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-47572cd861be88b3/dep-test-integration-test-legality",
+      "bytes": 67
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-47572cd861be88b3/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-42e02fcdee7b0af3/dep-example-blocker_priority",
+      "bytes": 184
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-42e02fcdee7b0af3/example-blocker_priority.json",
+      "bytes": 810
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-42e02fcdee7b0af3/example-blocker_priority",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-42e02fcdee7b0af3/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/rayon-core-62753ae4fc53848b/dep-build-script-build-script-build",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/rayon-core-62753ae4fc53848b/build-script-build-script-build.json",
+      "bytes": 387
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/rayon-core-62753ae4fc53848b/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/rayon-core-62753ae4fc53848b/build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-2013ed718090f0ba/example-tmp_force_switch_probe",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-2013ed718090f0ba/dep-example-tmp_force_switch_probe",
+      "bytes": 54
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-2013ed718090f0ba/example-tmp_force_switch_probe.json",
+      "bytes": 816
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-2013ed718090f0ba/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e3d31ac3c7b02112/dep-test-integration-test-search_test_oracle",
+      "bytes": 77
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e3d31ac3c7b02112/test-integration-test-search_test_oracle.json",
+      "bytes": 825
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e3d31ac3c7b02112/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e3d31ac3c7b02112/test-integration-test-search_test_oracle",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/rayon-core-51e8eb4921aac9a2/dep-lib-rayon_core",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/rayon-core-51e8eb4921aac9a2/lib-rayon_core",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/rayon-core-51e8eb4921aac9a2/lib-rayon_core.json",
+      "bytes": 576
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/rayon-core-51e8eb4921aac9a2/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-cd5c8c790bc806e6/test-integration-test-search_belief.json",
+      "bytes": 818
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-cd5c8c790bc806e6/dep-test-integration-test-search_belief",
+      "bytes": 208
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-cd5c8c790bc806e6/test-integration-test-search_belief",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-cd5c8c790bc806e6/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/typenum-0babcd175260e9f2/lib-typenum.json",
+      "bytes": 419
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/typenum-0babcd175260e9f2/dep-lib-typenum",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/typenum-0babcd175260e9f2/lib-typenum",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/typenum-0babcd175260e9f2/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-epoch-75634e7a0c864058/dep-build-script-build-script-build",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-epoch-75634e7a0c864058/build-script-build-script-build.json",
+      "bytes": 463
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-epoch-75634e7a0c864058/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-epoch-75634e7a0c864058/build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/itoa-fe33f83b2703f2a0/dep-lib-itoa",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/itoa-fe33f83b2703f2a0/lib-itoa",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/itoa-fe33f83b2703f2a0/lib-itoa.json",
+      "bytes": 355
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/itoa-fe33f83b2703f2a0/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-fac3db13837a9a07/test-integration-test-observation_completeness",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-fac3db13837a9a07/test-integration-test-observation_completeness.json",
+      "bytes": 831
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-fac3db13837a9a07/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-fac3db13837a9a07/dep-test-integration-test-observation_completeness",
+      "bytes": 217
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-91bf4d6335e1fdbe/dep-test-integration-test-move_hooks",
+      "bytes": 74
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-91bf4d6335e1fdbe/test-integration-test-move_hooks.json",
+      "bytes": 819
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-91bf4d6335e1fdbe/test-integration-test-move_hooks",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-91bf4d6335e1fdbe/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-87b804511e7fdff5/dep-test-integration-test-batch_observation",
+      "bytes": 212
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-87b804511e7fdff5/test-integration-test-batch_observation.json",
+      "bytes": 823
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-87b804511e7fdff5/test-integration-test-batch_observation",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-87b804511e7fdff5/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-4d26f9f8c75992f7/example-tmp_force_switch_probe",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-4d26f9f8c75992f7/dep-example-tmp_force_switch_probe",
+      "bytes": 190
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-4d26f9f8c75992f7/example-tmp_force_switch_probe.json",
+      "bytes": 817
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-4d26f9f8c75992f7/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-3212573ab8c2b996/test-integration-test-observation_leakage",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-3212573ab8c2b996/dep-test-integration-test-observation_leakage",
+      "bytes": 76
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-3212573ab8c2b996/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-3212573ab8c2b996/test-integration-test-observation_leakage.json",
+      "bytes": 827
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/generic-array-f2f2607b090a65d5/dep-build-script-build-script-build",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/generic-array-f2f2607b090a65d5/build-script-build-script-build.json",
+      "bytes": 493
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/generic-array-f2f2607b090a65d5/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/generic-array-f2f2607b090a65d5/build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/cfg-if-d378cffd466b054c/lib-cfg_if",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/cfg-if-d378cffd466b054c/lib-cfg_if.json",
+      "bytes": 377
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/cfg-if-d378cffd466b054c/dep-lib-cfg_if",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/cfg-if-d378cffd466b054c/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-utils-e3a5864f8bee1c73/dep-build-script-build-script-build",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-utils-e3a5864f8bee1c73/build-script-build-script-build.json",
+      "bytes": 438
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-utils-e3a5864f8bee1c73/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-utils-e3a5864f8bee1c73/build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-58e21624a3547269/test-integration-test-observation_leakage",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-58e21624a3547269/dep-test-integration-test-observation_leakage",
+      "bytes": 212
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-58e21624a3547269/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-58e21624a3547269/test-integration-test-observation_leakage.json",
+      "bytes": 826
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/proc-macro2-58e3e4b6b0a9eaad/dep-build-script-build-script-build",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/proc-macro2-58e3e4b6b0a9eaad/build-script-build-script-build.json",
+      "bytes": 458
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/proc-macro2-58e3e4b6b0a9eaad/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/proc-macro2-58e3e4b6b0a9eaad/build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-epoch-e5258b178ef67a9a/run-build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/crossbeam-epoch-e5258b178ef67a9a/run-build-script-build-script-build.json",
+      "bytes": 336
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-c8c08ebc1a0e7c1a/dep-test-integration-test-batch_observation",
+      "bytes": 212
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-c8c08ebc1a0e7c1a/test-integration-test-batch_observation.json",
+      "bytes": 823
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-c8c08ebc1a0e7c1a/test-integration-test-batch_observation",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-c8c08ebc1a0e7c1a/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde-a6a7d03ba6affbd8/run-build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde-a6a7d03ba6affbd8/run-build-script-build-script-build.json",
+      "bytes": 325
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_json-bbf3f93297bafd9b/dep-build-script-build-script-build",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_json-bbf3f93297bafd9b/build-script-build-script-build.json",
+      "bytes": 537
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_json-bbf3f93297bafd9b/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_json-bbf3f93297bafd9b/build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/unicode-ident-57409dd8a30c081c/lib-unicode_ident",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/unicode-ident-57409dd8a30c081c/dep-lib-unicode_ident",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/unicode-ident-57409dd8a30c081c/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/unicode-ident-57409dd8a30c081c/lib-unicode_ident.json",
+      "bytes": 361
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-a969a78b7ef45c79/dep-test-integration-test-batch_observation",
+      "bytes": 76
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-a969a78b7ef45c79/test-integration-test-batch_observation.json",
+      "bytes": 824
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-a969a78b7ef45c79/test-integration-test-batch_observation",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-a969a78b7ef45c79/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-ff5efcdc59fbe0a2/dep-example-pool_run_report",
+      "bytes": 47
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-ff5efcdc59fbe0a2/example-pool_run_report.json",
+      "bytes": 808
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-ff5efcdc59fbe0a2/example-pool_run_report",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-ff5efcdc59fbe0a2/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-77a2b3ec9c8eec56/dep-test-integration-test-flash_fire",
+      "bytes": 203
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-77a2b3ec9c8eec56/test-integration-test-flash_fire",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-77a2b3ec9c8eec56/test-integration-test-flash_fire.json",
+      "bytes": 816
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-77a2b3ec9c8eec56/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/memchr-06d5b5c02fe069da/lib-memchr.json",
+      "bytes": 464
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/memchr-06d5b5c02fe069da/dep-lib-memchr",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/memchr-06d5b5c02fe069da/lib-memchr",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/memchr-06d5b5c02fe069da/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e27d25414919a7ed/test-integration-test-observation_leakage",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e27d25414919a7ed/dep-test-integration-test-observation_leakage",
+      "bytes": 212
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e27d25414919a7ed/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e27d25414919a7ed/test-integration-test-observation_leakage.json",
+      "bytes": 826
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-a84e8f219ce7f199/example-team_probe.json",
+      "bytes": 804
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-a84e8f219ce7f199/example-team_probe",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-a84e8f219ce7f199/dep-example-team_probe",
+      "bytes": 178
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-a84e8f219ce7f199/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e8c0e583635bd622/dep-test-integration-test-turns",
+      "bytes": 86
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e8c0e583635bd622/test-integration-test-turns.json",
+      "bytes": 813
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e8c0e583635bd622/test-integration-test-turns",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-e8c0e583635bd622/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-055d47ed7bb57384/test-lib-pa3_engine",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-055d47ed7bb57384/dep-test-lib-pa3_engine",
+      "bytes": 997
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-055d47ed7bb57384/test-lib-pa3_engine.json",
+      "bytes": 743
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-055d47ed7bb57384/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/proc-macro2-36e4c76ce4097b9e/run-build-script-build-script-build",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/proc-macro2-36e4c76ce4097b9e/run-build-script-build-script-build.json",
+      "bytes": 487
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_derive-7b2ae98a6f19b18f/lib-serde_derive",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_derive-7b2ae98a6f19b18f/lib-serde_derive.json",
+      "bytes": 581
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_derive-7b2ae98a6f19b18f/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_derive-7b2ae98a6f19b18f/dep-lib-serde_derive",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-32e06b1df67e64d0/test-integration-test-fixture_coverage.json",
+      "bytes": 825
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-32e06b1df67e64d0/dep-test-integration-test-fixture_coverage",
+      "bytes": 125
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-32e06b1df67e64d0/test-integration-test-fixture_coverage",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-32e06b1df67e64d0/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-1ab407be5434364a/dep-test-integration-test-observation",
+      "bytes": 206
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-1ab407be5434364a/test-integration-test-observation",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-1ab407be5434364a/test-integration-test-observation.json",
+      "bytes": 818
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-1ab407be5434364a/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/smallvec-0d1fc6e486a07e03/lib-smallvec",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/smallvec-0d1fc6e486a07e03/lib-smallvec.json",
+      "bytes": 592
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/smallvec-0d1fc6e486a07e03/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/smallvec-0d1fc6e486a07e03/dep-lib-smallvec",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-f19b1e0058d80c06/test-integration-test-search_core.json",
+      "bytes": 816
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-f19b1e0058d80c06/test-integration-test-search_core",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-f19b1e0058d80c06/dep-test-integration-test-search_core",
+      "bytes": 206
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-f19b1e0058d80c06/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-6a0e132ef368e863/dep-test-integration-test-memory_scale",
+      "bytes": 41
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-6a0e132ef368e863/test-integration-test-memory_scale",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-6a0e132ef368e863/test-integration-test-memory_scale.json",
+      "bytes": 821
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-6a0e132ef368e863/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-9cd501944c4aa420/example-readiness_check",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-9cd501944c4aa420/example-readiness_check.json",
+      "bytes": 808
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-9cd501944c4aa420/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-9cd501944c4aa420/dep-example-readiness_check",
+      "bytes": 75
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/digest-7abd700077a7b176/lib-digest",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/digest-7abd700077a7b176/lib-digest.json",
+      "bytes": 678
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/digest-7abd700077a7b176/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/digest-7abd700077a7b176/dep-lib-digest",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-886cd82e90587b49/example-coverage_report.json",
+      "bytes": 808
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-886cd82e90587b49/example-coverage_report",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-886cd82e90587b49/dep-example-coverage_report",
+      "bytes": 211
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-886cd82e90587b49/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-82c9718762a72ec4/test-lib-pa3_engine",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-82c9718762a72ec4/dep-test-lib-pa3_engine",
+      "bytes": 861
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-82c9718762a72ec4/test-lib-pa3_engine.json",
+      "bytes": 743
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-82c9718762a72ec4/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-84e29cbd4e28aa16/example-debug_fixture",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-84e29cbd4e28aa16/dep-example-debug_fixture",
+      "bytes": 663
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-84e29cbd4e28aa16/example-debug_fixture.json",
+      "bytes": 807
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-84e29cbd4e28aa16/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/zmij-100adcb8e3de0e56/lib-zmij",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/zmij-100adcb8e3de0e56/lib-zmij.json",
+      "bytes": 423
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/zmij-100adcb8e3de0e56/dep-lib-zmij",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/zmij-100adcb8e3de0e56/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/either-355f1f39e1e848d3/lib-either.json",
+      "bytes": 390
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/either-355f1f39e1e848d3/lib-either",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/either-355f1f39e1e848d3/dep-lib-either",
+      "bytes": 14
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/either-355f1f39e1e848d3/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_core-6b88864126176efe/lib-serde_core",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_core-6b88864126176efe/dep-lib-serde_core",
+      "bytes": 74
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_core-6b88864126176efe/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/serde_core-6b88864126176efe/lib-serde_core.json",
+      "bytes": 507
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-3a64db4bef437cc7/dep-lib-pa3_engine",
+      "bytes": 721
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-3a64db4bef437cc7/lib-pa3_engine.json",
+      "bytes": 737
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-3a64db4bef437cc7/lib-pa3_engine",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-3a64db4bef437cc7/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-79afe73000e6c57e/example-coverage_report.json",
+      "bytes": 808
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-79afe73000e6c57e/example-coverage_report",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-79afe73000e6c57e/dep-example-coverage_report",
+      "bytes": 211
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-79afe73000e6c57e/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-9ff1ba3cc58caf73/dep-example-observation_bench",
+      "bytes": 215
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-9ff1ba3cc58caf73/example-observation_bench",
+      "bytes": 16
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-9ff1ba3cc58caf73/invoked.timestamp",
+      "bytes": 48
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/.fingerprint/pa3-engine-9ff1ba3cc58caf73/example-observation_bench.json",
+      "bytes": 809
+    }
+  ],
+  "preserved_shared_libraries_sha256": {
+    "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libpa3_engine.so": "5945dacacab35f1db89045cd310ae33e3c84734e87e7406db21975f376c22250",
+    "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libthiserror_impl-41affb6479533387.so": "493ce40783ff53347649bcfac0ab9b6a3d7488a3af9c364a43cdceb9618ca836",
+    "/home/minidc/Desktop/pa3-c-search/target/debug/deps/libserde_derive-7b2ae98a6f19b18f.so": "d469a41fd25e99362390648db113d13f3fd6d6e6977454d7f0df1750a87b1f62"
+  },
+  "free_bytes_before": 9340301312,
+  "free_bytes_after": 10345287680,
+  "disk_free_bytes_gained": 1004986368,
+  "preserved": "Every .pt/checkpoint/run/evidence/log/data/source/Git/virtualenv/native module; all target/release files; debug shared libraries and build-script output/stderr logs."
+}

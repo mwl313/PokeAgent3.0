@@ -1,0 +1,6 @@
+{
+  "total_games": 4096,
+  "global_committed_matches": 65536,
+  "all_in_committed_games_per_s": 22.61196197502424,
+  "digests_equal": true
+}

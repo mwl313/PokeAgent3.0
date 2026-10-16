@@ -1,0 +1,1056 @@
+{
+  "timestamp_utc": "2026-10-16T03:27:54Z",
+  "authorization": "User explicitly authorized unnecessary PokeAgent3.0 file cleanup; parent scoped this to rebuildable compiler and Python test caches.",
+  "removed": [
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/.pytest_cache",
+      "allocated_file_bytes_before": 32768
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/engine/python/pa3_engine/__pycache__",
+      "allocated_file_bytes_before": 16384
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent3-eval/tools/__pycache__",
+      "allocated_file_bytes_before": 45056
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent3-eval/agent/run_manager/__pycache__",
+      "allocated_file_bytes_before": 57344
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent3-eval/agent/eval/__pycache__",
+      "allocated_file_bytes_before": 139264
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent3-eval/agent/metrics/__pycache__",
+      "allocated_file_bytes_before": 28672
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent3-eval/agent/checkpoint/__pycache__",
+      "allocated_file_bytes_before": 77824
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent3-eval/tests/agent/__pycache__",
+      "allocated_file_bytes_before": 126976
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.pytest_cache",
+      "allocated_file_bytes_before": 24576
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/agent/__pycache__",
+      "allocated_file_bytes_before": 4096
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/agent/types/__pycache__",
+      "allocated_file_bytes_before": 57344
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/agent/ppo/__pycache__",
+      "allocated_file_bytes_before": 53248
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/agent/model/__pycache__",
+      "allocated_file_bytes_before": 69632
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/agent/mock_engine/__pycache__",
+      "allocated_file_bytes_before": 28672
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/agent/buffer/__pycache__",
+      "allocated_file_bytes_before": 40960
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/tests/agent/__pycache__",
+      "allocated_file_bytes_before": 294912
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/scripts/__pycache__",
+      "allocated_file_bytes_before": 196608
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/agent/__pycache__",
+      "allocated_file_bytes_before": 4096
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/agent/types/__pycache__",
+      "allocated_file_bytes_before": 73728
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/agent/ppo/__pycache__",
+      "allocated_file_bytes_before": 110592
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/agent/train/__pycache__",
+      "allocated_file_bytes_before": 61440
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/agent/model/__pycache__",
+      "allocated_file_bytes_before": 77824
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/agent/mock_engine/__pycache__",
+      "allocated_file_bytes_before": 28672
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/agent/buffer/__pycache__",
+      "allocated_file_bytes_before": 53248
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/tests/integration/__pycache__",
+      "allocated_file_bytes_before": 90112
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/tests/agent/__pycache__",
+      "allocated_file_bytes_before": 765952
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-final-75fcc89/PokeAgent3.0/agent/__pycache__",
+      "allocated_file_bytes_before": 8192
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-final-75fcc89/PokeAgent3.0/agent/analysis/__pycache__",
+      "allocated_file_bytes_before": 28672
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-final-75fcc89/PokeAgent3.0/agent/types/__pycache__",
+      "allocated_file_bytes_before": 110592
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-final-75fcc89/PokeAgent3.0/agent/ppo/__pycache__",
+      "allocated_file_bytes_before": 155648
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-final-75fcc89/PokeAgent3.0/agent/runtime/__pycache__",
+      "allocated_file_bytes_before": 12288
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-final-75fcc89/PokeAgent3.0/agent/model/__pycache__",
+      "allocated_file_bytes_before": 98304
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-final-75fcc89/PokeAgent3.0/agent/buffer/__pycache__",
+      "allocated_file_bytes_before": 61440
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-final-8052606/PokeAgent3.0/engine/python/pa3_engine/__pycache__",
+      "allocated_file_bytes_before": 20480
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-final-8052606/PokeAgent3.0/scripts/__pycache__",
+      "allocated_file_bytes_before": 40960
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-final-8052606/PokeAgent3.0/agent/__pycache__",
+      "allocated_file_bytes_before": 8192
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-final-8052606/PokeAgent3.0/agent/analysis/__pycache__",
+      "allocated_file_bytes_before": 28672
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-final-8052606/PokeAgent3.0/agent/types/__pycache__",
+      "allocated_file_bytes_before": 126976
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-final-8052606/PokeAgent3.0/agent/ppo/__pycache__",
+      "allocated_file_bytes_before": 217088
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-final-8052606/PokeAgent3.0/agent/evaluation/__pycache__",
+      "allocated_file_bytes_before": 69632
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-final-8052606/PokeAgent3.0/agent/train/__pycache__",
+      "allocated_file_bytes_before": 69632
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-final-8052606/PokeAgent3.0/agent/runtime/__pycache__",
+      "allocated_file_bytes_before": 12288
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-final-8052606/PokeAgent3.0/agent/model/__pycache__",
+      "allocated_file_bytes_before": 98304
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-final-8052606/PokeAgent3.0/agent/buffer/__pycache__",
+      "allocated_file_bytes_before": 61440
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-runtime/PokeAgent3.0/.pytest_cache",
+      "allocated_file_bytes_before": 24576
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-runtime/PokeAgent3.0/engine/python/pa3_engine/__pycache__",
+      "allocated_file_bytes_before": 20480
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-runtime/PokeAgent3.0/scripts/__pycache__",
+      "allocated_file_bytes_before": 53248
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-runtime/PokeAgent3.0/agent/__pycache__",
+      "allocated_file_bytes_before": 8192
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-runtime/PokeAgent3.0/agent/analysis/__pycache__",
+      "allocated_file_bytes_before": 28672
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-runtime/PokeAgent3.0/agent/types/__pycache__",
+      "allocated_file_bytes_before": 110592
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-runtime/PokeAgent3.0/agent/ppo/__pycache__",
+      "allocated_file_bytes_before": 180224
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-runtime/PokeAgent3.0/agent/evaluation/__pycache__",
+      "allocated_file_bytes_before": 118784
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-runtime/PokeAgent3.0/agent/train/__pycache__",
+      "allocated_file_bytes_before": 69632
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-runtime/PokeAgent3.0/agent/runtime/__pycache__",
+      "allocated_file_bytes_before": 12288
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-runtime/PokeAgent3.0/agent/model/__pycache__",
+      "allocated_file_bytes_before": 94208
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-runtime/PokeAgent3.0/agent/mock_engine/__pycache__",
+      "allocated_file_bytes_before": 32768
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-runtime/PokeAgent3.0/agent/buffer/__pycache__",
+      "allocated_file_bytes_before": 57344
+    },
+    {
+      "path": "/home/minidc/.codex/worktrees/pa3-v2-runtime/PokeAgent3.0/tests/agent/__pycache__",
+      "allocated_file_bytes_before": 196608
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/.pytest_cache",
+      "allocated_file_bytes_before": 28672
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/engine/python/pa3_engine/__pycache__",
+      "allocated_file_bytes_before": 16384
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/scripts/__pycache__",
+      "allocated_file_bytes_before": 180224
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/agent/__pycache__",
+      "allocated_file_bytes_before": 4096
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/agent/types/__pycache__",
+      "allocated_file_bytes_before": 73728
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/agent/ppo/__pycache__",
+      "allocated_file_bytes_before": 159744
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/agent/evaluation/__pycache__",
+      "allocated_file_bytes_before": 114688
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/agent/train/__pycache__",
+      "allocated_file_bytes_before": 69632
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/agent/runtime/__pycache__",
+      "allocated_file_bytes_before": 12288
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/agent/model/__pycache__",
+      "allocated_file_bytes_before": 86016
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/agent/mock_engine/__pycache__",
+      "allocated_file_bytes_before": 28672
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/agent/buffer/__pycache__",
+      "allocated_file_bytes_before": 53248
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A/tests/agent/__pycache__",
+      "allocated_file_bytes_before": 577536
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-diagnosis/engine/python/pa3_engine/__pycache__",
+      "allocated_file_bytes_before": 16384
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-diagnosis/scripts/__pycache__",
+      "allocated_file_bytes_before": 36864
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-diagnosis/agent/__pycache__",
+      "allocated_file_bytes_before": 4096
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-diagnosis/agent/types/__pycache__",
+      "allocated_file_bytes_before": 73728
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-diagnosis/agent/ppo/__pycache__",
+      "allocated_file_bytes_before": 159744
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-diagnosis/agent/train/__pycache__",
+      "allocated_file_bytes_before": 69632
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-diagnosis/agent/runtime/__pycache__",
+      "allocated_file_bytes_before": 12288
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-diagnosis/agent/model/__pycache__",
+      "allocated_file_bytes_before": 86016
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-diagnosis/agent/buffer/__pycache__",
+      "allocated_file_bytes_before": 53248
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-eval/.pytest_cache",
+      "allocated_file_bytes_before": 16384
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-eval/engine/python/pa3_engine/__pycache__",
+      "allocated_file_bytes_before": 16384
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-eval/scripts/__pycache__",
+      "allocated_file_bytes_before": 36864
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-eval/agent/__pycache__",
+      "allocated_file_bytes_before": 4096
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-eval/agent/types/__pycache__",
+      "allocated_file_bytes_before": 73728
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-eval/agent/ppo/__pycache__",
+      "allocated_file_bytes_before": 106496
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-eval/agent/evaluation/__pycache__",
+      "allocated_file_bytes_before": 24576
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-eval/agent/train/__pycache__",
+      "allocated_file_bytes_before": 69632
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-eval/agent/model/__pycache__",
+      "allocated_file_bytes_before": 86016
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-eval/agent/buffer/__pycache__",
+      "allocated_file_bytes_before": 53248
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-eval/tests/agent/__pycache__",
+      "allocated_file_bytes_before": 28672
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-evaluation-league/.pytest_cache",
+      "allocated_file_bytes_before": 20480
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-evaluation-league/engine/python/pa3_engine/__pycache__",
+      "allocated_file_bytes_before": 16384
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-evaluation-league/scripts/__pycache__",
+      "allocated_file_bytes_before": 53248
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-evaluation-league/agent/__pycache__",
+      "allocated_file_bytes_before": 4096
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-evaluation-league/agent/types/__pycache__",
+      "allocated_file_bytes_before": 73728
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-evaluation-league/agent/ppo/__pycache__",
+      "allocated_file_bytes_before": 106496
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-evaluation-league/agent/evaluation/__pycache__",
+      "allocated_file_bytes_before": 147456
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-evaluation-league/agent/train/__pycache__",
+      "allocated_file_bytes_before": 69632
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-evaluation-league/agent/model/__pycache__",
+      "allocated_file_bytes_before": 86016
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-evaluation-league/agent/mock_engine/__pycache__",
+      "allocated_file_bytes_before": 28672
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-evaluation-league/agent/buffer/__pycache__",
+      "allocated_file_bytes_before": 53248
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-evaluation-league/tests/agent/__pycache__",
+      "allocated_file_bytes_before": 90112
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-monitoring/.pytest_cache",
+      "allocated_file_bytes_before": 16384
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-monitoring/scripts/__pycache__",
+      "allocated_file_bytes_before": 28672
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-monitoring/tests/agent/__pycache__",
+      "allocated_file_bytes_before": 24576
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-recovery/engine/python/pa3_engine/__pycache__",
+      "allocated_file_bytes_before": 16384
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-recovery/scripts/__pycache__",
+      "allocated_file_bytes_before": 36864
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-recovery/agent/__pycache__",
+      "allocated_file_bytes_before": 4096
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-recovery/agent/types/__pycache__",
+      "allocated_file_bytes_before": 73728
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-recovery/agent/ppo/__pycache__",
+      "allocated_file_bytes_before": 159744
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-recovery/agent/train/__pycache__",
+      "allocated_file_bytes_before": 69632
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-recovery/agent/model/__pycache__",
+      "allocated_file_bytes_before": 86016
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-recovery/agent/buffer/__pycache__",
+      "allocated_file_bytes_before": 53248
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-runtime/engine/python/pa3_engine/__pycache__",
+      "allocated_file_bytes_before": 16384
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-runtime/agent/__pycache__",
+      "allocated_file_bytes_before": 4096
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-runtime/agent/types/__pycache__",
+      "allocated_file_bytes_before": 73728
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-runtime/agent/ppo/__pycache__",
+      "allocated_file_bytes_before": 135168
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-runtime/agent/train/__pycache__",
+      "allocated_file_bytes_before": 61440
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-runtime/agent/model/__pycache__",
+      "allocated_file_bytes_before": 77824
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-runtime/agent/buffer/__pycache__",
+      "allocated_file_bytes_before": 53248
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-telemetry/.pytest_cache",
+      "allocated_file_bytes_before": 20480
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-telemetry/engine/python/pa3_engine/__pycache__",
+      "allocated_file_bytes_before": 16384
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-telemetry/scripts/__pycache__",
+      "allocated_file_bytes_before": 53248
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-telemetry/agent/__pycache__",
+      "allocated_file_bytes_before": 4096
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-telemetry/agent/types/__pycache__",
+      "allocated_file_bytes_before": 73728
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-telemetry/agent/ppo/__pycache__",
+      "allocated_file_bytes_before": 192512
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-telemetry/agent/evaluation/__pycache__",
+      "allocated_file_bytes_before": 94208
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-telemetry/agent/train/__pycache__",
+      "allocated_file_bytes_before": 69632
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-telemetry/agent/runtime/__pycache__",
+      "allocated_file_bytes_before": 12288
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-telemetry/agent/model/__pycache__",
+      "allocated_file_bytes_before": 86016
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-telemetry/agent/mock_engine/__pycache__",
+      "allocated_file_bytes_before": 28672
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-telemetry/agent/buffer/__pycache__",
+      "allocated_file_bytes_before": 53248
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-A-telemetry/tests/agent/__pycache__",
+      "allocated_file_bytes_before": 212992
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/.pytest_cache",
+      "allocated_file_bytes_before": 32768
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/engine/python/pa3_engine/__pycache__",
+      "allocated_file_bytes_before": 20480
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/scripts/__pycache__",
+      "allocated_file_bytes_before": 180224
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/agent/__pycache__",
+      "allocated_file_bytes_before": 8192
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/agent/analysis/__pycache__",
+      "allocated_file_bytes_before": 28672
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/agent/types/__pycache__",
+      "allocated_file_bytes_before": 110592
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/agent/ppo/__pycache__",
+      "allocated_file_bytes_before": 180224
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/agent/evaluation/__pycache__",
+      "allocated_file_bytes_before": 118784
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/agent/train/__pycache__",
+      "allocated_file_bytes_before": 69632
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/agent/runtime/__pycache__",
+      "allocated_file_bytes_before": 12288
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/agent/model/__pycache__",
+      "allocated_file_bytes_before": 94208
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/agent/mock_engine/__pycache__",
+      "allocated_file_bytes_before": 32768
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/agent/buffer/__pycache__",
+      "allocated_file_bytes_before": 57344
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/tests/integration/__pycache__",
+      "allocated_file_bytes_before": 90112
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2/tests/agent/__pycache__",
+      "allocated_file_bytes_before": 524288
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-baseline/engine/python/pa3_engine/__pycache__",
+      "allocated_file_bytes_before": 20480
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-baseline/scripts/__pycache__",
+      "allocated_file_bytes_before": 45056
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-baseline/agent/__pycache__",
+      "allocated_file_bytes_before": 8192
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-baseline/agent/analysis/__pycache__",
+      "allocated_file_bytes_before": 28672
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-baseline/agent/types/__pycache__",
+      "allocated_file_bytes_before": 126976
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-baseline/agent/ppo/__pycache__",
+      "allocated_file_bytes_before": 229376
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-baseline/agent/train/__pycache__",
+      "allocated_file_bytes_before": 73728
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-baseline/agent/runtime/__pycache__",
+      "allocated_file_bytes_before": 12288
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-baseline/agent/model/__pycache__",
+      "allocated_file_bytes_before": 98304
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-baseline/agent/buffer/__pycache__",
+      "allocated_file_bytes_before": 61440
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/.pytest_cache",
+      "allocated_file_bytes_before": 28672
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/engine/python/pa3_engine/__pycache__",
+      "allocated_file_bytes_before": 20480
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/scripts/__pycache__",
+      "allocated_file_bytes_before": 163840
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/agent/__pycache__",
+      "allocated_file_bytes_before": 8192
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/agent/analysis/__pycache__",
+      "allocated_file_bytes_before": 28672
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/agent/types/__pycache__",
+      "allocated_file_bytes_before": 126976
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/agent/ppo/__pycache__",
+      "allocated_file_bytes_before": 229376
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/agent/evaluation/__pycache__",
+      "allocated_file_bytes_before": 45056
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/agent/train/__pycache__",
+      "allocated_file_bytes_before": 73728
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/agent/runtime/__pycache__",
+      "allocated_file_bytes_before": 12288
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/agent/model/__pycache__",
+      "allocated_file_bytes_before": 110592
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/agent/buffer/__pycache__",
+      "allocated_file_bytes_before": 61440
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/tests/agent/__pycache__",
+      "allocated_file_bytes_before": 212992
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-integration/.pytest_cache",
+      "allocated_file_bytes_before": 61440
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-integration/engine/python/pa3_engine/__pycache__",
+      "allocated_file_bytes_before": 20480
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-integration/scripts/__pycache__",
+      "allocated_file_bytes_before": 249856
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-integration/agent/__pycache__",
+      "allocated_file_bytes_before": 8192
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-integration/agent/analysis/__pycache__",
+      "allocated_file_bytes_before": 28672
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-integration/agent/types/__pycache__",
+      "allocated_file_bytes_before": 126976
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-integration/agent/ppo/__pycache__",
+      "allocated_file_bytes_before": 225280
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-integration/agent/evaluation/__pycache__",
+      "allocated_file_bytes_before": 143360
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-integration/agent/train/__pycache__",
+      "allocated_file_bytes_before": 69632
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-integration/agent/runtime/__pycache__",
+      "allocated_file_bytes_before": 12288
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-integration/agent/model/__pycache__",
+      "allocated_file_bytes_before": 110592
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-integration/agent/mock_engine/__pycache__",
+      "allocated_file_bytes_before": 32768
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-integration/agent/buffer/__pycache__",
+      "allocated_file_bytes_before": 61440
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-integration/tests/integration/__pycache__",
+      "allocated_file_bytes_before": 90112
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-integration/tests/agent/__pycache__",
+      "allocated_file_bytes_before": 1216512
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-learner-batch/engine/python/pa3_engine/__pycache__",
+      "allocated_file_bytes_before": 20480
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-learner-batch/scripts/__pycache__",
+      "allocated_file_bytes_before": 147456
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-learner-batch/agent/__pycache__",
+      "allocated_file_bytes_before": 8192
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-learner-batch/agent/analysis/__pycache__",
+      "allocated_file_bytes_before": 28672
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-learner-batch/agent/types/__pycache__",
+      "allocated_file_bytes_before": 126976
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-learner-batch/agent/ppo/__pycache__",
+      "allocated_file_bytes_before": 229376
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-learner-batch/agent/train/__pycache__",
+      "allocated_file_bytes_before": 73728
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-learner-batch/agent/runtime/__pycache__",
+      "allocated_file_bytes_before": 12288
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-learner-batch/agent/model/__pycache__",
+      "allocated_file_bytes_before": 110592
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-learner-batch/agent/buffer/__pycache__",
+      "allocated_file_bytes_before": 61440
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-recompute/.pytest_cache",
+      "allocated_file_bytes_before": 57344
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-recompute/engine/python/pa3_engine/__pycache__",
+      "allocated_file_bytes_before": 20480
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-recompute/scripts/__pycache__",
+      "allocated_file_bytes_before": 266240
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-recompute/agent/__pycache__",
+      "allocated_file_bytes_before": 8192
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-recompute/agent/analysis/__pycache__",
+      "allocated_file_bytes_before": 28672
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-recompute/agent/types/__pycache__",
+      "allocated_file_bytes_before": 126976
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-recompute/agent/ppo/__pycache__",
+      "allocated_file_bytes_before": 225280
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-recompute/agent/evaluation/__pycache__",
+      "allocated_file_bytes_before": 147456
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-recompute/agent/train/__pycache__",
+      "allocated_file_bytes_before": 69632
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-recompute/agent/runtime/__pycache__",
+      "allocated_file_bytes_before": 12288
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-recompute/agent/model/__pycache__",
+      "allocated_file_bytes_before": 110592
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-recompute/agent/mock_engine/__pycache__",
+      "allocated_file_bytes_before": 32768
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-recompute/agent/buffer/__pycache__",
+      "allocated_file_bytes_before": 61440
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-recompute/tests/agent/__pycache__",
+      "allocated_file_bytes_before": 1220608
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/.pytest_cache",
+      "allocated_file_bytes_before": 53248
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/engine/python/pa3_engine/__pycache__",
+      "allocated_file_bytes_before": 20480
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/scripts/__pycache__",
+      "allocated_file_bytes_before": 262144
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/agent/__pycache__",
+      "allocated_file_bytes_before": 8192
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/agent/analysis/__pycache__",
+      "allocated_file_bytes_before": 28672
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/agent/types/__pycache__",
+      "allocated_file_bytes_before": 126976
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/agent/ppo/__pycache__",
+      "allocated_file_bytes_before": 200704
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/agent/evaluation/__pycache__",
+      "allocated_file_bytes_before": 143360
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/agent/train/__pycache__",
+      "allocated_file_bytes_before": 69632
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/agent/runtime/__pycache__",
+      "allocated_file_bytes_before": 12288
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/agent/model/__pycache__",
+      "allocated_file_bytes_before": 110592
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/agent/mock_engine/__pycache__",
+      "allocated_file_bytes_before": 32768
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/agent/buffer/__pycache__",
+      "allocated_file_bytes_before": 61440
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/tests/agent/__pycache__",
+      "allocated_file_bytes_before": 1150976
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/.pytest_cache",
+      "allocated_file_bytes_before": 65536
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/engine/python/pa3_engine/__pycache__",
+      "allocated_file_bytes_before": 20480
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/scripts/__pycache__",
+      "allocated_file_bytes_before": 274432
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/agent/__pycache__",
+      "allocated_file_bytes_before": 8192
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/agent/analysis/__pycache__",
+      "allocated_file_bytes_before": 28672
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/agent/types/__pycache__",
+      "allocated_file_bytes_before": 126976
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/agent/ppo/__pycache__",
+      "allocated_file_bytes_before": 237568
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/agent/evaluation/__pycache__",
+      "allocated_file_bytes_before": 143360
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/agent/train/__pycache__",
+      "allocated_file_bytes_before": 73728
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/agent/runtime/__pycache__",
+      "allocated_file_bytes_before": 12288
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/agent/model/__pycache__",
+      "allocated_file_bytes_before": 110592
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/agent/mock_engine/__pycache__",
+      "allocated_file_bytes_before": 32768
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/agent/buffer/__pycache__",
+      "allocated_file_bytes_before": 61440
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/tests/integration/__pycache__",
+      "allocated_file_bytes_before": 110592
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/tests/agent/__pycache__",
+      "allocated_file_bytes_before": 1257472
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation-baseline/engine/python/pa3_engine/__pycache__",
+      "allocated_file_bytes_before": 20480
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation-baseline/scripts/__pycache__",
+      "allocated_file_bytes_before": 40960
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation-baseline/agent/__pycache__",
+      "allocated_file_bytes_before": 8192
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation-baseline/agent/analysis/__pycache__",
+      "allocated_file_bytes_before": 28672
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation-baseline/agent/types/__pycache__",
+      "allocated_file_bytes_before": 126976
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation-baseline/agent/ppo/__pycache__",
+      "allocated_file_bytes_before": 208896
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation-baseline/agent/train/__pycache__",
+      "allocated_file_bytes_before": 69632
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation-baseline/agent/model/__pycache__",
+      "allocated_file_bytes_before": 98304
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation-baseline/agent/buffer/__pycache__",
+      "allocated_file_bytes_before": 61440
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation-reference/scripts/__pycache__",
+      "allocated_file_bytes_before": 98304
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation-reference/agent/__pycache__",
+      "allocated_file_bytes_before": 8192
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation-reference/agent/types/__pycache__",
+      "allocated_file_bytes_before": 110592
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation-reference/agent/ppo/__pycache__",
+      "allocated_file_bytes_before": 122880
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation-reference/agent/model/__pycache__",
+      "allocated_file_bytes_before": 98304
+    },
+    {
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-validation-reference/agent/buffer/__pycache__",
+      "allocated_file_bytes_before": 61440
+    },
+    {
+      "path": "/home/minidc/Desktop/pa3-c-search/target/debug/incremental",
+      "allocated_file_bytes_before": 818196480
+    }
+  ],
+  "free_bytes_before": 8517214208,
+  "free_bytes_after": 9353711616,
+  "disk_free_bytes_gained": 836497408,
+  "native_sha256_unchanged": {
+    "/home/minidc/Desktop/PokeAgent3.0/engine/python/pa3_engine/pa3_engine.so": "105cb6140a205279948ba741f40951219dbe0c8b2b21c7ba9d826df8ea12e8a3",
+    "/home/minidc/.codex/worktrees/pa3-v2-final-75fcc89/PokeAgent3.0/engine/python/pa3_engine/pa3_engine.so": "8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62",
+    "/home/minidc/.codex/worktrees/pa3-v2-final-8052606/PokeAgent3.0/engine/python/pa3_engine/pa3_engine.so": "8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62",
+    "/home/minidc/.codex/worktrees/pa3-v2-runtime/PokeAgent3.0/engine/python/pa3_engine/pa3_engine.so": "8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62",
+    "/home/minidc/Desktop/PokeAgent3.0-A/engine/python/pa3_engine/pa3_engine.so": "105cb6140a205279948ba741f40951219dbe0c8b2b21c7ba9d826df8ea12e8a3",
+    "/home/minidc/Desktop/PokeAgent3.0-A-diagnosis/engine/python/pa3_engine/pa3_engine.so": "105cb6140a205279948ba741f40951219dbe0c8b2b21c7ba9d826df8ea12e8a3",
+    "/home/minidc/Desktop/PokeAgent3.0-A-evaluation-league/engine/python/pa3_engine/pa3_engine.so": "105cb6140a205279948ba741f40951219dbe0c8b2b21c7ba9d826df8ea12e8a3",
+    "/home/minidc/Desktop/PokeAgent3.0-A-recovery/engine/python/pa3_engine/pa3_engine.so": "105cb6140a205279948ba741f40951219dbe0c8b2b21c7ba9d826df8ea12e8a3",
+    "/home/minidc/Desktop/PokeAgent3.0-A-runtime/engine/python/pa3_engine/pa3_engine.so": "105cb6140a205279948ba741f40951219dbe0c8b2b21c7ba9d826df8ea12e8a3",
+    "/home/minidc/Desktop/PokeAgent3.0-A-telemetry/engine/python/pa3_engine/pa3_engine.so": "105cb6140a205279948ba741f40951219dbe0c8b2b21c7ba9d826df8ea12e8a3",
+    "/home/minidc/Desktop/PokeAgent3.0-V2/engine/python/pa3_engine/pa3_engine.so": "8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62",
+    "/home/minidc/Desktop/PokeAgent3.0-V2-batch-baseline/engine/python/pa3_engine/pa3_engine.so": "8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62",
+    "/home/minidc/Desktop/PokeAgent3.0-V2-batch-candidates/engine/python/pa3_engine/pa3_engine.so": "8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62",
+    "/home/minidc/Desktop/PokeAgent3.0-V2-integration/engine/python/pa3_engine/pa3_engine.so": "8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62",
+    "/home/minidc/Desktop/PokeAgent3.0-V2-learner-batch/engine/python/pa3_engine/pa3_engine.so": "8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62",
+    "/home/minidc/Desktop/PokeAgent3.0-V2-recompute/engine/python/pa3_engine/pa3_engine.so": "12574d39bb5268eaa45eb94505396b3da1c26ac18f3f6bd4a888d58bbb5f6a87",
+    "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/engine/python/pa3_engine/pa3_engine.so": "8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62",
+    "/home/minidc/Desktop/PokeAgent3.0-V2-validation/engine/python/pa3_engine/pa3_engine.so": "8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62",
+    "/home/minidc/Desktop/PokeAgent3.0-V2-validation-baseline/engine/python/pa3_engine/pa3_engine.so": "8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62",
+    "/home/minidc/Desktop/PokeAgent3.0-V2-validation-reference/engine/python/pa3_engine/pa3_engine.so": "12574d39bb5268eaa45eb94505396b3da1c26ac18f3f6bd4a888d58bbb5f6a87"
+  },
+  "preserved": "All checkpoints,.pt,runs,evidence,logs,data,source,Git objects,virtualenvs,deployed native modules,release binaries; Rust debug build logs retained."
+}

@@ -1,0 +1,917 @@
+{
+  "schema": "pa3-fp32-policy-matched-benchmark-comparison-v1",
+  "measurement": {
+    "repetitions_per_arm": 3,
+    "games_per_repetition": 2048,
+    "games_per_rank": 1024,
+    "iteration_rate": "2048 / max(rank0.iteration_wall_s, rank1.iteration_wall_s)",
+    "launcher_rate": "2048 / parent launcher_wall_s",
+    "stage_time": "maximum of corresponding rank stage wall; maxima for different stages can come from different ranks and must not be summed as one critical path",
+    "ordering": "Sequential complete arms; observed spread, not randomized confidence intervals.",
+    "restoration": "Every repetition restores original full57,344 model/Adam/scheduler/scaler/RNG state independently.",
+    "benchmark_secondary_audit": "Secondary safety enabled; forced audit off in timed benchmark. Separate forced-smoke evidence is not included here.",
+    "production_progress_added": 0
+  },
+  "selected_arm": "E_exact",
+  "selected_executable_sha": "9d3d6051d6d17cc517259a3e6807bb067c717a9e",
+  "selection_reason": "Exact lookup improves matched median at unchanged final model/Adam/rollout identities. Actor CPU-mapping/bundled-H2D changes add only a small median iteration difference within observed variation and are not promoted.",
+  "exact_iteration_median_gain_vs_gather_percent": 3.3877900580503884,
+  "actor_iteration_median_gain_vs_exact_percent": 0.3024046125814861,
+  "arms": {
+    "E_gather": {
+      "source_sha": "180176339785276621f767afda6c47286e80bd2e",
+      "backend": "gather",
+      "iteration_matches_per_s_raw": [
+        28.782117519593797,
+        29.324868991883363,
+        28.677717556961618
+      ],
+      "iteration_matches_per_s_median": 28.782117519593797,
+      "iteration_matches_per_s_min": 28.677717556961618,
+      "iteration_matches_per_s_max": 29.324868991883363,
+      "launcher_all_in_matches_per_s_raw": [
+        24.07388261861636,
+        24.654200156404173,
+        24.07414873177701
+      ],
+      "launcher_all_in_matches_per_s_median": 24.07414873177701,
+      "max_rank_collect_wall_s_raw": [
+        23.333159603999775,
+        22.26428385400004,
+        23.092858043999968
+      ],
+      "max_rank_collect_wall_s_median": 23.092858043999968,
+      "max_rank_update_wall_s_raw": [
+        40.98453833599979,
+        40.848164458000156,
+        41.33531108599982
+      ],
+      "max_rank_update_wall_s_median": 40.98453833599979,
+      "repetitions": [
+        {
+          "repeat": 1,
+          "source_sha": "180176339785276621f767afda6c47286e80bd2e",
+          "iteration_matches_per_s": 28.782117519593797,
+          "launcher_all_in_matches_per_s": 24.07388261861636,
+          "max_rank_iteration_wall_s": 71.15529281699992,
+          "launcher_wall_s": 85.07144578399993,
+          "max_rank_collect_wall_s": 23.333159603999775,
+          "max_rank_update_wall_s": 40.98453833599979,
+          "max_rank_prepare_wall_s": 5.064509024000017,
+          "max_rank_recompute_wall_s": 3.246585429999868,
+          "games_total": 2048,
+          "games_by_rank": [
+            1024,
+            1024
+          ],
+          "rows_total": 45870,
+          "rows_by_rank": [
+            22873,
+            22997
+          ],
+          "actor_rows_by_rank": [
+            21481,
+            21595
+          ],
+          "ppo_epochs_by_rank": [
+            2,
+            2
+          ],
+          "synchronized_optimizer_steps": 24,
+          "optimizer_step_retries_by_rank": [
+            0,
+            0
+          ],
+          "optimizer_steps_skipped_by_rank": [
+            0,
+            0
+          ],
+          "operational_errors_by_rank": [
+            0,
+            0
+          ],
+          "recompute_max_by_rank": [
+            1.6689300537109375e-06,
+            1.9073486328125e-06
+          ],
+          "recompute_p99_by_rank": [
+            9.5367431640625e-07,
+            9.5367431640625e-07
+          ],
+          "all_recompute_gates_accepted": true,
+          "final_model_digest": "e8ca7f5d7a2b19681ce841bf0aeff26624e95e9886e8427c93341a281ba4e82b",
+          "final_adam_digest": "e12e6a8cf91d26ba3133007e185e6769f7bdc71877d324e0d1ac9fb249f2f725",
+          "rollout_digest_by_rank": [
+            "5a4d7d2ea421fe20bd8681437be3e24b05fcb0d8b8c9c07f4d82942216e2edf3",
+            "191f6cd905c643a11cfede014ccc0c8b2c3fc500443f54605aa4b7b9fccdd358"
+          ],
+          "actor_useful_rows_by_rank": [
+            22873,
+            22997
+          ],
+          "actor_physical_rows_by_rank": [
+            22873,
+            22997
+          ],
+          "gpu_peak_reserved_gib_by_rank": [
+            16.880859375,
+            16.880859375
+          ],
+          "source_artifacts_sha256": {
+            "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat1/report.json": "dd830baf09d6279c9ac500b8777c020bc0346ba2b87df0dd9d7e543c79988587",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat1/report.json.rank0.json": "c5d5b796294db51c5fee48c004796d4a08ce16fded15386b14727bc531d74e14",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat1/report.json.rank1.json": "5868255968c12c44d6d2f87f6510639fe84234bf4d122600833120f863543fd7",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat1/report.json.rank0.ppo.jsonl": "51805909490e29fd8d4d13ba5fa4bf21af9c59e097d9b16ae14580b649e9ec88",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat1/report.json.rank1.ppo.jsonl": "0cbba81b6844c796c23c305d51c44fba8b9221b176ee581963ccca60f74c4ad8",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat1/migration.json": "67fc33246a11f7d03c1d8c450c4305af791c254240b0f0caba10ba25fe13f7c8",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat1/command.json": "1dbb21c0ac70a428fabb37c72b15581aaa440dddc882100aaddd3086fec61c18"
+          }
+        },
+        {
+          "repeat": 2,
+          "source_sha": "180176339785276621f767afda6c47286e80bd2e",
+          "iteration_matches_per_s": 29.324868991883363,
+          "launcher_all_in_matches_per_s": 24.654200156404173,
+          "max_rank_iteration_wall_s": 69.8383341650001,
+          "launcher_wall_s": 83.06901002699988,
+          "max_rank_collect_wall_s": 22.26428385400004,
+          "max_rank_update_wall_s": 40.848164458000156,
+          "max_rank_prepare_wall_s": 4.962455790000149,
+          "max_rank_recompute_wall_s": 1.9580981389999579,
+          "games_total": 2048,
+          "games_by_rank": [
+            1024,
+            1024
+          ],
+          "rows_total": 45870,
+          "rows_by_rank": [
+            22873,
+            22997
+          ],
+          "actor_rows_by_rank": [
+            21481,
+            21595
+          ],
+          "ppo_epochs_by_rank": [
+            2,
+            2
+          ],
+          "synchronized_optimizer_steps": 24,
+          "optimizer_step_retries_by_rank": [
+            0,
+            0
+          ],
+          "optimizer_steps_skipped_by_rank": [
+            0,
+            0
+          ],
+          "operational_errors_by_rank": [
+            0,
+            0
+          ],
+          "recompute_max_by_rank": [
+            1.6689300537109375e-06,
+            1.9073486328125e-06
+          ],
+          "recompute_p99_by_rank": [
+            9.5367431640625e-07,
+            9.5367431640625e-07
+          ],
+          "all_recompute_gates_accepted": true,
+          "final_model_digest": "e8ca7f5d7a2b19681ce841bf0aeff26624e95e9886e8427c93341a281ba4e82b",
+          "final_adam_digest": "e12e6a8cf91d26ba3133007e185e6769f7bdc71877d324e0d1ac9fb249f2f725",
+          "rollout_digest_by_rank": [
+            "5a4d7d2ea421fe20bd8681437be3e24b05fcb0d8b8c9c07f4d82942216e2edf3",
+            "191f6cd905c643a11cfede014ccc0c8b2c3fc500443f54605aa4b7b9fccdd358"
+          ],
+          "actor_useful_rows_by_rank": [
+            22873,
+            22997
+          ],
+          "actor_physical_rows_by_rank": [
+            22873,
+            22997
+          ],
+          "gpu_peak_reserved_gib_by_rank": [
+            16.880859375,
+            16.880859375
+          ],
+          "source_artifacts_sha256": {
+            "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat2/report.json": "af3cba2357a6382fe893e48eb3d44c70769fcea607ed6d0b33ee198eac2f1847",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat2/report.json.rank0.json": "6e0a15163a625c240b26e20f0e8b98b1ddf45e74b609faa3d87bb1dd03879806",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat2/report.json.rank1.json": "3a7334a068dd5138f4c84ebd1b526c70a9c11a66a1a3ba6d296448467b9e60bf",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat2/report.json.rank0.ppo.jsonl": "07ef6d6ce7e2bf865085cdc60825c6be51e204fe2fca41a7cb7f8fc01579c7ca",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat2/report.json.rank1.ppo.jsonl": "99ef48db772469bb7a38bbbbce903c19b1e6d10991856591a247dbea99eaf2f3",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat2/migration.json": "8e9f193374d8e2f5bc6638dd1c7126b8ee447d75537fdc0c86af5dbdac764166",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat2/command.json": "07583b2255f83f76bb43ee140e0d49c99b1e296a41703c86199e7193db5c963e"
+          }
+        },
+        {
+          "repeat": 3,
+          "source_sha": "180176339785276621f767afda6c47286e80bd2e",
+          "iteration_matches_per_s": 28.677717556961618,
+          "launcher_all_in_matches_per_s": 24.07414873177701,
+          "max_rank_iteration_wall_s": 71.41433051400008,
+          "launcher_wall_s": 85.07050541299986,
+          "max_rank_collect_wall_s": 23.092858043999968,
+          "max_rank_update_wall_s": 41.33531108599982,
+          "max_rank_prepare_wall_s": 5.106078247999903,
+          "max_rank_recompute_wall_s": 0.5020519649997368,
+          "games_total": 2048,
+          "games_by_rank": [
+            1024,
+            1024
+          ],
+          "rows_total": 45870,
+          "rows_by_rank": [
+            22873,
+            22997
+          ],
+          "actor_rows_by_rank": [
+            21481,
+            21595
+          ],
+          "ppo_epochs_by_rank": [
+            2,
+            2
+          ],
+          "synchronized_optimizer_steps": 24,
+          "optimizer_step_retries_by_rank": [
+            0,
+            0
+          ],
+          "optimizer_steps_skipped_by_rank": [
+            0,
+            0
+          ],
+          "operational_errors_by_rank": [
+            0,
+            0
+          ],
+          "recompute_max_by_rank": [
+            1.6689300537109375e-06,
+            1.9073486328125e-06
+          ],
+          "recompute_p99_by_rank": [
+            9.5367431640625e-07,
+            9.5367431640625e-07
+          ],
+          "all_recompute_gates_accepted": true,
+          "final_model_digest": "e8ca7f5d7a2b19681ce841bf0aeff26624e95e9886e8427c93341a281ba4e82b",
+          "final_adam_digest": "e12e6a8cf91d26ba3133007e185e6769f7bdc71877d324e0d1ac9fb249f2f725",
+          "rollout_digest_by_rank": [
+            "5a4d7d2ea421fe20bd8681437be3e24b05fcb0d8b8c9c07f4d82942216e2edf3",
+            "191f6cd905c643a11cfede014ccc0c8b2c3fc500443f54605aa4b7b9fccdd358"
+          ],
+          "actor_useful_rows_by_rank": [
+            22873,
+            22997
+          ],
+          "actor_physical_rows_by_rank": [
+            22873,
+            22997
+          ],
+          "gpu_peak_reserved_gib_by_rank": [
+            16.880859375,
+            16.880859375
+          ],
+          "source_artifacts_sha256": {
+            "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat3/report.json": "6390faab3dd9c3e25170d4751d306726c865224ddd979140ede19f137c1b4abc",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat3/report.json.rank0.json": "ff57271babe386e46e4f5fbafede2cc8afe4af15b1e23367aeb3ce4e5b050eea",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat3/report.json.rank1.json": "45a13ec3f15a403ee8339b547cf540d97e1fc272d4182449ccd184ff9a3ad43d",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat3/report.json.rank0.ppo.jsonl": "7d930048dfb12c1a77ef1cc2e82bbee81abf96b6e363bb29ecb057bda004c639",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat3/report.json.rank1.ppo.jsonl": "d57ea486860d06ec38391228ee2bb807ec143de7b895a2df8ea225148831b9ae",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat3/migration.json": "f961d8cf7d8efb44e092e90be9ed9c9df0735fbf43bc29f245a08e1107323907",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat3/command.json": "8466e27cfd4e4d9c27b1f29307b2156e6f48c43940dad05f18db84dbe9ba6d0a"
+          }
+        }
+      ]
+    },
+    "E_exact": {
+      "source_sha": "9d3d6051d6d17cc517259a3e6807bb067c717a9e",
+      "backend": "exact-row-v100-v1",
+      "iteration_matches_per_s_raw": [
+        29.757195235418976,
+        29.769014202247746,
+        29.189746801289186
+      ],
+      "iteration_matches_per_s_median": 29.757195235418976,
+      "iteration_matches_per_s_min": 29.189746801289186,
+      "iteration_matches_per_s_max": 29.769014202247746,
+      "launcher_all_in_matches_per_s_raw": [
+        24.65427396043304,
+        24.358589833144475,
+        24.072377620299427
+      ],
+      "launcher_all_in_matches_per_s_median": 24.358589833144475,
+      "max_rank_collect_wall_s_raw": [
+        22.980828655000096,
+        23.51987187199984,
+        25.025304517000222
+      ],
+      "max_rank_collect_wall_s_median": 23.51987187199984,
+      "max_rank_update_wall_s_raw": [
+        37.78156023299971,
+        37.606310827000016,
+        38.05327360299998
+      ],
+      "max_rank_update_wall_s_median": 37.78156023299971,
+      "repetitions": [
+        {
+          "repeat": 1,
+          "source_sha": "9d3d6051d6d17cc517259a3e6807bb067c717a9e",
+          "iteration_matches_per_s": 29.757195235418976,
+          "launcher_all_in_matches_per_s": 24.65427396043304,
+          "max_rank_iteration_wall_s": 68.82369066699994,
+          "launcher_wall_s": 83.06876135499988,
+          "max_rank_collect_wall_s": 22.980828655000096,
+          "max_rank_update_wall_s": 37.78156023299971,
+          "max_rank_prepare_wall_s": 6.517498632999832,
+          "max_rank_recompute_wall_s": 2.6907243510004264,
+          "games_total": 2048,
+          "games_by_rank": [
+            1024,
+            1024
+          ],
+          "rows_total": 45870,
+          "rows_by_rank": [
+            22873,
+            22997
+          ],
+          "actor_rows_by_rank": [
+            21481,
+            21595
+          ],
+          "ppo_epochs_by_rank": [
+            2,
+            2
+          ],
+          "synchronized_optimizer_steps": 24,
+          "optimizer_step_retries_by_rank": [
+            0,
+            0
+          ],
+          "optimizer_steps_skipped_by_rank": [
+            0,
+            0
+          ],
+          "operational_errors_by_rank": [
+            0,
+            0
+          ],
+          "recompute_max_by_rank": [
+            1.6689300537109375e-06,
+            1.9073486328125e-06
+          ],
+          "recompute_p99_by_rank": [
+            9.5367431640625e-07,
+            9.5367431640625e-07
+          ],
+          "all_recompute_gates_accepted": true,
+          "final_model_digest": "e8ca7f5d7a2b19681ce841bf0aeff26624e95e9886e8427c93341a281ba4e82b",
+          "final_adam_digest": "e12e6a8cf91d26ba3133007e185e6769f7bdc71877d324e0d1ac9fb249f2f725",
+          "rollout_digest_by_rank": [
+            "5a4d7d2ea421fe20bd8681437be3e24b05fcb0d8b8c9c07f4d82942216e2edf3",
+            "191f6cd905c643a11cfede014ccc0c8b2c3fc500443f54605aa4b7b9fccdd358"
+          ],
+          "actor_useful_rows_by_rank": [
+            22873,
+            22997
+          ],
+          "actor_physical_rows_by_rank": [
+            22873,
+            22997
+          ],
+          "gpu_peak_reserved_gib_by_rank": [
+            16.326171875,
+            16.326171875
+          ],
+          "source_artifacts_sha256": {
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat1/report.json": "c740d19035037e9e731ec3b3b9c3926c26f2d617c5cf588d488dc05a8a073e37",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat1/report.json.rank0.json": "152745e3a8e0657707953970cb7e803a54d489b48e372721de010428f6bad70d",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat1/report.json.rank1.json": "e845fb1d5284c5e7bb3ab4d50d9c32b94d6058c94ae1d7cd75fd1f5269b582df",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat1/report.json.rank0.ppo.jsonl": "35d69ea965196d3249fc0bfd5b2b0f21a0ecf142cd4752be7f51054ff29e4d2d",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat1/report.json.rank1.ppo.jsonl": "5a47d6d58b33cf3791cd5ddb0fb685b110788d6ef022c5995f83ff73098b5dd9",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat1/migration.json": "1a2ff1f8d0ec9ced6110a7bc23b552931fe5ca20e13401e66aacf42a2ed1a73f",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat1/command.json": "979cc2522e164a821a64e52da85e44da8fb9361dd1d46f8072ce77f7ab1dbd7c"
+          }
+        },
+        {
+          "repeat": 2,
+          "source_sha": "9d3d6051d6d17cc517259a3e6807bb067c717a9e",
+          "iteration_matches_per_s": 29.769014202247746,
+          "launcher_all_in_matches_per_s": 24.358589833144475,
+          "max_rank_iteration_wall_s": 68.7963661169997,
+          "launcher_wall_s": 84.07711669799983,
+          "max_rank_collect_wall_s": 23.51987187199984,
+          "max_rank_update_wall_s": 37.606310827000016,
+          "max_rank_prepare_wall_s": 5.435692377000123,
+          "max_rank_recompute_wall_s": 1.7485287199997401,
+          "games_total": 2048,
+          "games_by_rank": [
+            1024,
+            1024
+          ],
+          "rows_total": 45870,
+          "rows_by_rank": [
+            22873,
+            22997
+          ],
+          "actor_rows_by_rank": [
+            21481,
+            21595
+          ],
+          "ppo_epochs_by_rank": [
+            2,
+            2
+          ],
+          "synchronized_optimizer_steps": 24,
+          "optimizer_step_retries_by_rank": [
+            0,
+            0
+          ],
+          "optimizer_steps_skipped_by_rank": [
+            0,
+            0
+          ],
+          "operational_errors_by_rank": [
+            0,
+            0
+          ],
+          "recompute_max_by_rank": [
+            1.6689300537109375e-06,
+            1.9073486328125e-06
+          ],
+          "recompute_p99_by_rank": [
+            9.5367431640625e-07,
+            9.5367431640625e-07
+          ],
+          "all_recompute_gates_accepted": true,
+          "final_model_digest": "e8ca7f5d7a2b19681ce841bf0aeff26624e95e9886e8427c93341a281ba4e82b",
+          "final_adam_digest": "e12e6a8cf91d26ba3133007e185e6769f7bdc71877d324e0d1ac9fb249f2f725",
+          "rollout_digest_by_rank": [
+            "5a4d7d2ea421fe20bd8681437be3e24b05fcb0d8b8c9c07f4d82942216e2edf3",
+            "191f6cd905c643a11cfede014ccc0c8b2c3fc500443f54605aa4b7b9fccdd358"
+          ],
+          "actor_useful_rows_by_rank": [
+            22873,
+            22997
+          ],
+          "actor_physical_rows_by_rank": [
+            22873,
+            22997
+          ],
+          "gpu_peak_reserved_gib_by_rank": [
+            16.326171875,
+            16.326171875
+          ],
+          "source_artifacts_sha256": {
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat2/report.json": "8ec4d253350daba339d404de4c521422793d916da47b69618315f83eb2be04cf",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat2/report.json.rank0.json": "c8f2bd9447002b2eda7a0cb8b4c138d43ae766b19e52a030561da3408a853758",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat2/report.json.rank1.json": "8938f705af20ba7645d13eaaa0c85dda7a7f75d4c098fc00db1e431ac0c3feee",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat2/report.json.rank0.ppo.jsonl": "0e23db88958791c97ff8966c7576d0a573096c5e7f12b181a63748b720394a37",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat2/report.json.rank1.ppo.jsonl": "3f92caadc2ec2dab44b88d6b425e53d98654964a667af68708e9ecb6091514d8",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat2/migration.json": "ed669afe94eacfef9699c18dc1cd14ec2c6f9d17a8f2c54aee58f3a2bf92e995",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat2/command.json": "fec71bed6cd2fc31cf9493c14a1777dbb3ddeffec82afe711d11d1e0ae2d6331"
+          }
+        },
+        {
+          "repeat": 3,
+          "source_sha": "9d3d6051d6d17cc517259a3e6807bb067c717a9e",
+          "iteration_matches_per_s": 29.189746801289186,
+          "launcher_all_in_matches_per_s": 24.072377620299427,
+          "max_rank_iteration_wall_s": 70.16162263899969,
+          "launcher_wall_s": 85.07676442699994,
+          "max_rank_collect_wall_s": 25.025304517000222,
+          "max_rank_update_wall_s": 38.05327360299998,
+          "max_rank_prepare_wall_s": 5.2267761460002475,
+          "max_rank_recompute_wall_s": 2.268058079000184,
+          "games_total": 2048,
+          "games_by_rank": [
+            1024,
+            1024
+          ],
+          "rows_total": 45870,
+          "rows_by_rank": [
+            22873,
+            22997
+          ],
+          "actor_rows_by_rank": [
+            21481,
+            21595
+          ],
+          "ppo_epochs_by_rank": [
+            2,
+            2
+          ],
+          "synchronized_optimizer_steps": 24,
+          "optimizer_step_retries_by_rank": [
+            0,
+            0
+          ],
+          "optimizer_steps_skipped_by_rank": [
+            0,
+            0
+          ],
+          "operational_errors_by_rank": [
+            0,
+            0
+          ],
+          "recompute_max_by_rank": [
+            1.6689300537109375e-06,
+            1.9073486328125e-06
+          ],
+          "recompute_p99_by_rank": [
+            9.5367431640625e-07,
+            9.5367431640625e-07
+          ],
+          "all_recompute_gates_accepted": true,
+          "final_model_digest": "e8ca7f5d7a2b19681ce841bf0aeff26624e95e9886e8427c93341a281ba4e82b",
+          "final_adam_digest": "e12e6a8cf91d26ba3133007e185e6769f7bdc71877d324e0d1ac9fb249f2f725",
+          "rollout_digest_by_rank": [
+            "5a4d7d2ea421fe20bd8681437be3e24b05fcb0d8b8c9c07f4d82942216e2edf3",
+            "191f6cd905c643a11cfede014ccc0c8b2c3fc500443f54605aa4b7b9fccdd358"
+          ],
+          "actor_useful_rows_by_rank": [
+            22873,
+            22997
+          ],
+          "actor_physical_rows_by_rank": [
+            22873,
+            22997
+          ],
+          "gpu_peak_reserved_gib_by_rank": [
+            16.326171875,
+            16.326171875
+          ],
+          "source_artifacts_sha256": {
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat3/report.json": "cdb122d9d8ad9089b7c7f55321350b8acc8eb56789d81c22f5183109eecf6a41",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat3/report.json.rank0.json": "664d7edd7f4d654f26d3b4b8bb6aefc59f0552018627056543cedb1173439b5b",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat3/report.json.rank1.json": "5444cb68b6d28e7198f8504146871dc91f0dc6ddf1427547117c5a4fcf1613e8",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat3/report.json.rank0.ppo.jsonl": "540394c48ad99a7d3bbc1b0e72db14a5b0e29fd52ebcb7267f4f16e4eab4bbb9",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat3/report.json.rank1.ppo.jsonl": "700e00d2ba0e298e233adb4c2890252c70b52de5b27b92faa716f95ba20935be",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat3/migration.json": "625838bfc5a2963b0f7bc116cef50ed6449d6afb259812d7b4f09e9eb7b3558b",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat3/command.json": "813ab7473dfc6f1592da9def25c99b51ba0e12d16f6027e0f9a38aa12a081e14"
+          }
+        }
+      ]
+    },
+    "E_actor": {
+      "source_sha": "1ab3b3743f79399a01b3d70cc97993e61a0133b7",
+      "backend": "exact-row-v100-v1",
+      "iteration_matches_per_s_raw": [
+        28.825258362882177,
+        29.847182366385763,
+        30.780763090577672
+      ],
+      "iteration_matches_per_s_median": 29.847182366385763,
+      "iteration_matches_per_s_min": 28.825258362882177,
+      "iteration_matches_per_s_max": 30.780763090577672,
+      "launcher_all_in_matches_per_s_raw": [
+        23.519173537186326,
+        24.65465078450529,
+        25.579196613971952
+      ],
+      "launcher_all_in_matches_per_s_median": 24.65465078450529,
+      "max_rank_collect_wall_s_raw": [
+        25.69730201199991,
+        23.93908731800002,
+        22.168168615000013
+      ],
+      "max_rank_collect_wall_s_median": 23.93908731800002,
+      "max_rank_update_wall_s_raw": [
+        37.759807148000164,
+        37.4288932620002,
+        37.52384172200027
+      ],
+      "max_rank_update_wall_s_median": 37.52384172200027,
+      "repetitions": [
+        {
+          "repeat": 1,
+          "source_sha": "1ab3b3743f79399a01b3d70cc97993e61a0133b7",
+          "iteration_matches_per_s": 28.825258362882177,
+          "launcher_all_in_matches_per_s": 23.519173537186326,
+          "max_rank_iteration_wall_s": 71.04879943200012,
+          "launcher_wall_s": 87.07788973800007,
+          "max_rank_collect_wall_s": 25.69730201199991,
+          "max_rank_update_wall_s": 37.759807148000164,
+          "max_rank_prepare_wall_s": 5.426498382999853,
+          "max_rank_recompute_wall_s": 4.334829390999857,
+          "games_total": 2048,
+          "games_by_rank": [
+            1024,
+            1024
+          ],
+          "rows_total": 45870,
+          "rows_by_rank": [
+            22873,
+            22997
+          ],
+          "actor_rows_by_rank": [
+            21481,
+            21595
+          ],
+          "ppo_epochs_by_rank": [
+            2,
+            2
+          ],
+          "synchronized_optimizer_steps": 24,
+          "optimizer_step_retries_by_rank": [
+            0,
+            0
+          ],
+          "optimizer_steps_skipped_by_rank": [
+            0,
+            0
+          ],
+          "operational_errors_by_rank": [
+            0,
+            0
+          ],
+          "recompute_max_by_rank": [
+            1.6689300537109375e-06,
+            1.9073486328125e-06
+          ],
+          "recompute_p99_by_rank": [
+            9.5367431640625e-07,
+            9.5367431640625e-07
+          ],
+          "all_recompute_gates_accepted": true,
+          "final_model_digest": "e8ca7f5d7a2b19681ce841bf0aeff26624e95e9886e8427c93341a281ba4e82b",
+          "final_adam_digest": "e12e6a8cf91d26ba3133007e185e6769f7bdc71877d324e0d1ac9fb249f2f725",
+          "rollout_digest_by_rank": [
+            "5a4d7d2ea421fe20bd8681437be3e24b05fcb0d8b8c9c07f4d82942216e2edf3",
+            "191f6cd905c643a11cfede014ccc0c8b2c3fc500443f54605aa4b7b9fccdd358"
+          ],
+          "actor_useful_rows_by_rank": [
+            22873,
+            22997
+          ],
+          "actor_physical_rows_by_rank": [
+            22873,
+            22997
+          ],
+          "gpu_peak_reserved_gib_by_rank": [
+            16.326171875,
+            16.326171875
+          ],
+          "source_artifacts_sha256": {
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat1/report.json": "eedbe36a7fe7a7ee32a55318f3cdaec73e7bca4b18300f119bc4dba4f0565e5a",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat1/report.json.rank0.json": "4373f8045414777eb44aa2def5bf6b139d922f2a2e0727d0bf8b6c9d7b8b921f",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat1/report.json.rank1.json": "1f528115938c543a81c3b320fac0c90c27612abea1e274bbe4949b16ddb4263b",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat1/report.json.rank0.ppo.jsonl": "590c18408c81d57eac1f7009343528696f1502ac9d6bd002f80d61be3d155a93",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat1/report.json.rank1.ppo.jsonl": "936c20dcd219e4a376dab20e713b7885cc085c8586762f7dbd17432c85dd6066",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat1/migration.json": "620d46da6896272cc952a6b8f5f78c0f3a9212628124a517529c153e250331e6",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat1/command.json": "2f5165f395e34f3f650a47abd098a8eb20edec9c6bf274bf10d0187143243092"
+          }
+        },
+        {
+          "repeat": 2,
+          "source_sha": "1ab3b3743f79399a01b3d70cc97993e61a0133b7",
+          "iteration_matches_per_s": 29.847182366385763,
+          "launcher_all_in_matches_per_s": 24.65465078450529,
+          "max_rank_iteration_wall_s": 68.61619213699987,
+          "launcher_wall_s": 83.06749172399986,
+          "max_rank_collect_wall_s": 23.93908731800002,
+          "max_rank_update_wall_s": 37.4288932620002,
+          "max_rank_prepare_wall_s": 5.366266760000144,
+          "max_rank_recompute_wall_s": 3.24706732300001,
+          "games_total": 2048,
+          "games_by_rank": [
+            1024,
+            1024
+          ],
+          "rows_total": 45870,
+          "rows_by_rank": [
+            22873,
+            22997
+          ],
+          "actor_rows_by_rank": [
+            21481,
+            21595
+          ],
+          "ppo_epochs_by_rank": [
+            2,
+            2
+          ],
+          "synchronized_optimizer_steps": 24,
+          "optimizer_step_retries_by_rank": [
+            0,
+            0
+          ],
+          "optimizer_steps_skipped_by_rank": [
+            0,
+            0
+          ],
+          "operational_errors_by_rank": [
+            0,
+            0
+          ],
+          "recompute_max_by_rank": [
+            1.6689300537109375e-06,
+            1.9073486328125e-06
+          ],
+          "recompute_p99_by_rank": [
+            9.5367431640625e-07,
+            9.5367431640625e-07
+          ],
+          "all_recompute_gates_accepted": true,
+          "final_model_digest": "e8ca7f5d7a2b19681ce841bf0aeff26624e95e9886e8427c93341a281ba4e82b",
+          "final_adam_digest": "e12e6a8cf91d26ba3133007e185e6769f7bdc71877d324e0d1ac9fb249f2f725",
+          "rollout_digest_by_rank": [
+            "5a4d7d2ea421fe20bd8681437be3e24b05fcb0d8b8c9c07f4d82942216e2edf3",
+            "191f6cd905c643a11cfede014ccc0c8b2c3fc500443f54605aa4b7b9fccdd358"
+          ],
+          "actor_useful_rows_by_rank": [
+            22873,
+            22997
+          ],
+          "actor_physical_rows_by_rank": [
+            22873,
+            22997
+          ],
+          "gpu_peak_reserved_gib_by_rank": [
+            16.326171875,
+            16.326171875
+          ],
+          "source_artifacts_sha256": {
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat2/report.json": "eb0a46795a1911cb0597475b0e1ff6163c1844599c565775b38243250ae5e22e",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat2/report.json.rank0.json": "6f764f19b120df6856f1c49376a9c2d7c60e321fc7560090a8a90fbccd852856",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat2/report.json.rank1.json": "b2d789f555434a290853efd917fc45ca0c6920211a699533882d88842111c07b",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat2/report.json.rank0.ppo.jsonl": "f70267d1c86835a8b522c58775b938e560ea445b14a80bcfd592ec38efab9ffe",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat2/report.json.rank1.ppo.jsonl": "8693fbbf6bab0dcfdb1f0195b4a44fc3aabe94ba2e626ba981f761602bcb2a27",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat2/migration.json": "c7d7ec52274ee1c0b871051afe773b51c22f353131922a7e24200379aa318f30",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat2/command.json": "02bcef28e4633c53da17d0c2871a1856273f0cf15f9f3f596d22c75b6ab0f600"
+          }
+        },
+        {
+          "repeat": 3,
+          "source_sha": "1ab3b3743f79399a01b3d70cc97993e61a0133b7",
+          "iteration_matches_per_s": 30.780763090577672,
+          "launcher_all_in_matches_per_s": 25.579196613971952,
+          "max_rank_iteration_wall_s": 66.5350626290001,
+          "launcher_wall_s": 80.06506345399976,
+          "max_rank_collect_wall_s": 22.168168615000013,
+          "max_rank_update_wall_s": 37.52384172200027,
+          "max_rank_prepare_wall_s": 5.096799500000088,
+          "max_rank_recompute_wall_s": 1.9552149229998577,
+          "games_total": 2048,
+          "games_by_rank": [
+            1024,
+            1024
+          ],
+          "rows_total": 45870,
+          "rows_by_rank": [
+            22873,
+            22997
+          ],
+          "actor_rows_by_rank": [
+            21481,
+            21595
+          ],
+          "ppo_epochs_by_rank": [
+            2,
+            2
+          ],
+          "synchronized_optimizer_steps": 24,
+          "optimizer_step_retries_by_rank": [
+            0,
+            0
+          ],
+          "optimizer_steps_skipped_by_rank": [
+            0,
+            0
+          ],
+          "operational_errors_by_rank": [
+            0,
+            0
+          ],
+          "recompute_max_by_rank": [
+            1.6689300537109375e-06,
+            1.9073486328125e-06
+          ],
+          "recompute_p99_by_rank": [
+            9.5367431640625e-07,
+            9.5367431640625e-07
+          ],
+          "all_recompute_gates_accepted": true,
+          "final_model_digest": "e8ca7f5d7a2b19681ce841bf0aeff26624e95e9886e8427c93341a281ba4e82b",
+          "final_adam_digest": "e12e6a8cf91d26ba3133007e185e6769f7bdc71877d324e0d1ac9fb249f2f725",
+          "rollout_digest_by_rank": [
+            "5a4d7d2ea421fe20bd8681437be3e24b05fcb0d8b8c9c07f4d82942216e2edf3",
+            "191f6cd905c643a11cfede014ccc0c8b2c3fc500443f54605aa4b7b9fccdd358"
+          ],
+          "actor_useful_rows_by_rank": [
+            22873,
+            22997
+          ],
+          "actor_physical_rows_by_rank": [
+            22873,
+            22997
+          ],
+          "gpu_peak_reserved_gib_by_rank": [
+            16.326171875,
+            16.326171875
+          ],
+          "source_artifacts_sha256": {
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat3/report.json": "4341a8562e48b30bd14670b1c0320a6bf2e76ee03e39627dcb80087be8d59335",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat3/report.json.rank0.json": "e1175282764c24e0ab994db62d94238801a2079cc4bf071406c61dd7518d4a03",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat3/report.json.rank1.json": "7a306005c4dc0128889c5168593ef0a7c55b785fdf2df66988f5f392a520cd3e",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat3/report.json.rank0.ppo.jsonl": "490dc2ba0095b8a5328b67e360abbaa50a7d2948b1f56774e42ba0be9e2a689c",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat3/report.json.rank1.ppo.jsonl": "e7c0d1393b294110ab061eef7d97e46265b0a1f31b44a63a9db5cbd6a427bcb4",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat3/migration.json": "43a8abed9d064daaff3657b6ef3e3c4282164cc661304d8f2ab9ef018e443899",
+            "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat3/command.json": "606e4fafeb73f8f129001247429e7f90015f7e2b563f4244cd2d1dd0da2d4562"
+          }
+        }
+      ]
+    }
+  },
+  "identity_verification": {
+    "all18_rank_results_same_final_model": true,
+    "all18_rank_results_same_final_adam": true,
+    "final_model_digest": "e8ca7f5d7a2b19681ce841bf0aeff26624e95e9886e8427c93341a281ba4e82b",
+    "final_adam_digest": "e12e6a8cf91d26ba3133007e185e6769f7bdc71877d324e0d1ac9fb249f2f725",
+    "per_rank_rollout_rng_initial_scaler_scheduler_and_action_counts_identical_across9_runs": true,
+    "model_config_hash": "eafc7e0e1e8224139f2d3bf7a1016923d3dad465dbcc6a57220f2f02794c9a25",
+    "ppo_config_hash": "d929a5ca50469c17eb0d41ed2cb1828393d4d590be9d2ce7db017c6100d9f077",
+    "checkpoint_manifest_sha256": "b9539f3a0c426f0878375b61630cb4de9dcd2a5d4a6a59858b4d64f4287fd424",
+    "native_binary_sha256": "8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62"
+  },
+  "invariants": {
+    "training_profile_equal_to_original_and_across_arms": true,
+    "training_profile": {
+      "algorithm": "ppo",
+      "ppo_epochs": 2,
+      "lr_scale": 0.5,
+      "global_minibatch": 4096,
+      "microbatch": 1024,
+      "per_rank_minibatch": 2048,
+      "grad_accumulation": 2,
+      "envs": 1024,
+      "workers": 16,
+      "historical_probability": 0.0,
+      "optimizer": "adam",
+      "clip_epsilon": 0.2,
+      "gamma": 1.0,
+      "gae_lambda": 0.95,
+      "entropy_coefficient": 0.01,
+      "uniform_kl_coefficient": 0.001,
+      "target_approx_kl": 0.03,
+      "value_coefficient": 0.5,
+      "max_grad_norm": 0.5,
+      "action_temperature": 1.0,
+      "warmup_matches": 250000,
+      "horizon_matches": 100000000,
+      "peak_lr": 0.0003,
+      "effective_peak_lr": 0.00015,
+      "checkpoint_interval_matches": 100000
+    },
+    "precision_profile": {
+      "mode": "E",
+      "stability": "fp16-reduction-off",
+      "observation": "fp16-round-continuous-then-fp32",
+      "encoder_amp": false,
+      "ragged_effects_fp32": true,
+      "scorer_fp32": true,
+      "gru_fp32": true,
+      "recompute_gate": true,
+      "tolerance": 0.001,
+      "contract_version": "pa3-precision-E-v1",
+      "recompute_secondary": true,
+      "canonical_encoder_batch_rows": 1024,
+      "amp_overflow_retries": 3,
+      "policy_encoder_fp32": true,
+      "encoder_physical_batching": "logical-fp32-v1"
+    },
+    "frozen_dataset_manifest_sha256": "1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb",
+    "frozen_teams_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f",
+    "all96_token_slots_preserved": true,
+    "model_tokens": 96,
+    "model_active_tokens": 88,
+    "trim_observation_padding": false,
+    "no_feature_or_mask_removal": true,
+    "actor_physical_rows_equal_useful_rows": true,
+    "actor_physical_batching": "Actual FP32 request groups; canonical-padding flag1024 remains recorded but its AMP-only execution path is inactive.",
+    "runtime_config": {
+      "seed": 20261014,
+      "envs": 1024,
+      "workers": 16,
+      "microbatch": 1024,
+      "minibatch": 4096,
+      "epochs": 2,
+      "experimental_lr_scale": 0.5,
+      "precision_mode": "E",
+      "precision_stability": "fp16-reduction-off",
+      "recompute_gate": true,
+      "recompute_secondary": true,
+      "trim_observation_padding": false,
+      "batch_cache": "cuda",
+      "compact_candidates": true
+    },
+    "workspace": ":4096:8",
+    "checkpoint_interval_matches": 100000,
+    "effective_global_minibatch": 4096,
+    "per_rank_minibatch": 2048,
+    "gradient_accumulation": 2
+  }
+}

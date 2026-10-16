@@ -1,0 +1,10 @@
+[
+  "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python",
+  "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/verify_e_validation.py",
+  "--parts",
+  "sustained",
+  "continued",
+  "final_continuation",
+  "--expected-iterations",
+  "10"
+]

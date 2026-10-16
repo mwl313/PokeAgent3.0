@@ -1,0 +1,350 @@
+{
+  "benchmark_comparison.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/benchmark_comparison.json",
+    "sha256": "e6443be8f1f975e99d57987eb0b124be4399282a050ef63baf9b550a8add095f"
+  },
+  "composition_E_rank0.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/composition_E_rank0.json",
+    "sha256": "12b932498aea737f613c7c86deff17a3608bc12eb25a4e9597bec6cf456c2525"
+  },
+  "composition_E_rank1.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/composition_E_rank1.json",
+    "sha256": "a1351fc5e13107b1fed909d46aacb9e4073db34cbe98281f38dfb400c7a9007f"
+  },
+  "REBUILDABLE_CACHE_CLEANUP.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/REBUILDABLE_CACHE_CLEANUP.json",
+    "sha256": "3e1838bee1a3094f00cfbde161d6d68d247db433e4a504bf7079ba729d3ee08f"
+  },
+  "REBUILDABLE_DEBUG_CLEANUP.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/REBUILDABLE_DEBUG_CLEANUP.json",
+    "sha256": "636925df4dc3515c57d4bd83acd8badcfc80c37266e2102c3c0fe074472a6ff0"
+  },
+  "final_tests.log": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/final_tests.log",
+    "sha256": "e7ededf9861fda89b55cd50f909bafd645f97d3a81012ee7d7e48c34d6bdf123"
+  },
+  "source_of_truth.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/source_of_truth.json",
+    "sha256": "2df2988a5e601dce3b14fa65113fdb14d6df7eda6237851db40e62d68476853b"
+  },
+  "E_gather/precision_reference.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/precision_reference.json",
+    "sha256": "43373d7f48829d49524468d9ea78c6230b6406767b26d17b84250be2a7ab0dba"
+  },
+  "E_gather/precision_candidate.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/precision_candidate.json",
+    "sha256": "5c0268ccb9fbe4f4471869076e02d1e513e57c2c7cfdd0516d4fa594f5036d1e"
+  },
+  "E_gather/precision_proof.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/precision_proof.json",
+    "sha256": "b63271e316363fad403991f044f69dc57b05dcf5a0e3a40b2e104c7aa1b2ddce"
+  },
+  "E_gather/migration.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/migration.json",
+    "sha256": "cb004ef889f6acf58ead20a60abb139486cf066c258768e0b01ad943828c5180"
+  },
+  "E_gather/parity.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/parity.json",
+    "sha256": "57421fe3df0f1edffaabb61269bfd82ca397cc8e565b11dbba5bbb17bcc8e2d0"
+  },
+  "E_gather/repeat1/command.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat1/command.json",
+    "sha256": "1dbb21c0ac70a428fabb37c72b15581aaa440dddc882100aaddd3086fec61c18"
+  },
+  "E_gather/repeat1/report.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat1/report.json",
+    "sha256": "dd830baf09d6279c9ac500b8777c020bc0346ba2b87df0dd9d7e543c79988587"
+  },
+  "E_gather/repeat1/report.json.rank0.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat1/report.json.rank0.json",
+    "sha256": "c5d5b796294db51c5fee48c004796d4a08ce16fded15386b14727bc531d74e14"
+  },
+  "E_gather/repeat1/report.json.rank1.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat1/report.json.rank1.json",
+    "sha256": "5868255968c12c44d6d2f87f6510639fe84234bf4d122600833120f863543fd7"
+  },
+  "E_gather/repeat2/command.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat2/command.json",
+    "sha256": "07583b2255f83f76bb43ee140e0d49c99b1e296a41703c86199e7193db5c963e"
+  },
+  "E_gather/repeat2/report.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat2/report.json",
+    "sha256": "af3cba2357a6382fe893e48eb3d44c70769fcea607ed6d0b33ee198eac2f1847"
+  },
+  "E_gather/repeat2/report.json.rank0.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat2/report.json.rank0.json",
+    "sha256": "6e0a15163a625c240b26e20f0e8b98b1ddf45e74b609faa3d87bb1dd03879806"
+  },
+  "E_gather/repeat2/report.json.rank1.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat2/report.json.rank1.json",
+    "sha256": "3a7334a068dd5138f4c84ebd1b526c70a9c11a66a1a3ba6d296448467b9e60bf"
+  },
+  "E_gather/repeat3/command.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat3/command.json",
+    "sha256": "8466e27cfd4e4d9c27b1f29307b2156e6f48c43940dad05f18db84dbe9ba6d0a"
+  },
+  "E_gather/repeat3/report.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat3/report.json",
+    "sha256": "6390faab3dd9c3e25170d4751d306726c865224ddd979140ede19f137c1b4abc"
+  },
+  "E_gather/repeat3/report.json.rank0.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat3/report.json.rank0.json",
+    "sha256": "ff57271babe386e46e4f5fbafede2cc8afe4af15b1e23367aeb3ce4e5b050eea"
+  },
+  "E_gather/repeat3/report.json.rank1.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/E_gather/repeat3/report.json.rank1.json",
+    "sha256": "45a13ec3f15a403ee8339b547cf540d97e1fc272d4182449ccd184ff9a3ad43d"
+  },
+  "E_exact/precision_reference.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/precision_reference.json",
+    "sha256": "43373d7f48829d49524468d9ea78c6230b6406767b26d17b84250be2a7ab0dba"
+  },
+  "E_exact/precision_candidate.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/precision_candidate.json",
+    "sha256": "6307974c96e12445490684d9e750db0b9cbb558b3e55f203e91c4b8fc5cd2d17"
+  },
+  "E_exact/precision_proof.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/precision_proof.json",
+    "sha256": "1dbe219562d3318b29f97e2dd2771162413ac05ffcdc4d07461ab9bc989fb2a7"
+  },
+  "E_exact/migration.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/migration.json",
+    "sha256": "23818a9e988f29662e1cdaecaac5bc446303ebfa9f522b62c5bf3bcaba68c6d2"
+  },
+  "E_exact/parity.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/parity.json",
+    "sha256": "5f37de6886b9797121d33748d067c98d598d4dbce0b20f632d7ed2ddf533a5ca"
+  },
+  "E_exact/repeat1/command.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat1/command.json",
+    "sha256": "979cc2522e164a821a64e52da85e44da8fb9361dd1d46f8072ce77f7ab1dbd7c"
+  },
+  "E_exact/repeat1/report.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat1/report.json",
+    "sha256": "c740d19035037e9e731ec3b3b9c3926c26f2d617c5cf588d488dc05a8a073e37"
+  },
+  "E_exact/repeat1/report.json.rank0.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat1/report.json.rank0.json",
+    "sha256": "152745e3a8e0657707953970cb7e803a54d489b48e372721de010428f6bad70d"
+  },
+  "E_exact/repeat1/report.json.rank1.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat1/report.json.rank1.json",
+    "sha256": "e845fb1d5284c5e7bb3ab4d50d9c32b94d6058c94ae1d7cd75fd1f5269b582df"
+  },
+  "E_exact/repeat2/command.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat2/command.json",
+    "sha256": "fec71bed6cd2fc31cf9493c14a1777dbb3ddeffec82afe711d11d1e0ae2d6331"
+  },
+  "E_exact/repeat2/report.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat2/report.json",
+    "sha256": "8ec4d253350daba339d404de4c521422793d916da47b69618315f83eb2be04cf"
+  },
+  "E_exact/repeat2/report.json.rank0.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat2/report.json.rank0.json",
+    "sha256": "c8f2bd9447002b2eda7a0cb8b4c138d43ae766b19e52a030561da3408a853758"
+  },
+  "E_exact/repeat2/report.json.rank1.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat2/report.json.rank1.json",
+    "sha256": "8938f705af20ba7645d13eaaa0c85dda7a7f75d4c098fc00db1e431ac0c3feee"
+  },
+  "E_exact/repeat3/command.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat3/command.json",
+    "sha256": "813ab7473dfc6f1592da9def25c99b51ba0e12d16f6027e0f9a38aa12a081e14"
+  },
+  "E_exact/repeat3/report.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat3/report.json",
+    "sha256": "cdb122d9d8ad9089b7c7f55321350b8acc8eb56789d81c22f5183109eecf6a41"
+  },
+  "E_exact/repeat3/report.json.rank0.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat3/report.json.rank0.json",
+    "sha256": "664d7edd7f4d654f26d3b4b8bb6aefc59f0552018627056543cedb1173439b5b"
+  },
+  "E_exact/repeat3/report.json.rank1.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/repeat3/report.json.rank1.json",
+    "sha256": "5444cb68b6d28e7198f8504146871dc91f0dc6ddf1427547117c5a4fcf1613e8"
+  },
+  "E_actor/precision_reference.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/precision_reference.json",
+    "sha256": "43373d7f48829d49524468d9ea78c6230b6406767b26d17b84250be2a7ab0dba"
+  },
+  "E_actor/precision_candidate.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/precision_candidate.json",
+    "sha256": "88e8117589589bd80e54d3f8cbb471514576ea5bcf5590ac246d4eedff30888f"
+  },
+  "E_actor/precision_proof.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/precision_proof.json",
+    "sha256": "5037e500cdeabd7444ac64e7f7d1310cd2972360298896cf832fc117b7a98c05"
+  },
+  "E_actor/migration.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/migration.json",
+    "sha256": "ba8548b866da97a78ebd12484f8c7042cb9da7d899b2d57e23e5ed0435d7f406"
+  },
+  "E_actor/parity.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/parity.json",
+    "sha256": "5ff4f09cf6b62a3ac67eb3bde19569c35b82fe7ef0a1fcd38aa93210c6c13485"
+  },
+  "E_actor/repeat1/command.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat1/command.json",
+    "sha256": "2f5165f395e34f3f650a47abd098a8eb20edec9c6bf274bf10d0187143243092"
+  },
+  "E_actor/repeat1/report.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat1/report.json",
+    "sha256": "eedbe36a7fe7a7ee32a55318f3cdaec73e7bca4b18300f119bc4dba4f0565e5a"
+  },
+  "E_actor/repeat1/report.json.rank0.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat1/report.json.rank0.json",
+    "sha256": "4373f8045414777eb44aa2def5bf6b139d922f2a2e0727d0bf8b6c9d7b8b921f"
+  },
+  "E_actor/repeat1/report.json.rank1.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat1/report.json.rank1.json",
+    "sha256": "1f528115938c543a81c3b320fac0c90c27612abea1e274bbe4949b16ddb4263b"
+  },
+  "E_actor/repeat2/command.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat2/command.json",
+    "sha256": "02bcef28e4633c53da17d0c2871a1856273f0cf15f9f3f596d22c75b6ab0f600"
+  },
+  "E_actor/repeat2/report.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat2/report.json",
+    "sha256": "eb0a46795a1911cb0597475b0e1ff6163c1844599c565775b38243250ae5e22e"
+  },
+  "E_actor/repeat2/report.json.rank0.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat2/report.json.rank0.json",
+    "sha256": "6f764f19b120df6856f1c49376a9c2d7c60e321fc7560090a8a90fbccd852856"
+  },
+  "E_actor/repeat2/report.json.rank1.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat2/report.json.rank1.json",
+    "sha256": "b2d789f555434a290853efd917fc45ca0c6920211a699533882d88842111c07b"
+  },
+  "E_actor/repeat3/command.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat3/command.json",
+    "sha256": "606e4fafeb73f8f129001247429e7f90015f7e2b563f4244cd2d1dd0da2d4562"
+  },
+  "E_actor/repeat3/report.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat3/report.json",
+    "sha256": "4341a8562e48b30bd14670b1c0320a6bf2e76ee03e39627dcb80087be8d59335"
+  },
+  "E_actor/repeat3/report.json.rank0.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat3/report.json.rank0.json",
+    "sha256": "e1175282764c24e0ab994db62d94238801a2079cc4bf071406c61dd7518d4a03"
+  },
+  "E_actor/repeat3/report.json.rank1.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-actor/runs/v2_final_release/secondary_precision_20261016/E_actor/repeat3/report.json.rank1.json",
+    "sha256": "7a306005c4dc0128889c5168593ef0a7c55b785fdf2df66988f5f392a520cd3e"
+  },
+  "evaluation/receipts.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_cpu_smoke_w9LSj4/evaluation/v2/receipts.json",
+    "sha256": "2ff32e717070398843764a8575162429f3003d22ec54e9c6ce27498ca1ed28c6"
+  },
+  "E_VALIDATION_VERIFIED.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/E_VALIDATION_VERIFIED.json",
+    "sha256": "891bbb1475f3e3bef63b836295ebb4122e86acbc440a97e7ace9bfb9d630efa4"
+  },
+  "verify_e_validation.py": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/verify_e_validation.py",
+    "sha256": "badbca74fd2a41ace39ce14e4d87a52233ffc2b6d3f4704e169e183173a642a4"
+  },
+  "final_cuda_tests.log": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-validation/runs/v2_final_release/secondary_precision_20261016/final_cuda_tests.log",
+    "sha256": "5abd0555459e003b8c215ba618fb8feeabc31c802a9e8591d1330450715d1b5b"
+  },
+  "training/sustained/command.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/sustained/command.json",
+    "sha256": "32779a2eb19de7d20cd6cf2ea0f06f486891296195fb940028b6b2391718fd74"
+  },
+  "training/sustained/process.log": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/sustained/process.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "training/sustained/report.json.rank0.ppo.jsonl": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/sustained/report.json.rank0.ppo.jsonl",
+    "sha256": "c4ee11cb3a49a1ab09b021c0116183064c0068e7676893cba9b7d8635eb1039a"
+  },
+  "training/sustained/report.json.rank1.ppo.jsonl": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/sustained/report.json.rank1.ppo.jsonl",
+    "sha256": "050719b297fa00017667f65f6ea386cf9e99e7ce1c3fa3e7a77616f592ccda6f"
+  },
+  "training/continued/command.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/continued/command.json",
+    "sha256": "b1451d25e75b7d4795a864a630809ac6170fbea8caed0f0ca04897c9e587448b"
+  },
+  "training/continued/process.log": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/continued/process.log",
+    "sha256": "0c550e4a95cc812f2d86732ec087d5b27dad8b4d47c83e2cab364da3b74e0223"
+  },
+  "training/continued/report.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/continued/report.json",
+    "sha256": "5ed4d7f07662fba1a831fb665b3aeabf14cb93be0b1ed74bdbc56ce1cd695273"
+  },
+  "training/continued/report.json.rank0.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/continued/report.json.rank0.json",
+    "sha256": "8107dcc785b0a8c984d8c57946bd295bcfc174e0a1e56870eb8f6b1c4b4aa171"
+  },
+  "training/continued/report.json.rank1.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/continued/report.json.rank1.json",
+    "sha256": "3c5edd0898efc91f7acc47bd05afe1f7fb3d7181caa9b8a915b5c117197b77ea"
+  },
+  "training/continued/report.json.rank0.ppo.jsonl": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/continued/report.json.rank0.ppo.jsonl",
+    "sha256": "ee3da245b8c9f24fc1afe0c55fe330c95b9dbc64e7a372f17c61dec1165a715d"
+  },
+  "training/continued/report.json.rank1.ppo.jsonl": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/continued/report.json.rank1.ppo.jsonl",
+    "sha256": "b22e9660d89c5f68bb7c3873ca88af577731aba5bd19d75eee2c623e17f393f8"
+  },
+  "training/restored_after_stop/command.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/restored_after_stop/command.json",
+    "sha256": "a6a7c0060ce111eea1842fa862fc987cd546f3fc7e93b3a28feb1b4cd90fddca"
+  },
+  "training/restored_after_stop/process.log": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/restored_after_stop/process.log",
+    "sha256": "58485537ef4158a2cd483ae201dfd1884fb16697eb05dad648093d92ae9001c7"
+  },
+  "training/restored_after_stop/report.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/restored_after_stop/report.json",
+    "sha256": "59a79915def6440e4e39b789137dc0bf32d915e2f4c00f86aad109840741e10b"
+  },
+  "training/restored_after_stop/report.json.rank0.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/restored_after_stop/report.json.rank0.json",
+    "sha256": "23b203fd9194923dee19a69a5a516ae40539f477ef5b27e123b4d9a8b1156340"
+  },
+  "training/restored_after_stop/report.json.rank1.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/restored_after_stop/report.json.rank1.json",
+    "sha256": "f8bab7c829bc51f0fbf73b525760bca03e01f00c4f250ce17ae820b5c3583ab3"
+  },
+  "training/restored_after_stop/report.json.rank0.ppo.jsonl": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/restored_after_stop/report.json.rank0.ppo.jsonl",
+    "sha256": "1743f289ee2c9196aa92b7104aa4218955c641ee5ce358e287d840fecd1a4791"
+  },
+  "training/restored_after_stop/report.json.rank1.ppo.jsonl": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/restored_after_stop/report.json.rank1.ppo.jsonl",
+    "sha256": "5f95aecf0a4c4699ecb00fc53e10aed3cf74ffb6d664526a5fd97b08453dea30"
+  },
+  "training/final_continuation/command.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/final_continuation/command.json",
+    "sha256": "8716ed61e92cd9b0703cf734bb8de6fd0701292458bd384b579b4b72648e006d"
+  },
+  "training/final_continuation/process.log": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/final_continuation/process.log",
+    "sha256": "77de691b660a640f5f30db3d5f6c669be2a735b45a3f7ebd7ea651fd54e8f142"
+  },
+  "training/final_continuation/report.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/final_continuation/report.json",
+    "sha256": "0160f13ff06ad9fd84465db9872b6927309a0eb834a2a9235db1ddbb9878e85e"
+  },
+  "training/final_continuation/report.json.rank0.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/final_continuation/report.json.rank0.json",
+    "sha256": "69276c5d873bf813717f8b1c111f517be6122fe1ec9b80cee04ca906d53185cf"
+  },
+  "training/final_continuation/report.json.rank1.json": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/final_continuation/report.json.rank1.json",
+    "sha256": "140ccc65f627eeb7e818635ef53c56d1d5c91cea644894976680093eaa4db807"
+  },
+  "training/final_continuation/report.json.rank0.ppo.jsonl": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/final_continuation/report.json.rank0.ppo.jsonl",
+    "sha256": "17b80d392953ada519ecc0e157cff49cc19549c2999e46c6edfbc6cc986361c9"
+  },
+  "training/final_continuation/report.json.rank1.ppo.jsonl": {
+    "original": "/home/minidc/Desktop/PokeAgent3.0-V2-fp32-exact/runs/v2_final_release/secondary_precision_20261016/E_exact/final_continuation/report.json.rank1.ppo.jsonl",
+    "sha256": "5d25082e93fdd2fcdd2b5c2d908237092d521551f30fd447ad927536acfe984f"
+  }
+}

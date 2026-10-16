@@ -1,0 +1,15 @@
+..............................................................ss........ [ 14%]
+........................................................................ [ 29%]
+...............ssssssss.s..s.s.s.s.s.s.s.s.s.s.s........................ [ 44%]
+..............................................................s.s.s.s.s. [ 59%]
+s.s.s...s.s.s.s..............s......................s................... [ 74%]
+........................................................................ [ 89%]
+.....................................................                    [100%]
+=============================== warnings summary ===============================
+tests/agent/test_entropy_kl.py::test_uniform_policy_has_normalized_entropy_one_and_zero_kl
+  /home/minidc/Desktop/PokeAgent3.0-V2-validation/tests/agent/test_entropy_kl.py:39: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+  Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+    assert abs(float(evaluation.entropy_normalized[0, 0]) - 1.0) < 1e-5
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+449 passed, 36 skipped, 1 warning in 96.55s (0:01:36)

@@ -1,12 +1,12 @@
 # PokeAgent3.0 V2 — Training Source of Truth
 
-**BLOCKED FOR PRODUCTION RESUME — 2026-10-15 KST. Production remains STOPPED.** Latest verified implementation and measured limits are in [the migration/stability/batch report](operations/V2_MIGRATION_STABILITY_BATCH_OPTIMIZATION_FINAL.md). Dedicated delivery branch: `codex/v2-migration-stability-batch`; tested optimized candidate `163a7c3e3a2af219f98de017d1fdb1b636d824e8`. Strict forced secondary audit rejected both ranks; the exact lookup activation is held back and delivered production profile retains gather. Original verified recovery boundary remains **57,344**; isolated diagnostic matches never advance production. The old rolling pointer remains 4,096; historical 102,400 failed boundary is excluded.
+2026-10-16 KST: **PRODUCTION STOPPED**. The user approved the versioned FP32 policy encoder route. Final validation status, benchmark evidence and restore results are in [the migration/stability/batch report](operations/V2_MIGRATION_STABILITY_BATCH_OPTIMIZATION_FINAL.md). Delivery branch: `codex/v2-secondary-precision-stability`; tested executable: `9d3d6051d6d17cc517259a3e6807bb067c717a9e`. Work is paused for the user's precision decision; final HEAD-specific receipt remains pending after the documentation commit in local `runs/v2_final_release/final_delivery_20261016/FINAL_DELIVERY.json`.
 
-Authority: immutable checkpoint and receipts → exact frozen source → versioned profile → frozen observation/action contract → this index → historical research. Config semantic hash `5f6579009dbad53339803f95b9e935fc33215cd15bb4953349ef05dc275c19bf`. Delivery HEAD-specific receipt and SHA are in the local `runs/v2_final_release/final_delivery/FINAL_DELIVERY.json`, generated after the documentation commit. No production restart, main merge, history rewrite or checkpoint modification occurred.
+Authority: immutable checkpoint and receipts → exact frozen source → versioned profile → frozen observation/action contract → this index → historical research. Config semantic hash `11e69c9940199692ba9b2d4bc1848469843dd294893bb2cd5c53ce75bc8790d2`. Diagnostics never advance production progress. No production restart, main merge, history rewrite or original checkpoint modification occurred.
 
-Goal: strong Pokémon Champions Regulation M-C VGC doubles agent, native Rust/PyO3 battle engine, V2 Entity Transformer9,889,755 parameters, synchronous current/current scratch-origin PPO, target100M naturally completed matches. Both current-policy seats learn; one natural battle counted once. No search/LLM/teacher/historical mixture. Track C **DEFERRED_INDEFINITELY**, protected06dbb31 unchanged.
+Goal: Pokémon Champions Regulation M-C VGC doubles agent, native Rust/PyO3 engine, V2 Entity Transformer with9,889,755 parameters, synchronous current/current scratch-origin PPO, target100M naturally completed matches. Both seats learn; one natural battle is counted once. Track C remains deferred indefinitely and protected.
 
-## Approved executable settings
+## Candidate executable settings
 
 | Setting | Value |
 |---|---|
@@ -35,21 +35,22 @@ Goal: strong Pokémon Champions Regulation M-C VGC doubles agent, native Rust/Py
 | training.peak_lr | `0.0003` |
 | training.effective_peak_lr | `0.00015` |
 | training.checkpoint_interval_matches | `100000` |
-| precision.mode | `"D"` |
+| precision.mode | `"E"` |
 | precision.stability | `"fp16-reduction-off"` |
 | precision.observation | `"fp16-round-continuous-then-fp32"` |
-| precision.encoder_amp | `true` |
+| precision.encoder_amp | `false` |
 | precision.ragged_effects_fp32 | `true` |
-| precision.amp_overflow_retries | `3` |
 | precision.scorer_fp32 | `true` |
 | precision.gru_fp32 | `true` |
 | precision.recompute_gate | `true` |
 | precision.tolerance | `0.001` |
-| precision.contract_version | `"pa3-precision-D-v2"` |
+| precision.contract_version | `"pa3-precision-E-v1"` |
 | precision.recompute_secondary | `true` |
 | precision.canonical_encoder_batch_rows | `1024` |
+| precision.amp_overflow_retries | `3` |
+| precision.policy_encoder_fp32 | `true` |
+| precision.encoder_physical_batching | `"logical-fp32-v1"` |
 | collector.batch_cache | `"cuda"` |
-| collector.token_lookup_backend | `"gather"` |
 | collector.compact_candidates | `true` |
 | collector.trim_observation_padding | `false` |
 | collector.columnar_store | `false` |
@@ -57,6 +58,7 @@ Goal: strong Pokémon Champions Regulation M-C VGC doubles agent, native Rust/Py
 | collector.executor | `"ddp"` |
 | collector.world_size | `2` |
 | collector.deterministic_diagnostic | `true` |
+| collector.token_lookup_backend | `"exact-row-v100-v1"` |
 | dataset.id | `"a10-p0-proposed-20261013"` |
 | dataset.manifest | `"data/teams/a10-p0-proposed-20261013/manifest.json"` |
 | dataset.manifest_sha256 | `"1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb"` |
@@ -66,37 +68,23 @@ Goal: strong Pokémon Champions Regulation M-C VGC doubles agent, native Rust/Py
 | dataset.teams | `"engine/data/a10-training-teams.json"` |
 | dataset.data | `"engine/data"` |
 | dataset.teams_sha256 | `"ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f"` |
+| evaluation.lightweight_every_matches | `50000` |
+| evaluation.full_every_matches | `200000` |
+| evaluation.backend | `"batched"` |
+| evaluation.batch_size | `128` |
+| evaluation.fixture_pairs | `1024` |
+| evaluation.namespace | `"pa3-v2-only"` |
 
-Dual V100 PCIe32GiB at175W; deterministic CUDA workspace4096:8. Fixed physical1024-row AMP encoder groups stabilize batch arithmetic; internal padding never reaches action scoring or match counts. Model architecture/PPO math unchanged; actual1024-row gradients/Adam bitwise match baseline. The versioned production profile and ordinary unprofiled runs retain gather. Exact-order V100 lookup remains experimental and was NOT promoted after the strict secondary audit blocker. Backend changes require the explicit reviewed migration receipt. Flat embedding lookup stays OFF. Collective AMP retries reuse the identical minibatch, with at most three normal scaler backoffs and no Adam step on nonfinite gradients. Primary.001 unchanged; secondary bounded provenance/replay/stable-FP32 proof mandatory on outliers. FP32 references remain independent, grouped versus truly isolated.
+Mode E (`pa3-precision-E-v1`) retains all96 token slots and Mode-D observation quantization. Policy encoder, scorer and GRU execute in FP32; the value head retains existing learner AMP and GradScaler. E uses logical FP32 encoder row batches. The canonical1024 setting remains recorded for compatibility; AMP canonical padding is not used by E. Architecture, masks, five ragged families, candidate legality, signed targets, player-visible information and PPO hyperparameters are unchanged. Observation-padding trimming is disabled.
 
-Frozen1220-team pool ID a10-p0-proposed-20261013, manifest SHA1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb, team SHAecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f. Observation/Action V2 semantic hashdd723dc687a60b0568302fa0b09cfb110cbe67eac2c7022f2b4ffe4dff373e35. Five ragged families,known masks,signed targets/roster mapping,player-visible boundaries. No official held-out split or unseen-team strength claim.
+Exact-order V100 token lookup is enabled in this candidate after matched restored-state benchmarks and independent full-gradient/Adam/model equivalence. Device/compiler guards remain. Existing Actor optimizations remain; two additional transfer experiments were not promoted because their marginal gain was within observed variation.
 
-## Actual progress and continuation
+Primary tolerance remains0.001. Secondary provenance/replay and grouped-versus-isolated FP32 checks stay enabled and are forced during final sustained validation. Collective AMP overflow retry retains the identical minibatch, normal scaler backoff, bounded three retries and no Adam step with nonfinite gradients. The additive v3 migration receipt explicitly authorizes D→E policy precision, encoder execution, effects FP32, secondary safety, retry and lookup transitions; it pins exact executable blobs, native/data hashes and full original rank artifacts. Actual runtime CLI values must match the approved receipt.
 
-**Production is STOPPED.** Approved existing full-state restart57344 matches/iteration14/718 optimizer steps, source5ccc51b. Original campaign rolling/LATEST still4096; no pointer/counter was changed.73,728 historical model-only evidence remains nonresumable alone.57344 complete checkpoint and local backup are verified; original recent RNG was historically reconstructed and cannot be independently compared to unavailable original recent RNG. Restoring the selected recovered checkpoint itself is exact.
+## Progress and continuation
 
-The isolated validation reaches81920/iteration20/982 optimizer steps, model1602e744a135df094f64e714170b479aace1999a6eb0cb5066be43ec0a738612, Adamff5a9d42b8c069d342d17df15317ea6fc546b1a40a8619c688ee51b8df514a87. **Diagnostic games are not production progress and that checkpoint is not silently promoted.** Real resume remains57344 with exact-source migration0→1024 encoder execution and secondary OFF→ON for future groups. All original weights/Adam/scheduler/scaler/RNG/ledger state preserved.
+**Production is STOPPED. Production matches added:0.** Existing resumable recovery remains57,344 matches, absolute iteration14 and718 optimizer steps, source `5ccc51b0cd4a49efb93018258b9750d5e804ae32`. Original rolling pointer remains4,096; failed102,400 is excluded. The separately reconstructed recent RNG has its previously documented historical limitation; restoring the selected recovered checkpoint is exact. Isolated E checkpoints are validation evidence and are not silently promoted to production.
 
-Two-rank validation15–20:2 epochs each,0 errors/skips, matching rank digests, weighted41.285 games/s,888.70 rows/s. Independent process restore and real stop-file save are BIT_EXACT to uninterrupted16, including full learner/RNG/rollouts and team W/L/D. This is bounded same-hardware proof, not universal stability; future unexplained outliers still stop safely. Historical iteration19 stays insufficient-provenance; prospective reproduced failure was correctly rejected and repaired through stable encoder execution.
+Any future production launch requires the final HEAD-specific reviewed receipt, verified57,344 full-state checkpoint, fresh live preflight and separate run/statistics lineage. Preserve original files and counters. Cooperative STOP must drain collection/update and publish both ranks before resume. Keep evaluation isolated from training accounting and use the versioned E archive identity. Storage reserve and validation gates remain unchanged.
 
-## Evaluation: intended versus actual
-
-Intended target: light50k/full200k,1024 fixture pairs,batch128. **Not active in this release.** Explicit minimal approved implementation: checkpoint-driven CPU-only256-pair/batch32 sidecar (normally100k checkpoint cadence), paired fixtures over actual1220 pool, independent V2 archive/counters and restart-safe tested identities. No A10/V1 results relabeled.4-game health check4W/0L/0D,0 errors/illegal actions, policy and checkpoint immutable; not a strength estimate. Automatic evaluator remains stopped; exact cadence awaits independent immutable snapshot work. CPU evaluation is the supported release plan; GPU evaluation is not enabled.
-
-## Operations
-
-Use the shared existing Python interpreter `/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python`, `PYTHONPATH=engine/python:.`, `OMP_NUM_THREADS=2`, and CUDA workspace`:4096:8` from a clean source checkout.
-
-```bash
-$PY scripts/run_ddp_ppo.py --profile configs/pa3_v2_production.yaml --print-effective-config
-$PY scripts/validate_v2_source_of_truth.py
-$PY -m pytest tests/agent tests/integration -q
-$PY -m agent.analysis.team_stats --help
-$PY scripts/v2_evaluation_sidecar.py --help
-ps -eo pid,args
-nvidia-smi
-```
-
-Actual launch command, absolute runtime profile, exact target-SHA migration and source/native/data hashes are prepared in a NEW release subdirectory of the original campaign; original release files unchanged. **Do not execute training in this task.** Latest user explicitly requests stopping before launch. Future start must repeat normal live preflight and use `--experimental-resume` exact57344, never scratch or old rolling/LATEST. Touch the configured release-specific STOP file for a cooperative boundary save; inspect both rank manifests/ledgers before resuming. [Cutover](operations/V2_PRODUCTION_CUTOVER_REPORT.md),[continuation](operations/V2_LONG_RUN_CONTINUATION_REPORT.md),[gates](integration/FINAL_RELEASE_GATES.json).
-
-Historical1,137-team/V1/PPO4/V5/V6 documents and configs/train.yaml are non-normative and preserved. PPOConfig's original4-epoch default is unchanged; production profile explicitly selects2. No branch/worktree/checkpoint cleanup was executed. Production storage protections unchanged; diagnostic8GiB reserve is isolated and bounded only. Future research changes require separate authorization.
+Historical V1/PPO4/V5/V6 documents and `configs/train.yaml` are non-normative. PPOConfig's default4 epochs remains unchanged; the selected profile explicitly uses2. Historical forced Mode-D audit failures and rejected optimization branches remain preserved as evidence.

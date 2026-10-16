@@ -1,3 +1,5 @@
+> Latest status — 2026-10-16 KST: the user approved the additive Mode-E FP32 policy encoder. Ten bounded iterations pass both forced audits and the saved-state restore comparison is bit exact. Production stays stopped at verified57,344; no diagnostic checkpoint is promoted. Use [the final report](V2_MIGRATION_STABILITY_BATCH_OPTIMIZATION_FINAL.md) and its final HEAD-specific receipt. The plan below describes historical Mode-D release attempts.
+
 # Existing-model continuation and rollback
 
 **2026-10-15 KST — BLOCKED; PPO not restarted.** Canonical branch remains `codex/pa3-v2-correctness @ c96c35f12d3f3aff32b072b48e32ac243a7b0425`. Integration candidate is `codex/pa3-v2-integration-release`, based on frozen throughput `9e685b701f170436f9b9dd82162c8e192e4e6904`. No canonical fast-forward is authorized by failed release gates. Main and Track C unchanged.
