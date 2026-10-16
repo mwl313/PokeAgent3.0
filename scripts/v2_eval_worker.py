@@ -1,10 +1,22 @@
 #!/usr/bin/env python3
-"""Resource-aware V2 evaluation worker.
+"""Resource-aware V2 evaluation worker (Evaluation League V2).
 
 Single-writer, CPU-only, low priority.  Processes scheduled league jobs against
-the incumbent, the frozen baseline and available historical V2 anchors, then
-applies conservative promotion rules.  It never touches PPO state and defers
-work when disk or measured production throughput is at risk.
+the incumbent, the frozen baseline and available historical V2 anchors.
+
+V2 behaviour:
+
+* Lightweight milestones are diagnostic only (``DIAGNOSTIC_ONLY``); they can
+  never promote.
+* A full milestone runs an incumbent-primary panel as *screening* and then, for
+  promising candidates, a genuinely independent confirmation ladder.  Only the
+  predeclared confirmation rule authorises promotion.
+* The campaign-wide false-promotion budget is spent one comparison at a time
+  from a preserved alpha ledger (``alpha_budget.json``); lightweight
+  diagnostics never consume alpha.
+
+The worker never touches PPO state and defers work when disk or measured
+production throughput is at risk.
 """
 from __future__ import annotations
 
@@ -27,35 +39,54 @@ os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
 import torch  # noqa: E402
 
 from agent.evaluation.v2_league import (  # noqa: E402
-    CONFIRMATORY_GAMES,
-    CONFIRMATORY_SEED,
+    CONFIRM_PAIRS,
     DEFAULT_CAMPAIGN_START,
+    DIAGNOSTIC_ONLY,
     EVALUATOR_VERSION,
-    FULL_GAMES,
-    LIGHT_GAMES,
-    MASTER_PAIRS,
+    FULL_INITIAL_GAMES,
+    INCONCLUSIVE_BUDGET_EXHAUSTED,
+    INCUMBENT_AMP_PAIRS,
+    INCUMBENT_AMP_START_PAIR,
+    INVALID,
+    JOB_RECEIPT_SCHEMA_V2,
+    LEAGUE_VERSION_V2,
     MASTER_SEED,
+    PRIMARY_MAX_GAMES,
+    PRIMARY_PAIRS,
+    PROMOTED,
     PROMOTION_MIN_PAIRS,
+    RETAINED_CONFIRMED_INFERIOR,
     RULESET_VERSION,
+    RULESET_VERSION_V2,
+    SCREEN_TRIGGER,
     V2_DATASET_MANIFEST_HASH,
+    alpha_for_comparison,
+    assert_panels_disjoint,
     atomic_json,
+    commit_alpha,
+    confirmation_rule,
+    confirmation_seed_for,
+    confirmation_stage_plan,
     disk_headroom_bytes,
     evaluate_regression,
     evaluation_environment,
     initial_incumbent,
+    load_alpha_ledger,
     mark_job,
     master_fixtures,
-    match_environment,
-    paired_difference,
-    plan_panels,
+    paired_scores,
+    plan_full_panels,
+    plan_light_panels,
+    primary_screening,
     production_throughput,
     promote_incumbent,
-    promotion_decision,
     read_json,
     record_rejection,
+    requeue_stale_jobs,
     run_matchup_cached,
     schedule_jobs,
     snapshot_entries,
+    StaleIncumbentError,
 )
 
 DATA_DIR = ROOT / "engine" / "data"
@@ -68,25 +99,126 @@ def _ordinals(entries):
     return {entry["id"]: index + 1 for index, entry in enumerate(ordered)}
 
 
-def _effective_panels(tier, candidate_id, incumbent_id, baseline_id, anchors, *, smoke_games=None):
-    panels = plan_panels(tier=tier, candidate_id=candidate_id, incumbent_id=incumbent_id,
-                         baseline_id=baseline_id, anchors=anchors)
-    if not smoke_games:
-        return panels
-    total = sum(panel["games"] for panel in panels)
-    if total <= 0:
-        return panels
-    scaled, start = [], 0
-    for panel in panels:
-        games = max(2, int(round(panel["games"] * smoke_games / total)))
-        games -= games % 2
-        scaled.append({"opponent_id": panel["opponent_id"], "games": games, "fixture_start_pair": start // 2})
-        start += games
-    return scaled
-
-
 def _slice(fixtures, start_pair, games):
     return fixtures[2 * start_pair:2 * (start_pair + games // 2)]
+
+
+def _matchup_row(panel, receipt, opponent, seed, cached, fixtures):
+    return {
+        "opponent_id": panel["opponent_id"],
+        "phase": panel.get("phase", "primary"),
+        "opponent_clock": opponent["committed_matches"],
+        "opponent_model_digest": opponent["model_digest"],
+        "opponent_file_sha256": opponent["file_sha256"],
+        "games": panel["games"],
+        "matches": receipt["matches"],
+        "wins": receipt["wins"],
+        "losses": receipt["losses"],
+        "draws": receipt["draws"],
+        "score_mean": receipt["score_mean"],
+        "paired_score_mean": receipt["paired_score_mean"],
+        "paired_fixtures": receipt["paired_fixtures"],
+        "score_ci95": receipt["score_ci95"],
+        "identity": receipt["identity"],
+        "fixture_manifest_hash": receipt["fixture_manifest_hash"],
+        "fixture_seed": seed,
+        "operational_errors": receipt["operational_errors"],
+        "illegal_actions": receipt["illegal_actions"],
+        "status": receipt["status"],
+        "runtime_seconds": receipt["runtime_seconds"],
+        "evaluator_backend": "batched-native",
+        "device": "cpu",
+        "cached": cached,
+        "fixture_ids": [fixtures[0].fixture_id, fixtures[-1].fixture_id] if fixtures else None,
+    }
+
+
+def _run_panels(*, eval_root, job, candidate, by_id, engine, environment, master,
+                registry_path, receipts_dir, panels, args, phase_label):
+    matchups, bodies, signatures = [], [], set()
+    for index, panel in enumerate(panels):
+        atomic_json(eval_root / "state" / "active.json",
+                    {"status": "running", "job": job["job_id"], "tier": job["tier"],
+                     "phase": phase_label, "candidate": candidate["id"], "panel": index + 1,
+                     "panels": len(panels), "opponent": panel["opponent_id"],
+                     "games": panel["games"], "started_at": time.time(), "pid": os.getpid()})
+        fixtures = _slice(master, panel["fixture_start_pair"], panel["games"])
+        receipt, cached = run_matchup_cached(
+            registry_path, receipts_dir, engine, fixtures, candidate["id"], panel["opponent_id"],
+            seed=MASTER_SEED, max_rounds=2000, environment=environment, batch_size=args.batch_size,
+        )
+        opponent = by_id[panel["opponent_id"]]
+        matchups.append(_matchup_row(panel, receipt, opponent, MASTER_SEED, cached, fixtures))
+        bodies.append(receipt)
+        signatures |= {_fixture_signature(fixture) for fixture in fixtures}
+    return matchups, bodies, signatures
+
+
+def _fixture_signature(fixture):
+    return (fixture.team_a, fixture.team_b, tuple(fixture.seed), fixture.policy_side)
+
+
+def light_job_decision(matchups):
+    """Lightweight milestones are diagnostic only; they can never promote."""
+    legal = bool(matchups) and all(row["status"] == "success" for row in matchups)
+    if not legal:
+        return {
+            "promotion_status": INVALID,
+            "promoted": False,
+            "reason": "matchup invalidity",
+            "decision": {"decision": "invalid", "reason": "matchup invalidity"},
+        }
+    return {
+        "promotion_status": DIAGNOSTIC_ONLY,
+        "promoted": False,
+        "reason": "lightweight evaluation is diagnostic only and can never promote",
+        "decision": {"decision": "diagnostic_only",
+                     "reason": "lightweight evaluation is diagnostic only and can never promote",
+                     "pairs": sum(row.get("paired_fixtures", 0) for row in matchups)},
+    }
+
+
+def _run_confirmation(*, eval_root, job, candidate, incumbent, engine, environment, receipts_dir,
+                      registry_path, alpha_total, args):
+    """Run the predeclared, genuinely independent confirmation ladder."""
+    conf_seed = confirmation_seed_for(candidate["id"])
+    conf_fixtures = master_fixtures(engine, pairs=CONFIRM_PAIRS, seed=conf_seed)
+    stages = confirmation_stage_plan()
+    pooled, rows = [], []
+    promoted = False
+    final = None
+    for stage in stages:
+        fixtures = conf_fixtures[2 * stage["first_pair"]:2 * stage["cumulative_pairs"]]
+        atomic_json(eval_root / "state" / "active.json",
+                    {"status": "confirmatory", "job": job["job_id"], "candidate": candidate["id"],
+                     "opponent": incumbent["policy_id"], "stage": stage["stage"],
+                     "cumulative_games": stage["cumulative_games"],
+                     "started_at": time.time(), "pid": os.getpid()})
+        receipt, cached = run_matchup_cached(
+            registry_path, receipts_dir, engine, fixtures, candidate["id"], incumbent["policy_id"],
+            seed=conf_seed, max_rounds=2000, environment=environment, batch_size=args.batch_size,
+        )
+        pooled.extend(receipt["outcomes"])
+        result = confirmation_rule(paired_scores(pooled), alpha_total=alpha_total, stage=stage)
+        result.update({"cumulative_games": stage["cumulative_games"],
+                       "cumulative_pairs": stage["cumulative_pairs"],
+                       "identity": receipt["identity"], "cached": cached,
+                       "fixture_manifest_hash": receipt["fixture_manifest_hash"]})
+        rows.append(result)
+        final = result
+        if result["decision"] == "promote":
+            promoted = True
+            break
+        if result["decision"] == "retain_inferior":
+            break
+    return {
+        "seed": conf_seed,
+        "stages": rows,
+        "final": final,
+        "promoted": promoted,
+        "games_consumed": sum(row["cumulative_games"] for row in rows[-1:]) if rows else 0,
+        "fixtures": conf_fixtures,
+    }
 
 
 def run_job(*, eval_root, job, args, engine, environment, master, log_path):
@@ -113,72 +245,58 @@ def run_job(*, eval_root, job, args, engine, environment, master, log_path):
     anchors = [entry["id"] for entry in sorted(entries, key=lambda entry: entry["committed_matches"], reverse=True)
                if entry["committed_matches"] < candidate["committed_matches"]
                and entry["id"] not in (candidate["id"], incumbent["policy_id"], baseline["id"])][:2]
-    panels = _effective_panels(job["tier"], candidate["id"], incumbent["policy_id"], baseline["id"],
-                               anchors, smoke_games=args.smoke_games)
 
+    tier = job["tier"]
     started = time.time()
     matchups, bodies = [], []
-    for index, panel in enumerate(panels):
-        atomic_json(eval_root / "state" / "active.json",
-                    {"status": "running", "job": job["job_id"], "tier": job["tier"],
-                     "candidate": candidate["id"], "panel": index + 1, "panels": len(panels),
-                     "opponent": panel["opponent_id"], "games": panel["games"],
-                     "started_at": started, "pid": os.getpid()})
-        fixtures = _slice(master, panel["fixture_start_pair"], panel["games"])
-        receipt, cached = run_matchup_cached(
-            registry_path, receipts_dir, engine, fixtures, candidate["id"], panel["opponent_id"],
-            seed=MASTER_SEED, max_rounds=2000, environment=environment, batch_size=args.batch_size,
-        )
-        opponent = by_id[panel["opponent_id"]]
-        matchups.append({
-            "opponent_id": panel["opponent_id"],
-            "opponent_clock": opponent["committed_matches"],
-            "opponent_model_digest": opponent["model_digest"],
-            "opponent_file_sha256": opponent["file_sha256"],
-            "games": panel["games"],
-            "matches": receipt["matches"],
-            "wins": receipt["wins"],
-            "losses": receipt["losses"],
-            "draws": receipt["draws"],
-            "score_mean": receipt["score_mean"],
-            "paired_score_mean": receipt["paired_score_mean"],
-            "paired_fixtures": receipt["paired_fixtures"],
-            "score_ci95": receipt["score_ci95"],
-            "identity": receipt["identity"],
-            "fixture_manifest_hash": receipt["fixture_manifest_hash"],
-            "fixture_seed": MASTER_SEED,
-            "operational_errors": receipt["operational_errors"],
-            "illegal_actions": receipt["illegal_actions"],
-            "status": receipt["status"],
-            "runtime_seconds": receipt["runtime_seconds"],
-            "evaluator_backend": "batched-native",
-            "device": "cpu",
-            "cached": cached,
-        })
-        bodies.append(receipt)
-    runtime = time.time() - started
-    legal = all(row["status"] == "success" for row in matchups)
-    baseline_receipt = next((body for body, row in zip(bodies, matchups)
-                             if row["opponent_id"] == baseline["id"]), None)
-
-    decision = {"decision": "invalid", "reason": "matchup invalidity"}
+    primary_signatures = set()
+    screen = {"status": "invalid", "reason": "matchup invalidity"}
     regression = {"status": "insufficient_coverage"}
-    confirmatory = None
+    confirmation = None
+    promotion_status = INVALID
+    reason = "matchup invalidity"
+    decision = {"decision": "invalid", "reason": reason}
+    alpha_info = None
     promoted = False
-    preliminary = None
-    if legal:
+    baseline_receipt = None
+    escalated = False
+
+    if tier != "full":
+        panels = plan_light_panels(candidate_id=candidate["id"], incumbent_id=incumbent["policy_id"],
+                                   baseline_id=baseline["id"], anchors=anchors)
+        matchups, bodies, primary_signatures = _run_panels(
+            eval_root=eval_root, job=job, candidate=candidate, by_id=by_id, engine=engine,
+            environment=environment, master=master, registry_path=registry_path,
+            receipts_dir=receipts_dir, panels=panels, args=args, phase_label="diagnostic")
+        light = light_job_decision(matchups)
+        promotion_status = light["promotion_status"]
+        reason = light["reason"]
+        decision = light["decision"]
+    else:
+        panels = plan_full_panels(candidate_id=candidate["id"], incumbent_id=incumbent["policy_id"],
+                                  baseline_id=baseline["id"], anchors=anchors)
+        matchups, bodies, primary_signatures = _run_panels(
+            eval_root=eval_root, job=job, candidate=candidate, by_id=by_id, engine=engine,
+            environment=environment, master=master, registry_path=registry_path,
+            receipts_dir=receipts_dir, panels=panels, args=args, phase_label="primary")
+        non_incumbent = [row for row in matchups if row["opponent_id"] != incumbent["policy_id"]]
+        baseline_receipt = next((body for body, row in zip(bodies, matchups)
+                                 if row["opponent_id"] == baseline["id"]), None)
+        legal = all(row["status"] == "success" for row in matchups)
         incumbent_receipt = next((body for body, row in zip(bodies, matchups)
                                   if row["opponent_id"] == incumbent["policy_id"]), None)
-        if incumbent["policy_id"] == candidate["id"]:
-            decision = {"decision": "retain", "reason": "candidate is the current incumbent", "pairs": 0}
-        elif incumbent_receipt is not None and incumbent_receipt["paired_fixtures"] >= PROMOTION_MIN_PAIRS:
-            ordinals = _ordinals(entries)
-            preliminary = promotion_decision(
-                incumbent_receipt["outcomes"],
-                comparison_index=ordinals[candidate["id"]],
-                opponent_index=ordinals[incumbent["policy_id"]],
-                stage_is_final=(job["tier"] != "full"),
-            )
+
+        if not legal:
+            promotion_status, reason = INVALID, "matchup invalidity"
+            decision = {"decision": "invalid", "reason": reason}
+        elif incumbent["policy_id"] == candidate["id"]:
+            promotion_status, reason = RETAINED_CONFIRMED_INFERIOR, "candidate is the current incumbent"
+            decision = {"decision": "retain", "reason": reason, "pairs": 0}
+        elif incumbent_receipt is None or incumbent_receipt["paired_fixtures"] < PROMOTION_MIN_PAIRS:
+            promotion_status = INCONCLUSIVE_BUDGET_EXHAUSTED
+            reason = "insufficient paired fixtures vs incumbent"
+            decision = {"decision": "retain", "reason": reason, "pairs": 0}
+        else:
             if baseline_receipt is not None and incumbent["policy_id"] != baseline["id"]:
                 previous = read_json(receipts_dir / "baseline" / f"{incumbent['policy_id']}.json")
                 if previous is not None:
@@ -186,62 +304,116 @@ def run_job(*, eval_root, job, args, engine, environment, master, log_path):
                         candidate_baseline_outcomes=baseline_receipt["outcomes"],
                         incumbent_baseline_outcomes=previous.get("outcomes", []),
                     )
-            if job["tier"] != "full":
-                decision = {"decision": "retain",
-                            "reason": "PROMOTION_PENDING_EVIDENCE: lightweight evaluation is diagnostic only",
-                            "statistics": preliminary, "pairs": incumbent_receipt["paired_fixtures"]}
-            elif regression.get("status") == "regression_warning":
-                decision = {"decision": "retain", "reason": "material regression against the frozen baseline",
-                            "statistics": preliminary, "regression": regression}
-            elif preliminary["decision"] != "promote":
-                decision = {"decision": "retain", "reason": "direct paired evidence does not support superiority",
-                            "statistics": preliminary, "regression": regression}
-            else:
-                confirm_fixtures = master_fixtures(engine, pairs=CONFIRMATORY_GAMES // 2, seed=CONFIRMATORY_SEED)
-                atomic_json(eval_root / "state" / "active.json",
-                            {"status": "confirmatory", "job": job["job_id"], "candidate": candidate["id"],
-                             "opponent": incumbent["policy_id"], "games": CONFIRMATORY_GAMES,
-                             "started_at": started, "pid": os.getpid()})
-                confirm_receipt, _ = run_matchup_cached(
-                    registry_path, receipts_dir, engine, confirm_fixtures, candidate["id"],
-                    incumbent["policy_id"], seed=CONFIRMATORY_SEED, max_rounds=2000,
-                    environment=environment, batch_size=args.batch_size,
-                )
-                confirmatory = promotion_decision(
-                    confirm_receipt["outcomes"],
-                    comparison_index=ordinals[candidate["id"]],
-                    opponent_index=ordinals[incumbent["policy_id"]],
-                    stage_is_final=True,
-                )
-                if confirmatory["decision"] == "promote":
-                    support = [row["identity"] for row in matchups] + [confirm_receipt["identity"]]
-                    promote_incumbent(
-                        best_path, history_dir, candidate_entry=candidate, previous=incumbent,
-                        decision={"primary": preliminary, "confirmatory": confirmatory, "regression": regression},
-                        supporting=support,
-                        reason="full-panel direct superiority confirmed on independent held-back fixtures",
-                    )
-                    promoted = True
-                    decision = {"decision": "promote", "statistics": preliminary,
-                                "confirmatory": confirmatory, "regression": regression}
+            primary_outcomes = list(incumbent_receipt["outcomes"])
+            screen = primary_screening(paired_scores(primary_outcomes))
+            if screen["status"] == "amplify" and INCUMBENT_AMP_PAIRS > 0:
+                escalated = True
+                amp_panel = {"opponent_id": incumbent["policy_id"], "phase": "primary_amplify",
+                             "games": PRIMARY_MAX_GAMES - FULL_INITIAL_GAMES,
+                             "fixture_start_pair": INCUMBENT_AMP_START_PAIR}
+                amp_matchups, amp_bodies, amp_signatures = _run_panels(
+                    eval_root=eval_root, job=job, candidate=candidate, by_id=by_id, engine=engine,
+                    environment=environment, master=master, registry_path=registry_path,
+                    receipts_dir=receipts_dir, panels=[amp_panel], args=args,
+                    phase_label="primary-amplify")
+                if amp_matchups and amp_matchups[0]["status"] == "success":
+                    matchups.extend(amp_matchups)
+                    primary_signatures |= amp_signatures
+                    primary_outcomes.extend(amp_bodies[0]["outcomes"])
+                    screen = primary_screening(paired_scores(primary_outcomes))
                 else:
-                    decision = {"decision": "retain",
-                                "reason": "confirmatory held-back evaluation did not reproduce superiority",
-                                "statistics": preliminary, "confirmatory": confirmatory,
-                                "regression": regression}
-        else:
-            decision = {"decision": "retain", "reason": "insufficient paired fixtures vs incumbent", "pairs": 0}
+                    legal = False
+                    promotion_status, reason = INVALID, "primary amplification failed"
 
-    if not promoted and legal and incumbent["policy_id"] != candidate["id"]:
+            if not legal:
+                decision = {"decision": "invalid", "reason": reason}
+            elif regression.get("status") == "regression_warning":
+                promotion_status = RETAINED_CONFIRMED_INFERIOR
+                reason = "material regression against the frozen baseline"
+                decision = {"decision": "retain", "reason": reason,
+                            "statistics": screen, "regression": regression}
+            elif screen["status"] == "confirmed_inferior":
+                promotion_status = RETAINED_CONFIRMED_INFERIOR
+                reason = "primary evidence confirms inferiority against the incumbent"
+                decision = {"decision": "retain", "reason": reason,
+                            "statistics": screen, "regression": regression}
+            elif screen["status"] != "promising":
+                promotion_status = INCONCLUSIVE_BUDGET_EXHAUSTED
+                reason = ("primary screening did not reach the escalation trigger "
+                          "within the maximum primary budget")
+                decision = {"decision": "retain", "reason": reason,
+                            "statistics": screen, "regression": regression}
+            else:
+                ledger = load_alpha_ledger(eval_root)
+                alpha_info = alpha_for_comparison(ledger)
+                if alpha_info["exhausted"]:
+                    promotion_status = INCONCLUSIVE_BUDGET_EXHAUSTED
+                    reason = "campaign-wide promotion alpha budget exhausted"
+                    decision = {"decision": "retain", "reason": reason,
+                                "statistics": screen, "regression": regression}
+                else:
+                    confirmation = _run_confirmation(
+                        eval_root=eval_root, job=job, candidate=candidate, incumbent=incumbent,
+                        engine=engine, environment=environment, receipts_dir=receipts_dir,
+                        registry_path=registry_path, alpha_total=alpha_info["alpha"], args=args)
+                    assert_panels_disjoint(
+                        [fixture for fixture in master[:2 * (INCUMBENT_AMP_START_PAIR + INCUMBENT_AMP_PAIRS)]],
+                        confirmation["fixtures"])
+                    final_stage = confirmation["final"]
+                    if confirmation["promoted"]:
+                        promotion_status = PROMOTED
+                        commit_alpha(eval_root, candidate_id=candidate["id"],
+                                     index=alpha_info["index"], alpha=alpha_info["alpha"],
+                                     decision="promote")
+                        support = [row["identity"] for row in matchups]
+                        support += [row["identity"] for row in confirmation["stages"]]
+                        try:
+                            promote_incumbent(
+                                best_path, history_dir, candidate_entry=candidate, previous=incumbent,
+                                expected_previous_id=incumbent["policy_id"],
+                                decision={"primary": screen, "confirmation": confirmation["stages"],
+                                          "regression": regression, "alpha": alpha_info},
+                                supporting=support, ruleset_version=RULESET_VERSION_V2,
+                                reason=("adaptive primary screening + independent "
+                                        "confirmation promotion (ruleset v2)"))
+                            promoted = True
+                        except StaleIncumbentError as error:
+                            promotion_status = RETAINED_CONFIRMED_INFERIOR
+                            reason = f"stale incumbent during promotion: {error}"
+                        decision = {"decision": "promote" if promoted else "retain",
+                                    "reason": reason if not promoted else "confirmed superiority",
+                                    "statistics": screen,
+                                    "confirmation": confirmation["stages"], "regression": regression}
+                    else:
+                        commit_alpha(eval_root, candidate_id=candidate["id"],
+                                     index=alpha_info["index"], alpha=alpha_info["alpha"],
+                                     decision="retain")
+                        if final_stage is not None and final_stage.get("upper", 1.0) < 0.5:
+                            promotion_status = RETAINED_CONFIRMED_INFERIOR
+                            reason = "confirmation confirms inferiority against the incumbent"
+                        else:
+                            promotion_status = INCONCLUSIVE_BUDGET_EXHAUSTED
+                            reason = ("confirmation budget exhausted without a "
+                                      "superiority conclusion")
+                        decision = {"decision": "retain", "reason": reason,
+                                    "statistics": screen, "confirmation": confirmation["stages"],
+                                    "regression": regression}
+
+    runtime = time.time() - started
+    if (not promoted and promotion_status != DIAGNOSTIC_ONLY and promotion_status != INVALID
+            and incumbent["policy_id"] != candidate["id"]):
         record_rejection(decisions_dir, candidate_entry=candidate, previous=incumbent,
-                         decision={"statistics": decision, "regression": regression, "confirmatory": confirmatory},
-                         reason=decision.get("reason", "inconclusive evidence retains the incumbent"),
-                         key=f"{candidate['id']}")
+                         decision={"statistics": decision, "regression": regression,
+                                   "confirmation": confirmation["stages"] if confirmation else None,
+                                   "promotion_status": promotion_status,
+                                   "alpha": alpha_info},
+                         reason=reason, key=f"{candidate['id']}",
+                         ruleset_version=RULESET_VERSION_V2, promotion_status=promotion_status)
 
     job_receipt = {
-        "schema": "pa3-v2-eval-job-receipt-v1",
+        "schema": JOB_RECEIPT_SCHEMA_V2,
         "job_id": job["job_id"],
-        "tier": job["tier"],
+        "tier": tier,
         "scheduled_boundaries": job["scheduled_boundaries"],
         "primary_boundary": job["primary_boundary"],
         "candidate_id": candidate["id"],
@@ -258,16 +430,23 @@ def run_job(*, eval_root, job, args, engine, environment, master, log_path):
         "incumbent_id": incumbent["policy_id"],
         "baseline_id": baseline["id"],
         "fixture_seed": MASTER_SEED,
-        "status": "success" if legal else "invalid",
+        "status": "success" if (matchups and all(row["status"] == "success" for row in matchups)) else "invalid",
         "games": sum(row["matches"] for row in matchups),
         "runtime_seconds": runtime,
         "evaluator_backend": "batched-native",
         "device": "cpu",
         "evaluator_version": EVALUATOR_VERSION,
-        "ruleset_version": RULESET_VERSION,
+        "league_version": LEAGUE_VERSION_V2,
+        "ruleset_version": RULESET_VERSION_V2,
+        "promotion_status": promotion_status,
+        "escalated": escalated,
+        "alpha_allocation": alpha_info,
+        "primary_screening": screen,
+        "confirmation": confirmation["stages"] if confirmation else None,
+        "confirmation_seed": confirmation["seed"] if confirmation else None,
         "decision": decision,
         "regression": regression,
-        "confirmatory": confirmatory,
+        "confirmatory": confirmation["final"] if confirmation else None,
         "promoted": promoted,
         "matchups": matchups,
         "evaluated_at": time.time(),
@@ -335,14 +514,17 @@ def work_once(*, eval_root, args, engine, environment, master, log_path):
                      "updated_at": time.time(), "pid": os.getpid()})
         return {"status": "error", "job": job["job_id"], "error": str(error)[-2000:]}
     mark_job(eval_root / "schedule.json", job["job_id"], "completed",
-             decided=receipt["decision"]["decision"], games=receipt["games"],
-             finished_at=time.time())
+             decided=receipt["decision"]["decision"], promotion_status=receipt["promotion_status"],
+             games=receipt["games"], finished_at=time.time())
     atomic_json(eval_root / "state" / "worker_state.json",
                 {"status": "working", "last_job": job["job_id"], "last_decision": receipt["decision"],
+                 "last_promotion_status": receipt["promotion_status"],
+                 "ruleset_version": receipt["ruleset_version"],
                  "games": receipt["games"], "runtime_seconds": receipt["runtime_seconds"],
                  "updated_at": time.time(), "pid": os.getpid()})
     return {"status": "completed", "job": job["job_id"], "tier": job["tier"],
-            "games": receipt["games"], "decision": receipt["decision"], "promoted": receipt["promoted"]}
+            "games": receipt["games"], "promotion_status": receipt["promotion_status"],
+            "decision": receipt["decision"], "promoted": receipt["promoted"]}
 
 
 def build_runtime(args):
@@ -357,7 +539,7 @@ def build_runtime(args):
                                          backend="batched", batch_size=int(args.batch_size),
                                          device="cpu", threads=int(args.threads),
                                          engine_workers=int(args.engine_workers))
-    master = master_fixtures(engine, pairs=MASTER_PAIRS, seed=MASTER_SEED)
+    master = master_fixtures(engine, pairs=PRIMARY_PAIRS, seed=MASTER_SEED)
     return engine, environment, master
 
 
@@ -386,6 +568,9 @@ def main(argv=None):
         except BlockingIOError:
             print(json.dumps({"status": "already_running"}))
             return 1
+        requeued = requeue_stale_jobs(eval_root / "schedule.json")
+        if requeued:
+            print(json.dumps({"status": "requeued", "jobs": requeued}, sort_keys=True), flush=True)
         engine = environment = master = None
         while True:
             if (eval_root / "PAUSE").exists():

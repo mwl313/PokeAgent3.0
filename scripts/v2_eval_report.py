@@ -12,6 +12,7 @@ sys.path[:0] = [str(ROOT)]
 
 from agent.evaluation.v2_league import (  # noqa: E402
     internal_ratings,
+    load_alpha_ledger,
     read_json,
     snapshot_entries,
     heldout_status,
@@ -74,7 +75,26 @@ def status(args):
             "boundaries": sorted(boundaries, key=lambda row: row["boundary"]),
         },
         "job_counts": _counts(schedule),
+        "alpha_budget": _alpha_budget(args),
         "heldout": read_json(eval_root / "heldout" / "heldout_status.json"),
+    }
+
+
+def _alpha_budget(args):
+    try:
+        ledger = load_alpha_ledger(Path(args.eval_root))
+    except Exception as error:  # noqa: BLE001 - reporting must stay readable
+        return {"status": "unavailable", "error": str(error)}
+    return {
+        "schema": ledger.get("schema"),
+        "schedule": ledger.get("schedule"),
+        "total": ledger.get("total"),
+        "consumed": ledger.get("consumed"),
+        "remaining": float(ledger.get("total", 0)) - float(ledger.get("consumed", 0)),
+        "next_index": ledger.get("next_index"),
+        "max_promotion_comparisons": ledger.get("max_promotion_comparisons"),
+        "historical_consumed": ledger.get("historical_consumed"),
+        "committed": ledger.get("committed"),
     }
 
 
@@ -84,22 +104,30 @@ def jobs(args):
     return {"jobs": rows}
 
 
+def summarize_job_receipt(row):
+    """Backward-compatible summary of a job receipt (legacy receipts OK)."""
+    return {
+        "job_id": row.get("job_id"),
+        "tier": row.get("tier"),
+        "candidate_id": row.get("candidate_id"),
+        "candidate_clock": row.get("candidate_clock"),
+        "incumbent_id": row.get("incumbent_id"),
+        "games": row.get("games"),
+        "status": row.get("status"),
+        "decision": row.get("decision", {}).get("decision"),
+        "promotion_status": row.get("promotion_status", "LEGACY"),
+        "ruleset_version": row.get("ruleset_version", "pa3-v2-promotion-rules-v1"),
+        "escalated": row.get("escalated"),
+        "promoted": row.get("promoted"),
+        "matchups": [{k: m[k] for k in ("opponent_id", "games", "wins", "losses", "draws",
+                                        "score_mean", "score_ci95", "status")} for m in row.get("matchups", [])],
+    }
+
+
 def receipts(args):
     rows = []
     for row in _job_receipts(Path(args.eval_root)):
-        rows.append({
-            "job_id": row.get("job_id"),
-            "tier": row.get("tier"),
-            "candidate_id": row.get("candidate_id"),
-            "candidate_clock": row.get("candidate_clock"),
-            "incumbent_id": row.get("incumbent_id"),
-            "games": row.get("games"),
-            "status": row.get("status"),
-            "decision": row.get("decision", {}).get("decision"),
-            "promoted": row.get("promoted"),
-            "matchups": [{k: m[k] for k in ("opponent_id", "games", "wins", "losses", "draws",
-                                            "score_mean", "score_ci95", "status")} for m in row.get("matchups", [])],
-        })
+        rows.append(summarize_job_receipt(row))
     return {"completed": rows}
 
 
@@ -116,6 +144,8 @@ def trend(args):
             "committed_matches": row.get("candidate_clock"),
             "tier": row.get("tier"),
             "decision": row.get("decision", {}).get("decision"),
+            "promotion_status": row.get("promotion_status", "LEGACY"),
+            "ruleset_version": row.get("ruleset_version", "pa3-v2-promotion-rules-v1"),
             "promoted": row.get("promoted"),
             "vs_baseline": next(({"score": m["score_mean"], "ci95": m["score_ci95"], "games": m["matches"]}
                                  for m in row.get("matchups", []) if m["opponent_id"] == row.get("baseline_id")), None),

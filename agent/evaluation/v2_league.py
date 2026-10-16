@@ -46,12 +46,82 @@ from agent.evaluation.policy_archive import (
 from agent.ppo.experimental_checkpoint import hash_json
 
 LEAGUE_VERSION = "pa3-v2-evaluation-league-v1"
+LEAGUE_VERSION_V2 = "pa3-v2-evaluation-league-v2"
 SNAPSHOT_KIND = "v2_frozen_evaluation_snapshot"
 SCHEDULE_SCHEMA = "pa3-v2-eval-schedule-v1"
 JOB_LEDGER_SCHEMA = "pa3-v2-eval-jobs-v1"
+JOB_RECEIPT_SCHEMA_V2 = "pa3-v2-eval-job-receipt-v2"
 INCUMBENT_SCHEMA = "pa3-v2-incumbent-registry-v1"
 RULESET_VERSION = "pa3-v2-promotion-rules-v1"
+RULESET_VERSION_V2 = "pa3-v2-promotion-rules-v2"
 EVALUATOR_VERSION = "pa3-native-batched-evaluator-v3"
+
+# Machine-readable promotion outcomes.  ``promotion_status`` is stored on every
+# v2 job receipt and is additive: historical receipts without it remain valid.
+PROMOTED = "PROMOTED"
+RETAINED_CONFIRMED_INFERIOR = "RETAINED_CONFIRMED_INFERIOR"
+INCONCLUSIVE_BUDGET_EXHAUSTED = "INCONCLUSIVE_BUDGET_EXHAUSTED"
+DIAGNOSTIC_ONLY = "DIAGNOSTIC_ONLY"
+INVALID = "INVALID"
+
+# ---------------------------------------------------------------------------
+# Evaluation League V2 statistics (see ``alpha_ledger`` + ``confirmation_rule``)
+# ---------------------------------------------------------------------------
+#
+# The campaign-wide false-promotion budget is a family-wise error rate of
+# ALPHA_TOTAL.  Because v1 promoted on two (primary + confirmatory) tests, its
+# historical spend is the union bound over every formal test already performed.
+# That spend is preserved verbatim and is never reset by a version change.
+#
+# Promotion is now decided by a *single* formal confirmation procedure on
+# fixtures that are independent of the primary/screening data.  Primary
+# evidence only screens candidates and plans sample sizes; because the
+# confirmation sample size depends on primary (never confirmation) outcomes,
+# the confirmation test remains a valid fixed-sample test by independence.
+# Each promotion-eligible comparison (one full 200k milestone) spends one
+# predeclared alpha from the schedule below; the union bound over comparisons
+# therefore bounds the campaign-wide false-promotion rate by ALPHA_TOTAL.
+ALPHA_TOTAL = 0.05
+ALPHA_LEDGER_SCHEMA = "pa3-v2-alpha-budget-v1"
+ALPHA_SCHEDULE = "uniform-over-promotion-eligible-comparisons-v1"
+# 100M matches / 200k full milestone = 500 promotion-eligible comparisons.
+ALPHA_MAX_PROMOTION_COMPARISONS = 500
+# Full comparisons already resolved under pa3-v2-promotion-rules-v1 (200704
+# promote, 401408 retain, 602112 promote, 802816 retain).
+ALPHA_HISTORICAL_COMPARISONS = 4
+# Sum of alpha over every formal v1 test (primary + confirmatory gates).
+ALPHA_HISTORICAL_CONSUMED = 0.0014880952380952382
+
+# Adaptive budgets (games).  The 4096 limits are per matchup, not summed.
+LIGHT_GAMES_V2 = 256
+FULL_INITIAL_GAMES = 2048
+PRIMARY_MAX_GAMES = 4096
+CONFIRM_MAX_GAMES = 4096
+# Cumulative confirmation ladders, in multiples of complete seat-swapped pairs.
+CONFIRM_STAGE_GAMES = (1024, 2048, 4096)
+# Power-family (t**1.5) alpha-spending increments at information fractions
+# t = 0.25, 0.5, 1.0; increments sum to 1.0 so a comparison never overspends
+# its allocation.  Later (larger) looks receive the majority of the budget.
+CONFIRM_STAGE_ALPHA_WEIGHTS = (0.125, 0.22855339059327373, 0.6464466094067263)
+# Screening trigger: a candidate whose primary paired score reaches this is a
+# potential escalation candidate.  It is a resource-allocation heuristic, not a
+# significance threshold and never itself authorises promotion.
+SCREEN_TRIGGER = 0.53
+SCREEN_AMPLIFY_FLOOR = 0.5
+# Primary fixture layout (pairs).  Baseline anchor regions are kept identical to
+# the historical v1 layout so regression comparisons retain shared fixtures.
+PRIMARY_PAIRS = 4096
+INCUMBENT_START_PAIR = 0
+INCUMBENT_INITIAL_PAIRS = FULL_INITIAL_GAMES // 2
+INCUMBENT_AMP_START_PAIR = INCUMBENT_INITIAL_PAIRS
+INCUMBENT_AMP_PAIRS = (PRIMARY_MAX_GAMES - FULL_INITIAL_GAMES) // 2
+BASELINE_START_PAIR = 512
+BASELINE_GAMES = 512
+ANCHOR_START_PAIR = 768
+ANCHOR_GAMES = 512
+# Confirmation fixture universe.
+CONFIRM_PAIRS = CONFIRM_MAX_GAMES // 2
+CONFIRMATORY_SEED_BASE = 20261015
 
 # The frozen training pool shared by the whole V2 campaign.  A snapshot from a
 # different pool is refused rather than silently evaluated out of domain.
@@ -404,6 +474,26 @@ def mark_job(schedule_path, job_id, status, **fields):
     return dict(job)
 
 
+def requeue_stale_jobs(schedule_path, *, status="running"):
+    """Reset interrupted jobs to ``pending`` on worker startup.
+
+    Called only while the single-writer worker lock is held, so any job still
+    marked ``running`` belongs to a dead worker.  Receipts and alpha spending
+    are content-addressed/idempotent, so a resumed job never double-counts.
+    Jobs already ``completed`` are never touched.
+    """
+    state = read_json(schedule_path) or {"jobs": {}}
+    requeued = []
+    for job in state.get("jobs", {}).values():
+        if job.get("status") == status:
+            job["status"] = "pending"
+            job["requeued_at"] = time.time()
+            requeued.append(job["job_id"])
+    if requeued:
+        atomic_json(schedule_path, state)
+    return requeued
+
+
 # ---------------------------------------------------------------------------
 # Evaluation plan and runners
 # ---------------------------------------------------------------------------
@@ -581,6 +671,268 @@ def evaluate_regression(*, candidate_baseline_outcomes, incumbent_baseline_outco
 
 
 # ---------------------------------------------------------------------------
+# League V2: screening, alpha budget, sequential confirmation
+# ---------------------------------------------------------------------------
+
+def paired_variance(scores):
+    if len(scores) < 2:
+        return 0.0
+    mean = sum(scores) / len(scores)
+    return sum((value - mean) ** 2 for value in scores) / (len(scores) - 1)
+
+
+def descriptive_interval(scores, *, z=1.96):
+    """Descriptive paired-confidence interval used only for screening.
+
+    This is deliberately *not* a promotion bound: it allocates evaluation
+    resources.  Formal promotion uses :func:`confirmation_rule`.
+    """
+    n = len(scores)
+    if not scores:
+        return None
+    mean = sum(scores) / len(scores)
+    se = math.sqrt(paired_variance(scores) / n) if n > 1 else 0.0
+    return {
+        "score": mean,
+        "lower": max(0.0, mean - z * se),
+        "upper": min(1.0, mean + z * se),
+        "pairs": n,
+        "method": "descriptive-paired-normal-v1",
+    }
+
+
+def hoeffding_interval(scores, *, alpha):
+    """One-sided-safe Hoeffding confidence interval for a bounded paired mean.
+
+    Pair scores live in [0, 1]; for ``n`` independent pairs and any
+    ``alpha in (0, 1)``, Hoeffding gives
+    ``P(mean > lower) >= 1 - alpha`` with ``radius = sqrt(log(1/alpha)/(2n))``.
+    Seat-swapped games are collapsed into one pair before the bound is computed.
+    """
+    n = len(scores)
+    if n == 0:
+        return {"decision": "invalid", "reason": "no paired outcomes", "pairs": 0}
+    mean = sum(scores) / n
+    radius = math.sqrt(math.log(1.0 / alpha) / (2.0 * n))
+    return {
+        "score": mean,
+        "lower": max(0.0, mean - radius),
+        "upper": min(1.0, mean + radius),
+        "alpha": alpha,
+        "pairs": n,
+        "method": "pair-cluster-Hoeffding-fixed-sample-v2",
+    }
+
+
+def primary_screening(scores, *, trigger=SCREEN_TRIGGER, floor=SCREEN_AMPLIFY_FLOOR,
+                      z=1.96):
+    """Classify primary evidence for resource allocation (never promotion).
+
+    Returns one of:
+
+    * ``confirmed_inferior`` - descriptive upper bound below the floor; the
+      candidate is worse than the incumbent and is not escalated.
+    * ``promising`` - point estimate at or above ``trigger``; escalate to
+      independent confirmation.
+    * ``amplify`` - point estimate at or above ``floor`` but below ``trigger``;
+      a bounded extra primary panel may resolve the ambiguity.
+    * ``weak`` - point estimate below the floor without confirmed inferiority;
+      retain without spending confirmation budget.
+    """
+    stats = descriptive_interval(scores, z=z)
+    if stats is None:
+        return {"status": "invalid", "reason": "no paired outcomes", "pairs": 0}
+    stats["trigger"] = trigger
+    stats["floor"] = floor
+    if stats["upper"] < floor:
+        stats["status"] = "confirmed_inferior"
+    elif stats["score"] >= trigger:
+        stats["status"] = "promising"
+    elif stats["score"] >= floor:
+        stats["status"] = "amplify"
+    else:
+        stats["status"] = "weak"
+    return stats
+
+
+def confirmation_seed_for(candidate_id):
+    """Deterministic, per-candidate confirmation seed (recorded on the job).
+
+    Derived from the candidate identity alone so a worker restart reproduces the
+    identical fresh fixture universe and never silently reuses a different set.
+    """
+    material = f"pa3-v2-confirmation:{candidate_id}".encode()
+    return int(hashlib.sha256(material).hexdigest()[:8], 16)
+
+
+def confirmation_stage_plan(*, stage_games=CONFIRM_STAGE_GAMES,
+                            weights=CONFIRM_STAGE_ALPHA_WEIGHTS):
+    """Predeclared cumulative confirmation ladder in complete seat-swap pairs."""
+    plan, previous, cumulative_alpha = [], 0, 0.0
+    for games, weight in zip(stage_games, weights):
+        pairs = games // 2
+        cumulative_alpha += weight
+        plan.append({
+            "stage": len(plan) + 1,
+            "cumulative_games": int(games),
+            "cumulative_pairs": int(pairs),
+            "add_pairs": int(pairs - previous),
+            "first_pair": int(previous),
+            "cumulative_alpha_weight": cumulative_alpha,
+        })
+        previous = pairs
+    return plan
+
+
+def confirmation_rule(pooled_scores, *, alpha_total, stage):
+    """Formal promotion test at one predeclared confirmation look.
+
+    ``alpha_total`` is the whole comparison's allocation; ``stage`` is the
+    cumulative stage record from :func:`confirmation_stage_plan`.  The test is a
+    fixed-sample Hoeffding bound at the predeclared cumulative alpha for that
+    look, so the union bound over performed looks never exceeds ``alpha_total``.
+    """
+    alpha = alpha_total * stage["cumulative_alpha_weight"]
+    result = hoeffding_interval(pooled_scores, alpha=alpha)
+    result["stage"] = stage["stage"]
+    result["cumulative_alpha"] = alpha
+    if result.get("decision") == "invalid":
+        return result
+    if result["lower"] > 0.5:
+        result["decision"] = "promote"
+    elif result["upper"] < 0.5:
+        result["decision"] = "retain_inferior"
+    else:
+        result["decision"] = "continue"
+    return result
+
+
+def initial_alpha_ledger():
+    return {
+        "schema": ALPHA_LEDGER_SCHEMA,
+        "total": ALPHA_TOTAL,
+        "schedule": ALPHA_SCHEDULE,
+        "max_promotion_comparisons": ALPHA_MAX_PROMOTION_COMPARISONS,
+        "historical_comparisons": ALPHA_HISTORICAL_COMPARISONS,
+        "historical_consumed": ALPHA_HISTORICAL_CONSUMED,
+        "consumed": ALPHA_HISTORICAL_CONSUMED,
+        "next_index": ALPHA_HISTORICAL_COMPARISONS + 1,
+        "committed": [],
+        "note": ("historical spend preserved from pa3-v2-promotion-rules-v1 "
+                 "(union of primary+confirmatory gates); never reset"),
+        "updated_at": time.time(),
+    }
+
+
+def load_alpha_ledger(eval_root):
+    path = Path(eval_root) / "alpha_budget.json"
+    ledger = read_json(path)
+    if ledger is None:
+        ledger = initial_alpha_ledger()
+        atomic_json(path, ledger)
+        return ledger
+    if ledger.get("schema") != ALPHA_LEDGER_SCHEMA:
+        raise ValueError("unsupported alpha ledger schema")
+    return ledger
+
+
+def alpha_for_comparison(ledger):
+    """Return the predeclared alpha allocation for the next full comparison."""
+    index = int(ledger.get("next_index", ALPHA_HISTORICAL_COMPARISONS + 1))
+    maximum = int(ledger.get("max_promotion_comparisons", ALPHA_MAX_PROMOTION_COMPARISONS))
+    if index > maximum:
+        return {"index": index, "alpha": 0.0, "exhausted": True}
+    remaining = max(0.0, float(ledger["total"]) - float(ledger["consumed"]))
+    slots = maximum - (index - 1)
+    return {"index": index, "alpha": remaining / slots, "exhausted": False,
+            "remaining": remaining, "slots": slots}
+
+
+def commit_alpha(eval_root, *, candidate_id, index, alpha, decision):
+    """Record consumption once per candidate; idempotent across restarts."""
+    path = Path(eval_root) / "alpha_budget.json"
+    ledger = load_alpha_ledger(eval_root)
+    if any(row.get("candidate_id") == candidate_id for row in ledger.get("committed", [])):
+        return ledger
+    ledger["consumed"] = float(ledger["consumed"]) + float(alpha)
+    ledger["next_index"] = max(int(ledger.get("next_index", 1)), int(index) + 1)
+    ledger.setdefault("committed", []).append({
+        "candidate_id": candidate_id,
+        "index": int(index),
+        "alpha": float(alpha),
+        "decision": decision,
+        "at": time.time(),
+    })
+    ledger["updated_at"] = time.time()
+    atomic_json(path, ledger)
+    return ledger
+
+
+def plan_full_panels(*, candidate_id, incumbent_id, baseline_id, anchors):
+    """Primary screening layout.  Incumbent evidence is an explicit region.
+
+    Baseline and anchor regions are byte-identical to the historical v1 layout
+    so frozen regression comparisons keep shared fixtures.  All primary panels
+    use the shared master universe; confirmation uses a disjoint universe.
+    """
+    panels = []
+    if incumbent_id and incumbent_id != candidate_id:
+        panels.append({"opponent_id": incumbent_id, "phase": "primary",
+                       "games": FULL_INITIAL_GAMES,
+                       "fixture_start_pair": INCUMBENT_START_PAIR})
+    if baseline_id and baseline_id not in (candidate_id, incumbent_id):
+        panels.append({"opponent_id": baseline_id, "phase": "baseline",
+                       "games": BASELINE_GAMES,
+                       "fixture_start_pair": BASELINE_START_PAIR})
+    for anchor in anchors or []:
+        if anchor in (candidate_id, incumbent_id, baseline_id):
+            continue
+        if any(panel["opponent_id"] == anchor for panel in panels):
+            continue
+        panels.append({"opponent_id": anchor, "phase": "anchor",
+                       "games": ANCHOR_GAMES,
+                       "fixture_start_pair": ANCHOR_START_PAIR})
+        break
+    return panels
+
+
+def plan_light_panels(*, candidate_id, incumbent_id, baseline_id, anchors):
+    """Scale the full layout down to the lightweight diagnostic budget."""
+    panels = plan_full_panels(candidate_id=candidate_id, incumbent_id=incumbent_id,
+                              baseline_id=baseline_id, anchors=anchors)
+    if not panels:
+        return []
+    total = sum(panel["games"] for panel in panels)
+    scaled, start = [], 0
+    for panel in panels:
+        games = max(2, int(round(LIGHT_GAMES_V2 * panel["games"] / total)))
+        games -= games % 2
+        scaled.append({"opponent_id": panel["opponent_id"], "phase": panel["phase"],
+                       "games": games, "fixture_start_pair": start // 2})
+        start += games
+    return scaled
+
+
+_PANEL_FIXTURE_KEYS = ("team_a", "team_b", "seed")
+
+
+def panel_fixture_signatures(fixtures):
+    """Hashable identity of a fixture slice for disjointness checks."""
+    return {
+        (fixture.team_a, fixture.team_b, tuple(fixture.seed), fixture.policy_side)
+        for fixture in fixtures
+    }
+
+
+def assert_panels_disjoint(primary_fixtures, confirmation_fixtures):
+    """Confirmation fixtures must not overlap the primary panel."""
+    overlap = panel_fixture_signatures(primary_fixtures) & panel_fixture_signatures(confirmation_fixtures)
+    if overlap:
+        raise ValueError(f"confirmation fixtures overlap primary fixtures ({len(overlap)} games)")
+    return True
+
+
+# ---------------------------------------------------------------------------
 # Incumbent registry
 # ---------------------------------------------------------------------------
 
@@ -598,8 +950,25 @@ def initial_incumbent(policy_id, entry):
     }
 
 
+class StaleIncumbentError(RuntimeError):
+    """Raised when a challenger tries to overwrite a newer incumbent."""
+
+
 def promote_incumbent(best_path, history_dir, *, candidate_entry, previous, decision,
-                      supporting, reason):
+                      supporting, reason, expected_previous_id=None,
+                      ruleset_version=RULESET_VERSION):
+    """Atomically promote a candidate, guarding against stale challengers.
+
+    ``expected_previous_id`` is the incumbent the candidate was evaluated
+    against.  If the live best policy has since moved, the promotion is refused
+    so an out-of-date challenge can never overwrite a newer champion.
+    """
+    current = read_json(best_path)
+    if expected_previous_id is not None:
+        if current is None or current.get("policy_id") != expected_previous_id:
+            raise StaleIncumbentError(
+                f"incumbent advanced from {expected_previous_id} to "
+                f"{(current or {}).get('policy_id')}; refusing stale promotion")
     record = {
         "previous_policy": previous["policy_id"],
         "candidate_id": candidate_entry["id"],
@@ -608,7 +977,7 @@ def promote_incumbent(best_path, history_dir, *, candidate_entry, previous, deci
         "statistics": decision,
         "at": time.time(),
         "evaluator_version": EVALUATOR_VERSION,
-        "ruleset_version": RULESET_VERSION,
+        "ruleset_version": ruleset_version,
         "reason": reason,
     }
     new = {
@@ -624,12 +993,16 @@ def promote_incumbent(best_path, history_dir, *, candidate_entry, previous, deci
     }
     history_dir = Path(history_dir)
     history_dir.mkdir(parents=True, exist_ok=True)
+    # Write the immutable history record first: if the process dies between the
+    # two writes, best_policy.json is unchanged (recoverable), never a promotion
+    # without an audit record.
     atomic_json(history_dir / f"{time.time_ns()}-{previous['policy_id']}.json", previous)
     atomic_json(best_path, new)
     return new
 
 
-def record_rejection(history_dir, *, candidate_entry, previous, decision, reason, key=None):
+def record_rejection(history_dir, *, candidate_entry, previous, decision, reason, key=None,
+                     ruleset_version=RULESET_VERSION, promotion_status=None):
     history_dir = Path(history_dir)
     history_dir.mkdir(parents=True, exist_ok=True)
     record = {
@@ -639,9 +1012,11 @@ def record_rejection(history_dir, *, candidate_entry, previous, decision, reason
         "statistics": decision,
         "at": time.time(),
         "evaluator_version": EVALUATOR_VERSION,
-        "ruleset_version": RULESET_VERSION,
+        "ruleset_version": ruleset_version,
         "reason": reason,
     }
+    if promotion_status is not None:
+        record["promotion_status"] = promotion_status
     atomic_json(history_dir / f"{key or candidate_entry['id']}.json", record)
     return record
 
