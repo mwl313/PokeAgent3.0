@@ -1,0 +1,158 @@
+{
+  "schema": "pa3-v2-deployment-integrity-v1",
+  "captured_at_kst": "2026-10-17T14:52:26.858479+09:00",
+  "training": {
+    "worktree": "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix",
+    "branch": "codex/v2-p00b-profile-propagation",
+    "commit": "da35700f75c95833b0e8250d7b4b04e11320f8b7",
+    "worktree_clean": true,
+    "profile": {
+      "path": "configs/pa3_v2_production.yaml",
+      "sha256": "c816aa28f695ce57ac2319db37cd9edeab308f369c2972606abc38a11fa27941"
+    },
+    "engine_so": {
+      "path": "engine/python/pa3_engine/pa3_engine.so",
+      "sha256": "8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62"
+    },
+    "venv": {
+      "path": "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv",
+      "python": "Python 3.12.3",
+      "torch": "2.14.0+cu126"
+    },
+    "paused": true,
+    "stop_file": "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode_e_da35700_20261016/STOP",
+    "resume_helper": "/home/minidc/bin/pa3-resume-training.sh",
+    "resume_helper_sha256": "3fcce66cae5dfc8fd76d6a382a5711999118f44c5bcb09825557aa761f6a72ad"
+  },
+  "progress_at_pause": {
+    "absolute_iteration": 675,
+    "committed_matches": 2764800,
+    "optimizer_steps": 24573,
+    "learning_rate": 0.00014978839419625816,
+    "iteration_wall_s": 115.07957327099575,
+    "digests_equal": true,
+    "model_digest": "7697797df97cf3c6d5c11466c294c8a72be1bf06d437fb1dba0c8db5109f2e6e",
+    "optimizer_digest": "bafeee072e87845b4dc7837d485efcf1ac79de70877fe051684dcab440d0e4c6",
+    "skipped_optimizer_steps": 0,
+    "operational_errors": 0,
+    "telemetry_rows": 661
+  },
+  "checkpoints": {
+    "rolling_keep": 3,
+    "generations": [
+      {
+        "generation": "iter-000002600960-1792208254898790670",
+        "committed_matches": 2600960,
+        "absolute_iteration": null,
+        "complete": true,
+        "iteration_complete": true,
+        "world_size": 2,
+        "ranks": {
+          "0": {
+            "file": "rank0.pt",
+            "bytes": 119075157,
+            "sha256_manifest": "2c26c8cc2e0962d696b74e5e29cc7226c7e3c366a2a5fb6d8400b7da2482ebb8",
+            "sha256_recomputed": "2c26c8cc2e0962d696b74e5e29cc7226c7e3c366a2a5fb6d8400b7da2482ebb8",
+            "match": true
+          },
+          "1": {
+            "file": "rank1.pt",
+            "bytes": 119075093,
+            "sha256_manifest": "b7bb2cae42645204a5d243ca078d7e3027b6e345db717f83807c6ff291140b65",
+            "sha256_recomputed": "b7bb2cae42645204a5d243ca078d7e3027b6e345db717f83807c6ff291140b65",
+            "match": true
+          }
+        }
+      },
+      {
+        "generation": "iter-000002703360-1792211026730538587",
+        "committed_matches": 2703360,
+        "absolute_iteration": null,
+        "complete": true,
+        "iteration_complete": true,
+        "world_size": 2,
+        "ranks": {
+          "0": {
+            "file": "rank0.pt",
+            "bytes": 119082837,
+            "sha256_manifest": "fb27101afd9578147612b0e290788625d67c37de015272ec2b42fdd09bc6ed61",
+            "sha256_recomputed": "fb27101afd9578147612b0e290788625d67c37de015272ec2b42fdd09bc6ed61",
+            "match": true
+          },
+          "1": {
+            "file": "rank1.pt",
+            "bytes": 119082837,
+            "sha256_manifest": "b0e90cd6b9dc21c01d7de555e4e50897c6e96eb5fc7ec9421e35d84ab55ef8ca",
+            "sha256_recomputed": "b0e90cd6b9dc21c01d7de555e4e50897c6e96eb5fc7ec9421e35d84ab55ef8ca",
+            "match": true
+          }
+        }
+      },
+      {
+        "generation": "iter-000002764800-1792212738467610757",
+        "committed_matches": 2764800,
+        "absolute_iteration": null,
+        "complete": true,
+        "iteration_complete": true,
+        "world_size": 2,
+        "ranks": {
+          "0": {
+            "file": "rank0.pt",
+            "bytes": 119087509,
+            "sha256_manifest": "fd3b5655a2b7d602043531cf31addcbca53c4c41523dce4abc430a8ea52fe02b",
+            "sha256_recomputed": "fd3b5655a2b7d602043531cf31addcbca53c4c41523dce4abc430a8ea52fe02b",
+            "match": true
+          },
+          "1": {
+            "file": "rank1.pt",
+            "bytes": 119087445,
+            "sha256_manifest": "6cd1ae7b84a12bbc8e12bc0e30f538ee59d03e4dd602f68eb47ed0f079b39607",
+            "sha256_recomputed": "6cd1ae7b84a12bbc8e12bc0e30f538ee59d03e4dd602f68eb47ed0f079b39607",
+            "match": true
+          }
+        }
+      }
+    ],
+    "boundary": {
+      "boundary.rank0": {
+        "bytes": 119087509,
+        "sha256": "fd3b5655a2b7d602043531cf31addcbca53c4c41523dce4abc430a8ea52fe02b"
+      },
+      "boundary.rank1": {
+        "bytes": 119087445,
+        "sha256": "6cd1ae7b84a12bbc8e12bc0e30f538ee59d03e4dd602f68eb47ed0f079b39607"
+      }
+    }
+  },
+  "evaluation": {
+    "eval_root": "/home/minidc/eval-league/v2",
+    "policies": 30,
+    "snapshots": 30,
+    "job_receipts": 29,
+    "champion": "v2-000002600960-da35700f",
+    "promotions": 11,
+    "eval_commit": "c923d3335958982a0ca346064f7d1b6351e96d3f"
+  },
+  "git": {
+    "worktree_head": "da35700f75c95833b0e8250d7b4b04e11320f8b7",
+    "main_branch_commit": "c923d3335958982a0ca346064f7d1b6351e96d3f",
+    "origin_main": "c923d3335958982a0ca346064f7d1b6351e96d3f",
+    "origin_train_branch": "da35700f75c95833b0e8250d7b4b04e11320f8b7"
+  },
+  "archive": [
+    "MANIFEST.json",
+    "PokeAgent3.0-A__runs_a10_round_robin_20261013.tgz",
+    "PokeAgent3.0-A__runs_a10_round_robin_20261013_3x.tgz",
+    "PokeAgent3.0-V2-throughput__runs_perf_v2_recovery_reconstruction_contract_reconstructed_rolling_generations_iter-000000057344-1791986684864852699.tgz",
+    "PokeAgent3.0-V2__runs_pa3_v2_scratch_team_stats.tgz",
+    "PokeAgent3.0-V2__untracked.tgz",
+    "PokeAgent3.0-V2__untracked.txt",
+    "VERIFY_20261017.json",
+    "codex-a10-evaluation-league-3c5f252.bundle"
+  ],
+  "verification": {
+    "checks_total": 49,
+    "checks_passed": 49,
+    "verdict": "ALL PRESERVED"
+  }
+}
