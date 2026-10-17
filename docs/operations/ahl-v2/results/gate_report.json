@@ -1,6 +1,6 @@
 {
   "disk": {
-    "free_bytes": 76996333568,
+    "free_bytes": 76969046016,
     "ok": true,
     "reserve_bytes": 12884901888
   },
@@ -9,10 +9,10 @@
     "active_status": "ok",
     "jobs": [],
     "pending_or_running": 0,
-    "updated_at": 1792226588.711798
+    "updated_at": 1792226948.9379854
   },
-  "generated_at": 1792226595.3363574,
-  "generated_at_kst": "2026-10-17T17:43:15+0900",
+  "generated_at": 1792226949.3262525,
+  "generated_at_kst": "2026-10-17T17:49:09+0900",
   "go_no_go": {
     "reason": "owner approval, reviewed V2 source/profile/opponent migration, isolated A/B pilot and rollback proof are all still required",
     "stage_d": "NO_GO"
@@ -27,11 +27,11 @@
       "/home/minidc/eval-league/v2/alpha_budget.json": "6fdf62a39896dc23aa54451a24dc79d4730635d740c3b1aa839add66525ef14f",
       "/home/minidc/eval-league/v2/best_policy.json": "bc7c61fb0eb94f8b7720dcc79b6f19bbf2bb81bbbea20bcfec00a43dec808779",
       "/home/minidc/eval-league/v2/registry.json": "3a5c6b938d4d0539fc8292fa1e55a8a39fb6be9d82cc9f67751707f513991437",
-      "/home/minidc/eval-league/v2/schedule.json": "3399836c920f9d5914657cd1d4bef051ad8f10488c12bf7d9d1aa71998855c62"
+      "/home/minidc/eval-league/v2/schedule.json": "f09f86ecd7ddfd887fd1d0e33346947eb9feb5bae31fc08d52051020ab5bafd5"
     },
     "mismatches": [
       {
-        "after": "3399836c920f9d5914657cd1d4bef051ad8f10488c12bf7d9d1aa71998855c62",
+        "after": "f09f86ecd7ddfd887fd1d0e33346947eb9feb5bae31fc08d52051020ab5bafd5",
         "before": "a093e961921b4a10c994a22e29d9f6b56018315b380fe53207cdc8ee008f023e",
         "path": "/home/minidc/eval-league/v2/schedule.json"
       }
