@@ -3,6 +3,8 @@
 작성일: 2026-10-17 (KST)  
 브랜치: `fix/ahl-v2-corrections` (기준 `1d90d82`)  
 구현 커밋: `473092b` (`fix(ahl-v2): correct Bradley-Terry fit and add recurring diagnostics`)  
+문서/보고서 커밋: `c53d39f` (`docs(ahl-v2): add Korean correction and operational readiness report`)  
+기준 커밋: `1d90d82`  
 워크트리: `/home/minidc/Desktop/PokeAgent3.0-AHL-fix`
 
 ## 0. 한 줄 결론
