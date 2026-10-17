@@ -1,0 +1,42 @@
+{
+  "cached": false,
+  "checked_at": 1792217511.366245,
+  "checked_at_kst": "2026-10-17T15:11:51+0900",
+  "environment": {
+    "backend": "batched",
+    "batch_size": 32,
+    "battle_format": "native-v2-frozen-team-pool",
+    "device": "cpu",
+    "engine_sha256": "8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62",
+    "engine_workers": 2,
+    "evaluator": "pa3-native-batched-evaluator-v3",
+    "mechanics_data_sha256": "645350668ab465ec29b8159bea842bf5956cfb6c7f53e7cd6fd797d958cce5f3",
+    "sampling": "fixture-seat-decision-branch-keyed-valid-cdf-v3",
+    "team_dataset_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f",
+    "threads": 2
+  },
+  "environment_match": true,
+  "fixture_manifest_hash": "7914d69865aaca7c97162bf189b000b5a66aa3ff1a9b42cbd68d8149fe2e5106",
+  "fixture_manifest_match": true,
+  "formal_receipt": "/home/minidc/eval-league/v2/receipts/235eda3ee09c66db6a6801e6f305fc3e40146460beffb08881a36f8f7f35e256.json",
+  "formal_receipt_identity": "235eda3ee09c66db6a6801e6f305fc3e40146460beffb08881a36f8f7f35e256",
+  "formal_score": 0.5390625,
+  "formal_wdl": [
+    69,
+    0,
+    59
+  ],
+  "games": 128,
+  "identity_match": true,
+  "rerun_identity": "235eda3ee09c66db6a6801e6f305fc3e40146460beffb08881a36f8f7f35e256",
+  "rerun_score": 0.5390625,
+  "rerun_wdl": [
+    69,
+    0,
+    59
+  ],
+  "schema": "pa3-v2-history-harness-equivalence-v1",
+  "score_match": true,
+  "status": "PASS",
+  "wdl_match": true
+}

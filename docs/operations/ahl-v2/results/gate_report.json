@@ -1,0 +1,117 @@
+{
+  "disk": {
+    "free_bytes": 77315526656,
+    "ok": true,
+    "reserve_bytes": 12884901888
+  },
+  "formal_priority": {
+    "active_job": "light:v2-000002764800-da35700f",
+    "active_status": "ok",
+    "jobs": [],
+    "pending_or_running": 0,
+    "updated_at": 1792222625.7526248
+  },
+  "generated_at": 1792222642.3831027,
+  "generated_at_kst": "2026-10-17T16:37:22+0900",
+  "go_no_go": {
+    "reason": "owner approval, reviewed V2 source/profile/opponent migration, isolated A/B pilot and rollback proof are all still required",
+    "stage_d": "NO_GO"
+  },
+  "protected_state": {
+    "before_recorded": true,
+    "critical_mismatches": [],
+    "current": {
+      "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/configs/pa3_v2_production.yaml": "c816aa28f695ce57ac2319db37cd9edeab308f369c2972606abc38a11fa27941",
+      "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode_e_da35700_20261016/STOP": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode_e_da35700_20261016/rolling/generations/iter-000002764800-1792212738467610757/manifest.json": "3cc75293fcf8f0194cfd7d6843d315c76f748fdc79a5bd45e277bf65557c88e7",
+      "/home/minidc/eval-league/v2/alpha_budget.json": "6fdf62a39896dc23aa54451a24dc79d4730635d740c3b1aa839add66525ef14f",
+      "/home/minidc/eval-league/v2/best_policy.json": "bc7c61fb0eb94f8b7720dcc79b6f19bbf2bb81bbbea20bcfec00a43dec808779",
+      "/home/minidc/eval-league/v2/registry.json": "3a5c6b938d4d0539fc8292fa1e55a8a39fb6be9d82cc9f67751707f513991437",
+      "/home/minidc/eval-league/v2/schedule.json": "d09e17946f6864a0dd208c102938dcb0b57168ae56057f4d6664261e794a3668"
+    },
+    "mismatches": [
+      {
+        "after": "d09e17946f6864a0dd208c102938dcb0b57168ae56057f4d6664261e794a3668",
+        "before": "a093e961921b4a10c994a22e29d9f6b56018315b380fe53207cdc8ee008f023e",
+        "path": "/home/minidc/eval-league/v2/schedule.json"
+      }
+    ],
+    "schedule": {
+      "formal_discovery_owner": "v2-eval-discover.service",
+      "hash_changed": true,
+      "jobs": [],
+      "note": "the formal discovery timer rewrites schedule.json even when it registers no job; the historical worker only reads this file",
+      "path": "/home/minidc/eval-league/v2/schedule.json",
+      "pending_or_running": 0
+    },
+    "unchanged": true
+  },
+  "schema": "pa3-v2-history-gate-report-v1",
+  "stages": {
+    "A_diagnostics": {
+      "arithmetic": {
+        "basic_fixture_pairs": 64,
+        "basic_games_per_pair": 128,
+        "broad_pairs": 379,
+        "fine_fixture_pairs": 256,
+        "fine_games_per_pair": 512,
+        "fine_pairs": 56,
+        "policies": 30,
+        "total_games": 77184,
+        "total_pairs": 435
+      },
+      "cpu_only": true,
+      "duplicates": 0,
+      "formal_alpha_spent": 0,
+      "formal_alpha_unchanged": true,
+      "formal_priority_observed": 0,
+      "formal_writes": 0,
+      "full_grid_complete": false,
+      "games_run": 5760,
+      "harness_equivalence": "PASS",
+      "harness_games": 128,
+      "harness_identity_match": true,
+      "nice": 19,
+      "pairs_completed": 45,
+      "pairs_total": 435,
+      "policies_after_dedup": 30,
+      "policies_before_dedup": 30,
+      "registry_snapshot_verified": true,
+      "resumable": true,
+      "schedule_hash_changed_by_formal_discovery": true,
+      "status": "SMOKE_COMPLETE"
+    },
+    "B_incremental": {
+      "available": false,
+      "executed": false,
+      "games_per_anchor": 256,
+      "latest_clock": 2764800,
+      "max_anchors": 8,
+      "next_full_boundary": 2800000,
+      "planned_anchors_if_triggered": 8,
+      "planned_games": 0,
+      "planned_games_if_triggered": 2048,
+      "reason": "no_new_full_milestone",
+      "status": "IMPLEMENTED_NOT_TRIGGERED"
+    },
+    "C_shadow": {
+      "activation": "FORBIDDEN_WITHOUT_OWNER_APPROVAL_AND_REVIEWED_MIGRATION",
+      "active_training_changed": false,
+      "history_probability": 0.0,
+      "history_rows_target": 0,
+      "opponents": 8,
+      "plan_sha256": "dfe1f3a727d12c9cb08d1e9b1af88dd1f17b01e61e3b814e51dac6637112af60",
+      "shadow_only": true,
+      "status": "SHADOW_PLAN_READY",
+      "weight_cap_ok": true,
+      "weight_sum": 1.0
+    },
+    "D_training_migration": {
+      "migration_receipt_created": false,
+      "ppo_resumed": false,
+      "reason": "owner approval, reviewed V2 source/profile/opponent migration, isolated A/B pilot and rollback proof are all still required",
+      "status": "NO_GO",
+      "training_code_modified": false
+    }
+  }
+}
