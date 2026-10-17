@@ -1,3 +1,15 @@
+> **SUPERSEDED — CORRECTION BANNER (2026-10-17 17:45 KST).**
+> This file is preserved as the historical Stage A–C smoke-era report
+> (45 pairs / 5,760 games). It is **not** the latest result. The authoritative
+> result is `docs/operations/ahl-v2/results/FULL_COMPLETE.md` and
+> `run_report.json`: **435 pairs / 77,184 games**, 30 policies.
+> The smoke-era Bradley–Terry ratings used an incorrect MM update
+> (`numerator / denominator` instead of `strength * numerator / denominator`);
+> all rating conclusions in this file are superseded by the corrected
+> `ratings.csv` / `ratings.json`. Historical PPO training remains disabled at
+> probability 0.0, the shadow plan is retired, and formal promotion authority
+> is unchanged. See `FINAL_REPORT_CORRECTIONS.md`.
+
 # PA3 V2 AHL v2 — Stage A–C 최종 보고서
 
 작성일: 2026-10-17 (KST)  

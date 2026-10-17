@@ -1,6 +1,77 @@
 # PokeAgent3.0 V2 — Training Source of Truth
 
-## Current production status and proposed Historical League (2026-10-17 KST)
+## Current owner decision — 2026-10-17 17:45 KST (authoritative)
+
+The owner decision below overrides the earlier "proposed change" paragraph.
+Historical training is **not** authorized. The historical league is a
+recurring independent diagnostic only.
+
+- Production PPO remains **100% current-vs-current** self-play. No reward,
+  model, hyperparameter, source or Stage D migration change is authorized.
+- `training.historical_probability` remains **0.0** in every active production
+  configuration (`configs/pa3_v2_production.yaml`,
+  `configs/validated_a94_runtime.yaml`, `configs/a10_production.yaml`).
+  `configs/train.yaml` is non-normative historical material; it is not an
+  active production profile and is not used to launch training.
+- No Stage D historical PPO rollout migration is authorized. Stage D remains
+  `NO_GO` pending owner approval, a reviewed source/profile/opponent migration,
+  an isolated A/B pilot and rollback proof.
+- The full **30-policy / 435-pair / 77,184-game** historical round robin has
+  completed. Evidence: `docs/operations/ahl-v2/results/FULL_COMPLETE.md`,
+  `run_report.json`, `matrix.csv`, and 435 immutable pair summaries.
+- The Bradley–Terry calculation was corrected to the MM update
+  `strength_i * wins_i / sum_j n_ij * strength_i/(strength_i+strength_j)`, with
+  geometric-mean normalisation, convergence checks and pair-cluster bootstrap
+  uncertainty. Derived ratings/reports were regenerated from the immutable pair
+  summaries. Smoke-era rating conclusions are superseded.
+- Historical evaluation is now established as a **recurring diagnostic
+  service**: Tier A every 200K committed matches starting at 2.8M (≤ 8 anchors,
+  256 games each), Tier B every 1M starting at 3.8M (≤ 24 distinct model
+  digests). The schedule is persisted in `diagnostic_state.json` /
+  `milestone_schedule.json` and is idempotent, overshoot-aware and resumable.
+- The expanded Tier B population is capped at **24** distinct model digests by
+  default. Participants are deduplicated by digest, always include the latest
+  candidate and official champion, retain stable long-term anchors, and
+  progressively widen temporal spacing for older snapshots.
+- Diagnostic evaluation **cannot promote policies, cannot spend formal alpha,
+  cannot move the champion pointer, and cannot rewrite formal receipts**. It is
+  CPU-only, low priority, keeps a 12 GiB disk reserve, yields to pending formal
+  evaluation and cannot schedule ahead of it.
+- The smoke-era `opponent_plan.json` is **OBSOLETE and non-activatable**
+  (`activatable=false`, `history_probability=0.0`, `activation=FORBIDDEN`).
+  Its bytes are preserved as `opponent_plan.smoke-20261017.json`.
+- Production PPO remains protected under source SHA
+  `da35700f75c95833b0e8250d7b4b04e11320f8b7`, stopped at 2,764,800 matches /
+  iteration 675, with `STOP` present. The 2,764,800 checkpoint and its manifest
+  are unchanged.
+- Any future training-source migration requires independent review and a new
+  verified restore/migration receipt. No restart is authorized here.
+- Historical PPO training may be reconsidered **only** after validated,
+  reproducible historical regressions and explicit owner approval. A diagnostic
+  alert is not activation.
+
+### Verification snapshot (2026-10-17)
+
+- `docs/operations/ahl-v2/results/protected_snapshot/corrections_verification.json`
+  records `unchanged=true`, zero critical mismatches, training HEAD `da35700`,
+  evaluation HEAD `16cc0bf`, STOP present, and alpha SHA256 `6fdf62a3…`.
+- Live formal evaluation: 29 completed job receipts, worker+timer active and
+  idle, no pending/running formal jobs at inspection time.
+- `schedule.json` is rewritten by the formal `v2-eval-discover` timer; it is
+  reported separately and is never written by historical diagnostics.
+- Live-PPO coexistence of the diagnostic pool is **UNVERIFIED** because
+  production training is stopped. The resource gate, topology-derived CPU
+  masks and failure-safe thresholds are implemented and unit-tested, not
+  measured under live PPO.
+
+---
+
+## SUPERSEDED PROPOSAL — Historical League (2026-10-17 earlier)
+
+> Kept for provenance only. The authoritative current policy is the owner
+> decision above.
+
+### Earlier 2026-10-17 status text (superseded)
 
 > **Priority dated correction.** The historical 2026-10-16 `PRODUCTION STOPPED at 57,344 / release pending` paragraphs below describe an *earlier migration review*. They are **not the current operational state**. Do not rewrite or delete their original evidence. For the paused campaign, authoritative current operational records are `docs/ops/PRODUCTION_TRAINING_SPEC_20261017.md`, `docs/ops/production_training_spec_20261017.json`, and `docs/ops/verify/VERIFY_20261017.json`. This addendum is a documentation proposal until reviewed and merged.
 

@@ -1,0 +1,28 @@
+{
+  "action": "plan_only",
+  "changes": [],
+  "due": [],
+  "executed": false,
+  "execution_note": "planning only; run diagnostics through the CPU-only worker after the formal queue is empty",
+  "formal_priority": {
+    "active_job": "light:v2-000002764800-da35700f",
+    "active_status": "ok",
+    "jobs": [],
+    "pending_or_running": 0,
+    "updated_at": 1792226568.699528
+  },
+  "latest_clock": 2764800,
+  "latest_policy_id": "v2-000002764800-da35700f",
+  "new_jobs": [],
+  "next_tier_a": 2800000,
+  "next_tier_b": 3800000,
+  "resumed_jobs": [],
+  "schema": "pa3-v2-history-diagnostic-schedule-v1",
+  "stable_anchor_ids": [],
+  "state": "idle",
+  "tier_a_first": 2800000,
+  "tier_a_interval": 200000,
+  "tier_b_first": 3800000,
+  "tier_b_interval": 1000000,
+  "tier_b_policy_cap": 24
+}

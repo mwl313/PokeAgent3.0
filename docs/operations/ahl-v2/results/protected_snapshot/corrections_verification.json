@@ -1,0 +1,80 @@
+{
+  "captured_at": 1792226646.121048,
+  "captured_at_kst": "2026-10-17T17:44:06+0900",
+  "critical_mismatches": [],
+  "evaluation": {
+    "head": "16cc0bf1db712cf23effe2614dc0d58ab463c19e",
+    "status_porcelain": "",
+    "worktree": "/home/minidc/Desktop/PokeAgent3.0-V2-evaluation-league"
+  },
+  "formal_root": {
+    "alpha_sha256": "6fdf62a39896dc23aa54451a24dc79d4730635d740c3b1aa839add66525ef14f",
+    "champion_sha256": "bc7c61fb0eb94f8b7720dcc79b6f19bbf2bb81bbbea20bcfec00a43dec808779",
+    "path": "/home/minidc/eval-league/v2",
+    "registry_sha256": "3a5c6b938d4d0539fc8292fa1e55a8a39fb6be9d82cc9f67751707f513991437",
+    "schedule_jobs": 29,
+    "schedule_statuses": {
+      "completed": 29
+    }
+  },
+  "protected_files": [
+    {
+      "after": "c816aa28f695ce57ac2319db37cd9edeab308f369c2972606abc38a11fa27941",
+      "before": "c816aa28f695ce57ac2319db37cd9edeab308f369c2972606abc38a11fa27941",
+      "changed": false,
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/configs/pa3_v2_production.yaml"
+    },
+    {
+      "after": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "changed": false,
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode_e_da35700_20261016/STOP"
+    },
+    {
+      "after": "3cc75293fcf8f0194cfd7d6843d315c76f748fdc79a5bd45e277bf65557c88e7",
+      "before": "3cc75293fcf8f0194cfd7d6843d315c76f748fdc79a5bd45e277bf65557c88e7",
+      "changed": false,
+      "path": "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode_e_da35700_20261016/rolling/generations/iter-000002764800-1792212738467610757/manifest.json"
+    },
+    {
+      "after": "6fdf62a39896dc23aa54451a24dc79d4730635d740c3b1aa839add66525ef14f",
+      "before": "6fdf62a39896dc23aa54451a24dc79d4730635d740c3b1aa839add66525ef14f",
+      "changed": false,
+      "path": "/home/minidc/eval-league/v2/alpha_budget.json"
+    },
+    {
+      "after": "bc7c61fb0eb94f8b7720dcc79b6f19bbf2bb81bbbea20bcfec00a43dec808779",
+      "before": "bc7c61fb0eb94f8b7720dcc79b6f19bbf2bb81bbbea20bcfec00a43dec808779",
+      "changed": false,
+      "path": "/home/minidc/eval-league/v2/best_policy.json"
+    },
+    {
+      "after": "3399836c920f9d5914657cd1d4bef051ad8f10488c12bf7d9d1aa71998855c62",
+      "before": "a093e961921b4a10c994a22e29d9f6b56018315b380fe53207cdc8ee008f023e",
+      "changed": true,
+      "path": "/home/minidc/eval-league/v2/schedule.json"
+    },
+    {
+      "after": "3a5c6b938d4d0539fc8292fa1e55a8a39fb6be9d82cc9f67751707f513991437",
+      "before": "3a5c6b938d4d0539fc8292fa1e55a8a39fb6be9d82cc9f67751707f513991437",
+      "changed": false,
+      "path": "/home/minidc/eval-league/v2/registry.json"
+    }
+  ],
+  "schedule_comparison": {
+    "after": "3399836c920f9d5914657cd1d4bef051ad8f10488c12bf7d9d1aa71998855c62",
+    "before": "a093e961921b4a10c994a22e29d9f6b56018315b380fe53207cdc8ee008f023e",
+    "changed": true,
+    "path": "/home/minidc/eval-league/v2/schedule.json"
+  },
+  "schedule_note": "schedule.json is rewritten by the formal v2-eval-discover timer; it is reported separately and is never written by historical diagnostics",
+  "schema": "pa3-v2-history-protected-verification-v1",
+  "training": {
+    "head": "da35700f75c95833b0e8250d7b4b04e11320f8b7",
+    "status_porcelain": "",
+    "stop_present": true,
+    "worktree": "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix"
+  },
+  "unchanged": true,
+  "writes_by_historical_diagnostics": 0
+}

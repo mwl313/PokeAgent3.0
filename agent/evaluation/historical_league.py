@@ -33,6 +33,8 @@ RR_PAIR_SCHEMA = "pa3-v2-history-pair-v1"
 RR_SHADOW_SCHEMA = "pa3-v2-history-opponent-plan-v1"
 RR_GATE_SCHEMA = "pa3-v2-history-gate-report-v1"
 RR_INCREMENTAL_SCHEMA = "pa3-v2-history-incremental-plan-v1"
+RR_RATING_SCHEMA = "pa3-v2-bradley-terry-mm-v2"
+RR_RUN_REPORT_SCHEMA = "pa3-v2-history-run-report-v2"
 RR_PANEL_VERSION = "pa3-history-diagnostic-panel-v1"
 RR_SEED_DOMAIN = "pa3-history-diagnostic-v1"
 RR_SEED = 20261017
@@ -45,6 +47,9 @@ STALE_CLOCK_GAP_MATCHES = 400000
 DEFAULT_RESERVE_GIB = 12.0
 DEFAULT_FORMAL_ROOT = Path("/home/minidc/eval-league/v2")
 DEFAULT_RR_ROOT = Path("/home/minidc/eval-league/roundrobin/v1")
+DEFAULT_RATING_ITERATIONS = 2000
+DEFAULT_RATING_TOLERANCE = 1e-10
+DEFAULT_BOOTSTRAP_DRAWS = 500
 
 
 def canonical_json(value) -> str:
@@ -417,48 +422,225 @@ def summary_ci_for(summary, policy_id: str):
     return [1.0 - high, 1.0 - low]
 
 
-def bradley_terry(summaries, entries, *, iterations: int = 200) -> dict[str, dict]:
-    ids = [entry["id"] for entry in entries]
-    results = {}
-    for summary in summaries:
-        if summary["status"] != "success":
+def _bt_adjacency(stats, ids):
+    """Aggregate (left, right, score, games) rows into an adjacency map.
+
+    Repeated rows are accumulated rather than overwritten.  This matters for
+    pair-cluster bootstrap resampling, where the same fixture can be drawn
+    more than once.
+    """
+    known = set(ids)
+    adjacency = {policy_id: {} for policy_id in ids}
+    for left, right, score, games in stats:
+        games = int(games)
+        if left == right or games <= 0 or left not in known or right not in known:
             continue
-        left, right = summary["left_id"], summary["right_id"]
-        results[(left, right)] = (summary["left_score"], summary["games"])
-        results[(right, left)] = (summary["right_score"], summary["games"])
+        score = min(1.0, max(0.0, float(score)))
+        wins = score * games
+        for policy_id, opponent_id, value in (
+                (left, right, wins), (right, left, games - wins)):
+            row = adjacency[policy_id].setdefault(opponent_id, [0.0, 0])
+            row[0] += value
+            row[1] += games
+    return adjacency
+
+
+def _bt_log_likelihood(adjacency, strength) -> float:
+    """Bernoulli quasi-likelihood with draws contributing half a win."""
+    total = 0.0
+    seen = set()
+    for policy_id, opponents in adjacency.items():
+        for opponent_id, (wins, games) in opponents.items():
+            key = canonical_pair(policy_id, opponent_id)
+            if key in seen:
+                continue
+            seen.add(key)
+            p = strength[policy_id] / (strength[policy_id] + strength[opponent_id])
+            p = min(1.0 - 1e-15, max(1e-15, p))
+            score = wins / games
+            total += games * (score * math.log(p) + (1.0 - score) * math.log(1.0 - p))
+    return total
+
+
+def _bt_fit_stats(stats, ids, *, iterations=DEFAULT_RATING_ITERATIONS,
+                  tolerance=DEFAULT_RATING_TOLERANCE):
+    """Fit Bradley-Terry strengths by the correct MM fixed-point iteration.
+
+    ``strength_i <- strength_i * W_i / sum_j n_ij strength_i / (strength_i +
+    strength_j)``.  The previous implementation dropped the leading
+    ``strength_i`` factor; because the denominator already contains it, that
+    changed the fixed point and therefore the published ranking.
+
+    Strengths are renormalised to a geometric mean of one each iteration, so
+    the reported rating is ``log(strength)`` relative to the panel average.
+    Convergence is checked on both the maximum log-parameter change and the
+    quasi-likelihood.
+    """
+    ids = list(ids)
+    adjacency = _bt_adjacency(stats, ids)
     strength = {policy_id: 1.0 for policy_id in ids}
-    for _ in range(int(iterations)):
+    previous_ll = None
+    iterations_run = 0
+    max_delta = float("inf")
+    ll = _bt_log_likelihood(adjacency, strength) if adjacency else 0.0
+    for iteration in range(1, int(iterations) + 1):
         updated = {}
         for policy_id in ids:
+            current = strength[policy_id]
             numerator = denominator = 0.0
-            for opponent in ids:
-                if opponent == policy_id:
-                    continue
-                row = results.get((policy_id, opponent))
-                if not row:
-                    continue
-                score, games = row
-                numerator += games * score
-                denominator += games * (strength[policy_id]
-                                        / (strength[policy_id] + strength[opponent]))
-            updated[policy_id] = numerator / denominator if denominator > 0 else strength[policy_id]
+            for opponent_id, (wins, games) in adjacency[policy_id].items():
+                numerator += wins
+                denominator += games * current / (current + strength[opponent_id])
+            # The MM update must retain the previous strength factor.
+            updated[policy_id] = current * numerator / denominator if denominator > 0 else current
         positive = [value for value in updated.values() if value > 0]
         if not positive:
             break
         geometric = math.exp(sum(math.log(value) for value in positive) / len(positive))
-        strength = {policy_id: value / geometric for policy_id, value in updated.items()}
+        new_strength = {
+            policy_id: (value / geometric if value > 0 else 1.0 / len(ids))
+            for policy_id, value in updated.items()
+        }
+        max_delta = max(
+            abs(math.log(new_strength[policy_id] / strength[policy_id]))
+            for policy_id in ids
+            if strength[policy_id] > 0 and new_strength[policy_id] > 0
+        )
+        strength = new_strength
+        ll = _bt_log_likelihood(adjacency, strength) if adjacency else 0.0
+        iterations_run = iteration
+        if max_delta <= tolerance and previous_ll is not None:
+            if abs(ll - previous_ll) <= tolerance * max(1.0, abs(ll)):
+                break
+        previous_ll = ll
+    games = {
+        policy_id: sum(row[1] for row in adjacency[policy_id].values())
+        for policy_id in ids
+    }
     ordered = sorted(ids, key=lambda policy_id: (-strength[policy_id], policy_id))
-    return {
+    ratings = {
         policy_id: {
             "rating": math.log(strength[policy_id]) if strength[policy_id] > 0 else 0.0,
             "strength": strength[policy_id],
             "rank": index + 1,
-            "games": sum(
-                row[1] for (left, _right), row in results.items() if left == policy_id
-            ),
+            "games": games[policy_id],
         }
         for index, policy_id in enumerate(ordered)
     }
+    return ratings, {
+        "schema": RR_RATING_SCHEMA,
+        "iterations": iterations_run,
+        "max_log_delta": max_delta,
+        "log_likelihood": ll,
+        "converged": bool(max_delta <= tolerance),
+        "normalisation": "geometric_mean_one",
+        "draws": "half-win",
+        "pairs": len(stats),
+        "policies": len(ids),
+    }
+
+
+def _bt_stats(summaries) -> list[tuple[str, str, float, int]]:
+    stats = []
+    for summary in summaries:
+        if summary.get("status") != "success":
+            continue
+        games = int(summary.get("games", 0) or 0)
+        if games <= 0:
+            continue
+        stats.append((
+            summary["left_id"],
+            summary["right_id"],
+            float(summary["left_score"]),
+            games,
+        ))
+    return stats
+
+
+def _percentile(values, fraction):
+    ordered = sorted(values)
+    if not ordered:
+        return None
+    index = min(len(ordered) - 1, max(0, int(round(fraction * (len(ordered) - 1)))))
+    return ordered[index]
+
+
+def bradley_terry_fit(summaries, entries, *, iterations=DEFAULT_RATING_ITERATIONS,
+                      tolerance=DEFAULT_RATING_TOLERANCE, bootstrap_draws=0,
+                      seed=RR_MASTER_SEED) -> dict:
+    """Corrected Bradley-Terry fit plus optional pair-cluster uncertainty.
+
+    The bootstrap resamples whole pair summaries (not individual games), so
+    seat-swapped games keep their within-pair correlation.  This is a
+    descriptive diagnostic: it cannot promote a policy or spend formal alpha.
+    """
+    ids = [entry["id"] for entry in entries]
+    stats = _bt_stats(summaries)
+    ratings, diagnostics = _bt_fit_stats(
+        stats, ids, iterations=iterations, tolerance=tolerance)
+    pairwise = {}
+    uncertainty = None
+    if bootstrap_draws and stats:
+        rng = random.Random(int(seed))
+        samples = {policy_id: [] for policy_id in ids}
+        ranks = {policy_id: [] for policy_id in ids}
+        for _ in range(int(bootstrap_draws)):
+            resampled = [stats[rng.randrange(len(stats))] for _ in stats]
+            draw, _draw_diagnostics = _bt_fit_stats(
+                resampled, ids, iterations=min(int(iterations), 500),
+                tolerance=max(float(tolerance), 1e-9))
+            for policy_id in ids:
+                samples[policy_id].append(draw[policy_id]["rating"])
+                ranks[policy_id].append(draw[policy_id]["rank"])
+        for policy_id in ids:
+            ratings[policy_id]["ci95_low"] = _percentile(samples[policy_id], 0.025)
+            ratings[policy_id]["ci95_high"] = _percentile(samples[policy_id], 0.975)
+            ratings[policy_id]["rank_ci95_low"] = _percentile(ranks[policy_id], 0.025)
+            ratings[policy_id]["rank_ci95_high"] = _percentile(ranks[policy_id], 0.975)
+        ordered = sorted(ids, key=lambda policy_id: ratings[policy_id]["rank"])
+        for index, policy_id in enumerate(ordered):
+            if index + 1 == len(ordered):
+                ratings[policy_id]["next_id"] = None
+                ratings[policy_id]["p_above_next"] = None
+                ratings[policy_id]["difference_supported"] = None
+                continue
+            next_id = ordered[index + 1]
+            above = sum(
+                1.0 if a > b else 0.5 if a == b else 0.0
+                for a, b in zip(samples[policy_id], samples[next_id])
+            ) / len(samples[policy_id])
+            ratings[policy_id]["next_id"] = next_id
+            ratings[policy_id]["p_above_next"] = above
+            ratings[policy_id]["difference_supported"] = above >= 0.975
+            pairwise[canonical_pair(policy_id, next_id)] = {
+                "higher_id": policy_id,
+                "lower_id": next_id,
+                "p_higher_beats_lower": above,
+                "supported": above >= 0.975,
+            }
+        uncertainty = {
+            "method": "pair-cluster bootstrap",
+            "resampling_unit": "pair summary (seat-swapped games kept together)",
+            "draws": int(bootstrap_draws),
+            "seed": int(seed),
+            "interval": "percentile 95%",
+        }
+    return {
+        "schema": RR_RATING_SCHEMA,
+        "ratings": ratings,
+        "diagnostics": diagnostics,
+        "uncertainty": uncertainty,
+        "pairwise": pairwise,
+    }
+
+
+def bradley_terry(summaries, entries, *, iterations=DEFAULT_RATING_ITERATIONS,
+                  tolerance=DEFAULT_RATING_TOLERANCE) -> dict[str, dict]:
+    """Backwards-compatible point-estimate wrapper around ``bradley_terry_fit``."""
+    return bradley_terry_fit(
+        summaries, entries, iterations=iterations, tolerance=tolerance,
+        bootstrap_draws=0)["ratings"]
+
 
 
 def majority_edges(summaries) -> dict[tuple[str, str], dict]:
@@ -622,19 +804,55 @@ def write_matrix(root, summaries, entries) -> Path:
     return path
 
 
-def write_ratings(root, summaries, entries) -> Path:
-    ratings = bradley_terry(summaries, entries)
+def write_ratings(root, summaries, entries, *,
+                  bootstrap_draws=DEFAULT_BOOTSTRAP_DRAWS) -> dict:
+    fit = bradley_terry_fit(
+        summaries, entries, bootstrap_draws=bootstrap_draws)
+    ratings = fit["ratings"]
     by_id = _entry_map(entries)
     path = Path(root) / "ratings.csv"
     with path.open("w", newline="") as handle:
         writer = csv.writer(handle)
-        writer.writerow(["rank", "policy_id", "committed_matches", "model_digest",
-                         "rating", "strength", "games"])
+        writer.writerow([
+            "rank", "policy_id", "committed_matches", "model_digest",
+            "rating", "strength", "games", "ci95_low", "ci95_high",
+            "rank_ci95_low", "rank_ci95_high", "next_id", "p_above_next",
+            "difference_supported",
+        ])
         for policy_id, row in sorted(ratings.items(), key=lambda item: item[1]["rank"]):
-            writer.writerow([row["rank"], policy_id, clock(by_id[policy_id]),
-                             by_id[policy_id]["model_digest"], row["rating"],
-                             row["strength"], row["games"]])
-    return path
+            writer.writerow([
+                row["rank"], policy_id, clock(by_id[policy_id]),
+                by_id[policy_id]["model_digest"], row["rating"], row["strength"],
+                row["games"], row.get("ci95_low"), row.get("ci95_high"),
+                row.get("rank_ci95_low"), row.get("rank_ci95_high"),
+                row.get("next_id"), row.get("p_above_next"),
+                row.get("difference_supported"),
+            ])
+    confidence_path = Path(root) / "ranking_confidence.csv"
+    with confidence_path.open("w", newline="") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(["higher_id", "lower_id", "p_higher_beats_lower", "supported"])
+        for key, row in sorted(fit["pairwise"].items()):
+            writer.writerow([
+                row["higher_id"], row["lower_id"],
+                row["p_higher_beats_lower"], row["supported"],
+            ])
+    atomic_json(Path(root) / "ratings.json", {
+        "schema": RR_RATING_SCHEMA,
+        "ratings": ratings,
+        "diagnostics": fit["diagnostics"],
+        "uncertainty": fit["uncertainty"],
+        "pairwise": fit["pairwise"],
+        "formal_promotion_authority": False,
+        "note": ("descriptive diagnostic only; formal promotion is owned by the "
+                 "V2 evaluation league and alpha ledger"),
+    })
+    return {
+        "path": str(path),
+        "ranking_confidence": str(confidence_path),
+        "diagnostics": fit["diagnostics"],
+        "uncertainty": fit["uncertainty"],
+    }
 
 
 def write_cycles(root, entries, summaries) -> Path:
@@ -705,18 +923,219 @@ def write_champion_validation(root, champion_id, summaries, entries) -> Path:
     return path
 
 
+def validate_run(summaries, entries, plan=None) -> dict:
+    """Validate pair summaries against the frozen registry and pair plan."""
+    by_id = _entry_map(entries)
+    expected_pairs = set()
+    if plan is not None:
+        expected_pairs = {row["pair_key"] for row in plan["pairs"]}
+    seen = set()
+    errors = []
+    successes = 0
+    games = 0
+    tier_pairs = {"basic": 0, "fine": 0}
+    tier_games = {"basic": 0, "fine": 0}
+    timestamps = []
+    for summary in summaries:
+        key = summary.get("pair_key")
+        if key in seen:
+            errors.append(f"duplicate pair summary: {key}")
+            continue
+        seen.add(key)
+        left = by_id.get(summary.get("left_id"))
+        right = by_id.get(summary.get("right_id"))
+        if left is None or right is None:
+            errors.append(f"unknown policy in pair {key}")
+            continue
+        if summary.get("left_model_digest") != left["model_digest"]:
+            errors.append(f"left model digest mismatch: {key}")
+        if summary.get("right_model_digest") != right["model_digest"]:
+            errors.append(f"right model digest mismatch: {key}")
+        if canonical_pair(summary["left_id"], summary["right_id"]) != key:
+            errors.append(f"pair key does not match ids: {key}")
+        expected_games = 2 * int(summary.get("fixture_pairs", 0) or 0)
+        if int(summary.get("games", -1)) != expected_games:
+            errors.append(f"game count mismatch: {key}")
+        if summary.get("status") != "success":
+            errors.append(f"non-success pair summary: {key}")
+            continue
+        if int(summary.get("matches", -1)) != expected_games:
+            errors.append(f"receipt match count mismatch: {key}")
+        if int(summary.get("paired_fixtures", -1)) != int(summary["fixture_pairs"]):
+            errors.append(f"paired fixture count mismatch: {key}")
+        successes += 1
+        games += int(summary["games"])
+        tier = summary.get("tier")
+        if tier not in tier_pairs:
+            errors.append(f"unknown tier: {key}")
+        else:
+            tier_pairs[tier] += 1
+            tier_games[tier] += int(summary["games"])
+        if summary.get("evaluated_at"):
+            timestamps.append(summary["evaluated_at"])
+    if plan is not None:
+        missing = sorted(expected_pairs - seen)
+        extra = sorted(seen - expected_pairs)
+        if missing:
+            errors.append(f"{len(missing)} planned pairs have no summary")
+        if extra:
+            errors.append(f"{len(extra)} summaries are not in the plan")
+    arithmetic = pair_arithmetic(
+        entries, (plan or {}).get("champion_id") or entries[0]["id"]) if entries else {}
+    expected_games = arithmetic.get("total_games")
+    complete = (
+        not errors
+        and len(seen) == arithmetic.get("total_pairs")
+        and successes == len(seen)
+        and expected_games is not None
+        and games == expected_games
+    )
+    return {
+        "ok": not errors,
+        "complete": bool(complete),
+        "errors": errors,
+        "unique_pairs": len(seen),
+        "successful_pairs": successes,
+        "total_games": games,
+        "expected_pairs": arithmetic.get("total_pairs"),
+        "expected_games": expected_games,
+        "tier_pairs": tier_pairs,
+        "tier_games": tier_games,
+        "first_evaluated_at": min(timestamps) if timestamps else None,
+        "last_evaluated_at": max(timestamps) if timestamps else None,
+    }
+
+
+def write_run_report(root, summaries, entries, plan=None, *,
+                     ratings_meta=None) -> dict:
+    root = Path(root)
+    validation = validate_run(summaries, entries, plan)
+    by_id = _entry_map(entries)
+    champion = next(
+        (row for row in entries if row["id"] == (plan or {}).get("champion_id")), None)
+    latest = next(
+        (row for row in entries if row["id"] == (plan or {}).get("latest_id")), None)
+    matrix = root / "matrix.csv"
+    registry = root / "registry.snapshot.json"
+    report = {
+        "schema": RR_RUN_REPORT_SCHEMA,
+        "state": "FULL_COMPLETE" if validation["complete"] else "INCOMPLETE",
+        "generated_at": time.time(),
+        "generated_at_kst": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "policies": len(entries),
+        "distinct_model_digests": len({row["model_digest"] for row in entries}),
+        "pairs_total": validation["expected_pairs"],
+        "pairs_completed": validation["successful_pairs"],
+        "games_total": validation["total_games"],
+        "games_expected": validation["expected_games"],
+        "tier_pairs": validation["tier_pairs"],
+        "tier_games": validation["tier_games"],
+        "first_evaluated_at": validation["first_evaluated_at"],
+        "last_evaluated_at": validation["last_evaluated_at"],
+        "champion_id": (plan or {}).get("champion_id"),
+        "champion_clock": clock(champion) if champion else None,
+        "latest_id": (plan or {}).get("latest_id"),
+        "latest_clock": clock(latest) if latest else None,
+        "panel_version": RR_PANEL_VERSION,
+        "seed_domain": RR_SEED_DOMAIN,
+        "rating_schema": RR_RATING_SCHEMA,
+        "rating_meta": ratings_meta or {},
+        "validation": validation,
+        "provenance": {
+            "registry_snapshot": str(registry),
+            "registry_snapshot_sha256": sha256_file(registry) if registry.is_file() else None,
+            "matrix": str(matrix),
+            "matrix_sha256": sha256_file(matrix) if matrix.is_file() else None,
+        },
+        "formal_promotion_authority": False,
+        "alpha_spent": 0,
+        "note": ("FULL_COMPLETE describes the immutable 435-pair diagnostic grid. "
+                 "It does not promote policies, spend formal alpha or change the "
+                 "official champion."),
+    }
+    atomic_json(root / "run_report.json", report)
+    lines = [
+        "# AHL v2 — FULL_COMPLETE historical round-robin report",
+        "",
+        f"State: **{report['state']}**  ",
+        f"Generated: {report['generated_at_kst']}",
+        "",
+        "> Diagnostic only. This report has no promotion authority and spent zero",
+        "> formal alpha. The official champion pointer and formal evaluation",
+        "> schedule are owned by the V2 evaluation league.",
+        "",
+        "| Item | Value |",
+        "|---|---|",
+        f"| Policies | {report['policies']} ({report['distinct_model_digests']} distinct digests) |",
+        f"| Pairs | {report['pairs_completed']}/{report['pairs_total']} |",
+        f"| Games | {report['games_total']:,}/{report['games_expected']:,} |",
+        f"| Basic pairs / games | {report['tier_pairs']['basic']} / {report['tier_games']['basic']:,} |",
+        f"| Fine pairs / games | {report['tier_pairs']['fine']} / {report['tier_games']['fine']:,} |",
+        f"| Champion at run | `{report['champion_id']}` |",
+        f"| Latest at run | `{report['latest_id']}` |",
+        f"| Evaluated window | {report['first_evaluated_at']} → {report['last_evaluated_at']} |",
+        f"| Registry snapshot SHA256 | `{report['provenance']['registry_snapshot_sha256']}` |",
+        f"| Matrix SHA256 | `{report['provenance']['matrix_sha256']}` |",
+        f"| Formal alpha spent | 0 |",
+        "",
+        "## Validation",
+        "",
+        f"- Matrix/registry validation: **{'PASS' if validation['ok'] else 'FAIL'}**",
+        f"- Completeness: **{'PASS' if validation['complete'] else 'FAIL'}**",
+        f"- Unique pair summaries: {validation['unique_pairs']}",
+        f"- Duplicate/missing/identity errors: {len(validation['errors'])}",
+        "",
+    ]
+    if validation["errors"]:
+        lines.append("### Errors")
+        lines.append("")
+        lines.extend(f"- {error}" for error in validation["errors"][:50])
+        lines.append("")
+    lines.extend([
+        "## Bradley-Terry correction",
+        "",
+        "The smoke-era `ratings.csv` used `updated = numerator / denominator`,",
+        "which drops the previous-strength factor required by the MM update.",
+        "The corrected fit uses `updated = strength * numerator / denominator`,",
+        "normalises the geometric mean to one, and reports pair-cluster bootstrap",
+        "uncertainty. Smoke-era rating conclusions are superseded.",
+        "",
+        "## Evidence",
+        "",
+        "- `matrix.csv` — one row per immutable pair summary (435 rows for the complete grid)",
+        "- `ratings.csv` / `ratings.json` — corrected descriptive ratings and uncertainty",
+        "- `ranking_confidence.csv` — adjacent-rank pair-cluster bootstrap confidence",
+        "- `receipts/pairs/*.json` — immutable per-pair evidence (not rewritten)",
+        "",
+    ])
+    (root / "FULL_COMPLETE.md").write_text("\n".join(lines) + "\n")
+    return report
+
+
 def write_reports(root, entries, champion_id) -> dict:
     summaries = load_pair_summaries(root)
+    plan = None
+    plan_path = Path(root) / "pair_plan.json"
+    if plan_path.is_file():
+        plan = read_json(plan_path, None)
     matrix = write_matrix(root, summaries, entries)
     ratings = write_ratings(root, summaries, entries)
     cycles = write_cycles(root, entries, summaries)
     validation = write_champion_validation(root, champion_id, summaries, entries)
+    run_report = write_run_report(
+        root, summaries, entries, plan, ratings_meta=ratings)
     return {
         "summaries": len(summaries),
         "matrix": str(matrix),
-        "ratings": str(ratings),
+        "ratings": str(ratings["path"]),
+        "ranking_confidence": str(ratings["ranking_confidence"]),
         "cycles": str(cycles),
         "champion_validation": str(validation),
+        "run_report": str(Path(root) / "run_report.json"),
+        "full_complete": str(Path(root) / "FULL_COMPLETE.md"),
+        "state": run_report["state"],
+        "rating_diagnostics": ratings["diagnostics"],
+        "rating_uncertainty": ratings["uncertainty"],
     }
 
 
@@ -953,12 +1372,28 @@ def build_shadow_plan(entries, summaries, *, reference_id, root=DEFAULT_RR_ROOT,
     return plan
 
 
-def next_full_boundary(committed_matches: int, *, interval: int = 200000) -> int:
+def latest_full_boundary(committed_matches: int, *, interval: int = 200000) -> int:
+    """Return the most recent nominal milestone at or below the checkpoint.
+
+    This is the overshoot-aware direction.  The old ``next_full_boundary``
+    returned the *following* boundary (or the current value when exact) and
+    then compared the checkpoint against that same derived value, so an
+    overshooting checkpoint could never satisfy its milestone.
+    """
     committed = int(committed_matches)
     interval = int(interval)
-    if committed % interval == 0:
-        return committed
-    return ((committed // interval) + 1) * interval
+    if committed < interval:
+        return 0
+    return (committed // interval) * interval
+
+
+def next_full_boundary(committed_matches: int, *, interval: int = 200000) -> int:
+    """Compatibility alias for the most recent crossed milestone."""
+    return latest_full_boundary(committed_matches, interval=interval)
+
+
+def milestone_satisfied(committed_matches: int, milestone: int) -> bool:
+    return int(committed_matches) >= int(milestone)
 
 
 def plan_incremental_anchors(entries, summaries, *, reference_id, promotions_dir=None,
@@ -991,9 +1426,14 @@ def plan_incremental_anchors(entries, summaries, *, reference_id, promotions_dir
 
 def milestone_hook(entries, summaries, *, promotions_dir=None,
                    interval: int = 200000) -> dict:
+    """Overshoot-aware milestone plan (single checkpoint, no persistence).
+
+    The durable, idempotent scheduler lives in ``historical_schedule``.  This
+    helper remains for the incremental-plan report and unit tests.
+    """
     latest = max(entries, key=lambda entry: (clock(entry), entry["id"]))
-    boundary = next_full_boundary(clock(latest), interval=interval)
-    available = clock(latest) >= boundary
+    boundary = latest_full_boundary(clock(latest), interval=interval)
+    available = boundary > 0 and milestone_satisfied(clock(latest), boundary)
     planned = plan_incremental_anchors(
         entries, summaries, reference_id=latest["id"], promotions_dir=promotions_dir)
     payload = {
@@ -1002,7 +1442,12 @@ def milestone_hook(entries, summaries, *, promotions_dir=None,
         "reason": "milestone_available" if available else "no_new_full_milestone",
         "latest_policy_id": latest["id"],
         "latest_clock": clock(latest),
+        "milestone_clock": boundary,
+        "milestone_overshoot_matches": clock(latest) - boundary if boundary else 0,
         "next_full_boundary": boundary,
+        "next_strict_boundary": (
+            (clock(latest) // int(interval) + 1) * int(interval)
+            if int(interval) > 0 else clock(latest)),
         "max_anchors": MAX_ACTIVE_ANCHORS,
         "games_per_anchor": ANCHOR_GAMES,
         "planned_games": sum(row["target_games"] for row in planned) if available else 0,
@@ -1012,6 +1457,88 @@ def milestone_hook(entries, summaries, *, promotions_dir=None,
         "activation": "NOT_TRIGGERED_WHILE_TRAINING_PAUSED",
     }
     return payload
+
+
+def retire_shadow_plan(root=DEFAULT_RR_ROOT, *, reference_root=None,
+                       retired_at=None) -> dict:
+    """Preserve the smoke-era shadow plan and make it non-activatable.
+
+    The original bytes are copied to ``opponent_plan.smoke-20261017.json`` when
+    this runs for the first time.  ``opponent_plan.json`` is then replaced by a
+    retirement record that keeps provenance and cannot be mistaken for an
+    active production opponent manifest.
+    """
+    root = Path(root)
+    path = root / "opponent_plan.json"
+    if not path.is_file():
+        return {"status": "MISSING", "path": str(path)}
+    original = path.read_bytes()
+    original_sha = hashlib.sha256(original).hexdigest()
+    try:
+        plan = json.loads(original)
+    except json.JSONDecodeError:
+        plan = {}
+    archived = root / "opponent_plan.smoke-20261017.json"
+    if not archived.is_file():
+        archived.write_bytes(original)
+    if plan.get("status") == "OBSOLETE":
+        return {
+            "status": "OBSOLETE",
+            "path": str(path),
+            "archived": str(archived),
+            "original_sha256": plan.get("provenance", {}).get(
+                "original_sha256", original_sha),
+            "activatable": False,
+        }
+    referral = plan.get("reference_policy", {})
+    evidence = plan.get("evidence", {})
+    retirement = {
+        "schema": plan.get("schema", RR_SHADOW_SCHEMA),
+        "status": "OBSOLETE",
+        "activatable": False,
+        "shadow_only": True,
+        "history_rows_target": 0,
+        "history_probability": 0.0,
+        "retired_at": retired_at if retired_at is not None else time.time(),
+        "retired_at_kst": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "obsolete_reason": (
+            "computed from 45 smoke-era pair summaries and the 2,600,960 champion; "
+            "historical PPO training is deferred indefinitely by owner decision"
+        ),
+        "superseded_by": "diagnostic scheduling only (historical_schedule)",
+        "activation": "FORBIDDEN",
+        "provenance": {
+            "original_path": str(path),
+            "archived_path": str(archived),
+            "original_sha256": original_sha,
+            "archived_sha256": sha256_file(archived),
+            "original_status": plan.get("status"),
+            "original_reference_policy_id": referral.get("policy_id"),
+            "original_reference_clock": referral.get("committed_matches"),
+            "original_pair_summaries": evidence.get("pair_summaries"),
+            "original_plan_sha256": plan.get("plan_sha256"),
+            "original_opponents": len(plan.get("opponents", [])),
+        },
+        "guard": ("load_opponent_plan(root, for_training=True) must reject this "
+                  "record; no production PPO configuration may reference it"),
+    }
+    atomic_json(path, retirement)
+    atomic_json(root / "opponent_plan_retirement.json", retirement)
+    return retirement
+
+
+def load_opponent_plan(root=DEFAULT_RR_ROOT, *, for_training=False) -> dict:
+    """Load the shadow plan with an explicit production-activation guard."""
+    plan = read_json(Path(root) / "opponent_plan.json", None)
+    if not plan:
+        raise ValueError("opponent plan is missing")
+    if for_training:
+        raise PermissionError(
+            "historical opponent plans are diagnostic only; production PPO must "
+            "remain 100% current-vs-current")
+    if plan.get("status") == "OBSOLETE" or plan.get("activatable") is False:
+        raise PermissionError("opponent plan is obsolete and non-activatable")
+    return plan
 
 
 def protected_state(root=DEFAULT_RR_ROOT, formal_root=DEFAULT_FORMAL_ROOT) -> dict:

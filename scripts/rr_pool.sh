@@ -1,32 +1,64 @@
 #!/usr/bin/env bash
 # rr_pool.sh [N] — run the AHL v2 round-robin grid with N disjoint slice workers.
-# Each worker: 2 threads, pinned to 2 distinct physical cores (CPUs 0..39 are the
-# first SMT thread of each core on this box), own lock, shared content-addressed
-# receipt store. Safe to interrupt: receipts are cached and workers skip pairs
-# that already have a success summary.
+#
+# CPU affinity is derived from the live sysfs topology by
+# scripts/ahl_v2_resource_gate.py. Workers never use the formal evaluation
+# CPUs (4-7) or their SMT siblings, and the pool pauses when formal evaluation
+# has pending work or the disk/memory guard is breached.
+#
+# Each worker: low priority, CPU-only, 2 threads, own lock, shared
+# content-addressed receipt store. Safe to interrupt: successes are cached and
+# workers skip pairs that already have a compatible success summary.
 set -u
 
-N=${1:-16}
-W=/home/minidc/Desktop/PokeAgent3.0-AHL-v2
-PY=/home/minidc/Desktop/PokeAgent3.0/.venv/bin/python
-ROOT=/home/minidc/eval-league/roundrobin/v1
+REQUESTED=${1:-0}
+W=$(cd "$(dirname "$0")/.." && pwd)
+PY=${PA3_PYTHON:-/home/minidc/Desktop/PokeAgent3.0/.venv/bin/python}
+ROOT=${AHL_RR_ROOT:-/home/minidc/eval-league/roundrobin/v1}
+FORMAL_ROOT=${AHL_FORMAL_ROOT:-/home/minidc/eval-league/v2}
 STAMP=$(date +%Y%m%d-%H%M%S)
-LOGD=/home/minidc/pa3-ahl-v2/logs/pool-$STAMP
-mkdir -p "$LOGD"
+LOGD=${AHL_LOG_DIR:-/home/minidc/pa3-ahl-v2/logs}/pool-$STAMP
+mkdir -p "$LOGD" || exit 9
 cd "$W" || exit 9
 
 export CUDA_VISIBLE_DEVICES=
 export OMP_NUM_THREADS=2
 export MKL_NUM_THREADS=2
 
-echo "pool start $(date -Is) workers=$N logdir=$LOGD" | tee "$LOGD/summary.txt"
+PPO_FLAG=--ppo-stopped
+if pgrep -f 'run_ddp_ppo.py' >/dev/null 2>&1; then
+  PPO_FLAG=--ppo-running
+fi
+
+GATE=$("$PY" scripts/ahl_v2_resource_gate.py \
+  --root "$ROOT" --formal-root "$FORMAL_ROOT" "$PPO_FLAG" \
+  --mode-b-workers "${REQUESTED:-16}" --format shell) || {
+  echo "resource gate failed; refusing to start workers" | tee "$LOGD/summary.txt"
+  exit 9
+}
+eval "$GATE"
+
+echo "pool start $(date -Is) mode=$GATE_MODE gate=$GATE_STATUS workers=$GATE_WORKERS logdir=$LOGD" \
+  | tee "$LOGD/summary.txt"
+if [ "$GATE_WORKERS" -le 0 ]; then
+  echo "resource gate allows no workers; see $ROOT/resource_gate.json" | tee -a "$LOGD/summary.txt"
+  exit 0
+fi
+
+N=$GATE_WORKERS
+if [ "${REQUESTED:-0}" -gt 0 ] && [ "${REQUESTED:-0}" -lt "$N" ]; then
+  N=$REQUESTED
+fi
 
 pids=()
 for k in $(seq 1 "$N"); do
-  a=$(( (k - 1) * 2 ))
-  b=$(( a + 1 ))
-  taskset -c "$a,$b" "$PY" scripts/v2_history_roundrobin.py \
-    --root "$ROOT" --pair-slice "$k/$N" --lock-name "worker-$k.lock" --no-reports \
+  mask=${GATE_MASKS[$((k - 1))]}
+  if [ -z "$mask" ]; then
+    continue
+  fi
+  taskset -c "$mask" "$PY" scripts/v2_history_roundrobin.py \
+    --root "$ROOT" --formal-root "$FORMAL_ROOT" \
+    --pair-slice "$k/$N" --lock-name "worker-$k.lock" --no-reports \
     run > "$LOGD/w$k.log" 2>&1 &
   pids+=($!)
 done
@@ -38,10 +70,13 @@ for pid in "${pids[@]}"; do
 done
 echo "workers finished $(date -Is) failed=$fail" | tee -a "$LOGD/summary.txt"
 
-# coordinator: regenerate the aggregate reports once, then the gate report
-"$PY" scripts/v2_history_roundrobin.py --root "$ROOT" report > "$LOGD/report.log" 2>&1
+# Coordinator: regenerate the aggregate reports once, then the gate report.
+"$PY" scripts/v2_history_roundrobin.py --root "$ROOT" --formal-root "$FORMAL_ROOT" \
+  report > "$LOGD/report.log" 2>&1
 rc_report=$?
-"$PY" scripts/v2_history_roundrobin.py --root "$ROOT" gate > "$LOGD/gate.log" 2>&1
+"$PY" scripts/v2_history_roundrobin.py --root "$ROOT" --formal-root "$FORMAL_ROOT" \
+  gate > "$LOGD/gate.log" 2>&1
 rc_gate=$?
 echo "report rc=$rc_report gate rc=$rc_gate" | tee -a "$LOGD/summary.txt"
-echo "$LOGD" > /home/minidc/pa3-ahl-v2/logs/last-pool-dir
+mkdir -p /home/minidc/pa3-ahl-v2/logs 2>/dev/null || true
+echo "$LOGD" > /home/minidc/pa3-ahl-v2/logs/last-pool-dir 2>/dev/null || true

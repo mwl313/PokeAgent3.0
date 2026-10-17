@@ -53,12 +53,18 @@ from agent.evaluation.historical_league import (  # noqa: E402
     milestone_hook,
     pair_game_count,
     protected_state,
+    retire_shadow_plan,
     select_pairs,
     sha256_json,
     summarize_pair,
     write_gate_report,
     write_reports,
     write_status,
+)
+from agent.evaluation.historical_schedule import (  # noqa: E402
+    load_state,
+    schedule_for_snapshot,
+    summary_plan,
 )
 from agent.evaluation.identity import sha256_file  # noqa: E402
 from agent.evaluation.policy_archive import verify_entry  # noqa: E402
@@ -440,15 +446,28 @@ def command_report(args):
     summaries = load_pair_summaries(args.root)
     validation = champion_validation(meta["champion_id"], summaries, entries)
     status = read_json(args.root / "status.json", {}) or {}
-    status.update({"state": status.get("state", "reported"),
-                   "reports": reports,
-                   "champion_validation_summary": {
-                       "valid_opponents": validation["valid_opponents"],
-                       "total_games": validation["total_games"],
-                       "weighted_score": validation["weighted_score"],
-                   }})
+    run_report = read_json(args.root / "run_report.json", {}) or {}
+    complete = run_report.get("state") == "FULL_COMPLETE"
+    status.update({
+        "state": "completed" if complete else status.get("state", "reported"),
+        "pairs_completed": run_report.get("pairs_completed", status.get("pairs_completed", 0)),
+        "pairs_total": run_report.get("pairs_total", status.get("pairs_total", 0)),
+        "games_run": run_report.get("games_total", status.get("games_run", 0)),
+        "full_grid_complete": complete,
+        "reports": reports,
+        "run_report_state": run_report.get("state"),
+        "rating_schema": run_report.get("rating_schema"),
+        "champion_validation_summary": {
+            "valid_opponents": validation["valid_opponents"],
+            "total_games": validation["total_games"],
+            "weighted_score": validation["weighted_score"],
+        },
+    })
     write_status(args.root, status)
     print(json.dumps({"reports": reports,
+                      "state": run_report.get("state"),
+                      "pairs_completed": run_report.get("pairs_completed"),
+                      "games_total": run_report.get("games_total"),
                       "valid_opponents": validation["valid_opponents"],
                       "total_games": validation["total_games"],
                       "weighted_score": validation["weighted_score"]},
@@ -495,18 +514,39 @@ def command_shadow(args):
     return 0
 
 
+def command_schedule(args):
+    state = load_state(args.root)
+    payload = schedule_for_snapshot(
+        args.root, args.formal_root,
+        promotions_dir=Path(args.formal_root) / "best_history" / "promotions",
+        state=state)
+    print(json.dumps(summary_plan(payload), indent=2, sort_keys=True))
+    return 0
+
+
+def command_retire_shadow(args):
+    result = retire_shadow_plan(args.root)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0
+
+
 def command_gate(args):
     entries, meta = load_snapshot(args.root)
     summaries = load_pair_summaries(args.root)
     status = read_json(args.root / "status.json", {}) or {}
+    run_report = read_json(args.root / "run_report.json", {}) or {}
     equivalence = read_json(args.root / "equivalence.json", {}) or {}
-    incremental = read_json(args.root / "incremental_plan.json", {}) or {}
+    schedule = read_json(args.root / "milestone_schedule.json", {}) or {}
     shadow = read_json(args.root / "opponent_plan.json", {}) or {}
     plan = build_pair_plan(entries, meta["champion_id"], meta["latest_id"])
     protected = protected_state(args.root, args.formal_root)
     backlog = formal_backlog(args.formal_root)
     free = disk_free_bytes(args.root)
-    stage_a_status = "SMOKE_COMPLETE" if status.get("games_run", 0) > 0 else "IMPLEMENTED_NOT_RUN"
+    complete = run_report.get("state") == "FULL_COMPLETE"
+    stage_a_status = (
+        "FULL_COMPLETE" if complete
+        else "PARTIAL_RESUMABLE" if summaries
+        else "IMPLEMENTED_NOT_RUN")
     stage_a = {
         "status": stage_a_status,
         "registry_snapshot_verified": bool(meta.get("source_registry_sha256")),
@@ -517,11 +557,15 @@ def command_gate(args):
         "harness_equivalence": equivalence.get("status", "NOT_RUN"),
         "harness_identity_match": equivalence.get("identity_match"),
         "harness_games": equivalence.get("games"),
-        "pairs_completed": status.get("pairs_completed", 0),
-        "pairs_total": len(plan["pairs"]),
-        "games_run": status.get("games_run", 0),
-        "full_grid_complete": bool(status.get("full_grid_complete")),
-        "resumable": not bool(status.get("full_grid_complete")),
+        "pairs_completed": run_report.get("pairs_completed", len(summaries)),
+        "pairs_total": run_report.get("pairs_total", len(plan["pairs"])),
+        "games_run": run_report.get("games_total",
+                                    sum(row["games"] for row in summaries)),
+        "full_grid_complete": complete,
+        "run_report_state": run_report.get("state"),
+        "run_report_validation": run_report.get("validation"),
+        "rating_schema": run_report.get("rating_schema"),
+        "resumable": not complete,
         "formal_alpha_spent": 0,
         "formal_alpha_unchanged": not any(
             row["path"].endswith("alpha_budget.json")
@@ -533,33 +577,34 @@ def command_gate(args):
         "nice": os.nice(0),
     }
     stage_b = {
-        "status": "PLANNED" if incremental.get("available") else "IMPLEMENTED_NOT_TRIGGERED",
-        "available": bool(incremental.get("available")),
-        "reason": incremental.get("reason"),
-        "next_full_boundary": incremental.get("next_full_boundary"),
-        "latest_clock": incremental.get("latest_clock"),
-        "max_anchors": incremental.get("max_anchors"),
-        "games_per_anchor": incremental.get("games_per_anchor"),
-        "planned_games": incremental.get("planned_games"),
-        "planned_anchors_if_triggered": len(
-            incremental.get("planned_anchors_if_triggered", [])),
-        "planned_games_if_triggered": sum(
-            row.get("target_games", 0)
-            for row in incremental.get("planned_anchors_if_triggered", [])),
+        "status": schedule.get("state", "IMPLEMENTED_NOT_TRIGGERED"),
+        "action": schedule.get("action"),
+        "latest_clock": schedule.get("latest_clock"),
+        "tier_a_interval": schedule.get("tier_a_interval", 200000),
+        "tier_b_first": schedule.get("tier_b_first", 3800000),
+        "tier_b_interval": schedule.get("tier_b_interval", 1000000),
+        "tier_b_policy_cap": schedule.get("tier_b_policy_cap", 24),
+        "next_tier_a": schedule.get("next_tier_a"),
+        "next_tier_b": schedule.get("next_tier_b"),
+        "due_jobs": len(schedule.get("due", [])),
+        "new_jobs": len(schedule.get("new_jobs", [])),
+        "resumed_jobs": len(schedule.get("resumed_jobs", [])),
+        "stable_anchor_ids": schedule.get("stable_anchor_ids", []),
         "executed": False,
+        "formal_priority_observed": backlog["pending_or_running"],
     }
+    retired = shadow.get("status") == "OBSOLETE"
     stage_c = {
-        "status": "SHADOW_PLAN_READY" if shadow else "NOT_GENERATED",
+        "status": "SHADOW_PLAN_RETIRED" if retired else (
+            "SHADOW_PLAN_READY" if shadow else "NOT_GENERATED"),
         "shadow_only": bool(shadow.get("shadow_only")),
-        "history_rows_target": shadow.get("history_rows_target"),
-        "history_probability": shadow.get("history_probability"),
+        "activatable": False if retired else bool(shadow.get("activatable")),
+        "history_rows_target": 0,
+        "history_probability": 0.0,
         "opponents": len(shadow.get("opponents", [])),
-        "weight_sum": sum(row.get("weight", 0.0) for row in shadow.get("opponents", [])),
-        "weight_cap_ok": all(
-            row.get("weight", 0.0) <= 0.40 + 1e-12
-            for row in shadow.get("opponents", [])),
-        "plan_sha256": shadow.get("plan_sha256"),
-        "activation": shadow.get("activation"),
+        "retired_at": shadow.get("retired_at"),
+        "provenance": shadow.get("provenance"),
+        "activation": "FORBIDDEN",
         "active_training_changed": False,
     }
     stage_d = {
@@ -616,6 +661,8 @@ def build_parser():
     sub.add_parser("report")
     sub.add_parser("incremental")
     sub.add_parser("shadow")
+    sub.add_parser("schedule")
+    sub.add_parser("retire-shadow")
     sub.add_parser("gate")
     return parser
 
@@ -641,6 +688,8 @@ def main(argv=None):
             "report": command_report,
             "incremental": command_incremental,
             "shadow": command_shadow,
+            "schedule": command_schedule,
+            "retire-shadow": command_retire_shadow,
             "gate": command_gate,
         }
         return handlers[args.command](args)

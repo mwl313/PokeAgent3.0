@@ -1,0 +1,591 @@
+{
+  "diagnostics": {
+    "converged": true,
+    "draws": "half-win",
+    "iterations": 62,
+    "log_likelihood": -46376.90584480012,
+    "max_log_delta": 7.281242275515559e-11,
+    "normalisation": "geometric_mean_one",
+    "pairs": 435,
+    "policies": 30,
+    "schema": "pa3-v2-bradley-terry-mm-v2"
+  },
+  "formal_promotion_authority": false,
+  "note": "descriptive diagnostic only; formal promotion is owned by the V2 evaluation league and alpha ledger",
+  "pairwise": {
+    "v2-000000057344-bootstrap|v2-000000102400-da35700f": {
+      "higher_id": "v2-000000102400-da35700f",
+      "lower_id": "v2-000000057344-bootstrap",
+      "p_higher_beats_lower": 1.0,
+      "supported": true
+    },
+    "v2-000000102400-da35700f|v2-000000200704-da35700f": {
+      "higher_id": "v2-000000200704-da35700f",
+      "lower_id": "v2-000000102400-da35700f",
+      "p_higher_beats_lower": 1.0,
+      "supported": true
+    },
+    "v2-000000200704-da35700f|v2-000000303104-da35700f": {
+      "higher_id": "v2-000000303104-da35700f",
+      "lower_id": "v2-000000200704-da35700f",
+      "p_higher_beats_lower": 0.996,
+      "supported": true
+    },
+    "v2-000000303104-da35700f|v2-000000503808-da35700f": {
+      "higher_id": "v2-000000503808-da35700f",
+      "lower_id": "v2-000000303104-da35700f",
+      "p_higher_beats_lower": 0.76,
+      "supported": false
+    },
+    "v2-000000401408-da35700f|v2-000000503808-da35700f": {
+      "higher_id": "v2-000000401408-da35700f",
+      "lower_id": "v2-000000503808-da35700f",
+      "p_higher_beats_lower": 0.604,
+      "supported": false
+    },
+    "v2-000000401408-da35700f|v2-000000602112-da35700f": {
+      "higher_id": "v2-000000602112-da35700f",
+      "lower_id": "v2-000000401408-da35700f",
+      "p_higher_beats_lower": 0.666,
+      "supported": false
+    },
+    "v2-000000602112-da35700f|v2-000000700416-da35700f": {
+      "higher_id": "v2-000000700416-da35700f",
+      "lower_id": "v2-000000602112-da35700f",
+      "p_higher_beats_lower": 0.86,
+      "supported": false
+    },
+    "v2-000000700416-da35700f|v2-000000802816-da35700f": {
+      "higher_id": "v2-000000802816-da35700f",
+      "lower_id": "v2-000000700416-da35700f",
+      "p_higher_beats_lower": 0.784,
+      "supported": false
+    },
+    "v2-000000802816-da35700f|v2-000000876544-da35700f": {
+      "higher_id": "v2-000000876544-da35700f",
+      "lower_id": "v2-000000802816-da35700f",
+      "p_higher_beats_lower": 0.864,
+      "supported": false
+    },
+    "v2-000000876544-da35700f|v2-000000901120-da35700f": {
+      "higher_id": "v2-000000901120-da35700f",
+      "lower_id": "v2-000000876544-da35700f",
+      "p_higher_beats_lower": 0.528,
+      "supported": false
+    },
+    "v2-000000901120-da35700f|v2-000001003520-da35700f": {
+      "higher_id": "v2-000001003520-da35700f",
+      "lower_id": "v2-000000901120-da35700f",
+      "p_higher_beats_lower": 0.806,
+      "supported": false
+    },
+    "v2-000001003520-da35700f|v2-000001101824-da35700f": {
+      "higher_id": "v2-000001101824-da35700f",
+      "lower_id": "v2-000001003520-da35700f",
+      "p_higher_beats_lower": 0.914,
+      "supported": false
+    },
+    "v2-000001101824-da35700f|v2-000001200128-da35700f": {
+      "higher_id": "v2-000001200128-da35700f",
+      "lower_id": "v2-000001101824-da35700f",
+      "p_higher_beats_lower": 0.998,
+      "supported": true
+    },
+    "v2-000001200128-da35700f|v2-000001302528-da35700f": {
+      "higher_id": "v2-000001302528-da35700f",
+      "lower_id": "v2-000001200128-da35700f",
+      "p_higher_beats_lower": 0.956,
+      "supported": false
+    },
+    "v2-000001302528-da35700f|v2-000001400832-da35700f": {
+      "higher_id": "v2-000001400832-da35700f",
+      "lower_id": "v2-000001302528-da35700f",
+      "p_higher_beats_lower": 0.998,
+      "supported": true
+    },
+    "v2-000001400832-da35700f|v2-000001503232-da35700f": {
+      "higher_id": "v2-000001503232-da35700f",
+      "lower_id": "v2-000001400832-da35700f",
+      "p_higher_beats_lower": 0.862,
+      "supported": false
+    },
+    "v2-000001503232-da35700f|v2-000001601536-da35700f": {
+      "higher_id": "v2-000001601536-da35700f",
+      "lower_id": "v2-000001503232-da35700f",
+      "p_higher_beats_lower": 0.914,
+      "supported": false
+    },
+    "v2-000001601536-da35700f|v2-000001703936-da35700f": {
+      "higher_id": "v2-000001703936-da35700f",
+      "lower_id": "v2-000001601536-da35700f",
+      "p_higher_beats_lower": 1.0,
+      "supported": true
+    },
+    "v2-000001703936-da35700f|v2-000001802240-da35700f": {
+      "higher_id": "v2-000001802240-da35700f",
+      "lower_id": "v2-000001703936-da35700f",
+      "p_higher_beats_lower": 0.602,
+      "supported": false
+    },
+    "v2-000001802240-da35700f|v2-000001900544-da35700f": {
+      "higher_id": "v2-000001900544-da35700f",
+      "lower_id": "v2-000001802240-da35700f",
+      "p_higher_beats_lower": 0.968,
+      "supported": false
+    },
+    "v2-000001900544-da35700f|v2-000002101248-da35700f": {
+      "higher_id": "v2-000002101248-da35700f",
+      "lower_id": "v2-000001900544-da35700f",
+      "p_higher_beats_lower": 0.594,
+      "supported": false
+    },
+    "v2-000002002944-da35700f|v2-000002101248-da35700f": {
+      "higher_id": "v2-000002002944-da35700f",
+      "lower_id": "v2-000002101248-da35700f",
+      "p_higher_beats_lower": 0.516,
+      "supported": false
+    },
+    "v2-000002002944-da35700f|v2-000002203648-da35700f": {
+      "higher_id": "v2-000002203648-da35700f",
+      "lower_id": "v2-000002002944-da35700f",
+      "p_higher_beats_lower": 0.838,
+      "supported": false
+    },
+    "v2-000002203648-da35700f|v2-000002301952-da35700f": {
+      "higher_id": "v2-000002301952-da35700f",
+      "lower_id": "v2-000002203648-da35700f",
+      "p_higher_beats_lower": 0.564,
+      "supported": false
+    },
+    "v2-000002301952-da35700f|v2-000002703360-da35700f": {
+      "higher_id": "v2-000002703360-da35700f",
+      "lower_id": "v2-000002301952-da35700f",
+      "p_higher_beats_lower": 0.52,
+      "supported": false
+    },
+    "v2-000002400256-da35700f|v2-000002502656-da35700f": {
+      "higher_id": "v2-000002502656-da35700f",
+      "lower_id": "v2-000002400256-da35700f",
+      "p_higher_beats_lower": 0.694,
+      "supported": false
+    },
+    "v2-000002400256-da35700f|v2-000002600960-da35700f": {
+      "higher_id": "v2-000002400256-da35700f",
+      "lower_id": "v2-000002600960-da35700f",
+      "p_higher_beats_lower": 0.608,
+      "supported": false
+    },
+    "v2-000002502656-da35700f|v2-000002764800-da35700f": {
+      "higher_id": "v2-000002764800-da35700f",
+      "lower_id": "v2-000002502656-da35700f",
+      "p_higher_beats_lower": 0.67,
+      "supported": false
+    },
+    "v2-000002600960-da35700f|v2-000002703360-da35700f": {
+      "higher_id": "v2-000002600960-da35700f",
+      "lower_id": "v2-000002703360-da35700f",
+      "p_higher_beats_lower": 0.716,
+      "supported": false
+    }
+  },
+  "ratings": {
+    "v2-000000057344-bootstrap": {
+      "ci95_high": -2.538705152730413,
+      "ci95_low": -2.7610761808595194,
+      "difference_supported": null,
+      "games": 4480,
+      "next_id": null,
+      "p_above_next": null,
+      "rank": 30,
+      "rank_ci95_high": 30,
+      "rank_ci95_low": 30,
+      "rating": -2.6680505198464552,
+      "strength": 0.0693873628293331
+    },
+    "v2-000000102400-da35700f": {
+      "ci95_high": -1.2367733287505032,
+      "ci95_low": -1.4027850757958407,
+      "difference_supported": true,
+      "games": 4864,
+      "next_id": "v2-000000057344-bootstrap",
+      "p_above_next": 1.0,
+      "rank": 29,
+      "rank_ci95_high": 29,
+      "rank_ci95_low": 29,
+      "rating": -1.3135562331424417,
+      "strength": 0.2688622175163063
+    },
+    "v2-000000200704-da35700f": {
+      "ci95_high": -0.7239820657168474,
+      "ci95_low": -0.9571541323534017,
+      "difference_supported": true,
+      "games": 4864,
+      "next_id": "v2-000000102400-da35700f",
+      "p_above_next": 1.0,
+      "rank": 28,
+      "rank_ci95_high": 28,
+      "rank_ci95_low": 28,
+      "rating": -0.8394857753039547,
+      "strength": 0.43193257672952196
+    },
+    "v2-000000303104-da35700f": {
+      "ci95_high": -0.5227531731152354,
+      "ci95_low": -0.715807057326717,
+      "difference_supported": true,
+      "games": 4864,
+      "next_id": "v2-000000200704-da35700f",
+      "p_above_next": 0.996,
+      "rank": 27,
+      "rank_ci95_high": 27,
+      "rank_ci95_low": 24,
+      "rating": -0.6296571769724142,
+      "strength": 0.5327744170412881
+    },
+    "v2-000000401408-da35700f": {
+      "ci95_high": -0.45430290260263123,
+      "ci95_low": -0.6606605194390679,
+      "difference_supported": false,
+      "games": 4864,
+      "next_id": "v2-000000503808-da35700f",
+      "p_above_next": 0.604,
+      "rank": 25,
+      "rank_ci95_high": 27,
+      "rank_ci95_low": 23,
+      "rating": -0.5581503930713033,
+      "strength": 0.5722665537599005
+    },
+    "v2-000000503808-da35700f": {
+      "ci95_high": -0.4999834957613366,
+      "ci95_low": -0.6772597308115018,
+      "difference_supported": false,
+      "games": 4864,
+      "next_id": "v2-000000303104-da35700f",
+      "p_above_next": 0.76,
+      "rank": 26,
+      "rank_ci95_high": 27,
+      "rank_ci95_low": 24,
+      "rating": -0.5768119009940273,
+      "strength": 0.5616862264140847
+    },
+    "v2-000000602112-da35700f": {
+      "ci95_high": -0.4462659514161379,
+      "ci95_low": -0.6102400397220891,
+      "difference_supported": false,
+      "games": 4864,
+      "next_id": "v2-000000401408-da35700f",
+      "p_above_next": 0.666,
+      "rank": 24,
+      "rank_ci95_high": 27,
+      "rank_ci95_low": 22,
+      "rating": -0.5284817561517292,
+      "strength": 0.5894992942822554
+    },
+    "v2-000000700416-da35700f": {
+      "ci95_high": -0.3930702407583825,
+      "ci95_low": -0.5490920312469597,
+      "difference_supported": false,
+      "games": 4864,
+      "next_id": "v2-000000602112-da35700f",
+      "p_above_next": 0.86,
+      "rank": 23,
+      "rank_ci95_high": 25,
+      "rank_ci95_low": 21,
+      "rating": -0.4717008914619462,
+      "strength": 0.6239401108242292
+    },
+    "v2-000000802816-da35700f": {
+      "ci95_high": -0.3497891082502935,
+      "ci95_low": -0.5164623752782299,
+      "difference_supported": false,
+      "games": 4864,
+      "next_id": "v2-000000700416-da35700f",
+      "p_above_next": 0.784,
+      "rank": 22,
+      "rank_ci95_high": 24,
+      "rank_ci95_low": 20,
+      "rating": -0.4350407010237227,
+      "strength": 0.6472383232795784
+    },
+    "v2-000000876544-da35700f": {
+      "ci95_high": -0.29251920236296824,
+      "ci95_low": -0.467389147895819,
+      "difference_supported": false,
+      "games": 4864,
+      "next_id": "v2-000000802816-da35700f",
+      "p_above_next": 0.864,
+      "rank": 21,
+      "rank_ci95_high": 23,
+      "rank_ci95_low": 19,
+      "rating": -0.3647875278211694,
+      "strength": 0.6943441640235926
+    },
+    "v2-000000901120-da35700f": {
+      "ci95_high": -0.29294957821600603,
+      "ci95_low": -0.4476052149195061,
+      "difference_supported": false,
+      "games": 4864,
+      "next_id": "v2-000000876544-da35700f",
+      "p_above_next": 0.528,
+      "rank": 20,
+      "rank_ci95_high": 22,
+      "rank_ci95_low": 19,
+      "rating": -0.3617223013603867,
+      "strength": 0.6964757513580343
+    },
+    "v2-000001003520-da35700f": {
+      "ci95_high": -0.26085104050060154,
+      "ci95_low": -0.3965010930775048,
+      "difference_supported": false,
+      "games": 4864,
+      "next_id": "v2-000000901120-da35700f",
+      "p_above_next": 0.806,
+      "rank": 19,
+      "rank_ci95_high": 21,
+      "rank_ci95_low": 18,
+      "rating": -0.3243553705447564,
+      "strength": 0.7229932662107977
+    },
+    "v2-000001101824-da35700f": {
+      "ci95_high": -0.19261677971680083,
+      "ci95_low": -0.32562531041527665,
+      "difference_supported": false,
+      "games": 4864,
+      "next_id": "v2-000001003520-da35700f",
+      "p_above_next": 0.914,
+      "rank": 18,
+      "rank_ci95_high": 19,
+      "rank_ci95_low": 18,
+      "rating": -0.25757978546446675,
+      "strength": 0.7729199560756306
+    },
+    "v2-000001200128-da35700f": {
+      "ci95_high": -0.042399857083901454,
+      "ci95_low": -0.18911635118140216,
+      "difference_supported": true,
+      "games": 4864,
+      "next_id": "v2-000001101824-da35700f",
+      "p_above_next": 0.998,
+      "rank": 17,
+      "rank_ci95_high": 17,
+      "rank_ci95_low": 16,
+      "rating": -0.11459420398004114,
+      "strength": 0.8917279301410972
+    },
+    "v2-000001302528-da35700f": {
+      "ci95_high": 0.08678144952971013,
+      "ci95_low": -0.08490718294467675,
+      "difference_supported": false,
+      "games": 4864,
+      "next_id": "v2-000001200128-da35700f",
+      "p_above_next": 0.956,
+      "rank": 16,
+      "rank_ci95_high": 17,
+      "rank_ci95_low": 16,
+      "rating": 0.005636699581311574,
+      "strength": 1.005652615663068
+    },
+    "v2-000001400832-da35700f": {
+      "ci95_high": 0.28385434335462767,
+      "ci95_low": 0.10508708296698323,
+      "difference_supported": true,
+      "games": 4864,
+      "next_id": "v2-000001302528-da35700f",
+      "p_above_next": 0.998,
+      "rank": 15,
+      "rank_ci95_high": 15,
+      "rank_ci95_low": 14,
+      "rating": 0.19954077639221154,
+      "strength": 1.2208419899478604
+    },
+    "v2-000001503232-da35700f": {
+      "ci95_high": 0.35293798091180345,
+      "ci95_low": 0.17453078603008515,
+      "difference_supported": false,
+      "games": 4864,
+      "next_id": "v2-000001400832-da35700f",
+      "p_above_next": 0.862,
+      "rank": 14,
+      "rank_ci95_high": 15,
+      "rank_ci95_low": 13,
+      "rating": 0.26300395179556274,
+      "strength": 1.3008318595631374
+    },
+    "v2-000001601536-da35700f": {
+      "ci95_high": 0.43863447297365304,
+      "ci95_low": 0.26053075963817823,
+      "difference_supported": false,
+      "games": 4864,
+      "next_id": "v2-000001503232-da35700f",
+      "p_above_next": 0.914,
+      "rank": 13,
+      "rank_ci95_high": 14,
+      "rank_ci95_low": 13,
+      "rating": 0.3507338077217247,
+      "strength": 1.4201092534768633
+    },
+    "v2-000001703936-da35700f": {
+      "ci95_high": 0.5976530972249005,
+      "ci95_low": 0.45432247945304427,
+      "difference_supported": true,
+      "games": 4864,
+      "next_id": "v2-000001601536-da35700f",
+      "p_above_next": 1.0,
+      "rank": 12,
+      "rank_ci95_high": 12,
+      "rank_ci95_low": 10,
+      "rating": 0.5196706637332337,
+      "strength": 1.681473788200482
+    },
+    "v2-000001802240-da35700f": {
+      "ci95_high": 0.6065816967083612,
+      "ci95_low": 0.45801719422918447,
+      "difference_supported": false,
+      "games": 4864,
+      "next_id": "v2-000001703936-da35700f",
+      "p_above_next": 0.602,
+      "rank": 11,
+      "rank_ci95_high": 12,
+      "rank_ci95_low": 10,
+      "rating": 0.5317548314312835,
+      "strength": 1.7019162658385558
+    },
+    "v2-000001900544-da35700f": {
+      "ci95_high": 0.7654570691591153,
+      "ci95_low": 0.5564512628556382,
+      "difference_supported": false,
+      "games": 4864,
+      "next_id": "v2-000001802240-da35700f",
+      "p_above_next": 0.968,
+      "rank": 10,
+      "rank_ci95_high": 11,
+      "rank_ci95_low": 6,
+      "rating": 0.6388959403103293,
+      "strength": 1.8943882066442153
+    },
+    "v2-000002002944-da35700f": {
+      "ci95_high": 0.7954174054101175,
+      "ci95_low": 0.5583825804909507,
+      "difference_supported": false,
+      "games": 4864,
+      "next_id": "v2-000002101248-da35700f",
+      "p_above_next": 0.516,
+      "rank": 8,
+      "rank_ci95_high": 11,
+      "rank_ci95_low": 5,
+      "rating": 0.662480280900553,
+      "strength": 1.939597119020175
+    },
+    "v2-000002101248-da35700f": {
+      "ci95_high": 0.7751211583923139,
+      "ci95_low": 0.5601986952789633,
+      "difference_supported": false,
+      "games": 4864,
+      "next_id": "v2-000001900544-da35700f",
+      "p_above_next": 0.594,
+      "rank": 9,
+      "rank_ci95_high": 11,
+      "rank_ci95_low": 5,
+      "rating": 0.6579644226885869,
+      "strength": 1.930857920783919
+    },
+    "v2-000002203648-da35700f": {
+      "ci95_high": 0.8612363259487817,
+      "ci95_low": 0.6383398730382676,
+      "difference_supported": false,
+      "games": 4864,
+      "next_id": "v2-000002002944-da35700f",
+      "p_above_next": 0.838,
+      "rank": 7,
+      "rank_ci95_high": 9,
+      "rank_ci95_low": 2,
+      "rating": 0.7496409246434496,
+      "strength": 2.116239990538375
+    },
+    "v2-000002301952-da35700f": {
+      "ci95_high": 0.8809381290534144,
+      "ci95_low": 0.6421031644745651,
+      "difference_supported": false,
+      "games": 4864,
+      "next_id": "v2-000002203648-da35700f",
+      "p_above_next": 0.564,
+      "rank": 6,
+      "rank_ci95_high": 9,
+      "rank_ci95_low": 2,
+      "rating": 0.7604492842671001,
+      "strength": 2.1392371302060456
+    },
+    "v2-000002400256-da35700f": {
+      "ci95_high": 0.911237401265247,
+      "ci95_low": 0.7390133391874165,
+      "difference_supported": false,
+      "games": 4864,
+      "next_id": "v2-000002600960-da35700f",
+      "p_above_next": 0.608,
+      "rank": 3,
+      "rank_ci95_high": 7,
+      "rank_ci95_low": 1,
+      "rating": 0.8109571679821342,
+      "strength": 2.250060642290267
+    },
+    "v2-000002502656-da35700f": {
+      "ci95_high": 0.9383035426272051,
+      "ci95_low": 0.7408871528234492,
+      "difference_supported": false,
+      "games": 4480,
+      "next_id": "v2-000002400256-da35700f",
+      "p_above_next": 0.694,
+      "rank": 2,
+      "rank_ci95_high": 6,
+      "rank_ci95_low": 1,
+      "rating": 0.8428141115966559,
+      "strength": 2.322894672476784
+    },
+    "v2-000002600960-da35700f": {
+      "ci95_high": 0.8911460935660946,
+      "ci95_low": 0.7074702111557631,
+      "difference_supported": false,
+      "games": 14848,
+      "next_id": "v2-000002703360-da35700f",
+      "p_above_next": 0.716,
+      "rank": 4,
+      "rank_ci95_high": 8,
+      "rank_ci95_low": 1,
+      "rating": 0.804142372841262,
+      "strength": 2.2347790694940035
+    },
+    "v2-000002703360-da35700f": {
+      "ci95_high": 0.8459959393359421,
+      "ci95_low": 0.6937451734325863,
+      "difference_supported": false,
+      "games": 4480,
+      "next_id": "v2-000002301952-da35700f",
+      "p_above_next": 0.52,
+      "rank": 5,
+      "rank_ci95_high": 8,
+      "rank_ci95_low": 2,
+      "rating": 0.7662282040592234,
+      "strength": 2.151635399796324
+    },
+    "v2-000002764800-da35700f": {
+      "ci95_high": 0.9797501430464108,
+      "ci95_low": 0.7488833112126798,
+      "difference_supported": false,
+      "games": 4480,
+      "next_id": "v2-000002502656-da35700f",
+      "p_above_next": 0.67,
+      "rank": 1,
+      "rank_ci95_high": 6,
+      "rank_ci95_low": 1,
+      "rating": 0.8800610971941926,
+      "strength": 2.4110470101246273
+    }
+  },
+  "schema": "pa3-v2-bradley-terry-mm-v2",
+  "uncertainty": {
+    "draws": 500,
+    "interval": "percentile 95%",
+    "method": "pair-cluster bootstrap",
+    "resampling_unit": "pair summary (seat-swapped games kept together)",
+    "seed": 20261014
+  }
+}

@@ -1,153 +1,173 @@
-# AHL V2 stages A-C — isolated diagnostics and shadow plan
+# AHL V2 — isolated historical diagnostics (corrected 2026-10-17)
 
-Status: **IMPLEMENTED, BOUNDED SMOKE RUN, SHADOW ONLY**. Historical PPO is not
-active. Stage D is design-only and remains `NO_GO`.
+Status: **IMPLEMENTED · FULL 435-PAIR GRID COMPLETE · DIAGNOSTIC ONLY**.
+Production PPO remains **100% current-vs-current**; historical PPO training is
+**disabled at probability 0.0** and Stage D is `NO_GO`.
+
+> This document supersedes the smoke-era status in `FINAL_REPORT.md`. The
+> authoritative run result is `docs/operations/ahl-v2/results/FULL_COMPLETE.md`
+> and `run_report.json` (435 pairs / 77,184 games). The 45-pair / 5,760-game
+> smoke is preserved as historical evidence only.
 
 ## 1. Ownership and isolation
 
 | Item | Location |
 |---|---|
 | Diagnostic root | `/home/minidc/eval-league/roundrobin/v1` |
-| Code | `agent/evaluation/historical_league.py`, `agent/evaluation/historical_selector.py`, `scripts/v2_history_roundrobin.py` |
-| Tests | `tests/agent/test_v2_historical_league.py` |
+| Code | `agent/evaluation/historical_league.py`, `historical_schedule.py`, `historical_resources.py`, `historical_selector.py` |
+| Runner | `scripts/v2_history_roundrobin.py` |
+| Resource gate | `scripts/ahl_v2_resource_gate.py` |
+| Proof snapshot | `scripts/v2_history_protected_snapshot.py` |
+| Tests | `tests/agent/test_v2_historical_league.py`, `tests/agent/test_v2_historical_corrections.py` |
 | Formal evaluation root | `/home/minidc/eval-league/v2` (read-only) |
 | Frozen training worktree | `/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix` (read-only) |
 
-The diagnostic root owns its registry snapshot, lock, status, receipts, pair
-plan, matrix, ratings, cycle report, champion validation, incremental plan,
-shadow plan and gate report. It never writes to `alpha_budget.json`,
-`best_policy.json`, `schedule.json`, formal receipts, checkpoint payloads or
-team-stats roots. No history job writes `v2/state/active.json`.
+The diagnostic root owns its registry snapshot, state, lock, status, receipts,
+pair plan, matrix, ratings, schedule, resource gate and run report. It never
+writes `alpha_budget.json`, `best_policy.json`, `schedule.json`, formal receipts,
+checkpoint payloads or team-stats roots. No diagnostic job writes
+`v2/state/active.json`.
 
-## 2. Fixture identity and harness equivalence
+## 2. Full run (FULL_COMPLETE)
 
-- Formal calibration panel: `MASTER_SEED = 20261014`, 64 fixture pairs,
-  reproduced exactly against formal receipt
-  `235eda3e...d256`. Identity, environment, fixture manifest, W/D/L and score
-  all matched.
-- Diagnostic panel: `RR_PANEL_VERSION = pa3-history-diagnostic-panel-v1`,
-  seed domain `pa3-history-diagnostic-v1`, seed `20261017`. This is a separate
-  seed family from formal screening and confirmation.
-- Basic pair budget: 64 fixture pairs = 128 games. Fine pair budget: 256
-  fixture pairs = 512 games. Fine edges are the union of adjacent-clock pairs
-  and champion connections, computed from the live registry and never
-  hardcoded.
+| Field | Value |
+|---|---|
+| Policies | 30 (30 distinct model digests) |
+| Pairs | **435/435** |
+| Games | **77,184** (basic 379 × 128 + fine 56 × 512) |
+| Panel / seed domain | `pa3-history-diagnostic-panel-v1` / `pa3-history-diagnostic-v1` |
+| Champion at run | `v2-000002600960-da35700f` |
+| Latest at run | `v2-000002764800-da35700f` |
+| Evaluated window | 2026-10-17 06:47–07:37 UTC |
+| Registry snapshot SHA256 | `24da9771e2f78e176cca8e04fe81b98cfebd4085b00cbdbc0af98f370177aa66` |
+| Formal alpha spent | **0** |
+| Formal protected-file writes | **0** (schedule.json changes are owned by the formal discovery timer) |
 
-## 3. Pair arithmetic (live registry)
+`run_report.json → validation` checks every pair against the frozen registry:
+unique pair keys, model digests, planned pair coverage, expected game counts and
+receipt identities. The current validation is `ok=true`, `complete=true`.
 
-At freeze time the verified registry had 30 policies and 30 distinct model
-digests. The champion `v2-000002600960-da35700f` is interior with two
-neighbours.
+## 3. Bradley–Terry correction (P0)
 
+The smoke-era implementation used:
+
+```python
+updated[i] = numerator / denominator
 ```
-C(30, 2) = 435 unordered pairs
-fine edge union = 56
-broad remainder = 379
-56 * 512 + 379 * 128 = 77,184 games
+
+The MM update is:
+
+```python
+updated[i] = strength[i] * numerator / denominator
 ```
 
-The bounded smoke selects by priority:
+`denominator` already contains `strength[i]`, so dropping the leading factor
+changes the fixed point. The corrected fit:
 
-1. champion versus latest;
-2. the full champion row;
-3. adjacent-clock neighbours;
-4. archival remainder.
+- uses the multiplicative MM update with geometric-mean normalisation;
+- checks convergence on both maximum log-parameter change and the Bernoulli
+  quasi-likelihood (draws contribute half a win);
+- accumulates repeated rows instead of overwriting them (required for
+  pair-cluster bootstrap resampling);
+- preserves unequal game counts and real per-pair sample sizes;
+- reports pair-cluster bootstrap uncertainty (the resampling unit is a whole
+  pair summary, so seat-swapped games stay correlated);
+- separates descriptive ranking from formal promotion.
 
-The complete 435-pair grid remains resumable through `pair_plan.json`,
-`status.json` and content-addressed receipts. It is not run in this bounded
-smoke.
+Corrected descriptive top five (see `ratings.csv` / `ratings.json`):
 
-## 4. Statistics
+| Rank | Policy | Clock | Rating | Pair-cluster 95% CI | P(above next) |
+|---:|---|---:|---:|---|---:|
+| 1 | `v2-000002764800-da35700f` | 2,764,800 | +0.8801 | [+0.7489, +0.9798] | 0.670 |
+| 2 | `v2-000002502656-da35700f` | 2,502,656 | +0.8428 | [+0.7409, +0.9383] | 0.694 |
+| 3 | `v2-000002400256-da35700f` | 2,400,256 | +0.8110 | [+0.7390, +0.9112] | 0.608 |
+| 4 | `v2-000002600960-da35700f` (champion) | 2,600,960 | +0.8041 | [+0.7075, +0.8911] | 0.716 |
+| 5 | `v2-000002703360-da35700f` | 2,703,360 | +0.7662 | [+0.6937, +0.8460] | 0.520 |
+
+The adjacent-rank differences are **not statistically resolved** at the
+pair-cluster 95% level (`difference_supported=false` for the top five). The old
+smoke-era conclusion that 2,600,960 was first is superseded; the corrected
+point estimate ranks the 2,764,800 checkpoint first and the champion fourth.
+The champion-vs-latest fixture remains statistically indistinguishable
+(latest score 0.5254, paired 95% CI [0.4863, 0.5664] over 512 games).
+
+## 4. Durable recurring schedule (P1)
+
+`agent/evaluation/historical_schedule.py` implements two tiers in
+`diagnostic_state.json` and `milestone_schedule.json`.
+
+| Tier | Clock | Work | Cap |
+|---|---|---|---|
+| A | every 200K from **2.8M** | newest verified milestone checkpoint vs up to 8 anchors × 256 games | 8 anchors / 2,048 games |
+| B | every 1M from **3.8M** | expanded round robin | 24 distinct model digests |
+
+Properties:
+
+- milestones are keyed `tier:nominal_clock` and associated with the first
+  verified checkpoint that reached them, so **2,802,944 satisfies 2,800,000**;
+- each milestone is planned once; completed keys are never re-run;
+- `planned`/`running` jobs are resumable from receipts;
+- corrupt receipts fail closed (`corrupt_receipt`) and are never overwritten;
+- multiple missed boundaries after downtime are emitted independently;
+- Tier B at a 200K boundary supersedes Tier A (`covered_by_tier_b`) so
+  compatible work is not duplicated;
+- pending/running formal evaluation always wins: the scheduler returns
+  `deferred_formal_priority` and creates no work;
+- participant identity is deduplicated by model digest, always includes the
+  latest candidate and the official champion, keeps stable anchors, and uses
+  increasingly wider temporal spacing for older snapshots;
+- cached pairs are reused only when model digest, fixture count, environment
+  and panel identity all match.
+
+See `docs/operations/AHL_V2_DIAGNOSTIC_SCHEDULE.md` for the operator runbook.
+
+## 5. Retired shadow plan (P0)
+
+The smoke-era `opponent_plan.json` was computed from 45 pair summaries and the
+2,600,960 champion. It is now:
+
+- archived byte-identically as `opponent_plan.smoke-20261017.json`
+  (SHA256 `9349f6b43cce9c3363911ab3842f152a97709679f1a9cad2058b705d939b68d9`);
+- replaced by an `OBSOLETE` record with `activatable=false`,
+  `history_probability=0.0`, `history_rows_target=0`, `activation=FORBIDDEN`,
+  and full provenance;
+- guarded by `load_opponent_plan(..., for_training=True)`, which always raises.
+
+No production PPO configuration references this file. Active production
+profiles keep `historical_probability: 0.0`.
+
+## 6. Statistics and limits
 
 - Seat-swapped games are collapsed into one pair cluster before intervals.
-- Pair-cluster bootstrap intervals are deterministic (seeded from the pair key
-  and receipt identity).
-- Draws are explicit at half a win for both the descriptive score and the
-  Bradley-Terry fit.
-- Bradley-Terry ratings are descriptive only.
-- Cycles are reported as `SUSPECTED` unless every edge has a paired 95%
-  interval strictly above 0.5.
-- Diagnostic results have zero authority over promotion and spend zero formal
-  alpha.
-
-## 5. Stage B — incremental diagnostics
-
-`milestone_hook` looks for a completed 200K full milestone and plans up to
-eight anchors at 256 games each:
-
-- up to 3 former champions (from promotion history);
-- up to 2 verified weakness candidates (point score below 0.45);
-- up to 2 informative nonchampions (score closest to 0.50);
-- up to 1 distant temporal/diversity anchor;
-- remaining slots filled by verified coverage.
-
-The hook is implemented and tested, but no new milestone is available while
-training is paused at 2,764,800 matches. The next nominal boundary is
-2,800,000. The plan is recorded but not executed.
-
-## 6. Stage C — shadow selector
-
-The tested reference formula is preserved exactly:
-
-```
-s_i = (W_i + 0.5 D_i + 64) / (G_i + 128)
-hard_i = (1 - s_i)^2
-close_i = 4 s_i (1 - s_i)
-q_i = 0.60 * hard_i/sum(hard) + 0.30 * close_i/sum(close) + 0.10 / K
-```
-
-The single-policy cap is 40% when K >= 3, with a deterministic water-fill.
-Unknown or stale opponents receive exploration mass only; stale means a clock
-gap greater than 400K matches. The plan is pinned by model digest with stable
-IDs (`md-<digest>`), records the evidence receipt identities, fixture and
-environment identity, pool hash and selection-distribution hash.
-
-`opponent_plan.json` sets:
-
-```
-shadow_only = true
-history_rows_target = 0
-history_probability = 0.0
-activation = FORBIDDEN_WITHOUT_OWNER_APPROVAL_AND_REVIEWED_MIGRATION
-```
-
-No training code path was modified, no PPO rollout ran and no migration receipt
-was created.
+- Pair-cluster bootstrap intervals are deterministic and seeded.
+- Cycles are `SUSPECTED` unless every edge has a paired 95% interval strictly
+  above 0.5; the full grid currently reports **0** cycles.
+- Historical evaluation on the frozen team pool is not evidence of
+  out-of-distribution / unseen-team generalization.
+- These results cannot promote policies, spend formal alpha or move the
+  official champion.
 
 ## 7. Stage D
 
-Stage D is `NO_GO`. See:
+Stage D remains `NO_GO`. See `AHL_V2_STAGE_D_*.md`. No historical rollout
+mixing, PPO source migration, reward change or hyperparameter change was made.
 
-- `AHL_V2_STAGE_D_MIGRATION_CONTRACT.md`
-- `AHL_V2_STAGE_D_COLLECTOR_WEIGHTING.md`
-- `AHL_V2_STAGE_D_AB_PROTOCOL.md`
-- `AHL_V2_STAGE_D_ROLLBACK.md`
-
-## 8. Operator commands
+## 8. Reproduction
 
 ```bash
-cd /home/minidc/Desktop/PokeAgent3.0-AHL-v2
-CUDA_VISIBLE_DEVICES= nice -n 19 \
-  /home/minidc/Desktop/PokeAgent3.0/.venv/bin/python \
-  scripts/v2_history_roundrobin.py freeze
+cd /home/minidc/Desktop/PokeAgent3.0-AHL-fix
+PY=/home/minidc/Desktop/PokeAgent3.0/.venv/bin/python
 
-CUDA_VISIBLE_DEVICES= nice -n 19 \
-  /home/minidc/Desktop/PokeAgent3.0/.venv/bin/python \
-  scripts/v2_history_roundrobin.py harness
+# Derived reports only (does not rerun battles; reads immutable pair summaries)
+"$PY" scripts/v2_history_roundrobin.py --root /home/minidc/eval-league/roundrobin/v1 report
 
-CUDA_VISIBLE_DEVICES= nice -n 19 \
-  /home/minidc/Desktop/PokeAgent3.0/.venv/bin/python \
-  scripts/v2_history_roundrobin.py --max-games 5800 --fixture-pairs 64 run
+# Idempotent milestone planning (plan only, never runs battles)
+"$PY" scripts/v2_history_roundrobin.py --root /home/minidc/eval-league/roundrobin/v1 schedule
 
-/home/minidc/Desktop/PokeAgent3.0/.venv/bin/python \
-  scripts/v2_history_roundrobin.py report
-/home/minidc/Desktop/PokeAgent3.0/.venv/bin/python \
-  scripts/v2_history_roundrobin.py incremental
-/home/minidc/Desktop/PokeAgent3.0/.venv/bin/python \
-  scripts/v2_history_roundrobin.py shadow
-/home/minidc/Desktop/PokeAgent3.0/.venv/bin/python \
-  scripts/v2_history_roundrobin.py gate
+# Topology/resource gate
+"$PY" scripts/ahl_v2_resource_gate.py --root /home/minidc/eval-league/roundrobin/v1 --ppo-stopped
+
+# Read-only protected-state proof
+"$PY" scripts/v2_history_protected_snapshot.py \
+  --output /home/minidc/eval-league/roundrobin/v1/protected_snapshot/corrections_verification.json
 ```
-
-The full grid can be resumed later with a larger `--max-games`; completed
-receipts are reused by content identity.

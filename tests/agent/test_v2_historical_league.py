@@ -220,8 +220,8 @@ def test_shadow_plan_marks_stale_evidence(tmp_path):
 
 
 def test_incremental_milestone_hook_not_triggered_and_triggered(tmp_path):
-    entries = _entries(10)
-    entries[-1]["committed_matches"] = 1050000
+    entries = _entries(10, start=10000, step=10000)
+    entries[-1]["committed_matches"] = 95000
     champion = entries[5]
     summaries = [_summary(champion, entries[4], left_score=0.5)]
     no_milestone = H.milestone_hook(entries, summaries, promotions_dir=None)
@@ -229,9 +229,11 @@ def test_incremental_milestone_hook_not_triggered_and_triggered(tmp_path):
     assert no_milestone["executed"] is False
     assert no_milestone["anchors"] == []
     triggered_entries = [dict(row) for row in entries]
-    triggered_entries[-1]["committed_matches"] = 1200000
+    triggered_entries[-1]["committed_matches"] = 201000
     triggered = H.milestone_hook(triggered_entries, summaries, promotions_dir=None)
     assert triggered["available"] is True
+    assert triggered["milestone_clock"] == 200000
+    assert triggered["milestone_overshoot_matches"] == 1000
     assert triggered["executed"] is False
     assert 0 < len(triggered["anchors"]) <= H.MAX_ACTIVE_ANCHORS
     assert sum(row["target_games"] for row in triggered["anchors"]) <= 8 * 256
@@ -267,6 +269,9 @@ def test_corrupted_pair_summary_is_ignored(tmp_path):
 def test_source_of_truth_addendum_present():
     root = Path(__file__).resolve().parents[2]
     text = (root / "docs" / "TRAINING_SOURCE_OF_TRUTH.md").read_text()
-    assert "Current production status and proposed Historical League (2026-10-17 KST)" in text
+    assert "Current owner decision — 2026-10-17 17:45 KST (authoritative)" in text
+    assert "SUPERSEDED PROPOSAL" in text
+    assert "100% current-vs-current" in text
+    assert "historical_probability" in text and "0.0" in text
     assert "2,764,800 matches" in text
     assert "57,344 / release pending" in text

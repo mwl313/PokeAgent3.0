@@ -1,0 +1,272 @@
+..F...FFFFF                                                              [100%]
+=================================== FAILURES ===================================
+_______ test_archive_identity_latest_independent_and_league_deduplicates _______
+
+tmp_path = PosixPath('/tmp/pytest-of-minidc/pytest-45/test_archive_identity_latest_i0')
+
+    def test_archive_identity_latest_independent_and_league_deduplicates(tmp_path):
+        first, second, registry = tmp_path / "one.pt", tmp_path / "two.pt", tmp_path / "archive.json"
+        _checkpoint(first, seed=1); _checkpoint(second, seed=2)
+        register_checkpoint(registry, policy_id="one", label="one", checkpoint_path=first, latest=True, incumbent=True)
+        register_checkpoint(registry, policy_id="two", label="two", checkpoint_path=second)
+        data = json.load(open(registry)); assert data["latest"] == data["incumbent"] == "one"
+        path = verify_entry(registry, data["policies"]["one"]); assert path == str(first)
+        bad = copy.deepcopy(data["policies"]["two"]); bad["model_digest"] = "0" * 64
+        with pytest.raises(ValueError, match="model digest"): verify_entry(registry, bad)
+        fixtures = build_fixture_manifest(pairs=2, team_count=4, seed=3)
+        receipts = tmp_path / "receipts.json"; engine = MockNativeEngine(num_teams=4, requests_per_match=2)
+>       one, cached = run_pair(registry, receipts, engine, fixtures, "one", "two", device="cpu", seed=5)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/agent/test_evaluation_league.py:85: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+agent/evaluation/league.py:125: in run_pair
+    identity, _ = evaluation_identity(candidate, opponent, fixtures, seed=seed, max_rounds=max_rounds, environment=environment)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+agent/evaluation/league.py:60: in evaluation_identity
+    from agent.evaluation.batched_policy import BATCHED_EVALUATOR_VERSION, SAMPLING_SEMANTICS
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    """Native multi-battle fixed-policy evaluator.
+    
+    This deliberately has no PPO learner/rollout buffer.  It shares only the
+    packed candidate-table conversion with ``NativeCollector`` and drives native
+    handles directly.  Its v2 sampling uses fixture/seat/decision/branch keyed
+    uniforms, so outcomes do not depend on batch grouping or another battle.
+    """
+    from __future__ import annotations
+    
+    import random
+    import time
+    from collections import defaultdict
+    
+    import numpy as np
+    import torch
+    
+>   from pa3_engine.observation import parse_batch, parse_packed_candidates
+E   ModuleNotFoundError: No module named 'pa3_engine'
+
+agent/evaluation/batched_policy.py:17: ModuleNotFoundError
+__ test_evaluation_identity_records_actual_observation_quantization[A-False] ___
+
+mode = 'A', quantized = False
+
+    @pytest.mark.parametrize('mode,quantized', [('A', False), ('B', False), ('C', True),
+                                             ('D', True), ('E', True)])
+    def test_evaluation_identity_records_actual_observation_quantization(mode, quantized):
+        from agent.evaluation.league import evaluation_identity
+        from agent.model.precision import get_precision_contract
+    
+        fixtures = build_fixture_manifest(pairs=1, team_count=4, seed=3)
+        entry = {'id':'policy', 'file_sha256':'a'*64, 'model_digest':'b'*64,
+                 'precision_mode':mode,
+                 'precision_contract_version':get_precision_contract(mode).identity}
+>       identity, body = evaluation_identity(entry, entry, fixtures, seed=5, max_rounds=20,
+                                             environment={'backend':'batched'})
+
+tests/agent/test_evaluation_league.py:148: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+agent/evaluation/league.py:60: in evaluation_identity
+    from agent.evaluation.batched_policy import BATCHED_EVALUATOR_VERSION, SAMPLING_SEMANTICS
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    """Native multi-battle fixed-policy evaluator.
+    
+    This deliberately has no PPO learner/rollout buffer.  It shares only the
+    packed candidate-table conversion with ``NativeCollector`` and drives native
+    handles directly.  Its v2 sampling uses fixture/seat/decision/branch keyed
+    uniforms, so outcomes do not depend on batch grouping or another battle.
+    """
+    from __future__ import annotations
+    
+    import random
+    import time
+    from collections import defaultdict
+    
+    import numpy as np
+    import torch
+    
+>   from pa3_engine.observation import parse_batch, parse_packed_candidates
+E   ModuleNotFoundError: No module named 'pa3_engine'
+
+agent/evaluation/batched_policy.py:17: ModuleNotFoundError
+__ test_evaluation_identity_records_actual_observation_quantization[B-False] ___
+
+mode = 'B', quantized = False
+
+    @pytest.mark.parametrize('mode,quantized', [('A', False), ('B', False), ('C', True),
+                                             ('D', True), ('E', True)])
+    def test_evaluation_identity_records_actual_observation_quantization(mode, quantized):
+        from agent.evaluation.league import evaluation_identity
+        from agent.model.precision import get_precision_contract
+    
+        fixtures = build_fixture_manifest(pairs=1, team_count=4, seed=3)
+        entry = {'id':'policy', 'file_sha256':'a'*64, 'model_digest':'b'*64,
+                 'precision_mode':mode,
+                 'precision_contract_version':get_precision_contract(mode).identity}
+>       identity, body = evaluation_identity(entry, entry, fixtures, seed=5, max_rounds=20,
+                                             environment={'backend':'batched'})
+
+tests/agent/test_evaluation_league.py:148: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+agent/evaluation/league.py:60: in evaluation_identity
+    from agent.evaluation.batched_policy import BATCHED_EVALUATOR_VERSION, SAMPLING_SEMANTICS
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    """Native multi-battle fixed-policy evaluator.
+    
+    This deliberately has no PPO learner/rollout buffer.  It shares only the
+    packed candidate-table conversion with ``NativeCollector`` and drives native
+    handles directly.  Its v2 sampling uses fixture/seat/decision/branch keyed
+    uniforms, so outcomes do not depend on batch grouping or another battle.
+    """
+    from __future__ import annotations
+    
+    import random
+    import time
+    from collections import defaultdict
+    
+    import numpy as np
+    import torch
+    
+>   from pa3_engine.observation import parse_batch, parse_packed_candidates
+E   ModuleNotFoundError: No module named 'pa3_engine'
+
+agent/evaluation/batched_policy.py:17: ModuleNotFoundError
+___ test_evaluation_identity_records_actual_observation_quantization[C-True] ___
+
+mode = 'C', quantized = True
+
+    @pytest.mark.parametrize('mode,quantized', [('A', False), ('B', False), ('C', True),
+                                             ('D', True), ('E', True)])
+    def test_evaluation_identity_records_actual_observation_quantization(mode, quantized):
+        from agent.evaluation.league import evaluation_identity
+        from agent.model.precision import get_precision_contract
+    
+        fixtures = build_fixture_manifest(pairs=1, team_count=4, seed=3)
+        entry = {'id':'policy', 'file_sha256':'a'*64, 'model_digest':'b'*64,
+                 'precision_mode':mode,
+                 'precision_contract_version':get_precision_contract(mode).identity}
+>       identity, body = evaluation_identity(entry, entry, fixtures, seed=5, max_rounds=20,
+                                             environment={'backend':'batched'})
+
+tests/agent/test_evaluation_league.py:148: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+agent/evaluation/league.py:60: in evaluation_identity
+    from agent.evaluation.batched_policy import BATCHED_EVALUATOR_VERSION, SAMPLING_SEMANTICS
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    """Native multi-battle fixed-policy evaluator.
+    
+    This deliberately has no PPO learner/rollout buffer.  It shares only the
+    packed candidate-table conversion with ``NativeCollector`` and drives native
+    handles directly.  Its v2 sampling uses fixture/seat/decision/branch keyed
+    uniforms, so outcomes do not depend on batch grouping or another battle.
+    """
+    from __future__ import annotations
+    
+    import random
+    import time
+    from collections import defaultdict
+    
+    import numpy as np
+    import torch
+    
+>   from pa3_engine.observation import parse_batch, parse_packed_candidates
+E   ModuleNotFoundError: No module named 'pa3_engine'
+
+agent/evaluation/batched_policy.py:17: ModuleNotFoundError
+___ test_evaluation_identity_records_actual_observation_quantization[D-True] ___
+
+mode = 'D', quantized = True
+
+    @pytest.mark.parametrize('mode,quantized', [('A', False), ('B', False), ('C', True),
+                                             ('D', True), ('E', True)])
+    def test_evaluation_identity_records_actual_observation_quantization(mode, quantized):
+        from agent.evaluation.league import evaluation_identity
+        from agent.model.precision import get_precision_contract
+    
+        fixtures = build_fixture_manifest(pairs=1, team_count=4, seed=3)
+        entry = {'id':'policy', 'file_sha256':'a'*64, 'model_digest':'b'*64,
+                 'precision_mode':mode,
+                 'precision_contract_version':get_precision_contract(mode).identity}
+>       identity, body = evaluation_identity(entry, entry, fixtures, seed=5, max_rounds=20,
+                                             environment={'backend':'batched'})
+
+tests/agent/test_evaluation_league.py:148: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+agent/evaluation/league.py:60: in evaluation_identity
+    from agent.evaluation.batched_policy import BATCHED_EVALUATOR_VERSION, SAMPLING_SEMANTICS
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    """Native multi-battle fixed-policy evaluator.
+    
+    This deliberately has no PPO learner/rollout buffer.  It shares only the
+    packed candidate-table conversion with ``NativeCollector`` and drives native
+    handles directly.  Its v2 sampling uses fixture/seat/decision/branch keyed
+    uniforms, so outcomes do not depend on batch grouping or another battle.
+    """
+    from __future__ import annotations
+    
+    import random
+    import time
+    from collections import defaultdict
+    
+    import numpy as np
+    import torch
+    
+>   from pa3_engine.observation import parse_batch, parse_packed_candidates
+E   ModuleNotFoundError: No module named 'pa3_engine'
+
+agent/evaluation/batched_policy.py:17: ModuleNotFoundError
+___ test_evaluation_identity_records_actual_observation_quantization[E-True] ___
+
+mode = 'E', quantized = True
+
+    @pytest.mark.parametrize('mode,quantized', [('A', False), ('B', False), ('C', True),
+                                             ('D', True), ('E', True)])
+    def test_evaluation_identity_records_actual_observation_quantization(mode, quantized):
+        from agent.evaluation.league import evaluation_identity
+        from agent.model.precision import get_precision_contract
+    
+        fixtures = build_fixture_manifest(pairs=1, team_count=4, seed=3)
+        entry = {'id':'policy', 'file_sha256':'a'*64, 'model_digest':'b'*64,
+                 'precision_mode':mode,
+                 'precision_contract_version':get_precision_contract(mode).identity}
+>       identity, body = evaluation_identity(entry, entry, fixtures, seed=5, max_rounds=20,
+                                             environment={'backend':'batched'})
+
+tests/agent/test_evaluation_league.py:148: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+agent/evaluation/league.py:60: in evaluation_identity
+    from agent.evaluation.batched_policy import BATCHED_EVALUATOR_VERSION, SAMPLING_SEMANTICS
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    """Native multi-battle fixed-policy evaluator.
+    
+    This deliberately has no PPO learner/rollout buffer.  It shares only the
+    packed candidate-table conversion with ``NativeCollector`` and drives native
+    handles directly.  Its v2 sampling uses fixture/seat/decision/branch keyed
+    uniforms, so outcomes do not depend on batch grouping or another battle.
+    """
+    from __future__ import annotations
+    
+    import random
+    import time
+    from collections import defaultdict
+    
+    import numpy as np
+    import torch
+    
+>   from pa3_engine.observation import parse_batch, parse_packed_candidates
+E   ModuleNotFoundError: No module named 'pa3_engine'
+
+agent/evaluation/batched_policy.py:17: ModuleNotFoundError
+=========================== short test summary info ============================
+FAILED tests/agent/test_evaluation_league.py::test_archive_identity_latest_independent_and_league_deduplicates
+FAILED tests/agent/test_evaluation_league.py::test_evaluation_identity_records_actual_observation_quantization[A-False]
+FAILED tests/agent/test_evaluation_league.py::test_evaluation_identity_records_actual_observation_quantization[B-False]
+FAILED tests/agent/test_evaluation_league.py::test_evaluation_identity_records_actual_observation_quantization[C-True]
+FAILED tests/agent/test_evaluation_league.py::test_evaluation_identity_records_actual_observation_quantization[D-True]
+FAILED tests/agent/test_evaluation_league.py::test_evaluation_identity_records_actual_observation_quantization[E-True]
+6 failed, 5 passed in 4.62s

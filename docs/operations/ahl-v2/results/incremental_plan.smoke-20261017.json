@@ -1,0 +1,168 @@
+{
+  "activation": "NOT_TRIGGERED_WHILE_TRAINING_PAUSED",
+  "anchors": [],
+  "available": false,
+  "executed": false,
+  "games_per_anchor": 256,
+  "latest_clock": 2764800,
+  "latest_policy_id": "v2-000002764800-da35700f",
+  "max_anchors": 8,
+  "next_full_boundary": 2800000,
+  "planned_anchors_if_triggered": [
+    {
+      "committed_matches": 2400256,
+      "draws": 0,
+      "evidence_status": "unknown",
+      "games": 0,
+      "losses": 0,
+      "model_digest": "cf99ad9a695678161c757f8b5492ffa03537fc9f34039191ec26d183b9609adb",
+      "pair_ci95": [
+        null,
+        null
+      ],
+      "pair_score": null,
+      "policy_id": "v2-000002400256-da35700f",
+      "receipt_identity": null,
+      "role": "recent_champion",
+      "target_games": 256,
+      "verified": false,
+      "wins": 0
+    },
+    {
+      "committed_matches": 2203648,
+      "draws": 0,
+      "evidence_status": "unknown",
+      "games": 0,
+      "losses": 0,
+      "model_digest": "32dc7b99f939430913c6d07e43bd5c0ac5298e5f71f0f93cb935947ffb48cf1d",
+      "pair_ci95": [
+        null,
+        null
+      ],
+      "pair_score": null,
+      "policy_id": "v2-000002203648-da35700f",
+      "receipt_identity": null,
+      "role": "recent_champion",
+      "target_games": 256,
+      "verified": false,
+      "wins": 0
+    },
+    {
+      "committed_matches": 2002944,
+      "draws": 0,
+      "evidence_status": "unknown",
+      "games": 0,
+      "losses": 0,
+      "model_digest": "475c310abbdef92290deaa0fccaf8ed43910ee1f23f39b4af8694ec533bdd32a",
+      "pair_ci95": [
+        null,
+        null
+      ],
+      "pair_score": null,
+      "policy_id": "v2-000002002944-da35700f",
+      "receipt_identity": null,
+      "role": "recent_champion",
+      "target_games": 256,
+      "verified": false,
+      "wins": 0
+    },
+    {
+      "committed_matches": 2600960,
+      "draws": 0,
+      "evidence_status": "verified",
+      "games": 128,
+      "losses": 55,
+      "model_digest": "4fafd07d6bba71adad5460f6ec8583f76d776882d45a6ea7e70ba7af080b434f",
+      "pair_ci95": [
+        0.4921875,
+        0.6484375
+      ],
+      "pair_score": 0.5703125,
+      "policy_id": "v2-000002600960-da35700f",
+      "receipt_identity": "e4d6954d78fb971f6455f35cd9fbc2e3d8b75702385bc1cd6114672f7175144d",
+      "role": "informative_nonchampion",
+      "target_games": 256,
+      "verified": true,
+      "wins": 73
+    },
+    {
+      "committed_matches": 2703360,
+      "draws": 0,
+      "evidence_status": "verified",
+      "games": 128,
+      "losses": 54,
+      "model_digest": "586c2f85c616dc1d70c83a89d0c901572af3d6006bf98166fcde29451c1468f3",
+      "pair_ci95": [
+        0.5078125,
+        0.65625
+      ],
+      "pair_score": 0.578125,
+      "policy_id": "v2-000002703360-da35700f",
+      "receipt_identity": "75d57f6408d1043c500e6fb78c22f5fb2f5fce1afc90811109a0f6cd537a61b8",
+      "role": "informative_nonchampion",
+      "target_games": 256,
+      "verified": true,
+      "wins": 74
+    },
+    {
+      "committed_matches": 57344,
+      "draws": 0,
+      "evidence_status": "unknown",
+      "games": 0,
+      "losses": 0,
+      "model_digest": "badcc0e7b39a74e4ab350c8c51ed920ee11920a27aee8e6aad0058e6a5a85407",
+      "pair_ci95": [
+        null,
+        null
+      ],
+      "pair_score": null,
+      "policy_id": "v2-000000057344-bootstrap",
+      "receipt_identity": null,
+      "role": "distant_anchor",
+      "target_games": 256,
+      "verified": false,
+      "wins": 0
+    },
+    {
+      "committed_matches": 2502656,
+      "draws": 0,
+      "evidence_status": "unknown",
+      "games": 0,
+      "losses": 0,
+      "model_digest": "0d662338bb5d4f64b015fc8080eda9b506f11a6ff0f23ce0aaee96f3a4561a4f",
+      "pair_ci95": [
+        null,
+        null
+      ],
+      "pair_score": null,
+      "policy_id": "v2-000002502656-da35700f",
+      "receipt_identity": null,
+      "role": "coverage_fill",
+      "target_games": 256,
+      "verified": false,
+      "wins": 0
+    },
+    {
+      "committed_matches": 2301952,
+      "draws": 0,
+      "evidence_status": "unknown",
+      "games": 0,
+      "losses": 0,
+      "model_digest": "73e8e23cfac1ac06ecab672d1f0a850c8f901ef293973d625b081ffe3ac3e726",
+      "pair_ci95": [
+        null,
+        null
+      ],
+      "pair_score": null,
+      "policy_id": "v2-000002301952-da35700f",
+      "receipt_identity": null,
+      "role": "coverage_fill",
+      "target_games": 256,
+      "verified": false,
+      "wins": 0
+    }
+  ],
+  "planned_games": 0,
+  "reason": "no_new_full_milestone",
+  "schema": "pa3-v2-history-incremental-plan-v1"
+}

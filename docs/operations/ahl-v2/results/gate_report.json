@@ -1,6 +1,6 @@
 {
   "disk": {
-    "free_bytes": 77315526656,
+    "free_bytes": 76996333568,
     "ok": true,
     "reserve_bytes": 12884901888
   },
@@ -9,10 +9,10 @@
     "active_status": "ok",
     "jobs": [],
     "pending_or_running": 0,
-    "updated_at": 1792222625.7526248
+    "updated_at": 1792226588.711798
   },
-  "generated_at": 1792222642.3831027,
-  "generated_at_kst": "2026-10-17T16:37:22+0900",
+  "generated_at": 1792226595.3363574,
+  "generated_at_kst": "2026-10-17T17:43:15+0900",
   "go_no_go": {
     "reason": "owner approval, reviewed V2 source/profile/opponent migration, isolated A/B pilot and rollback proof are all still required",
     "stage_d": "NO_GO"
@@ -27,11 +27,11 @@
       "/home/minidc/eval-league/v2/alpha_budget.json": "6fdf62a39896dc23aa54451a24dc79d4730635d740c3b1aa839add66525ef14f",
       "/home/minidc/eval-league/v2/best_policy.json": "bc7c61fb0eb94f8b7720dcc79b6f19bbf2bb81bbbea20bcfec00a43dec808779",
       "/home/minidc/eval-league/v2/registry.json": "3a5c6b938d4d0539fc8292fa1e55a8a39fb6be9d82cc9f67751707f513991437",
-      "/home/minidc/eval-league/v2/schedule.json": "d09e17946f6864a0dd208c102938dcb0b57168ae56057f4d6664261e794a3668"
+      "/home/minidc/eval-league/v2/schedule.json": "3399836c920f9d5914657cd1d4bef051ad8f10488c12bf7d9d1aa71998855c62"
     },
     "mismatches": [
       {
-        "after": "d09e17946f6864a0dd208c102938dcb0b57168ae56057f4d6664261e794a3668",
+        "after": "3399836c920f9d5914657cd1d4bef051ad8f10488c12bf7d9d1aa71998855c62",
         "before": "a093e961921b4a10c994a22e29d9f6b56018315b380fe53207cdc8ee008f023e",
         "path": "/home/minidc/eval-league/v2/schedule.json"
       }
@@ -66,45 +66,82 @@
       "formal_alpha_unchanged": true,
       "formal_priority_observed": 0,
       "formal_writes": 0,
-      "full_grid_complete": false,
-      "games_run": 5760,
+      "full_grid_complete": true,
+      "games_run": 77184,
       "harness_equivalence": "PASS",
       "harness_games": 128,
       "harness_identity_match": true,
       "nice": 19,
-      "pairs_completed": 45,
+      "pairs_completed": 435,
       "pairs_total": 435,
       "policies_after_dedup": 30,
       "policies_before_dedup": 30,
+      "rating_schema": "pa3-v2-bradley-terry-mm-v2",
       "registry_snapshot_verified": true,
-      "resumable": true,
+      "resumable": false,
+      "run_report_state": "FULL_COMPLETE",
+      "run_report_validation": {
+        "complete": true,
+        "errors": [],
+        "expected_games": 77184,
+        "expected_pairs": 435,
+        "first_evaluated_at": "2026-10-17T06:47:56.022115+00:00",
+        "last_evaluated_at": "2026-10-17T07:37:18.256212+00:00",
+        "ok": true,
+        "successful_pairs": 435,
+        "tier_games": {
+          "basic": 48512,
+          "fine": 28672
+        },
+        "tier_pairs": {
+          "basic": 379,
+          "fine": 56
+        },
+        "total_games": 77184,
+        "unique_pairs": 435
+      },
       "schedule_hash_changed_by_formal_discovery": true,
-      "status": "SMOKE_COMPLETE"
+      "status": "FULL_COMPLETE"
     },
     "B_incremental": {
-      "available": false,
+      "action": "plan_only",
+      "due_jobs": 0,
       "executed": false,
-      "games_per_anchor": 256,
+      "formal_priority_observed": 0,
       "latest_clock": 2764800,
-      "max_anchors": 8,
-      "next_full_boundary": 2800000,
-      "planned_anchors_if_triggered": 8,
-      "planned_games": 0,
-      "planned_games_if_triggered": 2048,
-      "reason": "no_new_full_milestone",
-      "status": "IMPLEMENTED_NOT_TRIGGERED"
+      "new_jobs": 0,
+      "next_tier_a": 2800000,
+      "next_tier_b": 3800000,
+      "resumed_jobs": 0,
+      "stable_anchor_ids": [],
+      "status": "idle",
+      "tier_a_interval": 200000,
+      "tier_b_first": 3800000,
+      "tier_b_interval": 1000000,
+      "tier_b_policy_cap": 24
     },
     "C_shadow": {
-      "activation": "FORBIDDEN_WITHOUT_OWNER_APPROVAL_AND_REVIEWED_MIGRATION",
+      "activatable": false,
+      "activation": "FORBIDDEN",
       "active_training_changed": false,
       "history_probability": 0.0,
       "history_rows_target": 0,
-      "opponents": 8,
-      "plan_sha256": "dfe1f3a727d12c9cb08d1e9b1af88dd1f17b01e61e3b814e51dac6637112af60",
+      "opponents": 0,
+      "provenance": {
+        "archived_path": "docs/operations/ahl-v2/results/opponent_plan.smoke-20261017.json",
+        "archived_sha256": "9349f6b43cce9c3363911ab3842f152a97709679f1a9cad2058b705d939b68d9",
+        "original_opponents": 8,
+        "original_pair_summaries": 45,
+        "original_path": "docs/operations/ahl-v2/results/opponent_plan.json",
+        "original_plan_sha256": "dfe1f3a727d12c9cb08d1e9b1af88dd1f17b01e61e3b814e51dac6637112af60",
+        "original_reference_clock": 2600960,
+        "original_reference_policy_id": "v2-000002600960-da35700f",
+        "original_sha256": "9349f6b43cce9c3363911ab3842f152a97709679f1a9cad2058b705d939b68d9",
+        "original_status": "SHADOW_ONLY_NOT_ACTIVE"
+      },
+      "retired_at": 1792226591.3292167,
       "shadow_only": true,
-      "status": "SHADOW_PLAN_READY",
-      "weight_cap_ok": true,
-      "weight_sum": 1.0
+      "status": "SHADOW_PLAN_RETIRED"
     },
     "D_training_migration": {
       "migration_receipt_created": false,

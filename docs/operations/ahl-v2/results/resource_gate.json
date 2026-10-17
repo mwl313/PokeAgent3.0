@@ -1,0 +1,348 @@
+{
+  "coexistence_note": "UNVERIFIED UNDER LIVE PPO \u2014 no live PPO throughput measurement exists while training is stopped",
+  "coexistence_verified": false,
+  "conflicts": [],
+  "disk": {
+    "free_bytes": 76997677056,
+    "ok": true,
+    "path": "docs/operations/ahl-v2/results",
+    "reserve_bytes": 12884901888
+  },
+  "formal_cpus": [
+    4,
+    5,
+    6,
+    7
+  ],
+  "formal_priority": {
+    "active_job": "light:v2-000002764800-da35700f",
+    "active_status": "ok",
+    "jobs": [],
+    "pending_or_running": 0,
+    "updated_at": 1792226568.699528
+  },
+  "generated_at": 1792226586.888883,
+  "generated_at_kst": "2026-10-17T17:43:06+0900",
+  "load_average": [
+    1.37255859375,
+    1.1865234375,
+    1.07666015625
+  ],
+  "memory": {
+    "available_bytes": 60479520768,
+    "guard_bytes": 8589934592,
+    "swap_used_bytes": 0
+  },
+  "mode": "B_ppo_stopped",
+  "ppo_running": false,
+  "production_launcher_modified": false,
+  "reasons": [],
+  "reserved_cpus": [
+    4,
+    5,
+    6,
+    7,
+    44,
+    45,
+    46,
+    47
+  ],
+  "schema": "pa3-v2-history-resource-gate-v1",
+  "status": "ok",
+  "threads_per_worker": 2,
+  "throttled_by": null,
+  "throughput": {
+    "action": "keep_conservative_default",
+    "min_samples": 3,
+    "reason": "not enough completed PPO iterations to distinguish noise",
+    "samples": 0,
+    "status": "insufficient_samples",
+    "verified": false
+  },
+  "topology": {
+    "logical_cpus": 80,
+    "nodes": {
+      "0": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59
+      ],
+      "1": [
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79
+      ]
+    },
+    "physical_cores": 40,
+    "smt_enabled": true
+  },
+  "worker_masks": [
+    {
+      "cpus": [
+        0,
+        1
+      ],
+      "mask": "0-1",
+      "nodes": [
+        0
+      ],
+      "smt": false,
+      "worker": 1
+    },
+    {
+      "cpus": [
+        2,
+        3
+      ],
+      "mask": "2-3",
+      "nodes": [
+        0
+      ],
+      "smt": false,
+      "worker": 2
+    },
+    {
+      "cpus": [
+        8,
+        9
+      ],
+      "mask": "8-9",
+      "nodes": [
+        0
+      ],
+      "smt": false,
+      "worker": 3
+    },
+    {
+      "cpus": [
+        10,
+        11
+      ],
+      "mask": "10-11",
+      "nodes": [
+        0
+      ],
+      "smt": false,
+      "worker": 4
+    },
+    {
+      "cpus": [
+        12,
+        13
+      ],
+      "mask": "12-13",
+      "nodes": [
+        0
+      ],
+      "smt": false,
+      "worker": 5
+    },
+    {
+      "cpus": [
+        14,
+        15
+      ],
+      "mask": "14-15",
+      "nodes": [
+        0
+      ],
+      "smt": false,
+      "worker": 6
+    },
+    {
+      "cpus": [
+        16,
+        17
+      ],
+      "mask": "16-17",
+      "nodes": [
+        0
+      ],
+      "smt": false,
+      "worker": 7
+    },
+    {
+      "cpus": [
+        18,
+        19
+      ],
+      "mask": "18-19",
+      "nodes": [
+        0
+      ],
+      "smt": false,
+      "worker": 8
+    },
+    {
+      "cpus": [
+        20,
+        21
+      ],
+      "mask": "20-21",
+      "nodes": [
+        1
+      ],
+      "smt": false,
+      "worker": 9
+    },
+    {
+      "cpus": [
+        22,
+        23
+      ],
+      "mask": "22-23",
+      "nodes": [
+        1
+      ],
+      "smt": false,
+      "worker": 10
+    },
+    {
+      "cpus": [
+        24,
+        25
+      ],
+      "mask": "24-25",
+      "nodes": [
+        1
+      ],
+      "smt": false,
+      "worker": 11
+    },
+    {
+      "cpus": [
+        26,
+        27
+      ],
+      "mask": "26-27",
+      "nodes": [
+        1
+      ],
+      "smt": false,
+      "worker": 12
+    },
+    {
+      "cpus": [
+        28,
+        29
+      ],
+      "mask": "28-29",
+      "nodes": [
+        1
+      ],
+      "smt": false,
+      "worker": 13
+    },
+    {
+      "cpus": [
+        30,
+        31
+      ],
+      "mask": "30-31",
+      "nodes": [
+        1
+      ],
+      "smt": false,
+      "worker": 14
+    },
+    {
+      "cpus": [
+        32,
+        33
+      ],
+      "mask": "32-33",
+      "nodes": [
+        1
+      ],
+      "smt": false,
+      "worker": 15
+    },
+    {
+      "cpus": [
+        34,
+        35
+      ],
+      "mask": "34-35",
+      "nodes": [
+        1
+      ],
+      "smt": false,
+      "worker": 16
+    }
+  ],
+  "workers": 16
+}

@@ -1,0 +1,26 @@
+{
+  "activatable": false,
+  "activation": "FORBIDDEN",
+  "guard": "load_opponent_plan(root, for_training=True) must reject this record; no production PPO configuration may reference it",
+  "history_probability": 0.0,
+  "history_rows_target": 0,
+  "obsolete_reason": "computed from 45 smoke-era pair summaries and the 2,600,960 champion; historical PPO training is deferred indefinitely by owner decision",
+  "provenance": {
+    "archived_path": "docs/operations/ahl-v2/results/opponent_plan.smoke-20261017.json",
+    "archived_sha256": "9349f6b43cce9c3363911ab3842f152a97709679f1a9cad2058b705d939b68d9",
+    "original_opponents": 8,
+    "original_pair_summaries": 45,
+    "original_path": "docs/operations/ahl-v2/results/opponent_plan.json",
+    "original_plan_sha256": "dfe1f3a727d12c9cb08d1e9b1af88dd1f17b01e61e3b814e51dac6637112af60",
+    "original_reference_clock": 2600960,
+    "original_reference_policy_id": "v2-000002600960-da35700f",
+    "original_sha256": "9349f6b43cce9c3363911ab3842f152a97709679f1a9cad2058b705d939b68d9",
+    "original_status": "SHADOW_ONLY_NOT_ACTIVE"
+  },
+  "retired_at": 1792226591.3292167,
+  "retired_at_kst": "2026-10-17T17:43:11+0900",
+  "schema": "pa3-v2-history-opponent-plan-v1",
+  "shadow_only": true,
+  "status": "OBSOLETE",
+  "superseded_by": "diagnostic scheduling only (historical_schedule)"
+}

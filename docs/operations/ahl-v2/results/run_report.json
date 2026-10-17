@@ -1,0 +1,80 @@
+{
+  "alpha_spent": 0,
+  "champion_clock": 2600960,
+  "champion_id": "v2-000002600960-da35700f",
+  "distinct_model_digests": 30,
+  "first_evaluated_at": "2026-10-17T06:47:56.022115+00:00",
+  "formal_promotion_authority": false,
+  "games_expected": 77184,
+  "games_total": 77184,
+  "generated_at": 1792226559.1882966,
+  "generated_at_kst": "2026-10-17T17:42:39+0900",
+  "last_evaluated_at": "2026-10-17T07:37:18.256212+00:00",
+  "latest_clock": 2764800,
+  "latest_id": "v2-000002764800-da35700f",
+  "note": "FULL_COMPLETE describes the immutable 435-pair diagnostic grid. It does not promote policies, spend formal alpha or change the official champion.",
+  "pairs_completed": 435,
+  "pairs_total": 435,
+  "panel_version": "pa3-history-diagnostic-panel-v1",
+  "policies": 30,
+  "provenance": {
+    "matrix": "docs/operations/ahl-v2/results/matrix.csv",
+    "matrix_sha256": "14afed32c4d2c65caeb4f5ba132d3ce3092ca1e973a26acaadd925ed9e8066c3",
+    "registry_snapshot": "docs/operations/ahl-v2/results/registry.snapshot.json",
+    "registry_snapshot_sha256": "24da9771e2f78e176cca8e04fe81b98cfebd4085b00cbdbc0af98f370177aa66"
+  },
+  "rating_meta": {
+    "diagnostics": {
+      "converged": true,
+      "draws": "half-win",
+      "iterations": 62,
+      "log_likelihood": -46376.90584480012,
+      "max_log_delta": 7.281242275515559e-11,
+      "normalisation": "geometric_mean_one",
+      "pairs": 435,
+      "policies": 30,
+      "schema": "pa3-v2-bradley-terry-mm-v2"
+    },
+    "path": "docs/operations/ahl-v2/results/ratings.csv",
+    "ranking_confidence": "docs/operations/ahl-v2/results/ranking_confidence.csv",
+    "uncertainty": {
+      "draws": 500,
+      "interval": "percentile 95%",
+      "method": "pair-cluster bootstrap",
+      "resampling_unit": "pair summary (seat-swapped games kept together)",
+      "seed": 20261014
+    }
+  },
+  "rating_schema": "pa3-v2-bradley-terry-mm-v2",
+  "schema": "pa3-v2-history-run-report-v2",
+  "seed_domain": "pa3-history-diagnostic-v1",
+  "state": "FULL_COMPLETE",
+  "tier_games": {
+    "basic": 48512,
+    "fine": 28672
+  },
+  "tier_pairs": {
+    "basic": 379,
+    "fine": 56
+  },
+  "validation": {
+    "complete": true,
+    "errors": [],
+    "expected_games": 77184,
+    "expected_pairs": 435,
+    "first_evaluated_at": "2026-10-17T06:47:56.022115+00:00",
+    "last_evaluated_at": "2026-10-17T07:37:18.256212+00:00",
+    "ok": true,
+    "successful_pairs": 435,
+    "tier_games": {
+      "basic": 48512,
+      "fine": 28672
+    },
+    "tier_pairs": {
+      "basic": 379,
+      "fine": 56
+    },
+    "total_games": 77184,
+    "unique_pairs": 435
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "config": {
+    "panel_version": "pa3-history-diagnostic-panel-v1",
+    "seed_domain": "pa3-history-diagnostic-v1",
+    "tier_a_first": 2800000,
+    "tier_a_games_per_anchor": 256,
+    "tier_a_interval": 200000,
+    "tier_a_max_anchors": 8,
+    "tier_b_first": 3800000,
+    "tier_b_interval": 1000000,
+    "tier_b_policy_cap": 24
+  },
+  "milestones": {},
+  "schema": "pa3-v2-history-diagnostic-state-v1",
+  "stable_anchor_ids": [],
+  "updated_at": 1792226581.187387,
+  "updated_at_kst": "2026-10-17T17:43:01+0900"
+}
