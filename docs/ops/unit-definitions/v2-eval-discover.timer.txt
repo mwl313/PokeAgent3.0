@@ -1,0 +1,12 @@
+# /home/minidc/.config/systemd/user/v2-eval-discover.timer
+[Unit]
+Description=Discover and schedule PokeAgent V2 evaluation checkpoints
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=5min
+Persistent=true
+Unit=v2-eval-discover.service
+
+[Install]
+WantedBy=timers.target

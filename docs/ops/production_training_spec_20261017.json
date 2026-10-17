@@ -1,0 +1,129 @@
+{
+  "schema": "pa3-v2-production-training-spec-v1",
+  "captured_at_kst": "2026-10-17T14:20:00+09:00",
+  "host": "minidc (80-thread Xeon E5-2673 v4, 2x V100-32GB, 62GB RAM)",
+  "purpose": "Exact specification of the PA3 V2 PPO campaign that was running until the 2026-10-17 13:53 maintenance pause, captured so the deployment can be reproduced and resumed.",
+  "source": {
+    "repo": "https://github.com/mwl313/PokeAgent3.0",
+    "branch": "codex/v2-p00b-profile-propagation",
+    "commit": "da35700f75c95833b0e8250d7b4b04e11320f8b7",
+    "commit_short": "da35700",
+    "tree_clean": true,
+    "worktree": "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix",
+    "remote_ref": "origin/codex/v2-p00b-profile-propagation (pushed 2026-10-17 11:20)",
+    "note": "This commit is also an ancestor of origin/evaluation/v2-league and origin/evaluation/v2-league-adaptive-v2."
+  },
+  "runtime": {
+    "python": "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python",
+    "python_version": "3.12.3",
+    "torch": "2.14.0+cu126",
+    "cuda": "12.6",
+    "gpus": 2,
+    "world_size": 2
+  },
+  "profile": {
+    "path": "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/configs/pa3_v2_production.yaml",
+    "sha256": "c816aa28f695ce57ac2319db37cd9edeab308f369c2972606abc38a11fa27941"
+  },
+  "launch": {
+    "mechanism": "systemd-run --user (transient unit; NOT a unit file on disk)",
+    "unit_name": "pa3-v2-mode-e-da35700.service",
+    "working_directory": "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix",
+    "exec": [
+      "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python",
+      "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/scripts/run_ddp_ppo.py",
+      "--profile", "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/configs/pa3_v2_production.yaml",
+      "--games", "2048",
+      "--iterations", "24401",
+      "--seed", "20261014",
+      "--stop-file", "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode_e_da35700_20261016/STOP",
+      "--experimental-checkpoint", "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode_e_da35700_20261016/boundary",
+      "--rolling-checkpoint-root", "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode_e_da35700_20261016/rolling",
+      "--rolling-keep-generations", "3",
+      "--team-stats-root", "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/v2_final_release/p00b_autonomous_v2_20261016/smoke/team_stats",
+      "--experimental-resume", "/home/minidc/Desktop/PokeAgent3.0-V2-throughput/runs/perf/v2_recovery/reconstruction_contract/reconstructed/rolling/generations/iter-000000057344-1791986684864852699",
+      "--experimental-source-migration", "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/v2_final_release/p00b_autonomous_v2_20261016/migration.json",
+      "--report", "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode_e_da35700_20261016/reports/continuation.json",
+      "--timeout", "1800"
+    ],
+    "environment": {
+      "PYTHONPATH": "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/engine/python:/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix",
+      "OMP_NUM_THREADS": "2",
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8"
+    },
+    "systemd_properties": {
+      "Restart": "no",
+      "KillMode": "control-group",
+      "TimeoutStopSec": "3min",
+      "StandardOutput": "append:/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode_e_da35700_20261016/reports/service.log",
+      "StandardError": "append:/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode_e_da35700_20261016/reports/service.log"
+    },
+    "note": "The original launch resumed from iter-000000057344 with --experimental-source-migration. A restart after the 2026-10-17 pause must point --experimental-resume at the newest complete generation instead (see resume)."
+  },
+  "paths": {
+    "run_root": "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode_e_da35700_20261016",
+    "rolling": "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode_e_da35700_20261016/rolling",
+    "rolling_keep_generations": 3,
+    "boundary": "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode_e_da35700_20261016/boundary",
+    "stop_file": "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode_e_da35700_20261016/STOP",
+    "reports": "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode_e_da35700_20261016/reports",
+    "team_stats_root": "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/v2_final_release/p00b_autonomous_v2_20261016/smoke/team_stats",
+    "source_migration": "/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/v2_final_release/p00b_autonomous_v2_20261016/migration.json"
+  },
+  "paused_state": {
+    "stopped_at_kst": "2026-10-17T13:53:25+09:00",
+    "stop_reason": "round-robin implementation window (owner request)",
+    "unit_result": "success",
+    "exec_main_status": 0,
+    "committed_matches": 2764800,
+    "absolute_iteration": 675,
+    "optimizer_steps": 24573,
+    "learning_rate": 0.0001497883942,
+    "amp_scaler_scale": 262144,
+    "model_digest": "7697797df97cf3c6d5c11466c294c8a72be1bf06d437fb1dba0c8db5109f2e6e",
+    "optimizer_digest": "bafeee072e87845b4dc7837d485efcf1ac79de70877fe051684dcab440d0e4c6",
+    "digests_equal": true,
+    "skipped_optimizer_steps": 0,
+    "operational_errors": 0,
+    "generation": "iter-000002764800-1792212738467610757",
+    "generation_complete": true,
+    "iteration_complete": true,
+    "rank0_payload_sha256": "fd3b5655a2b7d602043531cf31addcbca53c4c41523dce4abc430a8ea52fe02b",
+    "rank1_payload_sha256": "6cd1ae7b84a12bbc8e12bc0e30f538ee59d03e4dd602f68eb47ed0f079b39607",
+    "boundary_bytes": {"rank0": 119087509, "rank1": 119087445}
+  },
+  "resume": {
+    "requires": "remove the STOP file first, otherwise the run stops again immediately",
+    "commands": [
+      "rm -f /home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode_e_da35700_20261016/STOP",
+      "RESUME_GEN=/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode_e_da35700_20261016/rolling/generations/iter-000002764800-1792212738467610757 /home/minidc/bin/pa3-resume-training.sh"
+    ],
+    "helper": "/home/minidc/bin/pa3-resume-training.sh (re-creates the transient unit with the same args/properties and the given RESUME_GEN)",
+    "acceptance_checks": [
+      "rank0 log: resume state verified: matches=2764800 optimizer_steps=24573 with the digests above",
+      "two complete iterations with digests equality and 0 skipped optimizer steps",
+      "learning rate continues (no rewarm), AMP scaler resumes from 262144",
+      "team statistics keep collecting without duplicate accounting"
+    ]
+  },
+  "cooperative_stop": {
+    "procedure": "touch the --stop-file path; both ranks finish the current iteration, publish the resumable envelope and exit 0",
+    "never": "SIGKILL or mid-update termination",
+    "observed_duration": "about 2 minutes (request 13:51:24 -> exit 13:53:25)"
+  },
+  "evaluation_service": {
+    "branch": "evaluation/v2-league-adaptive-v2",
+    "commit_in_use": "810ee3a4ba66fdaed70e1184c85cf1741cddd6b5",
+    "eval_root": "/home/minidc/eval-league/v2",
+    "timer": "v2-eval-discover.timer (OnBootSec=3min, OnUnitActiveSec=5min, Persistent=true)",
+    "worker": "v2-eval-worker.service (nice 15, IOSchedulingClass=idle, CPUAffinity 4-7, CPUQuota=250%, MemoryMax=4G, CUDA_VISIBLE_DEVICES empty)",
+    "ruleset": "pa3-v2-promotion-rules-v2",
+    "resource_gate": "learner-rows-per-second-v1 (commit 810ee3a)",
+    "unit_definitions": "docs/ops/unit-definitions/"
+  },
+  "reproducibility_notes": [
+    "Both GPUs run under the same DDP job (world_size 2); the evaluation worker is CPU-only and never touches PPO state.",
+    "The transient training unit does not survive a reboot or a reboot of the user manager: the definition must be re-created from this spec (or the resume helper).",
+    "Do not commit changes into the training worktree: the running checkpoint records source_sha=da35700 and a resume must see that same source identity."
+  ]
+}
