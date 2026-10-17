@@ -1,6 +1,6 @@
 {
-  "captured_at": 1792226646.121048,
-  "captured_at_kst": "2026-10-17T17:44:06+0900",
+  "captured_at": 1792226934.2124364,
+  "captured_at_kst": "2026-10-17T17:48:54+0900",
   "critical_mismatches": [],
   "evaluation": {
     "head": "16cc0bf1db712cf23effe2614dc0d58ab463c19e",
@@ -49,7 +49,7 @@
       "path": "/home/minidc/eval-league/v2/best_policy.json"
     },
     {
-      "after": "3399836c920f9d5914657cd1d4bef051ad8f10488c12bf7d9d1aa71998855c62",
+      "after": "f09f86ecd7ddfd887fd1d0e33346947eb9feb5bae31fc08d52051020ab5bafd5",
       "before": "a093e961921b4a10c994a22e29d9f6b56018315b380fe53207cdc8ee008f023e",
       "changed": true,
       "path": "/home/minidc/eval-league/v2/schedule.json"
@@ -62,7 +62,7 @@
     }
   ],
   "schedule_comparison": {
-    "after": "3399836c920f9d5914657cd1d4bef051ad8f10488c12bf7d9d1aa71998855c62",
+    "after": "f09f86ecd7ddfd887fd1d0e33346947eb9feb5bae31fc08d52051020ab5bafd5",
     "before": "a093e961921b4a10c994a22e29d9f6b56018315b380fe53207cdc8ee008f023e",
     "changed": true,
     "path": "/home/minidc/eval-league/v2/schedule.json"
