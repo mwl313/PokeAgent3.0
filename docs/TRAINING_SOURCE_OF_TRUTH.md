@@ -1,5 +1,29 @@
 # PokeAgent3.0 V2 — Training Source of Truth
 
+## Current production status and proposed Historical League (2026-10-17 KST)
+
+> **Priority dated correction.** The historical 2026-10-16 `PRODUCTION STOPPED at 57,344 / release pending` paragraphs below describe an *earlier migration review*. They are **not the current operational state**. Do not rewrite or delete their original evidence. For the paused campaign, authoritative current operational records are `docs/ops/PRODUCTION_TRAINING_SPEC_20261017.md`, `docs/ops/production_training_spec_20261017.json`, and `docs/ops/verify/VERIFY_20261017.json`. This addendum is a documentation proposal until reviewed and merged.
+
+### Verified paused campaign (not new training)
+
+- Frozen training source: `codex/v2-p00b-profile-propagation` @ `da35700f75c95833b0e8250d7b4b04e11320f8b7`. Immutable training worktree `/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix`; SHA-pinned production profile `configs/pa3_v2_production.yaml` (`c816aa28f695ce57ac2319db37cd9edeab308f369c2972606abc38a11fa27941`). PPO-2, 2× V100 DDP, Mode E, `historical_probability=0.0`, 1,220 frozen training teams.
+- Cooperative stop at **2,764,800 matches**, iteration **675**, optimizer steps **24,573**; LR `0.00014978839419625816`, AMP scaler `262144`, rank digest equality true, no skipped optimizer steps or operational errors. Full verified restore generation: `iter-000002764800-1792212738467610757`; rank0 SHA256 `fd3b5655a2b7d602043531cf31addcbca53c4c41523dce4abc430a8ea52fe02b`, rank1 SHA256 `6cd1ae7b84a12bbc8e12bc0e30f538ee59d03e4dd602f68eb47ed0f079b39607`.
+- Evaluation V2 patched in `810ee3a` to use `learner-rows-per-second-v1` for resource gating, not matches/s. Observed current-only baseline ~381.9 learner rows/s, stale training log skip, min two completed iterations before defer, warnings reduced, disk reserve enforced; 44/44 focused resource gate tests recorded as passing.
+- At pause/report: **30 archived policies and snapshots, 29 completed evaluation receipts, 11 promotions**, champion `v2-000002600960-da35700f`. Lightweight diagnostics for 2,703,360 and 2,764,800 gave 0.4765 and 0.4824 versus incumbent over 170 games, both `DIAGNOSTIC_ONLY`; no pending evaluation jobs reported. Next nominal 200K full milestone at 2,800,000 (actual generation clock can overshoot). Existing alpha ledger and the independent confirmation procedure remain authoritative.
+- Local cleanup: 35 to 4 worktrees, ~73GB disk free; **remote branches were not pruned**. Main, training and evaluation refs need to be distinguished; branch names alone do not establish the deployed source.
+- The **power-off guard is paused** while training is stopped; it requires a separate check on approved restart.
+
+### Proposed change — NOT YET ACTIVE
+
+- Introduce an isolated historical diagnostic store and an initial full round robin over the exact compatible frozen registry (30 entries before digest dedup, up to 435 pairs), followed by incremental 8-anchor matchups every 200K full milestone, independently of official promotions.
+- Keep historical diagnostics read-only relative to promotion league and training; separate seeds, snapshots, locks, receipts, risk budget (no formal alpha consumption), and evaluation priority. Use pair-cluster uncertainty rather than independent seat-swap game CI.
+- Shadow selector only at first: up to eight historical opponents, experimental PFSP mix 60% hard / 30% close / 10% exploratory. The active production training probability stays **0.0** during shadow work.
+- Proposed pilot after explicit new source/profile/opponent migration and verified checkpoint restore: 5% *current-policy learner rows* from current-vs-history games (roughly 9.52% of games given equal seat lengths); consider 10% only after controlled comparison. No autonomous 20% increase or resume.
+- `scripts/run_ddp_ppo.py` currently supports historical envelope loading, but reviewed V2 migration pins 0% history and the opponent-manifest shape must be examined. Preserve all DDP, recompute, secondary-audit, stop/resume, team statistics, and team pool invariants. A new migration protocol and new release receipt are required before production use.
+- Implementation spec: `PA3_Adaptive_Historical_League_v2_20261017/DESIGN.md` in the agent handoff package. Once implementation and deployment are **actually verified**, replace this PROPOSED paragraph with the real versioned artifact, commit, ratios, migration receipt, and acceptance results.
+
+---
+
 2026-10-16 KST: **PRODUCTION STOPPED**. The user approved the versioned FP32 policy encoder route. Final validation status, benchmark evidence and restore results are in [the migration/stability/batch report](operations/V2_MIGRATION_STABILITY_BATCH_OPTIMIZATION_FINAL.md). Delivery branch: `codex/v2-secondary-precision-stability`; tested executable: `9d3d6051d6d17cc517259a3e6807bb067c717a9e`. Work is paused for the user's precision decision; final HEAD-specific receipt remains pending after the documentation commit in local `runs/v2_final_release/final_delivery_20261016/FINAL_DELIVERY.json`.
 
 Authority: immutable checkpoint and receipts → exact frozen source → versioned profile → frozen observation/action contract → this index → historical research. Config semantic hash `11e69c9940199692ba9b2d4bc1848469843dd294893bb2cd5c53ce75bc8790d2`. Diagnostics never advance production progress. No production restart, main merge, history rewrite or original checkpoint modification occurred.

@@ -1,0 +1,624 @@
+#!/usr/bin/env python3
+"""Isolated historical Round Robin diagnostics (PA3 V2 AHL stages A-C).
+
+The worker is CPU-only, low priority and owns a separate root, registry
+snapshot, lock, status file, receipts, fixture seed domain and reports.  It
+reuses ``run_matchup_cached`` unchanged and never writes into the formal V2
+evaluation root or any training state.
+"""
+from __future__ import annotations
+
+import argparse
+import fcntl
+import json
+import os
+import sys
+import time
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path[:0] = [str(ROOT), str(ROOT / "engine" / "python")]
+
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
+os.environ.setdefault("OMP_NUM_THREADS", "2")
+os.environ.setdefault("MKL_NUM_THREADS", "2")
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+
+try:
+    os.nice(19)
+except OSError:
+    pass
+
+import torch  # noqa: E402
+
+from agent.evaluation.fixed_policy import fixture_manifest_hash  # noqa: E402
+from agent.evaluation.historical_league import (  # noqa: E402
+    BASIC_FIXTURE_PAIRS,
+    DEFAULT_FORMAL_ROOT,
+    DEFAULT_RESERVE_GIB,
+    DEFAULT_RR_ROOT,
+    FINE_FIXTURE_PAIRS,
+    RR_PANEL_VERSION,
+    RR_SEED,
+    RR_SEED_DOMAIN,
+    build_pair_plan,
+    build_shadow_plan,
+    canonical_pair,
+    champion_validation,
+    disk_free_bytes,
+    formal_backlog,
+    freeze_registry,
+    load_pair_summaries,
+    load_snapshot,
+    milestone_hook,
+    pair_game_count,
+    protected_state,
+    select_pairs,
+    sha256_json,
+    summarize_pair,
+    write_gate_report,
+    write_reports,
+    write_status,
+)
+from agent.evaluation.identity import sha256_file  # noqa: E402
+from agent.evaluation.policy_archive import verify_entry  # noqa: E402
+from agent.evaluation.league import evaluation_identity  # noqa: E402
+from agent.evaluation.v2_league import (  # noqa: E402
+    atomic_json,
+    evaluation_environment,
+    master_fixtures,
+    read_json,
+    run_matchup_cached,
+)
+
+DATA_DIR = ROOT / "engine" / "data"
+TEAMS_PATH = DATA_DIR / "a10-training-teams.json"
+ENGINE_PATH = ROOT / "engine" / "python" / "pa3_engine" / "pa3_engine.so"
+MAX_ROUNDS = 2000
+
+
+def _now() -> float:
+    return time.time()
+
+
+def _kst() -> str:
+    return time.strftime("%Y-%m-%dT%H:%M:%S%z")
+
+
+def _runtime(args):
+    import pa3_engine
+
+    if not ENGINE_PATH.is_file():
+        raise SystemExit(f"native engine is missing: {ENGINE_PATH}")
+    torch.set_num_threads(int(args.threads))
+    try:
+        torch.set_num_interop_threads(1)
+    except RuntimeError:
+        pass
+    engine = pa3_engine.NativeEngine(str(DATA_DIR), str(TEAMS_PATH),
+                                     workers=int(args.engine_workers))
+    environment = evaluation_environment(
+        str(ENGINE_PATH), str(DATA_DIR), str(TEAMS_PATH), backend="batched",
+        batch_size=int(args.batch_size), device="cpu", threads=int(args.threads),
+        engine_workers=int(args.engine_workers))
+    master = master_fixtures(engine, pairs=FINE_FIXTURE_PAIRS, seed=int(args.seed))
+    return engine, environment, master
+
+
+def _pair_cache_path(root: Path, pair_key: str) -> Path:
+    return root / "receipts" / "pairs" / f"{sha256_json({'pair': pair_key})[:24]}.json"
+
+
+def _existing_summary(root: Path, pair_key: str, fixture_pairs: int,
+                      environment: dict) -> dict | None:
+    value = read_json(_pair_cache_path(root, pair_key))
+    if not value or value.get("schema") != "pa3-v2-history-pair-v1":
+        return None
+    if value.get("status") != "success":
+        return None
+    if int(value.get("fixture_pairs", -1)) != int(fixture_pairs):
+        return None
+    if value.get("environment") != environment:
+        return None
+    if value.get("panel_version") != RR_PANEL_VERSION:
+        return None
+    return value
+
+
+def _ordered_ids(row, by_id):
+    left, right = row["left_id"], row["right_id"]
+    left_clock = int(by_id[left]["committed_matches"])
+    right_clock = int(by_id[right]["committed_matches"])
+    if left_clock > right_clock:
+        return left, right
+    if right_clock > left_clock:
+        return right, left
+    return tuple(sorted((left, right)))
+
+
+def _run_pair(*, args, root, registry_path, receipts_dir, engine, environment,
+              master, row, by_id):
+    fixtures = master[:2 * int(row["fixture_pairs"])]
+    left_id, right_id = _ordered_ids(row, by_id)
+    started = _now()
+    receipt, cached = run_matchup_cached(
+        registry_path, receipts_dir, engine, fixtures, left_id, right_id,
+        seed=int(args.seed), max_rounds=MAX_ROUNDS, environment=environment,
+        batch_size=int(args.batch_size))
+    oriented = dict(row, left_id=left_id, right_id=right_id)
+    summary = summarize_pair(
+        receipt, oriented, left_entry=by_id[left_id], right_entry=by_id[right_id],
+        seed=int(args.seed))
+    summary["runtime_seconds"] = round(_now() - started, 3)
+    summary["cached"] = bool(cached)
+    atomic_json(_pair_cache_path(root, row["pair_key"]), summary)
+    return summary
+
+
+def _base_status(args, meta, plan, selected, completed, games_run):
+    return {
+        "run_id": sha256_json({
+            "snapshot": meta["snapshot_sha256"],
+            "seed": int(args.seed),
+            "panel": RR_PANEL_VERSION,
+            "domain": RR_SEED_DOMAIN,
+        })[:24],
+        "state": "running",
+        "root": str(args.root),
+        "formal_root": str(args.formal_root),
+        "champion_id": meta["champion_id"],
+        "latest_id": meta["latest_id"],
+        "registry_snapshot_sha256": meta["snapshot_sha256"],
+        "source_registry_sha256": meta["source_registry_sha256"],
+        "panel_version": RR_PANEL_VERSION,
+        "seed_domain": RR_SEED_DOMAIN,
+        "seed": int(args.seed),
+        "arithmetic": plan["arithmetic"],
+        "pairs_total": len(plan["pairs"]),
+        "pairs_selected": len(selected),
+        "pairs_completed": completed,
+        "games_run": games_run,
+        "games_selected_target": sum(row["games"] for row in selected),
+        "max_games": args.max_games,
+        "fixture_pairs_override": args.fixture_pairs,
+        "formal_priority": formal_backlog(args.formal_root),
+        "disk_free_bytes": disk_free_bytes(args.root),
+        "reserve_gib": float(args.reserve_gib),
+        "started_at": _now(),
+        "started_at_kst": _kst(),
+    }
+
+
+def _reports(root, entries, champion_id):
+    return write_reports(root, entries, champion_id)
+
+
+def _harness_equivalence(*, args, root, registry_path, entries, engine):
+    ids = {entry["id"] for entry in entries}
+    formal_root = Path(args.formal_root)
+    fixtures = master_fixtures(engine, pairs=BASIC_FIXTURE_PAIRS, seed=20261014)
+    expected_hash = fixture_manifest_hash(fixtures)
+    targets = []
+    for path in sorted((formal_root / "receipts").glob("*.json")):
+        receipt = read_json(path)
+        if not receipt:
+            continue
+        if (receipt.get("matches") == 2 * BASIC_FIXTURE_PAIRS
+                and receipt.get("seed") == 20261014
+                and receipt.get("left_id") in ids and receipt.get("right_id") in ids
+                and receipt.get("fixture_manifest_hash") == expected_hash
+                and receipt.get("status") == "success"):
+            targets.append((path, receipt))
+    if not targets:
+        raise RuntimeError("no known formal receipt matches the calibration panel")
+    path, target = targets[0]
+    environment = evaluation_environment(
+        str(ENGINE_PATH), str(DATA_DIR), str(TEAMS_PATH), backend="batched",
+        batch_size=32, device="cpu", threads=2, engine_workers=2)
+    candidate = dict(next(entry for entry in entries if entry["id"] == target["left_id"]),
+                     path=verify_entry(registry_path, next(
+                         entry for entry in entries if entry["id"] == target["left_id"])))
+    opponent = dict(next(entry for entry in entries if entry["id"] == target["right_id"]),
+                    path=verify_entry(registry_path, next(
+                        entry for entry in entries if entry["id"] == target["right_id"])))
+    identity, body = evaluation_identity(
+        candidate, opponent, fixtures, seed=20261014, max_rounds=MAX_ROUNDS,
+        environment=environment)
+    identity_match = identity == target["identity"]
+    env_match = body.get("environment") == target.get("environment")
+    fixture_match = body.get("fixture_manifest_hash") == target.get("fixture_manifest_hash")
+    if not (identity_match and env_match and fixture_match):
+        raise RuntimeError(
+            "harness equivalence precheck failed: "
+            f"identity={identity_match} environment={env_match} fixtures={fixture_match}")
+    receipts_dir = root / "equivalence_receipts"
+    receipt, cached = run_matchup_cached(
+        registry_path, receipts_dir, engine, fixtures, target["left_id"],
+        target["right_id"], seed=20261014, max_rounds=MAX_ROUNDS,
+        environment=environment, batch_size=32)
+    result = {
+        "schema": "pa3-v2-history-harness-equivalence-v1",
+        "status": "PASS" if (
+            receipt["identity"] == target["identity"]
+            and receipt["wins"] == target["wins"]
+            and receipt["losses"] == target["losses"]
+            and receipt["draws"] == target["draws"]
+            and receipt["score_mean"] == target["score_mean"]
+        ) else "FAIL",
+        "formal_receipt": str(path),
+        "formal_receipt_identity": target["identity"],
+        "rerun_identity": receipt["identity"],
+        "identity_match": receipt["identity"] == target["identity"],
+        "environment_match": env_match,
+        "fixture_manifest_match": fixture_match,
+        "wdl_match": (
+            receipt["wins"] == target["wins"]
+            and receipt["losses"] == target["losses"]
+            and receipt["draws"] == target["draws"]
+        ),
+        "score_match": receipt["score_mean"] == target["score_mean"],
+        "formal_wdl": [target["wins"], target["draws"], target["losses"]],
+        "rerun_wdl": [receipt["wins"], receipt["draws"], receipt["losses"]],
+        "formal_score": target["score_mean"],
+        "rerun_score": receipt["score_mean"],
+        "games": receipt["matches"],
+        "cached": bool(cached),
+        "fixture_manifest_hash": expected_hash,
+        "environment": environment,
+        "checked_at": _now(),
+        "checked_at_kst": _kst(),
+    }
+    atomic_json(root / "equivalence.json", result)
+    if result["status"] != "PASS":
+        raise RuntimeError("harness equivalence rerun failed")
+    return result
+
+
+def command_freeze(args):
+    entries, meta = freeze_registry(args.formal_root, args.root, verify=True)
+    plan = build_pair_plan(entries, meta["champion_id"], meta["latest_id"])
+    atomic_json(args.root / "pair_plan.json", plan)
+    write_status(args.root, {
+        "state": "frozen",
+        "champion_id": meta["champion_id"],
+        "latest_id": meta["latest_id"],
+        "registry_snapshot_sha256": meta["snapshot_sha256"],
+        "source_registry_sha256": meta["source_registry_sha256"],
+        "policies": len(entries),
+        "pairs_total": len(plan["pairs"]),
+        "arithmetic": plan["arithmetic"],
+        "panel_version": RR_PANEL_VERSION,
+        "seed_domain": RR_SEED_DOMAIN,
+        "formal_priority": formal_backlog(args.formal_root),
+    })
+    print(json.dumps({"status": "frozen", "policies": len(entries),
+                      "arithmetic": plan["arithmetic"]}, sort_keys=True))
+    return 0
+
+
+def command_plan(args):
+    entries, meta = load_snapshot(args.root)
+    plan = build_pair_plan(entries, meta["champion_id"], meta["latest_id"])
+    atomic_json(args.root / "pair_plan.json", plan)
+    selected = select_pairs(plan, max_games=args.max_games,
+                            fixture_pairs=args.fixture_pairs)
+    print(json.dumps({"arithmetic": plan["arithmetic"],
+                      "selected_pairs": len(selected),
+                      "selected_games": sum(row["games"] for row in selected),
+                      "selected": [
+                          {key: row[key] for key in
+                           ("pair_key", "tier", "games", "priority", "reason")}
+                          for row in selected[:12]
+                      ]}, indent=2, sort_keys=True))
+    return 0
+
+
+def command_harness(args):
+    entries, meta = load_snapshot(args.root)
+    engine, _environment, _master = _runtime(args)
+    result = _harness_equivalence(
+        args=args, root=args.root, registry_path=args.root / "registry.snapshot.json",
+        entries=entries, engine=engine)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0
+
+
+def command_run(args):
+    entries, meta = load_snapshot(args.root)
+    plan = build_pair_plan(entries, meta["champion_id"], meta["latest_id"])
+    selected = select_pairs(plan, max_games=args.max_games,
+                            fixture_pairs=args.fixture_pairs)
+    if not selected:
+        raise SystemExit("pair selection is empty")
+    by_id = {entry["id"]: entry for entry in entries}
+    registry_path = args.root / "registry.snapshot.json"
+    receipts_dir = args.root / "receipts"
+    engine, environment, master = _runtime(args)
+    if args.harness:
+        _harness_equivalence(args=args, root=args.root, registry_path=registry_path,
+                             entries=entries, engine=engine)
+    status = _base_status(args, meta, plan, selected, 0, 0)
+    write_status(args.root, status)
+    summaries = load_pair_summaries(args.root)
+    completed_ids = {summary["pair_key"] for summary in summaries if summary["status"] == "success"}
+    games_run = sum(summary["games"] for summary in summaries)
+    run_started = _now()
+    stop_reason = None
+    for index, row in enumerate(selected, 1):
+        backlog = formal_backlog(args.formal_root)
+        if backlog["pending_or_running"]:
+            stop_reason = "deferred_formal_priority"
+            break
+        free = disk_free_bytes(args.root)
+        if free < float(args.reserve_gib) * (1 << 30):
+            stop_reason = "resource_deferred_disk_reserve"
+            break
+        if (args.root / "PAUSE").exists():
+            stop_reason = "operator_pause"
+            break
+        if row["pair_key"] in completed_ids:
+            continue
+        status.update({
+            "state": "running",
+            "current_pair": index,
+            "current_pair_key": row["pair_key"],
+            "current_reason": row["reason"],
+            "pairs_completed": len(completed_ids),
+            "games_run": games_run,
+            "formal_priority": backlog,
+            "disk_free_bytes": free,
+        })
+        write_status(args.root, status)
+        summary = _run_pair(
+            args=args, root=args.root, registry_path=registry_path,
+            receipts_dir=receipts_dir, engine=engine, environment=environment,
+            master=master, row=row, by_id=by_id)
+        completed_ids.add(row["pair_key"])
+        games_run += summary["games"]
+        status.update({
+            "pairs_completed": len(completed_ids),
+            "games_run": games_run,
+            "last_pair": {
+                "pair_key": summary["pair_key"],
+                "status": summary["status"],
+                "games": summary["games"],
+                "left_score": summary["left_score"],
+                "receipt_identity": summary["receipt_identity"],
+                "cached": summary["cached"],
+            },
+        })
+        write_status(args.root, status)
+        if index % 5 == 0:
+            _reports(args.root, entries, meta["champion_id"])
+    reports = _reports(args.root, entries, meta["champion_id"])
+    elapsed = _now() - run_started
+    all_pairs = len(plan["pairs"])
+    status.update({
+        "state": "completed" if len(completed_ids) >= all_pairs else (
+            stop_reason or "resumable"),
+        "stop_reason": stop_reason,
+        "pairs_completed": len(completed_ids),
+        "games_run": games_run,
+        "elapsed_seconds": round(elapsed, 3),
+        "reports": reports,
+        "full_grid_complete": len(completed_ids) >= all_pairs,
+        "formal_priority": formal_backlog(args.formal_root),
+        "disk_free_bytes": disk_free_bytes(args.root),
+        "finished_at": _now(),
+        "finished_at_kst": _kst(),
+    })
+    write_status(args.root, status)
+    print(json.dumps({"status": status["state"], "pairs_completed": len(completed_ids),
+                      "pairs_total": all_pairs, "games_run": games_run,
+                      "elapsed_seconds": round(elapsed, 3),
+                      "full_grid_complete": status["full_grid_complete"],
+                      "stop_reason": stop_reason,
+                      "reports": reports}, indent=2, sort_keys=True))
+    return 0
+
+
+def command_report(args):
+    entries, meta = load_snapshot(args.root)
+    reports = _reports(args.root, entries, meta["champion_id"])
+    summaries = load_pair_summaries(args.root)
+    validation = champion_validation(meta["champion_id"], summaries, entries)
+    status = read_json(args.root / "status.json", {}) or {}
+    status.update({"state": status.get("state", "reported"),
+                   "reports": reports,
+                   "champion_validation_summary": {
+                       "valid_opponents": validation["valid_opponents"],
+                       "total_games": validation["total_games"],
+                       "weighted_score": validation["weighted_score"],
+                   }})
+    write_status(args.root, status)
+    print(json.dumps({"reports": reports,
+                      "valid_opponents": validation["valid_opponents"],
+                      "total_games": validation["total_games"],
+                      "weighted_score": validation["weighted_score"]},
+                     indent=2, sort_keys=True))
+    return 0
+
+
+def command_incremental(args):
+    entries, meta = load_snapshot(args.root)
+    summaries = load_pair_summaries(args.root)
+    hook = milestone_hook(
+        entries, summaries, promotions_dir=Path(args.formal_root) / "best_history" / "promotions",
+        interval=args.full_interval)
+    atomic_json(args.root / "incremental_plan.json", hook)
+    print(json.dumps(hook, indent=2, sort_keys=True))
+    return 0
+
+
+def command_shadow(args):
+    entries, meta = load_snapshot(args.root)
+    summaries = load_pair_summaries(args.root)
+    fixture_identity = {}
+    if summaries:
+        latest = max(summaries, key=lambda row: row.get("evaluated_at") or "")
+        fixture_identity = {
+            "fixture_manifest_hash": latest.get("fixture_manifest_hash"),
+            "environment": latest.get("environment"),
+            "panel_version": latest.get("panel_version"),
+        }
+    plan = build_shadow_plan(
+        entries, summaries, reference_id=meta["champion_id"], root=args.root,
+        promotions_dir=Path(args.formal_root) / "best_history" / "promotions",
+        fixture_identity=fixture_identity, seed=int(args.seed))
+    print(json.dumps({
+        "status": plan["status"],
+        "shadow_only": plan["shadow_only"],
+        "history_rows_target": plan["history_rows_target"],
+        "reference_policy_id": plan["reference_policy_id"],
+        "opponents": len(plan["opponents"]),
+        "weight_sum": sum(row["weight"] for row in plan["opponents"]),
+        "plan_sha256": plan["plan_sha256"],
+        "path": str(args.root / "opponent_plan.json"),
+    }, indent=2, sort_keys=True))
+    return 0
+
+
+def command_gate(args):
+    entries, meta = load_snapshot(args.root)
+    summaries = load_pair_summaries(args.root)
+    status = read_json(args.root / "status.json", {}) or {}
+    equivalence = read_json(args.root / "equivalence.json", {}) or {}
+    incremental = read_json(args.root / "incremental_plan.json", {}) or {}
+    shadow = read_json(args.root / "opponent_plan.json", {}) or {}
+    plan = build_pair_plan(entries, meta["champion_id"], meta["latest_id"])
+    protected = protected_state(args.root, args.formal_root)
+    backlog = formal_backlog(args.formal_root)
+    free = disk_free_bytes(args.root)
+    stage_a_status = "SMOKE_COMPLETE" if status.get("games_run", 0) > 0 else "IMPLEMENTED_NOT_RUN"
+    stage_a = {
+        "status": stage_a_status,
+        "registry_snapshot_verified": bool(meta.get("source_registry_sha256")),
+        "policies_before_dedup": meta.get("policies_before_dedup"),
+        "policies_after_dedup": meta.get("policies_after_dedup"),
+        "duplicates": len(meta.get("duplicates", [])),
+        "arithmetic": plan["arithmetic"],
+        "harness_equivalence": equivalence.get("status", "NOT_RUN"),
+        "harness_identity_match": equivalence.get("identity_match"),
+        "harness_games": equivalence.get("games"),
+        "pairs_completed": status.get("pairs_completed", 0),
+        "pairs_total": len(plan["pairs"]),
+        "games_run": status.get("games_run", 0),
+        "full_grid_complete": bool(status.get("full_grid_complete")),
+        "resumable": not bool(status.get("full_grid_complete")),
+        "formal_alpha_spent": 0,
+        "formal_alpha_unchanged": not any(
+            row["path"].endswith("alpha_budget.json")
+            for row in protected["critical_mismatches"]),
+        "formal_writes": len(protected["critical_mismatches"]),
+        "schedule_hash_changed_by_formal_discovery": protected["schedule"]["hash_changed"],
+        "formal_priority_observed": backlog["pending_or_running"],
+        "cpu_only": os.environ.get("CUDA_VISIBLE_DEVICES") == "",
+        "nice": os.nice(0),
+    }
+    stage_b = {
+        "status": "PLANNED" if incremental.get("available") else "IMPLEMENTED_NOT_TRIGGERED",
+        "available": bool(incremental.get("available")),
+        "reason": incremental.get("reason"),
+        "next_full_boundary": incremental.get("next_full_boundary"),
+        "latest_clock": incremental.get("latest_clock"),
+        "max_anchors": incremental.get("max_anchors"),
+        "games_per_anchor": incremental.get("games_per_anchor"),
+        "planned_games": incremental.get("planned_games"),
+        "planned_anchors_if_triggered": len(
+            incremental.get("planned_anchors_if_triggered", [])),
+        "planned_games_if_triggered": sum(
+            row.get("target_games", 0)
+            for row in incremental.get("planned_anchors_if_triggered", [])),
+        "executed": False,
+    }
+    stage_c = {
+        "status": "SHADOW_PLAN_READY" if shadow else "NOT_GENERATED",
+        "shadow_only": bool(shadow.get("shadow_only")),
+        "history_rows_target": shadow.get("history_rows_target"),
+        "history_probability": shadow.get("history_probability"),
+        "opponents": len(shadow.get("opponents", [])),
+        "weight_sum": sum(row.get("weight", 0.0) for row in shadow.get("opponents", [])),
+        "weight_cap_ok": all(
+            row.get("weight", 0.0) <= 0.40 + 1e-12
+            for row in shadow.get("opponents", [])),
+        "plan_sha256": shadow.get("plan_sha256"),
+        "activation": shadow.get("activation"),
+        "active_training_changed": False,
+    }
+    stage_d = {
+        "status": "NO_GO",
+        "reason": ("owner approval, reviewed V2 source/profile/opponent migration, "
+                   "isolated A/B pilot and rollback proof are all still required"),
+        "training_code_modified": False,
+        "ppo_resumed": False,
+        "migration_receipt_created": False,
+    }
+    report = write_gate_report(
+        args.root, stage_a=stage_a, stage_b=stage_b, stage_c=stage_c, stage_d=stage_d,
+        formal_priority=backlog,
+        disk={"free_bytes": free,
+              "reserve_bytes": int(float(args.reserve_gib) * (1 << 30)),
+              "ok": free >= float(args.reserve_gib) * (1 << 30)},
+        protected=protected)
+    print(json.dumps({"go_no_go": report["go_no_go"], "stage_a": stage_a,
+                      "stage_b": stage_b, "stage_c": stage_c,
+                      "protected_unchanged": protected["unchanged"]},
+                     indent=2, sort_keys=True))
+    return 0
+
+
+def build_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--root", default=str(DEFAULT_RR_ROOT))
+    parser.add_argument("--formal-root", default=str(DEFAULT_FORMAL_ROOT))
+    parser.add_argument("--seed", type=int, default=RR_SEED)
+    parser.add_argument("--fixture-pairs", type=int, default=None,
+                        help="override fixture pairs for every selected pair")
+    parser.add_argument("--max-games", type=int, default=None)
+    parser.add_argument("--full-interval", type=int, default=200000)
+    parser.add_argument("--reserve-gib", type=float, default=DEFAULT_RESERVE_GIB)
+    parser.add_argument("--batch-size", type=int, default=32)
+    parser.add_argument("--threads", type=int, default=2)
+    parser.add_argument("--engine-workers", type=int, default=2)
+    parser.add_argument("--harness", action="store_true",
+                        help="run the formal-receipt equivalence check before the pairs")
+    sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("freeze")
+    sub.add_parser("plan")
+    sub.add_parser("harness")
+    sub.add_parser("run")
+    sub.add_parser("report")
+    sub.add_parser("incremental")
+    sub.add_parser("shadow")
+    sub.add_parser("gate")
+    return parser
+
+
+def main(argv=None):
+    args = build_parser().parse_args(argv)
+    args.root = Path(args.root)
+    args.formal_root = Path(args.formal_root)
+    (args.root / "locks").mkdir(parents=True, exist_ok=True)
+    (args.root / "receipts" / "pairs").mkdir(parents=True, exist_ok=True)
+    lock_path = args.root / "locks" / "worker.lock"
+    with lock_path.open("a+") as lock:
+        try:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            print(json.dumps({"status": "already_running"}))
+            return 1
+        handlers = {
+            "freeze": command_freeze,
+            "plan": command_plan,
+            "harness": command_harness,
+            "run": command_run,
+            "report": command_report,
+            "incremental": command_incremental,
+            "shadow": command_shadow,
+            "gate": command_gate,
+        }
+        return handlers[args.command](args)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
