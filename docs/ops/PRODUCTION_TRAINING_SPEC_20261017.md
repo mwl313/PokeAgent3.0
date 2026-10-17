@@ -82,3 +82,48 @@ RESUME_GEN=/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode
 2. transient unit은 재부팅 후 사라진다 → 이 문서/헬퍼로 재생성.
 3. 평가 워커는 CPU 전용이며 PPO 상태를 절대 건드리지 않는다.
 4. 스로틀 게이트는 이제 **결정(rows)/초** 기준이다 — 매치/초는 경기 길이 증가로 자연 감소하므로 판단 근거로 쓰지 말 것.
+
+## 7. 재개 시 필수: 체크포인트의 team-stats 절대경로 (2026-10-17 실측)
+
+체크포인트 full-state manifest의 `team_stats_receipts` 는 **절대경로**를 담고 있고, 재개 시
+`scripts/run_ddp_ppo.py` 가 `load_team_stats(ref)` 로 그 파일을 직접 읽는다
+(`agent/analysis/team_stats.py:124`). 현재 세대
+(`iter-000002764800-1792212738467610757`)가 참조하는 루트는 **정리 때 제거된 옛 워크트리**다.
+
+```
+/home/minidc/Desktop/PokeAgent3.0-V2/runs/pa3_v2_scratch_20261014T060525Z/team_stats/receipts/<sha256>.json.gz
+```
+
+이 경로가 없으면 재개가 즉시 죽는다(2026-10-17 19:14 실측):
+
+```
+FileNotFoundError: .../team_stats/receipts/0b0f80e7...json.gz
+  File "scripts/run_ddp_ppo.py", line 947, in worker
+    value = load_team_stats(ref)
+```
+
+**복원 절차** (원본 바이트, 84개 영수증 6.9MB):
+
+```bash
+mkdir -p /home/minidc/Desktop/PokeAgent3.0-V2
+tar xzf /home/minidc/pa3-archive/PokeAgent3.0-V2__runs_pa3_v2_scratch_team_stats.tgz \
+  -C /home/minidc/Desktop/PokeAgent3.0-V2
+```
+
+**재개 전 점검** (0이면 경로가 깨진 것):
+
+```bash
+python3 - <<'PY'
+import json, os
+run='/home/minidc/Desktop/PokeAgent3.0-V2-p00b-hotfix/runs/production/mode_e_da35700_20261016'
+gen='iter-000002764800-1792212738467610757'
+m=json.load(open(f'{run}/rolling/generations/{gen}/manifest.json'))
+refs=m.get('team_stats_receipts') or []
+path = refs[0]['path'] if refs and isinstance(refs[0], dict) else refs[0]
+missing=[r for r in refs if not os.path.exists(r['path'] if isinstance(r,dict) else r)]
+print('refs', len(refs), 'missing', len(missing), 'sample', path)
+PY
+```
+
+이 디렉토리는 워크트리가 아니라 **읽기 전용 데이터**다. `git worktree` 로 되살리지 말고,
+디스크 정리 대상에서 제외한다(삭제하면 다음 재개가 같은 지점에서 실패한다).
