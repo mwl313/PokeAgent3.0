@@ -1,6 +1,6 @@
 {
   "disk": {
-    "free_bytes": 76969046016,
+    "free_bytes": 76967501824,
     "ok": true,
     "reserve_bytes": 12884901888
   },
@@ -11,8 +11,8 @@
     "pending_or_running": 0,
     "updated_at": 1792226948.9379854
   },
-  "generated_at": 1792226949.3262525,
-  "generated_at_kst": "2026-10-17T17:49:09+0900",
+  "generated_at": 1792226964.0927665,
+  "generated_at_kst": "2026-10-17T17:49:24+0900",
   "go_no_go": {
     "reason": "owner approval, reviewed V2 source/profile/opponent migration, isolated A/B pilot and rollback proof are all still required",
     "stage_d": "NO_GO"
@@ -115,6 +115,7 @@
       "resumed_jobs": 0,
       "stable_anchor_ids": [],
       "status": "idle",
+      "tier_a_first": 2800000,
       "tier_a_interval": 200000,
       "tier_b_first": 3800000,
       "tier_b_interval": 1000000,

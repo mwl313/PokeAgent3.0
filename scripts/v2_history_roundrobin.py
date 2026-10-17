@@ -581,6 +581,7 @@ def command_gate(args):
         "action": schedule.get("action"),
         "latest_clock": schedule.get("latest_clock"),
         "tier_a_interval": schedule.get("tier_a_interval", 200000),
+        "tier_a_first": schedule.get("tier_a_first", 2800000),
         "tier_b_first": schedule.get("tier_b_first", 3800000),
         "tier_b_interval": schedule.get("tier_b_interval", 1000000),
         "tier_b_policy_cap": schedule.get("tier_b_policy_cap", 24),
