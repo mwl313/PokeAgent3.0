@@ -565,13 +565,13 @@ def load_pair_summaries(root=DEFAULT_RR_ROOT) -> list[dict]:
     return rows
 
 
-def write_status(root, status) -> dict:
+def write_status(root, status, name="status.json") -> dict:
     root = Path(root)
     payload = dict(status)
     payload["schema"] = RR_STATUS_SCHEMA
     payload["updated_at"] = time.time()
     payload["updated_at_kst"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
-    atomic_json(root / "status.json", payload)
+    atomic_json(root / name, payload)
     return payload
 
 

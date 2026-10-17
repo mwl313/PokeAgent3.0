@@ -330,6 +330,22 @@ def command_run(args):
                             fixture_pairs=args.fixture_pairs)
     if not selected:
         raise SystemExit("pair selection is empty")
+    status_name = "status.json"
+    slice_label = None
+    if args.pair_slice:
+        try:
+            k_str, n_str = str(args.pair_slice).split("/")
+            slice_k, slice_n = int(k_str), int(n_str)
+        except Exception:
+            raise SystemExit("--pair-slice must look like K/N")
+        if not (1 <= slice_k <= slice_n):
+            raise SystemExit("--pair-slice requires 1 <= K <= N")
+        selected = [row for i, row in enumerate(selected) if i % slice_n == (slice_k - 1)]
+        slice_label = f"{slice_k}of{slice_n}"
+        status_name = f"status.slice-{slice_k}-of-{slice_n}.json"
+        if not selected:
+            print(json.dumps({"status": "empty_slice", "slice": args.pair_slice}))
+            return 0
     by_id = {entry["id"]: entry for entry in entries}
     registry_path = args.root / "registry.snapshot.json"
     receipts_dir = args.root / "receipts"
@@ -338,7 +354,7 @@ def command_run(args):
         _harness_equivalence(args=args, root=args.root, registry_path=registry_path,
                              entries=entries, engine=engine)
     status = _base_status(args, meta, plan, selected, 0, 0)
-    write_status(args.root, status)
+    write_status(args.root, status, status_name)
     summaries = load_pair_summaries(args.root)
     completed_ids = {summary["pair_key"] for summary in summaries if summary["status"] == "success"}
     games_run = sum(summary["games"] for summary in summaries)
@@ -368,7 +384,7 @@ def command_run(args):
             "formal_priority": backlog,
             "disk_free_bytes": free,
         })
-        write_status(args.root, status)
+        write_status(args.root, status, status_name)
         summary = _run_pair(
             args=args, root=args.root, registry_path=registry_path,
             receipts_dir=receipts_dir, engine=engine, environment=environment,
@@ -387,10 +403,10 @@ def command_run(args):
                 "cached": summary["cached"],
             },
         })
-        write_status(args.root, status)
-        if index % 5 == 0:
+        write_status(args.root, status, status_name)
+        if index % 5 == 0 and not args.no_reports:
             _reports(args.root, entries, meta["champion_id"])
-    reports = _reports(args.root, entries, meta["champion_id"])
+    reports = None if args.no_reports else _reports(args.root, entries, meta["champion_id"])
     elapsed = _now() - run_started
     all_pairs = len(plan["pairs"])
     status.update({
@@ -406,8 +422,9 @@ def command_run(args):
         "disk_free_bytes": disk_free_bytes(args.root),
         "finished_at": _now(),
         "finished_at_kst": _kst(),
+        "pair_slice": args.pair_slice,
     })
-    write_status(args.root, status)
+    write_status(args.root, status, status_name)
     print(json.dumps({"status": status["state"], "pairs_completed": len(completed_ids),
                       "pairs_total": all_pairs, "games_run": games_run,
                       "elapsed_seconds": round(elapsed, 3),
@@ -580,6 +597,15 @@ def build_parser():
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--threads", type=int, default=2)
     parser.add_argument("--engine-workers", type=int, default=2)
+    parser.add_argument("--pair-slice", default=None,
+                        help="K/N: only run slice K of N of the selected pair list "
+                             "(disjoint slices let N workers share one receipt store)")
+    parser.add_argument("--lock-name", default="worker.lock",
+                        help="lock file name under <root>/locks; parallel workers MUST use "
+                             "distinct names")
+    parser.add_argument("--no-reports", action="store_true",
+                        help="skip matrix/ratings regeneration (the coordinator runs "
+                             "'report' once at the end)")
     parser.add_argument("--harness", action="store_true",
                         help="run the formal-receipt equivalence check before the pairs")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -600,7 +626,7 @@ def main(argv=None):
     args.formal_root = Path(args.formal_root)
     (args.root / "locks").mkdir(parents=True, exist_ok=True)
     (args.root / "receipts" / "pairs").mkdir(parents=True, exist_ok=True)
-    lock_path = args.root / "locks" / "worker.lock"
+    lock_path = args.root / "locks" / args.lock_name
     with lock_path.open("a+") as lock:
         try:
             fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
