@@ -413,26 +413,36 @@ def test_stale_candidate_cannot_overwrite_champion(tmp_path):
 
 def _args(**kwargs):
     return argparse.Namespace(reserve_gib=kwargs.get("reserve_gib", 0.0001),
-                              baseline_gps=kwargs.get("baseline_gps", 50.0))
+                              baseline_gps=kwargs.get("baseline_gps", 50.0),
+                              baseline_rows_per_s=kwargs.get("baseline_rows_per_s"),
+                              stale_after_s=kwargs.get("stale_after_s", 900.0),
+                              gate_log_interval=kwargs.get("gate_log_interval", 300.0))
+
+
+def _production_log(path, *, rows, wall, iterations=10):
+    lines = []
+    for i in range(iterations):
+        lines.append(f"[rank0] iteration {i}/100: collected 2048 games / {rows} rows in {wall * 0.3:.1f}s")
+        lines.append(f"[rank0] iteration {i} complete in {wall:.1f}s, digests equal")
+    path.write_text("\n".join(lines) + "\n")
+    return path
 
 
 def test_resource_controls(tmp_path):
     from scripts.v2_eval_worker import resource_gate
     root = tmp_path / "eval"
     (root / "state").mkdir(parents=True)
-    log = tmp_path / "rank0.log"
-    log.write_text("\n".join(f"[rank0] iteration {i} complete in {90 + i * 0.1:.1f}s" for i in range(10)))
-    gate, record = resource_gate(root, log, _args())
+    baseline = 44000 / 115.0
+    log = _production_log(tmp_path / "rank0.log", rows=44000, wall=115.0)
+    gate, record = resource_gate(root, log, _args(baseline_rows_per_s=baseline))
     assert gate["status"] == "ok" and record["ratio"] > 0.8
     # Disk reserve violated.
-    gate, _ = resource_gate(root, log, _args(reserve_gib=1e9))
+    gate, _ = resource_gate(root, log, _args(reserve_gib=1e9, baseline_rows_per_s=baseline))
     assert gate["status"] == "resource_deferred"
-    # Throughput collapse below the deferral floor.
-    slow = tmp_path / "slow.log"
-    slow.write_text("\n".join("[rank0] iteration " + str(i) + " complete in 300.0s" for i in range(10)))
-    gate, record = resource_gate(root, slow, _args())
+    # Throughput collapse below the deferral floor: same game length, 2.6x slower.
+    slow = _production_log(tmp_path / "slow.log", rows=44000, wall=300.0)
+    gate, record = resource_gate(root, slow, _args(baseline_rows_per_s=baseline))
     assert gate["status"] == "resource_deferred"
-
 
 # ---------------------------------------------------------------------------
 # full escalation path (deterministic + replay of archived outcomes)

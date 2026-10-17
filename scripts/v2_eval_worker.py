@@ -79,6 +79,7 @@ from agent.evaluation.v2_league import (  # noqa: E402
     plan_light_panels,
     primary_screening,
     production_throughput,
+    production_work_throughput,
     promote_incumbent,
     read_json,
     record_rejection,
@@ -464,32 +465,81 @@ def run_job(*, eval_root, job, args, engine, environment, master, log_path):
     return job_receipt
 
 
+def production_log_age(log_path):
+    try:
+        return max(0.0, time.time() - Path(log_path).stat().st_mtime)
+    except OSError:
+        return None
+
+
+def publish_gate_state(eval_root, gate, record):
+    """Mirror the gate verdict into state/active.json so status tools cannot show a
+    stale "idle" while work is actually being deferred."""
+    path = eval_root / "state" / "active.json"
+    current = read_json(path, {}) or {}
+    current.update({
+        "status": gate["status"],
+        "gate_reason": gate.get("reason"),
+        "gate": {key: record.get(key) for key in
+                 ("metric", "ratio", "stale", "deferred", "throttled", "production_log_age_s")},
+        "updated_at": time.time(),
+    })
+    atomic_json(path, current)
+
+
 def resource_gate(eval_root, log_path, args):
     free = disk_headroom_bytes(eval_root)
     state_path = eval_root / "state" / "resource_state.json"
     state = read_json(state_path, {}) or {}
-    baseline = args.baseline_gps or state.get("baseline_gps")
-    recent = production_throughput(log_path) if log_path else None
-    if baseline is None and recent:
-        baseline = recent
-    ratio = (recent / baseline) if (baseline and recent) else None
+    recent_rows, detail = production_work_throughput(log_path, limit=8) if log_path else (None, {})
+    baseline_rows = (getattr(args, "baseline_rows_per_s", None)
+                     or state.get("baseline_rows_per_s"))
+    if baseline_rows is None and recent_rows:
+        baseline_rows = recent_rows
+    ratio = (recent_rows / baseline_rows) if (baseline_rows and recent_rows) else None
+    age = production_log_age(log_path) if log_path else None
+    stale = bool(age is not None and age > float(getattr(args, "stale_after_s", 900.0)))
+    mature = bool(detail.get("iterations", 0) >= 2)
     record = {
-        "baseline_gps": baseline,
-        "recent_training_gps": recent,
+        "metric": "learner-rows-per-second-v1",
+        "baseline_rows_per_s": baseline_rows,
+        "recent_rows_per_s": recent_rows,
+        "recent_rows_per_iteration": detail.get("rows_per_iteration"),
         "ratio": ratio,
+        "mature_window": mature,
+        "detail": detail,
+        "baseline_gps_legacy": state.get("baseline_gps"),
+        "recent_matches_per_s": detail.get("matches_per_second"),
         "free_bytes": free,
         "reserve_bytes": int(args.reserve_gib * (1 << 30)),
-        "throttled": bool(ratio is not None and ratio < 0.95),
-        "deferred": bool(ratio is not None and ratio < 0.80),
-        "caveat": "rolling production throughput; includes ordinary training variability",
+        "production_log_age_s": None if age is None else round(age, 1),
+        "stale": stale,
+        "throttled": bool(ratio is not None and ratio < 0.95 and not stale),
+        "deferred": bool(ratio is not None and ratio < 0.80 and not stale and mature),
+        "caveat": ("work-normalised (learner rows/s), invariant to game length; "
+                   "gate is skipped while the production log is stale (training idle)"),
         "updated_at": time.time(),
     }
     atomic_json(state_path, record)
     if free < args.reserve_gib * (1 << 30):
-        return {"status": "resource_deferred", "reason": f"{args.reserve_gib:g}GiB disk reserve"}, record
+        gate = {"status": "resource_deferred",
+                "reason": f"{args.reserve_gib:g}GiB disk reserve"}
+        publish_gate_state(eval_root, gate, record)
+        return gate, record
+    if stale:
+        gate = {"status": "ok", "note": "production log stale: training idle, throughput gate skipped"}
+        publish_gate_state(eval_root, gate, record)
+        return gate, record
     if record["deferred"]:
-        return {"status": "resource_deferred", "reason": "production throughput below 80% of baseline"}, record
-    return {"status": "ok"}, record
+        gate = {"status": "resource_deferred",
+                "reason": (f"learner rows/s at {ratio:.3f} of baseline "
+                           f"({recent_rows:.1f} vs {baseline_rows:.1f} rows/s over "
+                           f"{detail.get('iterations', 0)} iterations)")}
+        publish_gate_state(eval_root, gate, record)
+        return gate, record
+    gate = {"status": "ok"}
+    publish_gate_state(eval_root, gate, record)
+    return gate, record
 
 
 def work_once(*, eval_root, args, engine, environment, master, log_path):
@@ -548,7 +598,16 @@ def main(argv=None):
     parser.add_argument("--eval-root", default="/home/minidc/eval-league/v2")
     parser.add_argument("--production-log", help="production rank0 log for throughput observation")
     parser.add_argument("--reserve-gib", type=float, default=12.0)
-    parser.add_argument("--baseline-gps", type=float)
+    parser.add_argument("--baseline-gps", type=float,
+                        help="legacy matches/s baseline (observability only)")
+    parser.add_argument("--baseline-rows-per-s", type=float,
+                        help="learner-rows/s baseline for the throughput gate; "
+                             "adopted from the first observation when omitted")
+    parser.add_argument("--stale-after-s", type=float, default=900.0,
+                        help="skip the throughput gate when the production log has not "
+                             "been written for this long (training idle)")
+    parser.add_argument("--gate-log-interval", type=float, default=300.0,
+                        help="re-log an unchanged deferral at most this often")
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--threads", type=int, default=2)
     parser.add_argument("--engine-workers", type=int, default=2)
@@ -572,6 +631,7 @@ def main(argv=None):
         if requeued:
             print(json.dumps({"status": "requeued", "jobs": requeued}, sort_keys=True), flush=True)
         engine = environment = master = None
+        last_gate = {"status": None, "printed_at": 0.0}
         while True:
             if (eval_root / "PAUSE").exists():
                 result = {"status": "paused"}
@@ -580,7 +640,13 @@ def main(argv=None):
                     engine, environment, master = build_runtime(args)
                 result = work_once(eval_root=eval_root, args=args, engine=engine,
                                    environment=environment, master=master, log_path=log_path)
-            print(json.dumps(result, sort_keys=True), flush=True)
+            now = time.time()
+            deferral = str(result.get("status", "")).startswith("resource_deferred")
+            if (not deferral
+                    or result["status"] != last_gate["status"]
+                    or (now - last_gate["printed_at"]) >= float(args.gate_log_interval)):
+                print(json.dumps(result, sort_keys=True), flush=True)
+                last_gate = {"status": result["status"], "printed_at": now}
             if args.once:
                 break
             time.sleep(1.0 if result["status"] == "completed" else float(args.interval))

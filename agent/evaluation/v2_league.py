@@ -1038,10 +1038,59 @@ def production_iteration_seconds(log_path, limit=8):
 
 
 def production_throughput(log_path, *, matches_per_iteration=4096, limit=8):
+    """Matches per second. Kept for observability only: this number falls as
+    policies improve and games get longer (more decisions per match), so it must
+    NOT be used as a health signal across a long campaign."""
     times = production_iteration_seconds(log_path, limit=limit)
     if not times or sum(times) <= 0:
         return None
     return matches_per_iteration * len(times) / sum(times)
+
+
+_ROWS_RE = re.compile(r"iteration (\d+)/\d+: collected \d+ games / (\d+) rows in ([0-9.]+)s")
+
+
+def production_rows_per_iteration(log_path, limit=8):
+    """Learner rows (decisions) for the last completed iterations, keyed by iteration."""
+    try:
+        text = Path(log_path).read_text(errors="ignore")
+    except OSError:
+        return {}
+    pairs = _ROWS_RE.findall(text)
+    return {int(index): int(rows) for index, rows, _seconds in pairs[-limit:]}
+
+
+def production_work_throughput(log_path, *, limit=8, matches_per_iteration=4096):
+    """Work-normalised production throughput: learner rows per second.
+
+    Rows are the unit of work the trainer actually pays for (one decision each);
+    matches are not, because a match lengthens as both policies improve. Dividing
+    rows by the iteration wall keeps the number comparable across the campaign, so
+    a drop means the machine really slowed down rather than the game getting
+    longer. Returns (rows_per_second, detail) or (None, detail).
+    """
+    detail = {"metric": "learner-rows-per-second-v1", "iterations": 0}
+    try:
+        text = Path(log_path).read_text(errors="ignore")
+    except OSError:
+        return None, detail
+    rows_by_iteration = {int(i): int(r) for i, r, _s in _ROWS_RE.findall(text)}
+    completions = [(int(i), float(w)) for i, w in _ITERATION_RE.findall(text)][-limit:]
+    paired = [(rows_by_iteration[i], w) for i, w in completions if i in rows_by_iteration]
+    if not paired:
+        return None, detail
+    total_rows = sum(r for r, _w in paired)
+    total_wall = sum(w for _r, w in paired)
+    if total_wall <= 0:
+        return None, detail
+    detail.update({
+        "iterations": len(paired),
+        "rows": total_rows,
+        "wall_s": round(total_wall, 2),
+        "rows_per_iteration": round(total_rows / len(paired), 1),
+        "matches_per_second": round(matches_per_iteration * len(paired) / total_wall, 3),
+    })
+    return total_rows / total_wall, detail
 
 
 def disk_headroom_bytes(path):
