@@ -1,0 +1,181 @@
+{
+  "candidate_source_sha": "da35700f75c95833b0e8250d7b4b04e11320f8b7",
+  "checkpoint_file_sha256": "434be431de0e25a9c7730a7a0f38eda66d5db30397835983ebde9f4b8f1d9b36",
+  "checkpoint_id": "v2-000002764800-da35700f",
+  "checkpoint_path": "/home/minidc/eval-league/v2/snapshots/43/434be431de0e25a9c7730a7a0f38eda66d5db30397835983ebde9f4b8f1d9b36",
+  "commands": {
+    "all": "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python scripts/random_baseline_eval.py --run-dir /home/minidc/eval-league/random-baseline/v1 all",
+    "fixtures": "/home/minidc/Desktop/PokeAgent3.0/PokeAgent3.0-agent1-pa3/.venv/bin/python scripts/random_baseline_eval.py --run-dir /home/minidc/eval-league/random-baseline/v1 prepare"
+  },
+  "committed_matches": 2764800,
+  "dataset_manifest_hash": "1aa64507e17f4a1f819d59834dbd314e96a1a1b6d13f94a791bd3f51fca309bb",
+  "engine_path": "/home/minidc/Desktop/PokeAgent3.0-V2-evaluation-league/engine/python",
+  "engine_sha256": "8f3643a9f7b2febfa567f039b911d7af2f88bbf7bfc912849ada9e6a690d1c62",
+  "evaluator_version": "pa3-native-batched-evaluator-v3",
+  "fixture_manifest_hash": "5fe97fe15be9874f2461ac89516957ece515761d9cf770732fb70333eaacd84e",
+  "frozen_generation": "iter-000002764800-1792212738467610757",
+  "host": "minidc",
+  "limitations": [
+    "Random is branch-wise uniform over legal candidates, not uniform over joint action combinations.",
+    "Fixtures use the frozen 1,220-team pool; this is not a ladder-strength estimate.",
+    "Offline evaluation does not prove the Showdown adapter works."
+  ],
+  "python": "3.12.3",
+  "results": {
+    "control_lexicographic_random": {
+      "draws": 0,
+      "hard_gate": "pass",
+      "illegal_actions": 0,
+      "losses": 463,
+      "operational_errors": 0,
+      "paired_bootstrap_ci95": [
+        0.072265625,
+        0.12109375
+      ],
+      "score": 0.095703125,
+      "valid_games": 512,
+      "wins": 49
+    },
+    "control_random_random": {
+      "draws": 0,
+      "hard_gate": "pass",
+      "illegal_actions": 0,
+      "losses": 269,
+      "operational_errors": 0,
+      "paired_bootstrap_ci95": [
+        0.435546875,
+        0.513671875
+      ],
+      "score": 0.474609375,
+      "valid_games": 512,
+      "wins": 243
+    },
+    "test_a": {
+      "draws": 0,
+      "hard_gate": "pass",
+      "illegal_actions": 0,
+      "losses": 93,
+      "operational_errors": 0,
+      "paired_bootstrap_ci95": [
+        0.986328125,
+        0.990966796875
+      ],
+      "score": 0.9886474609375,
+      "valid_games": 8192,
+      "wins": 8099
+    },
+    "test_b": {
+      "draws": 0,
+      "hard_gate": "pass",
+      "illegal_actions": 0,
+      "losses": 2,
+      "operational_errors": 0,
+      "paired_bootstrap_ci95": [
+        0.99755859375,
+        1.0
+      ],
+      "score": 0.9990234375,
+      "valid_games": 2048,
+      "wins": 2046
+    }
+  },
+  "sampling_semantics": "fixture-seat-decision-branch-keyed-valid-cdf-v3",
+  "schema": "pa3-random-baseline-publication-v1",
+  "seed_domain": "pa3-random-baseline-v1",
+  "source_sha": "7b3b4cea23e92af17493f775e5161feb489215fd",
+  "suite_performance": {
+    "control_lexicographic_random": {
+      "games": 512,
+      "resources": {
+        "cpu_busy_fraction_avg": 0.1676403179503719,
+        "cpu_busy_fraction_max": 0.2614346413396651,
+        "cpu_equivalent_threads_avg": 13.411225436029753,
+        "load1_max": 20.13232421875,
+        "mem_used_gib_avg": 9.455342102050782,
+        "mem_used_gib_max": 12.3443603515625,
+        "samples": 10
+      },
+      "steady_state_games_per_second": 1037.5371581690465,
+      "wall_inclusive_games_per_second": 101.34136126448666,
+      "wall_seconds": 5.052231326000765
+    },
+    "control_random_random": {
+      "games": 512,
+      "resources": {
+        "cpu_busy_fraction_avg": 0.16684630078999624,
+        "cpu_busy_fraction_max": 0.25793551612096977,
+        "cpu_equivalent_threads_avg": 13.3477040631997,
+        "load1_max": 18.57666015625,
+        "mem_used_gib_avg": 9.498562622070313,
+        "mem_used_gib_max": 12.343551635742188,
+        "samples": 10
+      },
+      "steady_state_games_per_second": 1195.216917424482,
+      "wall_inclusive_games_per_second": 101.33257513781527,
+      "wall_seconds": 5.052669383992907
+    },
+    "test_a": {
+      "games": 8192,
+      "resources": {
+        "cpu_busy_fraction_avg": 0.24716411041651976,
+        "cpu_busy_fraction_max": 0.31399999999999995,
+        "cpu_equivalent_threads_avg": 19.77312883332158,
+        "load1_max": 20.19873046875,
+        "mem_used_gib_avg": 13.734518365384975,
+        "mem_used_gib_max": 14.578536987304688,
+        "samples": 261
+      },
+      "steady_state_games_per_second": 65.34598978521747,
+      "wall_inclusive_games_per_second": 62.47045291609291,
+      "wall_seconds": 131.13399403399671
+    },
+    "test_b": {
+      "games": 2048,
+      "resources": {
+        "cpu_busy_fraction_avg": 0.21165909353934365,
+        "cpu_busy_fraction_max": 0.26344758568926696,
+        "cpu_equivalent_threads_avg": 16.93272748314749,
+        "load1_max": 20.04833984375,
+        "mem_used_gib_avg": 12.447437286376953,
+        "mem_used_gib_max": 14.443553924560547,
+        "samples": 70
+      },
+      "steady_state_games_per_second": 74.65642672428692,
+      "wall_inclusive_games_per_second": 58.015813351989046,
+      "wall_seconds": 35.300720298007946
+    }
+  },
+  "team_pool_sha256": "ecabd47a8d000ba8dd9f3010c09992505fe21e95efe244e2c8a3d75ac3f70b1f",
+  "tests": {
+    "control_lexicographic_random": {
+      "games": 512,
+      "opponent": "random",
+      "pairs": 256,
+      "policy": "lexicographic_legal",
+      "seed_domain": "pa3-random-baseline-v1:control-lexicographic-random"
+    },
+    "control_random_random": {
+      "games": 512,
+      "opponent": "random",
+      "pairs": 256,
+      "policy": "random",
+      "seed_domain": "pa3-random-baseline-v1:control-random-random"
+    },
+    "test_a": {
+      "games": 8192,
+      "opponent": "random",
+      "pairs": 4096,
+      "policy": "checkpoint",
+      "seed_domain": "pa3-random-baseline-v1:test-a"
+    },
+    "test_b": {
+      "games": 2048,
+      "opponent": "lexicographic_legal",
+      "pairs": 1024,
+      "policy": "checkpoint",
+      "seed_domain": "pa3-random-baseline-v1:test-b"
+    }
+  },
+  "torch": "2.14.0+cu126",
+  "worker_config": "w20"
+}

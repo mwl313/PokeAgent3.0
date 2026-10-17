@@ -1,0 +1,5 @@
+test,label,opponent,games_attempted,valid_games,wins,losses,draws,score,paired_ci95_low,paired_ci95_high,operational_errors,illegal_actions,hard_gate,runtime_seconds,steady_state_games_per_second,wall_inclusive_games_per_second
+test_a,Test A random baseline,random,8192,8192,8099,93,0,0.988647,0.986328,0.990967,0,0,pass,131.133994,65.345990,62.470453
+test_b,Test B deterministic legal baseline,lexicographic_legal,2048,2048,2046,2,0,0.999023,0.997559,1.000000,0,0,pass,35.300720,74.656427,58.015813
+control_random_random,Control random vs random,random,512,512,243,269,0,0.474609,0.435547,0.513672,0,0,pass,5.052669,1195.216917,101.332575
+control_lexicographic_random,Control lexicographic legal vs random,random,512,512,49,463,0,0.095703,0.072266,0.121094,0,0,pass,5.052231,1037.537158,101.341361

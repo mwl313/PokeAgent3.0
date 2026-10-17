@@ -85,10 +85,13 @@ class BatchedPolicyEvaluator:
             cohort = fixtures[start:start + self.batch_size]
             handles = self.engine.reset_batch([x.team_a for x in cohort], [x.team_b for x in cohort], [x.seed for x in cohort], [(x.policy_side, 1-x.policy_side) for x in cohort])
             finished, decisions = [False] * len(cohort), [[0, 0] for _ in cohort]
+            rounds = [0] * len(cohort)
             errors, winners, illegal = [None]*len(cohort), [None]*len(cohort), [False]*len(cohort)
             for _round in range(max_rounds):
                 pending = [(env, side) for env in range(len(cohort)) if not finished[env] for side in (0, 1)]
                 if not pending: break
+                for env in {env for env, _side in pending}:
+                    rounds[env] += 1
                 info_start = time.perf_counter(); infos = self.engine.request_info_batch([(handles[e][0], handles[e][1], s) for e, s in pending]); self.timing["request_info"] += time.perf_counter()-info_start
                 decision = [(env, side, tuple(int(x) for x in slots)) for (env, side), (kind, slots) in zip(pending, infos) if RequestKind(int(kind)).is_decision]
                 if not decision:
@@ -144,7 +147,7 @@ class BatchedPolicyEvaluator:
                 elif winners[env] is None: outcome="draw"; totals["draws"] += 1
                 elif int(winners[env]) == fixture.policy_side: outcome="win"; totals["wins"] += 1
                 else: outcome="loss"; totals["losses"] += 1
-                outcomes.append({"fixture_id":fixture.fixture_id,"pair_id":fixture.pair_id,"policy_side":fixture.policy_side,"outcome":outcome,"team_a":fixture.team_a,"team_b":fixture.team_b,"winner":winners[env],"error":errors[env],"illegal_action":illegal[env]})
+                outcomes.append({"fixture_id":fixture.fixture_id,"pair_id":fixture.pair_id,"policy_side":fixture.policy_side,"outcome":outcome,"team_a":fixture.team_a,"team_b":fixture.team_b,"winner":winners[env],"error":errors[env],"illegal_action":illegal[env],"rounds":rounds[env],"decisions":decisions[env][0]+decisions[env][1]})
             if progress_callback is not None: progress_callback(len(outcomes), len(fixtures))
         scores=[1 if x["outcome"]=="win" else .5 if x["outcome"]=="draw" else 0 for x in outcomes if x["outcome"] != "error"]
         pairs=FixedPolicyEvaluator._paired_scores(outcomes); low, high=FixedPolicyEvaluator._bootstrap_ci(pairs, self.seed)
