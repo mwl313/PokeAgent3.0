@@ -190,7 +190,7 @@ Test A의 99%는 19 round 이내. 다만 **최대 60 round**의 long-tail game�
 - Test A 기준 8,192 valid games를 131.1초에 완료.
 - Machine-wide CPU는 80 logical thread 기준 24.7% (약 19.8 thread 상당). 20 physical core를 사용했으므로 worker당 1 core가 거의 포화된 상태와 일치한다.
 - RAM은 최대 14.58 GiB로 62 GiB host에서 안전. Swap thrash 없음.
-- Disk free: 평가 중/후 약 72 GB 유지 (12 GiB reserve 이상).
+- Disk free: 평가 중/후 약 71 GB 유지 (12 GiB reserve 이상).
 
 ### 3.6 Controls가 말해주는 것
 
@@ -282,7 +282,7 @@ Test A의 99%는 19 round 이내. 다만 **최대 60 round**의 long-tail game�
 | Champion / promotion receipts | 변경 없음 |
 | GPU | 사용하지 않음 (`CUDA_VISIBLE_DEVICES=""`) |
 | SIGKILL | 사용하지 않음 |
-| Disk reserve | 12 GiB 이상 유지 (약 72 GB free) |
+| Disk reserve | 12 GiB 이상 유지 (약 71 GB free) |
 
 ---
 
